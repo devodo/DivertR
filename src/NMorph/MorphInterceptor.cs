@@ -41,12 +41,12 @@ namespace NMorph
                 
                 if (poppedContext == null)
                 {
-                    throw new Exception("Pop returned unexpected null invocation context");
+                    throw new MorphException("Fatal error: Encountered an unexpected null invocation context");
                 }
 
                 if (!ReferenceEquals(poppedContext, invocationContext))
                 {
-                    throw new Exception("Pop returned unexpected invocation context");
+                    throw new MorphException("Fatal error: Encountered an unexpected invocation context");
                 }
             }
             

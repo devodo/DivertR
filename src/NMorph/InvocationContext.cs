@@ -2,7 +2,7 @@
 
 namespace NMorph
 {
-    internal class InvocationContext<T> : IInvocationContext<T> where T : class
+    internal class InvocationContext<T> where T : class
     {
         public IInvocation Invocation { get; }
         public T OriginTarget { get; }

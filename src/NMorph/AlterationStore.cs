@@ -6,36 +6,38 @@ namespace NMorph
     internal class AlterationStore
     {
         private readonly ConcurrentDictionary<MorphGroup, Alteration> _alterations = new ConcurrentDictionary<MorphGroup, Alteration>();
+        private readonly ConcurrentDictionary<MorphGroup, object> _updateLocks = new ConcurrentDictionary<MorphGroup, object>();
 
-        public Alteration<T> UpdateAlteration<T>(string groupName, Func<IMorphSource<T>, T> getSubstitute, bool chain) where T : class
+        public Alteration<T> UpdateAlteration<T>(string groupName, Func<IMorphInvocation<T>, T> getSubstitute) where T : class
         {
             if (!typeof(T).IsInterface)
             {
                 throw new ArgumentException("Only interface types are supported", typeof(T).Name);
             }
 
-            Alteration Create(MorphGroup morphGroup)
+            Alteration Create(MorphGroup _)
             {
                 var invocationStack = new InvocationStack<T>();
-                var source = new MorphSource<T>(invocationStack);
+                var source = new MorphInvocation<T>(invocationStack);
                 var substitute = getSubstitute(source);
                 return new Alteration<T>(substitute, invocationStack);
             }
 
-            Alteration Update(MorphGroup morphGroup, Alteration existingAlteration)
+            Alteration Update(MorphGroup _, Alteration existingAlteration)
             {
-                if (!chain)
-                {
-                    return Create(morphGroup);
-                }
-
                 var alteration = (Alteration<T>) existingAlteration;
-                var source = new MorphSource<T>(alteration.InvocationStack, alteration.Substitute);
+                var source = new MorphInvocation<T>(alteration.InvocationStack, alteration.Substitute);
                 var substitute = getSubstitute(source);
                 return new Alteration<T>(substitute, alteration.InvocationStack);
             }
 
-            return (Alteration<T>)_alterations.AddOrUpdate(MorphGroup.From<T>(groupName), Create, Update);
+            var morphGroup = MorphGroup.From<T>(groupName);
+            var lockObject = _updateLocks.GetOrAdd(morphGroup, _ => new object());
+            lock (lockObject)
+            {
+                // The lock is to ensure getSubstitute can only get called once
+                return (Alteration<T>)_alterations.AddOrUpdate(morphGroup, Create, Update);
+            }
         }
 
         public Alteration<T> GetAlteration<T>(string groupName) where T : class

@@ -34,7 +34,7 @@ namespace NMorph
         {
             var invocationStack = _invocationStack.Value;
 
-            return invocationStack?.FirstOrDefault();
+            return invocationStack?[^1];
         }
     }
 }

@@ -23,10 +23,20 @@ namespace NMorph
             var interceptor = new MorphInterceptor<T>(_alterationStore, origin, groupName);
             return _proxyGenerator.CreateInterfaceProxyWithTargetInterface(origin, interceptor);
         }
-
-        public void Substitute<T>(Func<IMorphSource<T>, T> getSubstitute, string groupName = null) where T : class
+        
+        public void Substitute<T>(T substitute, string groupName = null) where T : class
         {
-            _alterationStore.UpdateAlteration(groupName, getSubstitute, true);
+            _alterationStore.UpdateAlteration<T>(groupName, _ => substitute);
+        }
+
+        public void Substitute<T>(Func<IMorphInvocation<T>, T> getSubstitute, string groupName = null) where T : class
+        {
+            _alterationStore.UpdateAlteration(groupName, getSubstitute);
+        }
+        
+        public bool Reset<T>()
+        {
+            return _alterationStore.Reset<T>();
         }
 
         public void Reset()
