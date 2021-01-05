@@ -3,7 +3,7 @@ using Castle.DynamicProxy;
 
 namespace NMorph
 {
-    public class Morpher
+    public class MorphSet
     {
         private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
         private readonly AlterationStore _alterationStore = new AlterationStore();
@@ -26,12 +26,12 @@ namespace NMorph
         
         public void Substitute<T>(T substitute, string groupName = null) where T : class
         {
-            _alterationStore.UpdateAlteration<T>(groupName, _ => substitute);
+            _alterationStore.AddAlteration<T>(groupName, _ => substitute);
         }
 
-        public void Substitute<T>(Func<IMorphInvocation<T>, T> getSubstitute, string groupName = null) where T : class
+        public void Substitute<T>(Func<IInvocationContext<T>, T> getSubstitute, string groupName = null) where T : class
         {
-            _alterationStore.UpdateAlteration(groupName, getSubstitute);
+            _alterationStore.AddAlteration(groupName, getSubstitute);
         }
         
         public bool Reset<T>()

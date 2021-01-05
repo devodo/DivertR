@@ -1,5 +1,4 @@
-﻿using System;
-using Castle.DynamicProxy;
+﻿using Castle.DynamicProxy;
 
 namespace NMorph
 {
@@ -9,7 +8,7 @@ namespace NMorph
         private readonly T _originTarget;
         private readonly string _morphGroup;
 
-        public MorphInterceptor(AlterationStore alterationStore, T originTarget, string morphGroup)
+        public MorphInterceptor(AlterationStore alterationStore, T originTarget, string morphGroup = null)
         {
             _alterationStore = alterationStore;
             _originTarget = originTarget;
@@ -19,20 +18,20 @@ namespace NMorph
         public void Intercept(IInvocation invocation)
         {
             var alteration = _alterationStore.GetAlteration<T>(_morphGroup);
-            var morphTarget = alteration?.Substitute;
+            var invocationState = alteration?.CreateInvocationState(_originTarget, invocation);
+            var substitution = invocationState?.Previous();
 
-            if (morphTarget == null)
+            if (substitution == null)
             {
                 invocation.Proceed();
                 return;
             }
             
-            var invocationContext = new InvocationContext<T>(invocation, _originTarget);
-            alteration.InvocationStack.Push(invocationContext);
+            alteration.InvocationStack.Push(invocationState);
 
             try
             {
-                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(morphTarget);
+                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(substitution.Substitute);
                 invocation.Proceed();
             }
             finally
@@ -41,12 +40,12 @@ namespace NMorph
                 
                 if (poppedContext == null)
                 {
-                    throw new MorphException("Fatal error: Encountered an unexpected null invocation context");
+                    throw new MorphException("Fatal error: Encountered an unexpected null invocation state");
                 }
 
-                if (!ReferenceEquals(poppedContext, invocationContext))
+                if (!ReferenceEquals(poppedContext, invocationState))
                 {
-                    throw new MorphException("Fatal error: Encountered an unexpected invocation context");
+                    throw new MorphException("Fatal error: Encountered an unexpected invocation state");
                 }
             }
             

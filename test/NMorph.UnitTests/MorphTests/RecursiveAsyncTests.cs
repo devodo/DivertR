@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using Shouldly;
 using Xunit;
 
-namespace NMorph.UnitTests.MorpherTests
+namespace NMorph.UnitTests.MorphTests
 {
     public class RecursiveAsyncTests
     {
-        private readonly Morpher _morpher = new Morpher();
+        private readonly MorphSet _morphSet = new MorphSet();
 
         [Fact]
         public async Task TestRecursiveAsync()
@@ -19,11 +19,11 @@ namespace NMorph.UnitTests.MorpherTests
             
             IAsyncFactorial MorphFactorialFactory(int n)
             {
-                return _morpher.CreateMorph<IAsyncFactorial>(new Factorial(n, MorphFactorialFactory));
+                return _morphSet.CreateMorph<IAsyncFactorial>(new Factorial(n, MorphFactorialFactory));
             }
 
             var morph = MorphFactorialFactory(factorialInput);
-            _morpher.Substitute<IAsyncFactorial>(src => new FactorialTest(src));
+            _morphSet.Substitute<IAsyncFactorial>(src => new FactorialTest(src));
 
             var result = await morph.Result();
             result.ShouldBe(controlResult);
@@ -39,13 +39,13 @@ namespace NMorph.UnitTests.MorpherTests
 
             IAsyncFactorial MorphFactorialFactory(int n)
             {
-                return _morpher.CreateMorph<IAsyncFactorial>(new Factorial(n, MorphFactorialFactory));
+                return _morphSet.CreateMorph<IAsyncFactorial>(new Factorial(n, MorphFactorialFactory));
             }
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(async () =>
             {
                 var morph = MorphFactorialFactory(factorialInput);
-                _morpher.Substitute<IAsyncFactorial>(src => new FactorialTest(src));
+                _morphSet.Substitute<IAsyncFactorial>(src => new FactorialTest(src));
 
                 return await morph.Result();
             })).ToArray();
@@ -99,18 +99,18 @@ namespace NMorph.UnitTests.MorpherTests
 
         private class FactorialTest : IAsyncFactorial
         {
-            private readonly IMorphInvocation<IAsyncFactorial> _src;
+            private readonly IInvocationContext<IAsyncFactorial> _src;
 
-            public FactorialTest(IMorphInvocation<IAsyncFactorial> src)
+            public FactorialTest(IInvocationContext<IAsyncFactorial> src)
             {
                 _src = src;
             }
 
-            public int Number => _src.ReplacedTarget.Number;
+            public int Number => _src.Previous.Number;
 
             public async Task<int> Result()
             {
-                var result = await _src.ReplacedTarget.Result();
+                var result = await _src.Previous.Result();
 
                 return result;
             }

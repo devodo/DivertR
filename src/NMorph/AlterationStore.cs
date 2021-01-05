@@ -5,33 +5,33 @@ namespace NMorph
 {
     internal class AlterationStore
     {
-        private readonly ConcurrentDictionary<MorphGroup, Alteration> _alterations = new ConcurrentDictionary<MorphGroup, Alteration>();
-        private readonly ConcurrentDictionary<MorphGroup, object> _updateLocks = new ConcurrentDictionary<MorphGroup, object>();
+        private readonly ConcurrentDictionary<MorphId, Alteration> _alterations = new ConcurrentDictionary<MorphId, Alteration>();
+        private readonly ConcurrentDictionary<MorphId, object> _updateLocks = new ConcurrentDictionary<MorphId, object>();
 
-        public Alteration<T> UpdateAlteration<T>(string groupName, Func<IMorphInvocation<T>, T> getSubstitute) where T : class
+        public Alteration<T> AddAlteration<T>(string groupName, Func<IInvocationContext<T>, T> getSubstitute) where T : class
         {
             if (!typeof(T).IsInterface)
             {
                 throw new ArgumentException("Only interface types are supported", typeof(T).Name);
             }
 
-            Alteration Create(MorphGroup _)
+            Alteration Create(MorphId _)
             {
                 var invocationStack = new InvocationStack<T>();
-                var source = new MorphInvocation<T>(invocationStack);
+                var source = new InvocationContext<T>(invocationStack);
                 var substitute = getSubstitute(source);
-                return new Alteration<T>(substitute, invocationStack);
+                return new Alteration<T>(new Substitution<T>(substitute), invocationStack);
             }
 
-            Alteration Update(MorphGroup _, Alteration existingAlteration)
+            Alteration Update(MorphId _, Alteration existingAlteration)
             {
                 var alteration = (Alteration<T>) existingAlteration;
-                var source = new MorphInvocation<T>(alteration.InvocationStack, alteration.Substitute);
+                var source = new InvocationContext<T>(alteration.InvocationStack);
                 var substitute = getSubstitute(source);
-                return new Alteration<T>(substitute, alteration.InvocationStack);
+                return alteration.Append(new Substitution<T>(substitute));
             }
 
-            var morphGroup = MorphGroup.From<T>(groupName);
+            var morphGroup = MorphId.From<T>(groupName);
             var lockObject = _updateLocks.GetOrAdd(morphGroup, _ => new object());
             lock (lockObject)
             {
@@ -42,7 +42,7 @@ namespace NMorph
 
         public Alteration<T> GetAlteration<T>(string groupName) where T : class
         {
-            if (_alterations.TryGetValue(MorphGroup.From<T>(groupName), out var alteration))
+            if (_alterations.TryGetValue(MorphId.From<T>(groupName), out var alteration))
             {
                 return (Alteration<T>)alteration;
             }
@@ -50,14 +50,14 @@ namespace NMorph
             return null;
         }
 
+        public bool Reset<T>(string groupName = null)
+        {
+            return _alterations.TryRemove(MorphId.From<T>(groupName), out _);
+        }
+        
         public void Reset()
         {
             _alterations.Clear();
-        }
-
-        public bool Reset<T>(string groupName = null)
-        {
-            return _alterations.TryRemove(MorphGroup.From<T>(groupName), out _);
         }
     }
 }

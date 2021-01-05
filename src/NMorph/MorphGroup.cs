@@ -1,41 +1,17 @@
-﻿using System;
-
-namespace NMorph
+﻿namespace NMorph
 {
-    internal readonly struct MorphGroup : IEquatable<MorphGroup>
+    public class MorphGroup
     {
-        public Type Type { get; }
-        public string Name { get; }
+        private readonly AlterationStore _alterationStore = new AlterationStore();
 
-        public MorphGroup(Type type, string name)
+        public Morph<T> Select<T>() where T : class
         {
-            Type = type;
-            Name = name;
+            return new Morph<T>(_alterationStore);
         }
-
-        public bool Equals(MorphGroup other)
+        
+        public void Reset()
         {
-            return ReferenceEquals(Type, other.Type) && Name == other.Name;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is MorphGroup other && Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Type, Name);
-        }
-
-        public static MorphGroup From(Type type, string name)
-        {
-            return new MorphGroup(type, name);
-        }
-
-        public static MorphGroup From<T>(string name)
-        {
-            return new MorphGroup(typeof(T), name);
+            _alterationStore.Reset();
         }
     }
 }

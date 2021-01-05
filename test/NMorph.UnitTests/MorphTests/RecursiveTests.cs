@@ -3,13 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Shouldly;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace NMorph.UnitTests.MorpherTests
+namespace NMorph.UnitTests.MorphTests
 {
     public class RecursiveTests
     {
-        private readonly Morpher _morpher = new Morpher();
+        private readonly MorphSet _morphSet = new MorphSet();
 
         [Fact]
         public void TestRecursiveSync()
@@ -20,11 +19,11 @@ namespace NMorph.UnitTests.MorpherTests
             
             IFactorial MorphFactorialFactory(int n)
             {
-                return _morpher.CreateMorph<IFactorial>(new Factorial(n, MorphFactorialFactory));
+                return _morphSet.CreateMorph<IFactorial>(new Factorial(n, MorphFactorialFactory));
             }
 
             var morph = MorphFactorialFactory(factorialInput);
-            _morpher.Substitute<IFactorial>(src => new FactorialTest(src));
+            _morphSet.Substitute<IFactorial>(src => new FactorialTest(src));
 
             var result = morph.Result();
             result.ShouldBe(controlResult);
@@ -40,13 +39,13 @@ namespace NMorph.UnitTests.MorpherTests
 
             IFactorial MorphFactorialFactory(int n)
             {
-                return _morpher.CreateMorph<IFactorial>(new Factorial(n, MorphFactorialFactory));
+                return _morphSet.CreateMorph<IFactorial>(new Factorial(n, MorphFactorialFactory));
             }
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(() =>
             {
                 var morph = MorphFactorialFactory(factorialInput);
-                _morpher.Substitute<IFactorial>(src => new FactorialTest(src));
+                _morphSet.Substitute<IFactorial>(src => new FactorialTest(src));
 
                 return morph.Result();
             })).ToArray();
@@ -94,18 +93,18 @@ namespace NMorph.UnitTests.MorpherTests
 
         private class FactorialTest : IFactorial
         {
-            private readonly IMorphInvocation<IFactorial> _src;
+            private readonly IInvocationContext<IFactorial> _src;
 
-            public FactorialTest(IMorphInvocation<IFactorial> src)
+            public FactorialTest(IInvocationContext<IFactorial> src)
             {
                 _src = src;
             }
 
-            public int Number => _src.ReplacedTarget.Number;
+            public int Number => _src.Previous.Number;
 
             public int Result()
             {
-                var result = _src.ReplacedTarget.Result();
+                var result = _src.Previous.Result();
 
                 return result;
             }
