@@ -2,37 +2,38 @@
 
 namespace NMorph
 {
-    public class Morph<T> where T : class
+    public class Morph
     {
-        private readonly AlterationStore _alterationStore;
+        private readonly AlterationStore _alterationStore = new AlterationStore();
 
-        public Morph() : this(new AlterationStore())
+        public T Create<T>(T origin = null) where T : class
         {
-        }
-
-        internal Morph(AlterationStore alterationStore)
-        {
-            _alterationStore = alterationStore;
-        }
-        
-        public T CreateSubject(T origin = null)
-        {
-            return SubjectFactory.Instance.Create(_alterationStore, origin);
-        }
-        
-        public void Substitute(T substitute)
-        {
-            _alterationStore.AddAlteration<T>(null, _ => substitute);
+            return Create(default, origin);
         }
 
-        public void Substitute(Func<IInvocationContext<T>, T> getSubstitute)
+        public T Create<T>(string groupName, T origin = null) where T : class
         {
-            _alterationStore.AddAlteration(null, getSubstitute);
+            if (!typeof(T).IsInterface)
+            {
+                throw new ArgumentException("Only interface types are supported", typeof(T).Name);
+            }
+
+            Alteration<T> GetAlteration()
+            {
+                return _alterationStore.GetAlteration<T>(groupName);
+            }
+            
+            return ProxyFactory.Instance.CreateMorphProxy(origin, GetAlteration);
         }
         
-        public bool Reset()
+        public IAlterationBuilder<T> Alter<T>(string groupName = null) where T : class
         {
-            return _alterationStore.Reset<T>();
+            return new AlterationBuilder<T>(_alterationStore, groupName);
+        }
+
+        public void Reset()
+        {
+            _alterationStore.Reset();
         }
     }
 }

@@ -5,19 +5,19 @@ namespace NMorph
     internal class InvocationContext<T> : IInvocationContext<T> where T : class
     {
         private readonly InvocationStack<T> _invocationStack;
-        private readonly Lazy<Substitution<T>> _previousSubstitute;
+        private readonly Lazy<T> _substituteProxy;
 
         public InvocationContext(InvocationStack<T> invocationStack)
         {
             _invocationStack = invocationStack;
-            _previousSubstitute = new Lazy<Substitution<T>>(() => InvocationState.Previous());
+            _substituteProxy = new Lazy<T>(() => ProxyFactory.Instance.CreateSubstitutionProxy(invocationStack));
         }
 
-        public T Previous => _previousSubstitute.Value?.Substitute ?? InvocationState.Origin;
+        public T Previous => _substituteProxy.Value;
 
-        public T Origin => InvocationState.Origin;
+        public T Origin => SubstitutionState.Origin;
 
-        private InvocationState<T> InvocationState
+        private SubstitutionState<T> SubstitutionState
         {
             get
             {

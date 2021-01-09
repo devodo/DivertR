@@ -24,9 +24,9 @@ namespace NMorph
             InvocationStack = invocationStack;
         }
 
-        public InvocationState<T> CreateInvocationState(T origin, IInvocation invocation)
+        public SubstitutionState<T> CreateSubstitutionState(T origin)
         {
-            return new InvocationState<T>(origin, _substitutions, invocation);
+            return new SubstitutionState<T>(origin, _substitutions);
         }
 
         public Alteration<T> Append(Substitution<T> substitution)

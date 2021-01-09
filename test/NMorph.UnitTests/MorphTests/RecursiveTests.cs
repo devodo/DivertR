@@ -3,30 +3,34 @@ using System.Linq;
 using System.Threading.Tasks;
 using Shouldly;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NMorph.UnitTests.MorphTests
 {
     public class RecursiveTests
     {
-        private readonly MorphSet _morphSet = new MorphSet();
+        private readonly ITestOutputHelper _output;
+        private readonly Morph _morph = new Morph();
+
+        public RecursiveTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
 
         [Fact]
         public void TestRecursiveSync()
         {
             const int factorialInput = 10;
 
-            var controlResult = GetFactorial(factorialInput);
-            
-            IFactorial MorphFactorialFactory(int n)
+            IFactorial FactorialFactory(int n)
             {
-                return _morphSet.CreateMorph<IFactorial>(new Factorial(n, MorphFactorialFactory));
+                return _morph.Create<IFactorial>(new Factorial(n, FactorialFactory));
             }
+            
+            _morph.Alter<IFactorial>().Replace(src => new FactorialTest(src, _output));
 
-            var morph = MorphFactorialFactory(factorialInput);
-            _morphSet.Substitute<IFactorial>(src => new FactorialTest(src));
-
-            var result = morph.Result();
-            result.ShouldBe(controlResult);
+            var result = FactorialFactory(factorialInput).Result();
+            result.ShouldBe(GetFactorial(factorialInput));
         }
 
         [Fact]
@@ -35,23 +39,19 @@ namespace NMorph.UnitTests.MorphTests
             const int factorialInput = 10;
             const int taskCount = 10;
 
-            var controlResult = GetFactorial(factorialInput);
-
-            IFactorial MorphFactorialFactory(int n)
+            IFactorial FactorialFactory(int n)
             {
-                return _morphSet.CreateMorph<IFactorial>(new Factorial(n, MorphFactorialFactory));
+                return _morph.Create<IFactorial>(new Factorial(n, FactorialFactory));
             }
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(() =>
             {
-                var morph = MorphFactorialFactory(factorialInput);
-                _morphSet.Substitute<IFactorial>(src => new FactorialTest(src));
+                _morph.Alter<IFactorial>().Replace(src => new FactorialTest(src, _output));
 
-                return morph.Result();
+                return FactorialFactory(factorialInput).Result();
             })).ToArray();
 
-            Task.WaitAll(tasks);
-
+            var controlResult = GetFactorial(factorialInput);
             foreach (var task in tasks)
             {
                 (await task).ShouldBe(controlResult);
@@ -94,10 +94,12 @@ namespace NMorph.UnitTests.MorphTests
         private class FactorialTest : IFactorial
         {
             private readonly IInvocationContext<IFactorial> _src;
+            private readonly ITestOutputHelper _output;
 
-            public FactorialTest(IInvocationContext<IFactorial> src)
+            public FactorialTest(IInvocationContext<IFactorial> src, ITestOutputHelper output)
             {
                 _src = src;
+                _output = output;
             }
 
             public int Number => _src.Previous.Number;
@@ -105,6 +107,8 @@ namespace NMorph.UnitTests.MorphTests
             public int Result()
             {
                 var result = _src.Previous.Result();
+                
+                _output.WriteLine($"{Number} - {result}");
 
                 return result;
             }

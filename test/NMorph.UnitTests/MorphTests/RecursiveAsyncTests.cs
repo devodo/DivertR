@@ -8,25 +8,22 @@ namespace NMorph.UnitTests.MorphTests
 {
     public class RecursiveAsyncTests
     {
-        private readonly MorphSet _morphSet = new MorphSet();
+        private readonly Morph _morph = new Morph();
 
         [Fact]
         public async Task TestRecursiveAsync()
         {
             const int factorialInput = 10;
 
-            var controlResult = GetFactorial(factorialInput);
-            
-            IAsyncFactorial MorphFactorialFactory(int n)
+            IAsyncFactorial FactorialFactory(int n)
             {
-                return _morphSet.CreateMorph<IAsyncFactorial>(new Factorial(n, MorphFactorialFactory));
+                return _morph.Create<IAsyncFactorial>(new Factorial(n, FactorialFactory));
             }
+            
+            _morph.Alter<IAsyncFactorial>().Replace(src => new FactorialTest(src));
 
-            var morph = MorphFactorialFactory(factorialInput);
-            _morphSet.Substitute<IAsyncFactorial>(src => new FactorialTest(src));
-
-            var result = await morph.Result();
-            result.ShouldBe(controlResult);
+            var result = await FactorialFactory(factorialInput).Result();
+            result.ShouldBe(GetFactorial(factorialInput));
         }
 
         [Fact]
@@ -37,20 +34,16 @@ namespace NMorph.UnitTests.MorphTests
 
             var controlResult = GetFactorial(factorialInput);
 
-            IAsyncFactorial MorphFactorialFactory(int n)
+            IAsyncFactorial FactorialFactory(int n)
             {
-                return _morphSet.CreateMorph<IAsyncFactorial>(new Factorial(n, MorphFactorialFactory));
+                return _morph.Create<IAsyncFactorial>(new Factorial(n, FactorialFactory));
             }
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(async () =>
             {
-                var morph = MorphFactorialFactory(factorialInput);
-                _morphSet.Substitute<IAsyncFactorial>(src => new FactorialTest(src));
-
-                return await morph.Result();
+                _morph.Alter<IAsyncFactorial>().Replace(src => new FactorialTest(src));
+                return await FactorialFactory(factorialInput).Result();
             })).ToArray();
-
-            Task.WaitAll(tasks);
 
             foreach (var task in tasks)
             {

@@ -1,37 +1,36 @@
-﻿using Castle.DynamicProxy;
+﻿using System;
+using Castle.DynamicProxy;
 
 namespace NMorph
 {
     internal class MorphInterceptor<T> : IInterceptor where T : class
     {
-        private readonly AlterationStore _alterationStore;
         private readonly T _originTarget;
-        private readonly string _morphGroup;
+        private readonly Func<Alteration<T>> _getAlteration;
 
-        public MorphInterceptor(AlterationStore alterationStore, T originTarget, string morphGroup = null)
+        public MorphInterceptor(T originTarget, Func<Alteration<T>> getAlteration)
         {
-            _alterationStore = alterationStore;
             _originTarget = originTarget;
-            _morphGroup = morphGroup;
+            _getAlteration = getAlteration;
         }
 
         public void Intercept(IInvocation invocation)
         {
-            var alteration = _alterationStore.GetAlteration<T>(_morphGroup);
-            var invocationState = alteration?.CreateInvocationState(_originTarget, invocation);
-            var substitution = invocationState?.Previous();
+            var alteration = _getAlteration();
+            var substitutionState = alteration?.CreateSubstitutionState(_originTarget);
+            var substitute = substitutionState?.MoveNext(invocation);
 
-            if (substitution == null)
+            if (substitute == null)
             {
                 invocation.Proceed();
                 return;
             }
             
-            alteration.InvocationStack.Push(invocationState);
+            alteration.InvocationStack.Push(substitutionState);
 
             try
             {
-                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(substitution.Substitute);
+                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(substitute);
                 invocation.Proceed();
             }
             finally
@@ -43,7 +42,7 @@ namespace NMorph
                     throw new MorphException("Fatal error: Encountered an unexpected null invocation state");
                 }
 
-                if (!ReferenceEquals(poppedContext, invocationState))
+                if (!ReferenceEquals(poppedContext, substitutionState))
                 {
                     throw new MorphException("Fatal error: Encountered an unexpected invocation state");
                 }

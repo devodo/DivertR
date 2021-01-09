@@ -6,16 +6,16 @@ namespace NMorph
 {
     internal class InvocationStack<T> where T : class
     {
-        private readonly AsyncLocal<List<InvocationState<T>>> _invocationStack = new AsyncLocal<List<InvocationState<T>>>();
+        private readonly AsyncLocal<List<SubstitutionState<T>>> _invocationStack = new AsyncLocal<List<SubstitutionState<T>>>();
         
-        public void Push(InvocationState<T> invocationContext)
+        public void Push(SubstitutionState<T> substitutionState)
         {
-            var invocationStack = _invocationStack.Value?.ToList() ?? new List<InvocationState<T>>();
-            invocationStack.Add(invocationContext);
+            var invocationStack = _invocationStack.Value?.ToList() ?? new List<SubstitutionState<T>>();
+            invocationStack.Add(substitutionState);
             _invocationStack.Value = invocationStack;
         }
 
-        public InvocationState<T> Pop()
+        public SubstitutionState<T> Pop()
         {
             var invocationStack = _invocationStack.Value;
 
@@ -30,7 +30,7 @@ namespace NMorph
             return invocationState;
         }
 
-        public InvocationState<T> Peek()
+        public SubstitutionState<T> Peek()
         {
             var invocationStack = _invocationStack.Value;
 

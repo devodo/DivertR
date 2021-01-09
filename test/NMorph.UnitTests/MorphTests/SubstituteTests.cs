@@ -1,36 +1,41 @@
 using Shouldly;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace NMorph.UnitTests.MorphTests
 {
     public class SubstituteTests
     {
-        private readonly ITestOutputHelper _output;
-        private readonly Morph<ITestSubject> _morph = new Morph<ITestSubject>();
-
-        public SubstituteTests(ITestOutputHelper output)
-        {
-            _output = output;
-        }
+        private readonly Morph _morph = new Morph();
 
         [Fact]
         public void GivenMultipleIntercepts_ShouldChainAlteration()
         {
-            var subject = _morph.CreateSubject(new TestA("hello"));
-            _morph.Substitute(src => new SubstituteTest(" world", src));
-
-            subject.Message.ShouldBe("hello world");
+            // ARRANGE
+            var subject = _morph.Create<ITestSubject>(new TestA("hello world"));
+            
+            // ACT
+            _morph
+                .Alter<ITestSubject>()
+                .Replace(src => new SubstituteTest(" again", src));
+            
+            // ASSERT
+            subject.Message.ShouldBe("hello world again");
         }
         
         [Fact]
         public void GivenMultipleIntercepts_ShouldChainAlteration2()
         {
-            var subject = _morph.CreateSubject(new TestA("hello"));
-            _morph.Substitute(src => new SubstituteTest(" world", src));
-            _morph.Substitute(src => new SubstituteTest(" again", src));
-
-            subject.Message.ShouldBe("hello world again");
+            // ARRANGE
+            var subject = _morph.Create<ITestSubject>(new TestA("hello world"));
+            
+            // ACT
+            _morph
+                .Alter<ITestSubject>()
+                .Replace(src => new SubstituteTest(" me", src))
+                .Replace(src => new SubstituteTest(" again", src));
+            
+            // ASSERT
+            subject.Message.ShouldBe("hello world me again");
         }
     }
 

@@ -20,7 +20,7 @@
         private readonly string _message;
         private readonly IInvocationContext<ITestSubject> _invocationContext;
 
-        public SubstituteTest(string message, IInvocationContext<ITestSubject> invocationContext)
+        public SubstituteTest(string message, IInvocationContext<ITestSubject> invocationContext = null)
         {
             _message = message;
             _invocationContext = invocationContext;
