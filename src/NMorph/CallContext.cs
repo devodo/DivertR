@@ -2,14 +2,14 @@
 
 namespace NMorph
 {
-    internal class InvocationContext<T> : IInvocationContext<T> where T : class
+    internal class CallContext<T> : ICallContext<T> where T : class
     {
-        private readonly InvocationStack<T> _invocationStack;
+        internal InvocationStack<T> InvocationStack { get; }
         private readonly Lazy<T> _substituteProxy;
 
-        public InvocationContext(InvocationStack<T> invocationStack)
+        public CallContext(InvocationStack<T> invocationStack)
         {
-            _invocationStack = invocationStack;
+            InvocationStack = invocationStack;
             _substituteProxy = new Lazy<T>(() => ProxyFactory.Instance.CreateSubstitutionProxy(invocationStack));
         }
 
@@ -21,14 +21,14 @@ namespace NMorph
         {
             get
             {
-                var invocationState = _invocationStack.Peek();
+                var substitutionState = InvocationStack.Peek();
 
-                if (invocationState == null)
+                if (substitutionState == null)
                 {
                     throw new InvalidOperationException("Calls to this instance must only be made in the context of a morph invocation");
                 }
 
-                return invocationState;
+                return substitutionState;
             }
         }
     }

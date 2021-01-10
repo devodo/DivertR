@@ -18,14 +18,14 @@
     public class SubstituteTest : ITestSubject
     {
         private readonly string _message;
-        private readonly IInvocationContext<ITestSubject> _invocationContext;
+        private readonly ICallContext<ITestSubject> _callContext;
 
-        public SubstituteTest(string message, IInvocationContext<ITestSubject> invocationContext = null)
+        public SubstituteTest(string message, ICallContext<ITestSubject> callContext = null)
         {
             _message = message;
-            _invocationContext = invocationContext;
+            _callContext = callContext;
         }
 
-        public string Message => _invocationContext.Previous?.Message + _message;
+        public string Message => _callContext.Previous?.Message + _message;
     }
 }

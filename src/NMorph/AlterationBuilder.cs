@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 
 namespace NMorph
 {
@@ -13,18 +14,23 @@ namespace NMorph
             _groupName = groupName;
         }
         
-        public IAlterationBuilder<T> Replace(T substitute)
+        public IAlterationBuilder<T> Retarget(T substitute)
         {
-            _alterationStore.AddAlteration<T>(_groupName, _ => substitute);
+            _alterationStore.AddAlteration(_groupName, substitute);
+
+            return this;
+        }
+        
+        public IAlterationBuilder<T> Reset()
+        {
+            _alterationStore.Reset<T>(_groupName);
 
             return this;
         }
 
-        public IAlterationBuilder<T> Replace(Func<IInvocationContext<T>, T> getSubstitute)
+        public IConditionalBuilder<T, TReturn> When<TReturn>(Expression<Func<T, TReturn>> expression)
         {
-            _alterationStore.AddAlteration(_groupName, getSubstitute);
-
-            return this;
+            return new ConditionalBuilder<T, TReturn>(this, expression);
         }
     }
 }

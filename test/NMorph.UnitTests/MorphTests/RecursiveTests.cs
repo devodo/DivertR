@@ -27,7 +27,7 @@ namespace NMorph.UnitTests.MorphTests
                 return _morph.Create<IFactorial>(new Factorial(n, FactorialFactory));
             }
             
-            _morph.Alter<IFactorial>().Replace(src => new FactorialTest(src, _output));
+            _morph.Intercept<IFactorial>(out var callContext).Retarget(new FactorialTest(callContext, _output));
 
             var result = FactorialFactory(factorialInput).Result();
             result.ShouldBe(GetFactorial(factorialInput));
@@ -46,7 +46,7 @@ namespace NMorph.UnitTests.MorphTests
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(() =>
             {
-                _morph.Alter<IFactorial>().Replace(src => new FactorialTest(src, _output));
+                _morph.Intercept<IFactorial>(out var callContext).Retarget(new FactorialTest(callContext, _output));
 
                 return FactorialFactory(factorialInput).Result();
             })).ToArray();
@@ -93,10 +93,10 @@ namespace NMorph.UnitTests.MorphTests
 
         private class FactorialTest : IFactorial
         {
-            private readonly IInvocationContext<IFactorial> _src;
+            private readonly ICallContext<IFactorial> _src;
             private readonly ITestOutputHelper _output;
 
-            public FactorialTest(IInvocationContext<IFactorial> src, ITestOutputHelper output)
+            public FactorialTest(ICallContext<IFactorial> src, ITestOutputHelper output)
             {
                 _src = src;
                 _output = output;

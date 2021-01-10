@@ -20,7 +20,7 @@ namespace NMorph.UnitTests.MorphTests
                 return _morph.Create<IAsyncFactorial>(new Factorial(n, FactorialFactory));
             }
             
-            _morph.Alter<IAsyncFactorial>().Replace(src => new FactorialTest(src));
+            _morph.Intercept<IAsyncFactorial>(out var callContext).Retarget(new FactorialTest(callContext));
 
             var result = await FactorialFactory(factorialInput).Result();
             result.ShouldBe(GetFactorial(factorialInput));
@@ -41,7 +41,7 @@ namespace NMorph.UnitTests.MorphTests
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(async () =>
             {
-                _morph.Alter<IAsyncFactorial>().Replace(src => new FactorialTest(src));
+                _morph.Intercept<IAsyncFactorial>(out var callContext).Retarget(new FactorialTest(callContext));
                 return await FactorialFactory(factorialInput).Result();
             })).ToArray();
 
@@ -92,9 +92,9 @@ namespace NMorph.UnitTests.MorphTests
 
         private class FactorialTest : IAsyncFactorial
         {
-            private readonly IInvocationContext<IAsyncFactorial> _src;
+            private readonly ICallContext<IAsyncFactorial> _src;
 
-            public FactorialTest(IInvocationContext<IAsyncFactorial> src)
+            public FactorialTest(ICallContext<IAsyncFactorial> src)
             {
                 _src = src;
             }

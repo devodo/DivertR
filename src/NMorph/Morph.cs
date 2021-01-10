@@ -26,8 +26,14 @@ namespace NMorph
             return ProxyFactory.Instance.CreateMorphProxy(origin, GetAlteration);
         }
         
-        public IAlterationBuilder<T> Alter<T>(string groupName = null) where T : class
+        public IAlterationBuilder<T> Intercept<T>(string groupName = null) where T : class
         {
+            return new AlterationBuilder<T>(_alterationStore, groupName);
+        }
+        
+        public IAlterationBuilder<T> Intercept<T>(out ICallContext<T> callContext, string groupName = null) where T : class
+        {
+            callContext = _alterationStore.GetOrAddAlteration<T>(groupName).CallContext;
             return new AlterationBuilder<T>(_alterationStore, groupName);
         }
 

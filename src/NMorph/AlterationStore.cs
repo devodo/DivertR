@@ -8,7 +8,7 @@ namespace NMorph
         private readonly ConcurrentDictionary<MorphId, Alteration> _alterations = new ConcurrentDictionary<MorphId, Alteration>();
         private readonly ConcurrentDictionary<MorphId, object> _updateLocks = new ConcurrentDictionary<MorphId, object>();
 
-        public Alteration<T> AddAlteration<T>(string groupName, Func<IInvocationContext<T>, T> getSubstitute) where T : class
+        public Alteration<T> AddAlteration<T>(string groupName, T substitute, IInvocationCondition<T> invocationCondition = null) where T : class
         {
             if (!typeof(T).IsInterface)
             {
@@ -18,17 +18,14 @@ namespace NMorph
             Alteration Create(MorphId _)
             {
                 var invocationStack = new InvocationStack<T>();
-                var source = new InvocationContext<T>(invocationStack);
-                var substitute = getSubstitute(source);
-                return new Alteration<T>(new Substitution<T>(substitute), invocationStack);
+                var callContext = new CallContext<T>(invocationStack);
+                return new Alteration<T>(new Substitution<T>(substitute, invocationCondition), callContext);
             }
 
             Alteration Update(MorphId _, Alteration existingAlteration)
             {
                 var alteration = (Alteration<T>) existingAlteration;
-                var source = new InvocationContext<T>(alteration.InvocationStack);
-                var substitute = getSubstitute(source);
-                return alteration.Append(new Substitution<T>(substitute));
+                return alteration.Append(new Substitution<T>(substitute, invocationCondition));
             }
 
             var morphGroup = MorphId.From<T>(groupName);
@@ -48,6 +45,18 @@ namespace NMorph
             }
 
             return null;
+        }
+        
+        public Alteration<T> GetOrAddAlteration<T>(string groupName) where T : class
+        {
+            var alteration = _alterations.GetOrAdd(MorphId.From<T>(groupName), id =>
+            {
+                var invocationStack = new InvocationStack<T>();
+                var callContext = new CallContext<T>(invocationStack);
+                return new Alteration<T>(callContext);
+            });
+
+            return (Alteration<T>) alteration;
         }
 
         public bool Reset<T>(string groupName = null)

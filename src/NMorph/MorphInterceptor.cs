@@ -26,7 +26,7 @@ namespace NMorph
                 return;
             }
             
-            alteration.InvocationStack.Push(substitutionState);
+            alteration.CallContext.InvocationStack.Push(substitutionState);
 
             try
             {
@@ -35,7 +35,7 @@ namespace NMorph
             }
             finally
             {
-                var poppedContext = alteration.InvocationStack.Pop();
+                var poppedContext = alteration.CallContext.InvocationStack.Pop();
                 
                 if (poppedContext == null)
                 {
