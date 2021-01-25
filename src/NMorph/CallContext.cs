@@ -10,7 +10,7 @@ namespace NMorph
         public CallContext(InvocationStack<T> invocationStack)
         {
             InvocationStack = invocationStack;
-            _substituteProxy = new Lazy<T>(() => ProxyFactory.Instance.CreateSubstitutionProxy(invocationStack));
+            _substituteProxy = new Lazy<T>(() => ProxyFactory.Instance.CreateRedirectProxy(invocationStack));
         }
 
         public T Previous => _substituteProxy.Value;

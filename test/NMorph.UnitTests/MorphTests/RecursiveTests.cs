@@ -10,7 +10,7 @@ namespace NMorph.UnitTests.MorphTests
     public class RecursiveTests
     {
         private readonly ITestOutputHelper _output;
-        private readonly Morph _morph = new Morph();
+        private readonly Divertr _divertr = new Divertr();
 
         public RecursiveTests(ITestOutputHelper output)
         {
@@ -24,10 +24,10 @@ namespace NMorph.UnitTests.MorphTests
 
             IFactorial FactorialFactory(int n)
             {
-                return _morph.Create<IFactorial>(new Factorial(n, FactorialFactory));
+                return _divertr.Proxy<IFactorial>(new Factorial(n, FactorialFactory));
             }
             
-            _morph.Intercept<IFactorial>(out var callContext).Retarget(new FactorialTest(callContext, _output));
+            _divertr.Redirect<IFactorial>(d => d.SendTo(new FactorialTest(d.CallContext, _output)));
 
             var result = FactorialFactory(factorialInput).Result();
             result.ShouldBe(GetFactorial(factorialInput));
@@ -41,12 +41,12 @@ namespace NMorph.UnitTests.MorphTests
 
             IFactorial FactorialFactory(int n)
             {
-                return _morph.Create<IFactorial>(new Factorial(n, FactorialFactory));
+                return _divertr.Proxy<IFactorial>(new Factorial(n, FactorialFactory));
             }
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(() =>
             {
-                _morph.Intercept<IFactorial>(out var callContext).Retarget(new FactorialTest(callContext, _output));
+                _divertr.Redirect<IFactorial>(d => d.SendTo(new FactorialTest(d.CallContext, _output)));
 
                 return FactorialFactory(factorialInput).Result();
             })).ToArray();

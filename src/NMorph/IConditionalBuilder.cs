@@ -2,8 +2,8 @@
 {
     public interface IConditionalBuilder<T, TReturn> where T : class
     {
-        IAlterationBuilder<T> Retarget(T substitute);
+        IDiversionBuilder<T> SendTo(T substitute);
 
-        IAlterationBuilder<T> Return(TReturn value);
+        IDiversionBuilder<T> Return(TReturn value);
     }
 }

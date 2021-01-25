@@ -3,12 +3,12 @@ using Castle.DynamicProxy;
 
 namespace NMorph
 {
-    internal class MorphInterceptor<T> : IInterceptor where T : class
+    internal class DiversionInterceptor<T> : IInterceptor where T : class
     {
         private readonly T _originTarget;
-        private readonly Func<Alteration<T>> _getAlteration;
+        private readonly Func<Diversion<T>> _getAlteration;
 
-        public MorphInterceptor(T originTarget, Func<Alteration<T>> getAlteration)
+        public DiversionInterceptor(T originTarget, Func<Diversion<T>> getAlteration)
         {
             _originTarget = originTarget;
             _getAlteration = getAlteration;
@@ -39,12 +39,12 @@ namespace NMorph
                 
                 if (poppedContext == null)
                 {
-                    throw new MorphException("Fatal error: Encountered an unexpected null invocation state");
+                    throw new DivertrException("Fatal error: Encountered an unexpected null invocation state");
                 }
 
                 if (!ReferenceEquals(poppedContext, substitutionState))
                 {
-                    throw new MorphException("Fatal error: Encountered an unexpected invocation state");
+                    throw new DivertrException("Fatal error: Encountered an unexpected invocation state");
                 }
             }
             

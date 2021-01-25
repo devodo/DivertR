@@ -8,7 +8,7 @@ namespace NMorph.UnitTests.MorphTests
 {
     public class RecursiveAsyncTests
     {
-        private readonly Morph _morph = new Morph();
+        private readonly Divertr _divertr = new Divertr();
 
         [Fact]
         public async Task TestRecursiveAsync()
@@ -17,10 +17,10 @@ namespace NMorph.UnitTests.MorphTests
 
             IAsyncFactorial FactorialFactory(int n)
             {
-                return _morph.Create<IAsyncFactorial>(new Factorial(n, FactorialFactory));
+                return _divertr.Proxy<IAsyncFactorial>(new Factorial(n, FactorialFactory));
             }
             
-            _morph.Intercept<IAsyncFactorial>(out var callContext).Retarget(new FactorialTest(callContext));
+            _divertr.Redirect<IAsyncFactorial>(d => d.SendTo(new FactorialTest(d.CallContext)));
 
             var result = await FactorialFactory(factorialInput).Result();
             result.ShouldBe(GetFactorial(factorialInput));
@@ -36,12 +36,12 @@ namespace NMorph.UnitTests.MorphTests
 
             IAsyncFactorial FactorialFactory(int n)
             {
-                return _morph.Create<IAsyncFactorial>(new Factorial(n, FactorialFactory));
+                return _divertr.Proxy<IAsyncFactorial>(new Factorial(n, FactorialFactory));
             }
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(async () =>
             {
-                _morph.Intercept<IAsyncFactorial>(out var callContext).Retarget(new FactorialTest(callContext));
+                _divertr.Redirect<IAsyncFactorial>(d => d.SendTo(new FactorialTest(d.CallContext)));
                 return await FactorialFactory(factorialInput).Result();
             })).ToArray();
 

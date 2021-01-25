@@ -9,25 +9,25 @@ namespace NMorph
         
         private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
         
-        public T CreateMorphProxy<T>(T origin, Func<Alteration<T>> getAlteration) where T : class
+        public T CreateInstanceProxy<T>(T origin, Func<Diversion<T>> getAlteration) where T : class
         {
             if (!typeof(T).IsInterface)
             {
                 throw new ArgumentException("Only interface types are supported", typeof(T).Name);
             }
 
-            var interceptor = new MorphInterceptor<T>(origin, getAlteration);
+            var interceptor = new DiversionInterceptor<T>(origin, getAlteration);
             return _proxyGenerator.CreateInterfaceProxyWithTargetInterface(origin, interceptor);
         }
         
-        public T CreateSubstitutionProxy<T>(InvocationStack<T> invocationStack) where T : class
+        public T CreateRedirectProxy<T>(InvocationStack<T> invocationStack) where T : class
         {
             if (!typeof(T).IsInterface)
             {
                 throw new ArgumentException("Only interface types are supported", typeof(T).Name);
             }
 
-            var interceptor = new SubstitutionInterceptor<T>(invocationStack);
+            var interceptor = new RedirectInterceptor<T>(invocationStack);
             return _proxyGenerator.CreateInterfaceProxyWithTargetInterface<T>(null, interceptor);
         }
     }

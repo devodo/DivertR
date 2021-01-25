@@ -3,11 +3,11 @@ using Castle.DynamicProxy;
 
 namespace NMorph
 {
-    internal class SubstitutionInterceptor<T> : IInterceptor where T : class
+    internal class RedirectInterceptor<T> : IInterceptor where T : class
     {
         private readonly InvocationStack<T> _invocationStack;
 
-        public SubstitutionInterceptor(InvocationStack<T> invocationStack)
+        public RedirectInterceptor(InvocationStack<T> invocationStack)
         {
             _invocationStack = invocationStack;
         }

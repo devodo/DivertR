@@ -2,25 +2,25 @@
 
 namespace NMorph
 {
-    internal readonly struct MorphId : IEquatable<MorphId>
+    internal readonly struct DiversionId : IEquatable<DiversionId>
     {
         public Type Type { get; }
         public string Name { get; }
 
-        public MorphId(Type type, string name)
+        public DiversionId(Type type, string name)
         {
             Type = type;
             Name = name;
         }
 
-        public bool Equals(MorphId other)
+        public bool Equals(DiversionId other)
         {
             return ReferenceEquals(Type, other.Type) && Name == other.Name;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is MorphId other && Equals(other);
+            return obj is DiversionId other && Equals(other);
         }
 
         public override int GetHashCode()
@@ -28,14 +28,14 @@ namespace NMorph
             return HashCode.Combine(Type, Name);
         }
 
-        public static MorphId From(Type type, string name)
+        public static DiversionId From(Type type, string name)
         {
-            return new MorphId(type, name);
+            return new DiversionId(type, name);
         }
 
-        public static MorphId From<T>(string name)
+        public static DiversionId From<T>(string name)
         {
-            return new MorphId(typeof(T), name);
+            return new DiversionId(typeof(T), name);
         }
     }
 }
