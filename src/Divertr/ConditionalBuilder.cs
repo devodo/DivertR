@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace NMorph
+namespace Divertr
 {
     internal class ConditionalBuilder<T, TReturn> : IConditionalBuilder<T, TReturn> where T : class
     {

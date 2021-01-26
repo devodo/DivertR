@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using Shouldly;
 using Xunit;
 
-namespace NMorph.UnitTests.MorphTests
+namespace Divertr.UnitTests
 {
     public class RecursiveAsyncTests
     {
-        private readonly Divertr _divertr = new Divertr();
+        private readonly IDiverter<IAsyncFactorial> _diverter = new Diverter().Of<IAsyncFactorial>();
 
         [Fact]
         public async Task TestRecursiveAsync()
@@ -17,10 +17,10 @@ namespace NMorph.UnitTests.MorphTests
 
             IAsyncFactorial FactorialFactory(int n)
             {
-                return _divertr.Proxy<IAsyncFactorial>(new Factorial(n, FactorialFactory));
+                return _diverter.Proxy(new Factorial(n, FactorialFactory));
             }
-            
-            _divertr.Redirect<IAsyncFactorial>(d => d.SendTo(new FactorialTest(d.CallContext)));
+
+            _diverter.AddRedirect(new FactorialTest(_diverter.CallContext));
 
             var result = await FactorialFactory(factorialInput).Result();
             result.ShouldBe(GetFactorial(factorialInput));
@@ -36,12 +36,12 @@ namespace NMorph.UnitTests.MorphTests
 
             IAsyncFactorial FactorialFactory(int n)
             {
-                return _divertr.Proxy<IAsyncFactorial>(new Factorial(n, FactorialFactory));
+                return _diverter.Proxy(new Factorial(n, FactorialFactory));
             }
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(async () =>
             {
-                _divertr.Redirect<IAsyncFactorial>(d => d.SendTo(new FactorialTest(d.CallContext)));
+                _diverter.AddRedirect(new FactorialTest(_diverter.CallContext));
                 return await FactorialFactory(factorialInput).Result();
             })).ToArray();
 
@@ -99,11 +99,11 @@ namespace NMorph.UnitTests.MorphTests
                 _src = src;
             }
 
-            public int Number => _src.Previous.Number;
+            public int Number => _src.Replaced.Number;
 
             public async Task<int> Result()
             {
-                var result = await _src.Previous.Result();
+                var result = await _src.Replaced.Result();
 
                 return result;
             }

@@ -1,6 +1,6 @@
 ﻿using Castle.DynamicProxy;
 
-namespace NMorph
+namespace Divertr
 {
     public interface IInvocationCondition<T> where T : class
     {

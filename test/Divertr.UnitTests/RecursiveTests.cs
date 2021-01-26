@@ -5,12 +5,12 @@ using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NMorph.UnitTests.MorphTests
+namespace Divertr.UnitTests
 {
     public class RecursiveTests
     {
         private readonly ITestOutputHelper _output;
-        private readonly Divertr _divertr = new Divertr();
+        private readonly IDiverter<IFactorial> _diverter = new Diverter<IFactorial>();
 
         public RecursiveTests(ITestOutputHelper output)
         {
@@ -24,10 +24,10 @@ namespace NMorph.UnitTests.MorphTests
 
             IFactorial FactorialFactory(int n)
             {
-                return _divertr.Proxy<IFactorial>(new Factorial(n, FactorialFactory));
+                return _diverter.Proxy(new Factorial(n, FactorialFactory));
             }
             
-            _divertr.Redirect<IFactorial>(d => d.SendTo(new FactorialTest(d.CallContext, _output)));
+            _diverter.AddRedirect(new FactorialTest(_diverter.CallContext, _output));
 
             var result = FactorialFactory(factorialInput).Result();
             result.ShouldBe(GetFactorial(factorialInput));
@@ -41,12 +41,12 @@ namespace NMorph.UnitTests.MorphTests
 
             IFactorial FactorialFactory(int n)
             {
-                return _divertr.Proxy<IFactorial>(new Factorial(n, FactorialFactory));
+                return _diverter.Proxy(new Factorial(n, FactorialFactory));
             }
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(() =>
             {
-                _divertr.Redirect<IFactorial>(d => d.SendTo(new FactorialTest(d.CallContext, _output)));
+                _diverter.AddRedirect(new FactorialTest(_diverter.CallContext, _output));
 
                 return FactorialFactory(factorialInput).Result();
             })).ToArray();
@@ -102,11 +102,11 @@ namespace NMorph.UnitTests.MorphTests
                 _output = output;
             }
 
-            public int Number => _src.Previous.Number;
+            public int Number => _src.Replaced.Number;
 
             public int Result()
             {
-                var result = _src.Previous.Result();
+                var result = _src.Replaced.Result();
                 
                 _output.WriteLine($"{Number} - {result}");
 

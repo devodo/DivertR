@@ -1,4 +1,4 @@
-﻿namespace NMorph
+﻿namespace Divertr
 {
     public interface IConditionalBuilder<T, TReturn> where T : class
     {

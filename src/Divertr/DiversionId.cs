@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NMorph
+namespace Divertr
 {
     internal readonly struct DiversionId : IEquatable<DiversionId>
     {

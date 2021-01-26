@@ -1,28 +1,28 @@
 ﻿using System;
 using Castle.DynamicProxy;
 
-namespace NMorph
+namespace Divertr
 {
     internal class ReturnValueInterceptor<T> : IInterceptor where T : class
     {
-        private readonly InvocationStack<T> _invocationStack;
+        private readonly CallContext<T> _callContext;
         private readonly IInvocationCondition<T> _invocationCondition;
         private readonly object _returnValue;
 
-        public ReturnValueInterceptor(InvocationStack<T> invocationStack, IInvocationCondition<T> invocationCondition, object returnValue)
+        public ReturnValueInterceptor(CallContext<T> callContext, IInvocationCondition<T> invocationCondition, object returnValue)
         {
-            _invocationStack = invocationStack;
+            _callContext = callContext;
             _invocationCondition = invocationCondition;
             _returnValue = returnValue;
         }
 
         public void Intercept(IInvocation invocation)
         {
-            var substitutionState = _invocationStack.Peek();
+            var substitutionState = _callContext.Peek();
             
             if (substitutionState == null)
             {
-                throw new InvalidOperationException("Calls to this instance must only be made in the context of a morph invocation");
+                throw new InvalidOperationException("This instance may only be accessed in the context of a Diverter Proxy call");
             }
 
             if (_invocationCondition.IsMatch(invocation))

@@ -3,15 +3,15 @@ using System.Linq;
 using System.Threading;
 using Castle.DynamicProxy;
 
-namespace NMorph
+namespace Divertr
 {
-    internal class SubstitutionState<T> where T : class
+    internal class RedirectionContext<T> where T : class
     {
         private readonly AsyncLocal<List<int>> _indexStack = new AsyncLocal<List<int>>();
         public T Origin { get; }
-        private readonly List<Substitution<T>> _substitutions;
+        private readonly List<Redirection<T>> _substitutions;
 
-        public SubstitutionState(T origin, List<Substitution<T>> substitutions)
+        public RedirectionContext(T origin, List<Redirection<T>> substitutions)
         {
             _substitutions = substitutions;
             Origin = origin;
@@ -33,7 +33,7 @@ namespace NMorph
             {
                 if (_substitutions[i].IsMatch(invocation))
                 {
-                    substitute = _substitutions[i].Substitute;
+                    substitute = _substitutions[i].RedirectTarget;
                     break;
                 }
             }

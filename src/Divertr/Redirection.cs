@@ -1,16 +1,16 @@
 ﻿using Castle.DynamicProxy;
 
-namespace NMorph
+namespace Divertr
 {
-    internal class Substitution<T> where T : class
+    internal class Redirection<T> where T : class
     {
         private readonly IInvocationCondition<T> _invocationCondition;
-        public T Substitute { get; }
+        public T RedirectTarget { get; }
 
-        public Substitution(T substitute, IInvocationCondition<T> invocationCondition)
+        public Redirection(T redirectTarget, IInvocationCondition<T> invocationCondition = null)
         {
             _invocationCondition = invocationCondition;
-            Substitute = substitute;
+            RedirectTarget = redirectTarget;
         }
 
         public bool IsMatch(IInvocation invocation)

@@ -1,4 +1,4 @@
-﻿namespace NMorph.UnitTests.MorphTests
+﻿namespace Divertr.UnitTests
 {
     public interface ITestSubject
     {
@@ -26,6 +26,6 @@
             _callContext = callContext;
         }
 
-        public string Message => _callContext.Previous?.Message + _message;
+        public string Message => _callContext.Replaced?.Message + _message;
     }
 }
