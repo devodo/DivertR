@@ -8,14 +8,14 @@ namespace Divertr
         private readonly DiversionStore _diversionStore = new DiversionStore();
         private readonly ConcurrentDictionary<DiversionId, object> _diverters = new ConcurrentDictionary<DiversionId, object>();
 
-        public IDiverter<T> Of<T>(string groupName = null) where T : class
+        public IDiverter<T> Of<T>(string name = null) where T : class
         {
             if (!typeof(T).IsInterface)
             {
                 throw new ArgumentException("Only interface types are supported", typeof(T).Name);
             }
 
-            return (IDiverter<T>) _diverters.GetOrAdd(DiversionId.From<T>(groupName),
+            return (IDiverter<T>) _diverters.GetOrAdd(DiversionId.From<T>(name),
                 id => new Diverter<T>(id, _diversionStore, new CallContext<T>()));
         }
 
@@ -31,7 +31,7 @@ namespace Divertr
         private readonly DiversionStore _diversionStore;
         private readonly CallContext<T> _callContext;
 
-        public Diverter(string groupName = null) : this(DiversionId.From<T>(groupName), new DiversionStore(), new CallContext<T>())
+        public Diverter() : this(DiversionId.From<T>(), new DiversionStore(), new CallContext<T>())
         {
         }
 

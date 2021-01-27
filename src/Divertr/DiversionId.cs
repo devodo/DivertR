@@ -28,12 +28,12 @@ namespace Divertr
             return HashCode.Combine(Type, Name);
         }
 
-        public static DiversionId From(Type type, string name)
+        public static DiversionId From(Type type, string name = null)
         {
             return new DiversionId(type, name);
         }
 
-        public static DiversionId From<T>(string name)
+        public static DiversionId From<T>(string name = null)
         {
             return new DiversionId(typeof(T), name);
         }
