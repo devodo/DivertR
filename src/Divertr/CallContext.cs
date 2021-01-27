@@ -24,7 +24,7 @@ namespace Divertr
 
                 if (redirectionContext == null)
                 {
-                    throw new InvalidOperationException("This instance may only be accessed in the context of a Diverter Proxy call");
+                    throw new InvalidOperationException("Original instance may only be accessed within the context of a Diverter Proxy call");
                 }
 
                 return redirectionContext.Origin;

@@ -18,10 +18,14 @@ namespace Divertr
         {
             var diversion = _getDiversion();
             var redirectionContext = diversion?.CreateRedirectionContext(_originTarget);
-            var substitute = redirectionContext?.MoveNext(invocation);
 
-            if (substitute == null)
+            if (redirectionContext == null || !redirectionContext.MoveNext(invocation, out var redirect))
             {
+                if (_originTarget == null)
+                {
+                    throw new DiverterException("Origin reference not set to an instance of an object.");
+                }
+
                 invocation.Proceed();
                 return;
             }
@@ -30,7 +34,7 @@ namespace Divertr
 
             try
             {
-                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(substitute);
+                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect);
                 invocation.Proceed();
             }
             finally

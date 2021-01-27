@@ -14,31 +14,36 @@ namespace Divertr
 
         public void Intercept(IInvocation invocation)
         {
-            var substitutionState = _callContext.Peek();
+            var redirectionContext = _callContext.Peek();
             
-            if (substitutionState == null)
+            if (redirectionContext == null)
             {
-                throw new InvalidOperationException("This instance may only be accessed in the context of a Diverter Proxy call");
+                throw new InvalidOperationException("Replaced instances may only be accessed within the context of a Diverter Proxy call");
             }
-            
-            var substitute = substitutionState.MoveNext(invocation) ?? substitutionState.Origin;
 
-            if (substitute == null)
+            if (redirectionContext.MoveNext(invocation, out var redirect))
             {
-                invocation.Proceed();
+                try
+                {
+                    ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirect);
+
+                    if (redirect == null)
+                    {
+                        throw new DiverterException("Redirect reference not set to an instance of an object.");
+                    }
+
+                    invocation.Proceed();
+                }
+                finally
+                {
+                    redirectionContext.MoveBack();
+                }
+
                 return;
             }
 
-            try
-            {
-                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(substitute);
-                invocation.Proceed();
-            }
-            finally
-            {
-                substitutionState.MoveBack();
-            }
-            
+            ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectionContext.Origin);
+            invocation.Proceed();
         }
     }
 }

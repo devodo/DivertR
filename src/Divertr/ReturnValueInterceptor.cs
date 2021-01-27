@@ -29,24 +29,6 @@ namespace Divertr
             {
                 invocation.ReturnValue = _returnValue;
             }
-            
-            var substitute = substitutionState.MoveNext(invocation) ?? substitutionState.Origin;
-
-            if (substitute == null)
-            {
-                invocation.Proceed();
-                return;
-            }
-
-            try
-            {
-                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(substitute);
-                invocation.Proceed();
-            }
-            finally
-            {
-                substitutionState.MoveBack();
-            }
         }
     }
 }

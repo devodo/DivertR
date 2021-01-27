@@ -9,38 +9,47 @@ namespace Divertr
     {
         private readonly AsyncLocal<List<int>> _indexStack = new AsyncLocal<List<int>>();
         public T Origin { get; }
-        private readonly List<Redirection<T>> _substitutions;
+        private readonly List<Redirection<T>> _redirections;
 
-        public RedirectionContext(T origin, List<Redirection<T>> substitutions)
+        public RedirectionContext(T origin, List<Redirection<T>> redirections)
         {
-            _substitutions = substitutions;
+            _redirections = redirections;
             Origin = origin;
         }
 
-        public T MoveNext(IInvocation invocation)
+        public bool MoveNext(IInvocation invocation, out T redirect)
         {
-            T substitute = null;
-            
             var indexStack = _indexStack.Value;
             var i = indexStack?.LastOrDefault() ?? 0;
 
-            if (i >= _substitutions.Count)
+            if (i >= _redirections.Count)
             {
-                return Origin;
+                redirect = null;
+                return false;
             }
-            
-            for (; i < _substitutions.Count; i++)
+
+            bool matched = false;
+            T matchedRedirect = null;
+            for (; i < _redirections.Count; i++)
             {
-                if (_substitutions[i].IsMatch(invocation))
+                if (_redirections[i].IsMatch(invocation))
                 {
-                    substitute = _substitutions[i].RedirectTarget;
+                    matched = true;
+                    matchedRedirect = _redirections[i].RedirectTarget;
                     break;
                 }
             }
 
             _indexStack.Value = (indexStack ?? new List<int>()).Append(i + 1).ToList();
 
-            return substitute;
+            if (!matched)
+            {
+                redirect = null;
+                return false;
+            }
+
+            redirect = matchedRedirect;
+            return true;
         }
 
         public void MoveBack()
