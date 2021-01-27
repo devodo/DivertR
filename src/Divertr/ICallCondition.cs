@@ -2,7 +2,7 @@
 
 namespace Divertr
 {
-    public interface IInvocationCondition<T> where T : class
+    public interface ICallCondition<T> where T : class
     {
         bool IsMatch(IInvocation invocation);
     }

@@ -1,5 +1,15 @@
 ﻿namespace Divertr.UnitTests
 {
+    public interface IFoo
+    {
+        string Message { get; }
+    }
+
+    public class Foo : IFoo
+    {
+        public string Message { get; set; }
+    }
+
     public interface ITestSubject
     {
         string Message { get; }

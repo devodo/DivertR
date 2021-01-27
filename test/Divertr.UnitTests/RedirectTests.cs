@@ -1,3 +1,4 @@
+using System;
 using Moq;
 using Shouldly;
 using Xunit;
@@ -29,13 +30,40 @@ namespace Divertr.UnitTests
             var original = new TestA("hello");
             var diverter = _diverter.Of<ITestSubject>();
             var subject = diverter.Proxy(original);
-            diverter.AddRedirect(new SubstituteTest(" world", diverter.CallContext));
+            diverter.Redirect(new SubstituteTest(" world", diverter.CallContext));
 
             // ACT
             var message = subject.Message;
 
             // ASSERT
             message.ShouldBe("hello world");
+        }
+        
+        [Fact]
+        public void Docs()
+        {
+            // ARRANGE
+            var diverter = new Diverter<IFoo>();
+            
+            var fooA = diverter.Proxy(new Foo {Message = "foo A"});
+            var fooB = diverter.Proxy(new Foo { Message = "foo B" });
+
+            var mock = new Mock<IFoo>();
+            mock
+                .Setup(x => x.Message)
+                .Returns(() => $"Hello {diverter.CallContext.Replaced.Message}");
+
+            diverter.Redirect(mock.Object);
+
+            Console.WriteLine(fooA.Message); // "Hello foo A"
+            Console.WriteLine(fooB.Message); // "Hello foo B"
+
+            // ACT
+            var message = fooB.Message;
+
+            // ASSERT
+            fooA.Message.ShouldBe("Hello foo A");
+            message.ShouldBe("Hello foo B");
         }
         
         [Fact]

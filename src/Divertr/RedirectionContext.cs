@@ -19,8 +19,8 @@ namespace Divertr
 
         public bool MoveNext(IInvocation invocation, out T redirect)
         {
-            var indexStack = _indexStack.Value;
-            var i = indexStack?.LastOrDefault() ?? 0;
+            var indexStack = _indexStack.Value ?? new List<int>();
+            var i = indexStack.LastOrDefault();
 
             if (i >= _redirections.Count)
             {
@@ -35,21 +35,15 @@ namespace Divertr
                 if (_redirections[i].IsMatch(invocation))
                 {
                     matched = true;
-                    matchedRedirect = _redirections[i].RedirectTarget;
+                    matchedRedirect = _redirections[i].Redirect;
                     break;
                 }
             }
-
-            _indexStack.Value = (indexStack ?? new List<int>()).Append(i + 1).ToList();
-
-            if (!matched)
-            {
-                redirect = null;
-                return false;
-            }
+            
+            _indexStack.Value = indexStack.Append(i + 1).ToList();
 
             redirect = matchedRedirect;
-            return true;
+            return matched;
         }
 
         public void MoveBack()

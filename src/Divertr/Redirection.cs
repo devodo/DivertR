@@ -4,18 +4,18 @@ namespace Divertr
 {
     internal class Redirection<T> where T : class
     {
-        private readonly IInvocationCondition<T> _invocationCondition;
-        public T RedirectTarget { get; }
+        private readonly ICallCondition<T> _callCondition;
+        public T Redirect { get; }
 
-        public Redirection(T redirectTarget, IInvocationCondition<T> invocationCondition = null)
+        public Redirection(T redirect, ICallCondition<T> callCondition = null)
         {
-            _invocationCondition = invocationCondition;
-            RedirectTarget = redirectTarget;
+            _callCondition = callCondition;
+            Redirect = redirect;
         }
 
         public bool IsMatch(IInvocation invocation)
         {
-            return _invocationCondition?.IsMatch(invocation) ?? true;
+            return _callCondition?.IsMatch(invocation) ?? true;
         }
     }
 }

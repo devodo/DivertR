@@ -8,13 +8,14 @@ namespace Divertr
     internal class CallContext<T> : ICallContext<T> where T : class
     {
         private readonly AsyncLocal<List<RedirectionContext<T>>> _callStack = new AsyncLocal<List<RedirectionContext<T>>>();
+        private readonly Lazy<T> _replaced;
 
         public CallContext()
         {
-            Replaced = ProxyFactory.Instance.CreateRedirectProxy(this);
+            _replaced = new Lazy<T>(() => ProxyFactory.Instance.CreateRedirectProxy(this));
         }
 
-        public T Replaced { get; }
+        public T Replaced => _replaced.Value;
 
         public T Original
         {

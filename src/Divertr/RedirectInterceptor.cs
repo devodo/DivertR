@@ -25,13 +25,12 @@ namespace Divertr
             {
                 try
                 {
-                    ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirect);
-
                     if (redirect == null)
                     {
                         throw new DiverterException("Redirect reference not set to an instance of an object.");
                     }
-
+                    
+                    ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirect);
                     invocation.Proceed();
                 }
                 finally
