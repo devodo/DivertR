@@ -1,6 +1,11 @@
 ﻿namespace Divertr
 {
-    public interface IDiverter<T> where T : class
+    public interface IDiverter
+    {
+        object Proxy(object origin);
+    }
+    
+    public interface IDiverter<T> : IDiverter where T : class
     {
         ICallContext<T> CallContext { get; }
         T Proxy(T origin = null);

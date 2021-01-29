@@ -178,7 +178,7 @@ namespace Divertr.UnitTests
             // ACT
             diverter.AddRedirect(new SubstituteTest(" me", diverter.CallContext));
             diverter.AddRedirect(new SubstituteTest(" again", diverter.CallContext));
-            _diverter.Reset();
+            _diverter.ResetAll();
 
 
             // ASSERT

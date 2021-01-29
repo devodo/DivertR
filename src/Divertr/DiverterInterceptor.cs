@@ -5,23 +5,23 @@ namespace Divertr
 {
     internal class DiversionInterceptor<T> : IInterceptor where T : class
     {
-        private readonly T _originTarget;
+        private readonly T _origin;
         private readonly Func<Diversion<T>> _getDiversion;
 
-        public DiversionInterceptor(T originTarget, Func<Diversion<T>> getDiversion)
+        public DiversionInterceptor(T origin, Func<Diversion<T>> getDiversion)
         {
-            _originTarget = originTarget;
+            _origin = origin;
             _getDiversion = getDiversion;
         }
 
         public void Intercept(IInvocation invocation)
         {
             var diversion = _getDiversion();
-            var redirectionContext = diversion?.CreateRedirectionContext(_originTarget);
 
-            if (redirectionContext == null || !redirectionContext.MoveNext(invocation, out var redirect))
+            if (diversion == null ||
+                !diversion.TryBeginRedirectCallContext(_origin, invocation, out T redirect))
             {
-                if (_originTarget == null)
+                if (_origin == null)
                 {
                     throw new DiverterException("Origin reference not set to an instance of an object.");
                 }
@@ -29,8 +29,6 @@ namespace Divertr
                 invocation.Proceed();
                 return;
             }
-            
-            diversion.CallContext.Push(redirectionContext);
 
             try
             {
@@ -39,19 +37,8 @@ namespace Divertr
             }
             finally
             {
-                var poppedContext = diversion.CallContext.Pop();
-                
-                if (poppedContext == null)
-                {
-                    throw new DiverterException("Fatal error: Encountered an unexpected null redirection context");
-                }
-
-                if (!ReferenceEquals(poppedContext, redirectionContext))
-                {
-                    throw new DiverterException("Fatal error: Encountered an unexpected redirection context");
-                }
+                diversion.CloseRedirectCallContext(invocation);
             }
-            
         }
     }
 }

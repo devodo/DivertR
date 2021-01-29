@@ -40,6 +40,11 @@ namespace Divertr
 
                 return;
             }
+            
+            if (redirectionContext.Origin == null)
+            {
+                throw new DiverterException("Origin reference not set to an instance of an object.");
+            }
 
             ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectionContext.Origin);
             invocation.Proceed();

@@ -9,12 +9,14 @@ namespace Divertr
     {
         private readonly AsyncLocal<List<int>> _indexStack = new AsyncLocal<List<int>>();
         public T Origin { get; }
+        public IInvocation RootInvocation { get; }
         private readonly List<Redirection<T>> _redirections;
 
-        public RedirectionContext(T origin, List<Redirection<T>> redirections)
+        public RedirectionContext(T origin, List<Redirection<T>> redirections, IInvocation rootInvocation)
         {
             _redirections = redirections;
             Origin = origin;
+            RootInvocation = rootInvocation;
         }
 
         public bool MoveNext(IInvocation invocation, out T redirect)

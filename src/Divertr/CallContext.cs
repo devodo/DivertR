@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
@@ -8,30 +7,16 @@ namespace Divertr
     internal class CallContext<T> : ICallContext<T> where T : class
     {
         private readonly AsyncLocal<List<RedirectionContext<T>>> _callStack = new AsyncLocal<List<RedirectionContext<T>>>();
-        private readonly Lazy<T> _replaced;
+        public T Replaced { get; }
+        
+        public T Original { get; }
 
         public CallContext()
         {
-            _replaced = new Lazy<T>(() => ProxyFactory.Instance.CreateRedirectProxy(this));
+            Replaced =  ProxyFactory.Instance.CreateRedirectProxy(this);
+            Original = ProxyFactory.Instance.CreateOriginProxy(this);
         }
-
-        public T Replaced => _replaced.Value;
-
-        public T Original
-        {
-            get
-            {
-                var redirectionContext = Peek();
-
-                if (redirectionContext == null)
-                {
-                    throw new InvalidOperationException("Original instance may only be accessed within the context of a Diverter Proxy call");
-                }
-
-                return redirectionContext.Origin;
-            }
-        }
-
+        
         public void Push(RedirectionContext<T> redirectionContext)
         {
             var invocationStack = _callStack.Value?.ToList() ?? new List<RedirectionContext<T>>();
