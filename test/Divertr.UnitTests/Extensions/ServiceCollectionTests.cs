@@ -31,7 +31,7 @@ namespace Divertr.UnitTests.Extensions
         public void ShouldInjectDiverter()
         {
             var diverter = _diverterSet.Get<IFoo>();
-            _services.AddSingleton<IFoo>(new Foo {Message = "Original"});
+            _services.AddTransient<IFoo>(_ => new Foo {Message = "Original"});
             _services.Divert(diverter);
 
             var provider = _services.BuildServiceProvider();
@@ -41,7 +41,15 @@ namespace Divertr.UnitTests.Extensions
             mock.Setup(x => x.Message).Returns("Diverted");
             diverter.Redirect(mock.Object);
             
+            var foo2 = provider.GetRequiredService<IFoo>();
+            
             foo.Message.ShouldBe("Diverted");
+            foo2.Message.ShouldBe("Diverted");
+            
+            _diverterSet.ResetAll();
+            
+            foo.Message.ShouldBe("Original");
+            foo2.Message.ShouldBe("Original");
         }
     }
 }
