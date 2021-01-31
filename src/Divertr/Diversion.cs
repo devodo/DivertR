@@ -7,35 +7,35 @@ namespace Divertr
     internal class Diversion<T> where T : class
     {
         private readonly CallContext<T> _callContext;
-        private readonly List<Redirection<T>> _redirections;
+        private readonly List<Redirect<T>> _redirects;
         
-        public Diversion(Redirection<T> redirection, CallContext<T> callContext)
+        public Diversion(Redirect<T> redirect, CallContext<T> callContext)
         {
-            _redirections = new List<Redirection<T>> {redirection};
+            _redirects = new List<Redirect<T>> {redirect};
             _callContext = callContext;
         }
 
-        private Diversion(List<Redirection<T>> redirections, CallContext<T> callContext)
+        private Diversion(List<Redirect<T>> redirects, CallContext<T> callContext)
         {
-            _redirections = redirections;
+            _redirects = redirects;
             _callContext = callContext;
         }
         
-        public Diversion<T> AppendRedirection(Redirection<T> redirection)
+        public Diversion<T> AppendRedirection(Redirect<T> redirect)
         {
-            var substitutions = new[] {redirection}.Concat(_redirections).ToList();
+            var substitutions = new[] {redirect}.Concat(_redirects).ToList();
             return new Diversion<T>(substitutions, _callContext);
         }
 
         public bool TryBeginRedirectCallContext(T origin, IInvocation invocation, out T redirect)
         {
-            if (_redirections.Count == 0)
+            if (_redirects.Count == 0)
             {
                 redirect = null;
                 return false;
             }
             
-            var redirectionContext = new RedirectionContext<T>(origin, _redirections, invocation);
+            var redirectionContext = new RedirectionContext<T>(origin, _redirects, invocation);
             
             var hasRedirect = redirectionContext.MoveNext(invocation, out redirect);
 
@@ -49,15 +49,15 @@ namespace Divertr
 
         public void CloseRedirectCallContext(IInvocation invocation)
         {
-            var redirectionContext = _callContext.Pop();
+            var redirectContext = _callContext.Pop();
             
             // Assert the call context is as expected
-            if (redirectionContext == null)
+            if (redirectContext == null)
             {
                 throw new DiverterException("Fatal error: Encountered an unexpected null redirection context");
             }
 
-            if (!ReferenceEquals(invocation, redirectionContext.RootInvocation))
+            if (!ReferenceEquals(invocation, redirectContext.RootInvocation))
             {
                 throw new DiverterException("Fatal error: Encountered an unexpected redirection context");
             }

@@ -10,9 +10,9 @@ namespace Divertr
         private readonly AsyncLocal<List<int>> _indexStack = new AsyncLocal<List<int>>();
         public T Origin { get; }
         public IInvocation RootInvocation { get; }
-        private readonly List<Redirection<T>> _redirections;
+        private readonly List<Redirect<T>> _redirections;
 
-        public RedirectionContext(T origin, List<Redirection<T>> redirections, IInvocation rootInvocation)
+        public RedirectionContext(T origin, List<Redirect<T>> redirections, IInvocation rootInvocation)
         {
             _redirections = redirections;
             Origin = origin;
@@ -37,7 +37,7 @@ namespace Divertr
                 if (_redirections[i].IsMatch(invocation))
                 {
                     matched = true;
-                    matchedRedirect = _redirections[i].Redirect;
+                    matchedRedirect = _redirections[i].Target;
                     break;
                 }
             }

@@ -2,15 +2,15 @@
 
 namespace Divertr
 {
-    internal class Redirection<T> where T : class
+    internal class Redirect<T> where T : class
     {
         private readonly ICallCondition<T> _callCondition;
-        public T Redirect { get; }
+        public T Target { get; }
 
-        public Redirection(T redirect, ICallCondition<T> callCondition = null)
+        public Redirect(T target, ICallCondition<T> callCondition = null)
         {
             _callCondition = callCondition;
-            Redirect = redirect;
+            Target = target;
         }
 
         public bool IsMatch(IInvocation invocation)

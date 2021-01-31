@@ -8,7 +8,7 @@ namespace Divertr.UnitTests
 {
     public class RecursiveAsyncTests
     {
-        private readonly IDiverter<IAsyncFactorial> _diverter = new Diverter().Of<IAsyncFactorial>();
+        private readonly IDiverter<IAsyncFactorial> _diverter = new Diverter<IAsyncFactorial>();
 
         [Fact]
         public async Task TestRecursiveAsync()
@@ -20,7 +20,7 @@ namespace Divertr.UnitTests
                 return _diverter.Proxy(new Factorial(n, FactorialFactory));
             }
 
-            _diverter.AddRedirect(new FactorialTest(_diverter.CallContext));
+            _diverter.AddRedirect(new FactorialTest(_diverter.CallCtx));
 
             var result = await FactorialFactory(factorialInput).Result();
             result.ShouldBe(GetFactorial(factorialInput));
@@ -41,7 +41,7 @@ namespace Divertr.UnitTests
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(async () =>
             {
-                _diverter.AddRedirect(new FactorialTest(_diverter.CallContext));
+                _diverter.AddRedirect(new FactorialTest(_diverter.CallCtx));
                 return await FactorialFactory(factorialInput).Result();
             })).ToArray();
 

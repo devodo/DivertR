@@ -5,16 +5,16 @@ using Xunit;
 
 namespace Divertr.UnitTests
 {
-    public class RedirectTests
+    public class DiverterTests
     {
-        private readonly Diverter _diverter = new Diverter();
+        private readonly Diverter<ITestSubject> _diverter = new Diverter<ITestSubject>();
         
         [Fact]
         public void GivenProxy_ShouldDefaultToOrigin()
         {
             // ARRANGE
             var original = new TestA("hello world");
-            var proxy = _diverter.Of<ITestSubject>().Proxy(original);
+            var proxy = _diverter.Proxy(original);
             
             // ACT
             var message = proxy.Message;
@@ -28,9 +28,8 @@ namespace Divertr.UnitTests
         {
             // ARRANGE
             var original = new TestA("hello");
-            var diverter = _diverter.Of<ITestSubject>();
-            var subject = diverter.Proxy(original);
-            diverter.Redirect(new SubstituteTest(" world", diverter.CallContext));
+            var subject = _diverter.Proxy(original);
+            _diverter.Redirect(new SubstituteTest(" world", _diverter.CallCtx));
 
             // ACT
             var message = subject.Message;
@@ -51,7 +50,7 @@ namespace Divertr.UnitTests
             var mock = new Mock<IFoo>();
             mock
                 .Setup(x => x.Message)
-                .Returns(() => $"Hello {diverter.CallContext.Replaced.Message}");
+                .Returns(() => $"Hello {diverter.CallCtx.Replaced.Message}");
 
             diverter.Redirect(mock.Object);
 
@@ -71,15 +70,14 @@ namespace Divertr.UnitTests
         {
             // ARRANGE
             var original = new TestA("hello");
-            var diverter = _diverter.Of<ITestSubject>();
-            var subject = diverter.Proxy(original);
+            var subject = _diverter.Proxy(original);
             
             var mock = new Mock<ITestSubject>();
             mock
                 .Setup(x => x.Message)
-                .Returns(() => $"{diverter.CallContext.Original.Message} world");
+                .Returns(() => $"{_diverter.CallCtx.Original.Message} world");
 
-            diverter.Redirect(mock.Object);
+            _diverter.Redirect(mock.Object);
 
             // ACT
             var message = subject.Message;
@@ -118,14 +116,13 @@ namespace Divertr.UnitTests
         public void MultipleAddRedirects_ShouldChain()
         {
             // ARRANGE
-            var diverter = _diverter.Of<ITestSubject>();
-            var subject = diverter.Proxy(new TestA("hello world"));
+            var subject = _diverter.Proxy(new TestA("hello world"));
 
             // ACT
-            diverter
-                .AddRedirect(new SubstituteTest(" me", diverter.CallContext))
-                .AddRedirect(new SubstituteTest(" me", diverter.CallContext))
-                .AddRedirect(new SubstituteTest(" again", diverter.CallContext));
+            _diverter
+                .AddRedirect(new SubstituteTest(" me", _diverter.CallCtx))
+                .AddRedirect(new SubstituteTest(" me", _diverter.CallCtx))
+                .AddRedirect(new SubstituteTest(" again", _diverter.CallCtx));
 
 
             // ASSERT
@@ -137,13 +134,12 @@ namespace Divertr.UnitTests
         {
             // ARRANGE
             var original = new TestA("hello world");
-            var diverter = _diverter.Of<ITestSubject>();
-            var subject = diverter.Proxy(original);
+            var subject = _diverter.Proxy(original);
 
             // ACT
-            diverter.AddRedirect(new SubstituteTest(" me", diverter.CallContext));
-            diverter.Reset();
-            diverter.AddRedirect(new SubstituteTest(" again", diverter.CallContext));
+            _diverter.AddRedirect(new SubstituteTest(" me", _diverter.CallCtx));
+            _diverter.Reset();
+            _diverter.AddRedirect(new SubstituteTest(" again", _diverter.CallCtx));
 
             // ASSERT
             subject.Message.ShouldBe("hello world again");
@@ -154,31 +150,12 @@ namespace Divertr.UnitTests
         {
             // ARRANGE
             var original = new TestA("hello world");
-            var diverter = _diverter.Of<ITestSubject>();
-            var subject = diverter.Proxy(original);
+            var subject = _diverter.Proxy(original);
 
             // ACT
-            diverter.AddRedirect(new SubstituteTest(" me", diverter.CallContext));
-            diverter.AddRedirect(new SubstituteTest(" again", diverter.CallContext));
-            diverter.Reset();
-
-
-            // ASSERT
-            subject.Message.ShouldBe(original.Message);
-        }
-
-        [Fact]
-        public void GivenRedirects_WhenResetAll_ShouldReset()
-        {
-            // ARRANGE
-            var original = new TestA("hello world");
-            var diverter = _diverter.Of<ITestSubject>();
-            var subject = diverter.Proxy(original);
-
-            // ACT
-            diverter.AddRedirect(new SubstituteTest(" me", diverter.CallContext));
-            diverter.AddRedirect(new SubstituteTest(" again", diverter.CallContext));
-            _diverter.ResetAll();
+            _diverter.AddRedirect(new SubstituteTest(" me", _diverter.CallCtx));
+            _diverter.AddRedirect(new SubstituteTest(" again", _diverter.CallCtx));
+            _diverter.Reset();
 
 
             // ASSERT
