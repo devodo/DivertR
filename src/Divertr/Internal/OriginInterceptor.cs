@@ -1,7 +1,7 @@
 ﻿using System;
 using Castle.DynamicProxy;
 
-namespace Divertr
+namespace Divertr.Internal
 {
     internal class OriginInterceptor<T> : IInterceptor where T : class
     {
@@ -26,6 +26,7 @@ namespace Divertr
                 throw new DiverterException("Origin reference not set to an instance of an object.");
             }
             
+            // ReSharper disable once SuspiciousTypeConversion.Global
             ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectionContext.Origin);
             invocation.Proceed();
         }

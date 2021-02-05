@@ -1,13 +1,13 @@
 ﻿using System;
 
-namespace Divertr
+namespace Divertr.Internal
 {
     internal readonly struct DiverterId : IEquatable<DiverterId>
     {
         public Type Type { get; }
-        public string Name { get; }
+        public string? Name { get; }
 
-        public DiverterId(Type type, string name)
+        public DiverterId(Type type, string? name)
         {
             Type = type;
             Name = name;
@@ -25,15 +25,26 @@ namespace Divertr
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Type, Name);
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 31 + Type.GetHashCode();
+
+                if (Name != null)
+                {
+                    hash = hash * 31 + Name.GetHashCode();
+                }
+                
+                return hash;
+            }
         }
 
-        public static DiverterId From(Type type, string name = null)
+        public static DiverterId From(Type type, string? name = null)
         {
             return new DiverterId(type, name);
         }
 
-        public static DiverterId From<T>(string name = null)
+        public static DiverterId From<T>(string? name = null)
         {
             return new DiverterId(typeof(T), name);
         }

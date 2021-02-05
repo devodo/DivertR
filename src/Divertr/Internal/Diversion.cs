@@ -2,7 +2,7 @@
 using System.Linq;
 using Castle.DynamicProxy;
 
-namespace Divertr
+namespace Divertr.Internal
 {
     internal class Diversion<T> where T : class
     {
@@ -27,7 +27,7 @@ namespace Divertr
             return new Diversion<T>(substitutions, _callContext);
         }
 
-        public bool TryBeginRedirectCallContext(T origin, IInvocation invocation, out T redirect)
+        public bool TryBeginRedirectCallContext(T? origin, IInvocation invocation, out T? redirect)
         {
             if (_redirects.Count == 0)
             {

@@ -3,23 +3,23 @@ using System.Linq;
 using System.Threading;
 using Castle.DynamicProxy;
 
-namespace Divertr
+namespace Divertr.Internal
 {
     internal class RedirectionContext<T> where T : class
     {
         private readonly AsyncLocal<List<int>> _indexStack = new AsyncLocal<List<int>>();
-        public T Origin { get; }
+        public T? Origin { get; }
         public IInvocation RootInvocation { get; }
         private readonly List<Redirect<T>> _redirections;
 
-        public RedirectionContext(T origin, List<Redirect<T>> redirections, IInvocation rootInvocation)
+        public RedirectionContext(T? origin, List<Redirect<T>> redirections, IInvocation rootInvocation)
         {
             _redirections = redirections;
             Origin = origin;
             RootInvocation = rootInvocation;
         }
 
-        public bool MoveNext(IInvocation invocation, out T redirect)
+        public bool MoveNext(IInvocation invocation, out T? redirect)
         {
             var indexStack = _indexStack.Value ?? new List<int>();
             var i = indexStack.LastOrDefault();
@@ -31,7 +31,7 @@ namespace Divertr
             }
 
             bool matched = false;
-            T matchedRedirect = null;
+            T? matchedRedirect = null;
             for (; i < _redirections.Count; i++)
             {
                 if (_redirections[i].IsMatch(invocation))

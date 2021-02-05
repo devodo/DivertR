@@ -1,8 +1,9 @@
 ﻿using System;
+using Divertr.Internal;
 
 namespace Divertr
 {
-    public partial class Diverter<T> : IDiverter<T> where T : class
+    public class Diverter<T> : IDiverter<T> where T : class
     {
         private readonly DiverterId _diverterId;
         private readonly DiversionState _diversionState;
@@ -11,17 +12,44 @@ namespace Divertr
         public Diverter() : this(DiverterId.From<T>(), new DiversionState())
         {
         }
+        
+        internal Diverter(DiverterId diverterId, DiversionState diversionState)
+        {
+            if (!typeof(T).IsInterface)
+            {
+                throw new ArgumentException("Only interface types are supported", typeof(T).Name);
+            }
+            
+            _diverterId = diverterId;
+            _diversionState = diversionState;
+            _callContext = new Lazy<CallContext<T>>(() => new CallContext<T>());
+        }
 
         public ICallContext<T> CallCtx => _callContext.Value;
         
-        public T Proxy(T origin = null)
+        public T Proxy(T? origin = null)
         {
-            Diversion<T> GetDiversion()
+            Diversion<T>? GetDiversion()
             {
                 return _diversionState.GetDiversion<T>(_diverterId);
             }
 
             return ProxyFactory.Instance.CreateInstanceProxy(origin, GetDiversion);
+        }
+        
+        public object Proxy(object? origin = null)
+        {
+            if (origin != null && !(origin is T))
+            {
+                throw new ArgumentException($"Not assignable to {typeof(T).Name}", nameof(origin));
+            }
+
+            Diversion<T>? GetDiversion()
+            {
+                return _diversionState.GetDiversion<T>(_diverterId);
+            }
+
+            return ProxyFactory.Instance.CreateInstanceProxy(origin as T, GetDiversion);
         }
         
         public IDiverter<T> Redirect(T target)
@@ -54,36 +82,6 @@ namespace Divertr
             _diversionState.Reset(_diverterId);
 
             return this;
-        }
-    }
-
-    public partial class Diverter<T> : IDiverter
-    {
-        internal Diverter(DiverterId diverterId, DiversionState diversionState)
-        {
-            if (!typeof(T).IsInterface)
-            {
-                throw new ArgumentException("Only interface types are supported", typeof(T).Name);
-            }
-            
-            _diverterId = diverterId;
-            _diversionState = diversionState;
-            _callContext = new Lazy<CallContext<T>>(() => new CallContext<T>());
-        }
-        
-        public object Proxy(object origin = null)
-        {
-            if (origin != null && !(origin is T))
-            {
-                throw new ArgumentException($"Not assignable to {typeof(T).Name}", nameof(origin));
-            }
-
-            Diversion<T> GetDiversion()
-            {
-                return _diversionState.GetDiversion<T>(_diverterId);
-            }
-
-            return ProxyFactory.Instance.CreateInstanceProxy((T)origin, GetDiversion);
         }
     }
 }

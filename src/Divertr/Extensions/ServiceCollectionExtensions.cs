@@ -5,21 +5,21 @@ namespace Divertr.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverterSet diverterSet, string name = null)
+        public static IServiceCollection Divert(this IServiceCollection services, IDiverterSet diverterSet, string? name = null)
         {
             services.InjectDiverterSet(diverterSet, name: name);
 
             return services;
         }
         
-        public static IServiceCollection Divert<TStart>(this IServiceCollection services, IDiverterSet diverterSet, string name = null)
+        public static IServiceCollection Divert<TStart>(this IServiceCollection services, IDiverterSet diverterSet, string? name = null)
         {
             services.InjectDiverterSet(diverterSet, typeof(TStart), name);
 
             return services;
         }
         
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverterSet diverterSet, Type startType, string name = null)
+        public static IServiceCollection Divert(this IServiceCollection services, IDiverterSet diverterSet, Type startType, string? name = null)
         {
             services.InjectDiverterSet(diverterSet, startType, name);
 
@@ -33,7 +33,7 @@ namespace Divertr.Extensions
             return services;
         }
 
-        private static void InjectDiverterSet(this IServiceCollection services, IDiverterSet diverterSet, Type startType = null, string name = null)
+        private static void InjectDiverterSet(this IServiceCollection services, IDiverterSet diverterSet, Type? startType = null, string? name = null)
         {
             bool startTypeFound = startType == null;
             

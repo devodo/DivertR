@@ -1,7 +1,7 @@
 ﻿using System;
 using Castle.DynamicProxy;
 
-namespace Divertr
+namespace Divertr.Internal
 {
     internal class RedirectInterceptor<T> : IInterceptor where T : class
     {
@@ -30,6 +30,7 @@ namespace Divertr
                         throw new DiverterException("Redirect reference not set to an instance of an object.");
                     }
                     
+                    // ReSharper disable once SuspiciousTypeConversion.Global
                     ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirect);
                     invocation.Proceed();
                 }

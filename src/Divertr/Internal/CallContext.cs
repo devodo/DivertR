@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading;
 
-namespace Divertr
+namespace Divertr.Internal
 {
     internal class CallContext<T> : ICallContext<T> where T : class
     {
@@ -24,7 +24,7 @@ namespace Divertr
             _callStack.Value = invocationStack;
         }
 
-        public RedirectionContext<T> Pop()
+        public RedirectionContext<T>? Pop()
         {
             var invocationStack = _callStack.Value;
 
@@ -33,17 +33,17 @@ namespace Divertr
                 return null;
             }
 
-            var invocationState = invocationStack[^1];
+            var invocationState = invocationStack[invocationStack.Count - 1];
             invocationStack.RemoveAt(invocationStack.Count - 1);
 
             return invocationState;
         }
 
-        public RedirectionContext<T> Peek()
+        public RedirectionContext<T>? Peek()
         {
-            var invocationStack = _callStack.Value;
+            var callStack = _callStack.Value;
 
-            return invocationStack?[^1];
+            return callStack?[callStack.Count - 1];
         }
     }
 }

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace Divertr
+namespace Divertr.Internal
 {
     internal class DiversionState
     {
         private readonly ConcurrentDictionary<DiverterId, object> _diversions = new ConcurrentDictionary<DiverterId, object>();
 
-        public Diversion<T> GetDiversion<T>(DiverterId diverterId) where T : class
+        public Diversion<T>? GetDiversion<T>(DiverterId diverterId) where T : class
         {
             if (_diversions.TryGetValue(diverterId, out var alteration))
             {
