@@ -1,8 +1,8 @@
 ﻿using Castle.DynamicProxy;
 
-namespace Divertr
+namespace Divertr.Internal
 {
-    public interface ICallCondition<T> where T : class
+    internal interface ICallCondition
     {
         bool IsMatch(IInvocation invocation);
     }

@@ -4,10 +4,10 @@ namespace Divertr.Internal
 {
     internal class Redirect<T> where T : class
     {
-        private readonly ICallCondition<T>? _callCondition;
+        private readonly ICallCondition? _callCondition;
         public T Target { get; }
 
-        public Redirect(T target, ICallCondition<T>? callCondition = null)
+        public Redirect(T target, ICallCondition? callCondition = null)
         {
             _callCondition = callCondition;
             Target = target;
