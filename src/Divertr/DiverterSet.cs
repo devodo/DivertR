@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Globalization;
 using System.Reflection;
 using Divertr.Internal;
 
@@ -25,10 +24,10 @@ namespace Divertr
                 id =>
                 {
                     var diverterType = typeof(Diverter<>).MakeGenericType(type);
-                    return Activator.CreateInstance(diverterType, activatorFlags, null, new object[] {id, _diversionState}, default(CultureInfo));
+                    return Activator.CreateInstance(diverterType, activatorFlags, null, new object[] {id, _diversionState}, default);
                 });
         }
-        
+
         public void ResetAll()
         {
             _diversionState.Reset();

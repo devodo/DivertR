@@ -1,27 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Divertr.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverterSet diverterSet, string? name = null)
+        public static IServiceCollection Divert(this IServiceCollection services, IDiverterSet diverterSet, IEnumerable<Type> types, string? name = null)
         {
-            services.InjectDiverterSet(diverterSet, name: name);
+            services.InjectDiverterSet(diverterSet, types, name);
 
             return services;
         }
         
-        public static IServiceCollection Divert<TStart>(this IServiceCollection services, IDiverterSet diverterSet, string? name = null)
+        public static IServiceCollection Divert(this IServiceCollection services, IDiverterSet diverterSet, params Type[] types)
         {
-            services.InjectDiverterSet(diverterSet, typeof(TStart), name);
+            services.InjectDiverterSet(diverterSet, types);
 
             return services;
         }
         
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverterSet diverterSet, Type startType, string? name = null)
+        public static IServiceCollection Divert<T>(this IServiceCollection services, IDiverterSet diverterSet, string? name = null)
         {
-            services.InjectDiverterSet(diverterSet, startType, name);
+            services.InjectDiverterSet(diverterSet, new[] {typeof(T)}, name);
+
+            return services;
+        }
+        
+        public static IServiceCollection Divert(this IServiceCollection services, IDiverterSet diverterSet, Type type, string? name = null)
+        {
+            services.InjectDiverterSet(diverterSet, new[] {type}, name);
 
             return services;
         }
@@ -33,25 +41,15 @@ namespace Divertr.Extensions
             return services;
         }
 
-        private static void InjectDiverterSet(this IServiceCollection services, IDiverterSet diverterSet, Type? startType = null, string? name = null)
+        private static void InjectDiverterSet(this IServiceCollection services, IDiverterSet diverterSet, IEnumerable<Type> types, string? name = null)
         {
-            bool startTypeFound = startType == null;
+            var typeHashSet = new HashSet<Type>(types);
             
             for (var i = 0; i < services.Count; i++)
             {
                 var descriptor = services[i];
 
-                if (!startTypeFound)
-                {
-                    if (descriptor.ServiceType != startType)
-                    {
-                        continue;
-                    }
-                    
-                    startTypeFound = true;
-                }
-                
-                if (!descriptor.ServiceType.IsInterface)
+                if (!typeHashSet.Contains(descriptor.ServiceType))
                 {
                     continue;
                 }
@@ -87,7 +85,7 @@ namespace Divertr.Extensions
                 services[i] = ServiceDescriptor.Describe(descriptor.ServiceType, ProxyFactory, descriptor.Lifetime);
             }
         }
-        
+
         private static object GetInstance(this IServiceProvider provider, ServiceDescriptor descriptor)
         {
             if (descriptor.ImplementationInstance != null)

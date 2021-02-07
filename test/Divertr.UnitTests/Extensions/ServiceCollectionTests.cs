@@ -15,7 +15,7 @@ namespace Divertr.UnitTests.Extensions
         public void ShouldInjectDiverterSet()
         {
             _services.AddSingleton<IFoo>(new Foo {Message = "Original"});
-            _services.Divert(_diverterSet);
+            _services.Divert<IFoo>(_diverterSet);
 
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();

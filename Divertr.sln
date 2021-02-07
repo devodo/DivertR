@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Divertr", "src\Divertr\Dive
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Divertr.UnitTests", "test\Divertr.UnitTests\Divertr.UnitTests.csproj", "{1A70F24F-B257-4183-9247-5C1B6802B69A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Divertr.SampleWebApp", "test\Divertr.SampleWebApp\Divertr.SampleWebApp.csproj", "{C18C99BE-811B-4446-AAA6-E6377F08AA01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Divertr.WebAppTests", "test\Divertr.WebAppTests\Divertr.WebAppTests.csproj", "{C411DA96-5AB1-48BC-B238-7610F0701429}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +29,14 @@ Global
 		{1A70F24F-B257-4183-9247-5C1B6802B69A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A70F24F-B257-4183-9247-5C1B6802B69A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A70F24F-B257-4183-9247-5C1B6802B69A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C18C99BE-811B-4446-AAA6-E6377F08AA01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C18C99BE-811B-4446-AAA6-E6377F08AA01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C18C99BE-811B-4446-AAA6-E6377F08AA01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C18C99BE-811B-4446-AAA6-E6377F08AA01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C411DA96-5AB1-48BC-B238-7610F0701429}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C411DA96-5AB1-48BC-B238-7610F0701429}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C411DA96-5AB1-48BC-B238-7610F0701429}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C411DA96-5AB1-48BC-B238-7610F0701429}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,6 +44,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0E2DABC3-39BF-4B0D-8CA9-A5E88B818573} = {74CF87C6-EDB4-4B31-B5B0-CA25463AE0DE}
 		{1A70F24F-B257-4183-9247-5C1B6802B69A} = {9275A4A9-A215-4894-83C6-128024B08122}
+		{C18C99BE-811B-4446-AAA6-E6377F08AA01} = {9275A4A9-A215-4894-83C6-128024B08122}
+		{C411DA96-5AB1-48BC-B238-7610F0701429} = {9275A4A9-A215-4894-83C6-128024B08122}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2239E171-F669-4DBD-882A-E8720EF6C493}

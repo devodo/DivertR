@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp5.0</TargetFramework>
+
+        <IsPackable>false</IsPackable>
+
+        <LangVersion>9</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FakeItEasy" Version="6.2.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="5.0.2" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+        <PackageReference Include="Moq" Version="4.16.0" />
+        <PackageReference Include="Refit" Version="5.2.4" />
+        <PackageReference Include="Shouldly" Version="4.0.3" />
+        <PackageReference Include="xunit" Version="2.4.0" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
+        <PackageReference Include="coverlet.collector" Version="1.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Divertr\Divertr.csproj" />
+      <ProjectReference Include="..\Divertr.SampleWebApp\Divertr.SampleWebApp.csproj" />
+    </ItemGroup>
+
+</Project>
