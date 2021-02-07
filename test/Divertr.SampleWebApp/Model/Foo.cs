@@ -2,7 +2,7 @@
 
 namespace Divertr.SampleWebApp.Model
 {
-    public class Foo
+    public record Foo
     {
          public Guid Id { get; init; }
 
