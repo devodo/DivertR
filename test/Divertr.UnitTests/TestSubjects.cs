@@ -7,35 +7,26 @@
 
     public class Foo : IFoo
     {
-        public string Message { get; set; }
-    }
-
-    public interface ITestSubject
-    {
-        string Message { get; }
-    }
-    
-    public class TestA : ITestSubject
-    {
-        public string Message { get; }
-
-        public TestA(string message)
+        public Foo() {}
+        public Foo(string message)
         {
             Message = message;
         }
+        
+        public string Message { get; init; }
     }
-    
-    public class SubstituteTest : ITestSubject
+
+    public class SubstituteTest : IFoo
     {
         private readonly string _message;
-        private readonly ICallContext<ITestSubject> _callContext;
+        private readonly IFoo _replacedSubject;
 
-        public SubstituteTest(string message, ICallContext<ITestSubject> callContext = null)
+        public SubstituteTest(string message, IFoo replacedSubject = null)
         {
             _message = message;
-            _callContext = callContext;
+            _replacedSubject = replacedSubject;
         }
 
-        public string Message => _callContext.Replaced?.Message + _message;
+        public string Message => _replacedSubject?.Message + _message;
     }
 }

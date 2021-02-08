@@ -11,12 +11,12 @@ namespace Divertr.UnitTests
         public void GivenRedirects_WhenResetAll_ShouldReset()
         {
             // ARRANGE
-            var original = new TestA("hello world");
-            var diverter = _diverterSet.Get<ITestSubject>();
+            var original = new Foo("hello world");
+            var diverter = _diverterSet.Get<IFoo>();
             var subject = diverter.Proxy(original);
             
-            diverter.AddRedirect(new SubstituteTest(" me", diverter.CallCtx));
-            diverter.AddRedirect(new SubstituteTest(" again", diverter.CallCtx));
+            diverter.AddRedirect(new SubstituteTest(" me", diverter.CallCtx.Replaced));
+            diverter.AddRedirect(new SubstituteTest(" again", diverter.CallCtx.Replaced));
 
             // ACT
             _diverterSet.ResetAll();

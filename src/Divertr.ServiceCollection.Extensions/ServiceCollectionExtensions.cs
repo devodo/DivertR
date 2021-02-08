@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Divertr.Extensions
+namespace Divertr.ServiceCollection.Extensions
 {
     public static class ServiceCollectionExtensions
     {
@@ -34,11 +34,46 @@ namespace Divertr.Extensions
             return services;
         }
         
+        public static IServiceCollection DivertRange<TStart, TEnd>(this IServiceCollection services, IDiverterSet diverterSet, string? name = null)
+        {
+            var selectedTypes = services.GetRange(typeof(TStart), typeof(TEnd));
+            services.InjectDiverterSet(diverterSet, selectedTypes, name);
+
+            return services;
+        }
+        
         public static IServiceCollection Divert<T>(this IServiceCollection services, IDiverter<T> diverter) where T : class
         {
             services.InjectDiverter(diverter);
 
             return services;
+        }
+
+        private static IEnumerable<Type> GetRange(this IServiceCollection services, Type startType, Type endType)
+        {
+            bool startFound = false;
+            foreach (var descriptor in services)
+            {
+                if (!startFound)
+                {
+                    if (descriptor.ServiceType != startType)
+                    {
+                        continue;
+                    }
+
+                    startFound = true;
+                }
+
+                if (descriptor.ServiceType.IsInterface && !descriptor.ServiceType.ContainsGenericParameters)
+                {
+                    yield return descriptor.ServiceType;
+                }
+
+                if (descriptor.ServiceType == endType)
+                {
+                    break;
+                }
+            }
         }
 
         private static void InjectDiverterSet(this IServiceCollection services, IDiverterSet diverterSet, IEnumerable<Type> types, string? name = null)

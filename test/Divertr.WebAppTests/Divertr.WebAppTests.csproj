@@ -21,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\src\Divertr.ServiceCollection.Extensions\Divertr.ServiceCollection.Extensions.csproj" />
       <ProjectReference Include="..\..\src\Divertr\Divertr.csproj" />
       <ProjectReference Include="..\Divertr.SampleWebApp\Divertr.SampleWebApp.csproj" />
     </ItemGroup>
