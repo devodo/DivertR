@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Divertr.SampleWebApp", "tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Divertr.WebAppTests", "test\Divertr.WebAppTests\Divertr.WebAppTests.csproj", "{C411DA96-5AB1-48BC-B238-7610F0701429}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Divertr.ServiceCollection.Extensions", "src\Divertr.ServiceCollection.Extensions\Divertr.ServiceCollection.Extensions.csproj", "{A47ED4A4-43C0-4BD3-9035-3D853205B72F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Divertr.Extensions.DependencyInjection", "src\Divertr.Extensions.DependencyInjection\Divertr.Extensions.DependencyInjection.csproj", "{A47ED4A4-43C0-4BD3-9035-3D853205B72F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

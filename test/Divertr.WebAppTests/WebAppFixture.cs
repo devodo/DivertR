@@ -1,8 +1,8 @@
 ﻿using System.Net.Http;
 using System.Net.Http.Headers;
+using Divertr.Extensions.DependencyInjection;
 using Divertr.SampleWebApp;
 using Divertr.SampleWebApp.Services;
-using Divertr.ServiceCollection.Extensions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Refit;
 
