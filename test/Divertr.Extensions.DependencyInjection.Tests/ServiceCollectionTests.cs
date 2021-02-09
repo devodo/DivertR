@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Divertr.Extensions.DependencyInjection;
+using Divertr.Extensions.DependencyInjection.Tests.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Shouldly;

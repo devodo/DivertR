@@ -1,3 +1,4 @@
+using Divertr.UnitTests.Model;
 using Moq;
 using Shouldly;
 using Xunit;
@@ -28,7 +29,7 @@ namespace Divertr.UnitTests
             // ARRANGE
             var original = new Foo("hello");
             var subject = _diverter.Proxy(original);
-            _diverter.Redirect(new SubstituteTest(" world", _diverter.CallCtx.Original));
+            _diverter.Redirect(new FooSubstitute(" world", _diverter.CallCtx.Original));
 
             // ACT
             var message = subject.Message;
@@ -66,9 +67,9 @@ namespace Divertr.UnitTests
 
             // ACT
             _diverter
-                .AddRedirect(new SubstituteTest(" me", _diverter.CallCtx.Replaced))
-                .AddRedirect(new SubstituteTest(" me", _diverter.CallCtx.Replaced))
-                .AddRedirect(new SubstituteTest(" again", _diverter.CallCtx.Replaced));
+                .AddRedirect(new FooSubstitute(" me", _diverter.CallCtx.Replaced))
+                .AddRedirect(new FooSubstitute(" me", _diverter.CallCtx.Replaced))
+                .AddRedirect(new FooSubstitute(" again", _diverter.CallCtx.Replaced));
 
 
             // ASSERT
@@ -83,9 +84,9 @@ namespace Divertr.UnitTests
             var subject = _diverter.Proxy(original);
 
             // ACT
-            _diverter.AddRedirect(new SubstituteTest(" me", _diverter.CallCtx.Replaced));
+            _diverter.AddRedirect(new FooSubstitute(" me", _diverter.CallCtx.Replaced));
             _diverter.Reset();
-            _diverter.AddRedirect(new SubstituteTest(" again", _diverter.CallCtx.Replaced));
+            _diverter.AddRedirect(new FooSubstitute(" again", _diverter.CallCtx.Replaced));
 
             // ASSERT
             subject.Message.ShouldBe("hello world again");
@@ -99,8 +100,8 @@ namespace Divertr.UnitTests
             var subject = _diverter.Proxy(original);
 
             // ACT
-            _diverter.AddRedirect(new SubstituteTest(" me", _diverter.CallCtx.Replaced));
-            _diverter.AddRedirect(new SubstituteTest(" again", _diverter.CallCtx.Replaced));
+            _diverter.AddRedirect(new FooSubstitute(" me", _diverter.CallCtx.Replaced));
+            _diverter.AddRedirect(new FooSubstitute(" again", _diverter.CallCtx.Replaced));
             _diverter.Reset();
 
 
