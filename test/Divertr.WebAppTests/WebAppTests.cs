@@ -89,12 +89,12 @@ namespace Divertr.WebAppTests
 
             Foo insertedFoo = null;
             A.CallTo(() => _fooRepositoryFake.TryInsertFoo(A<Foo>._))
-                .ReturnsLazily((Foo foo) =>
+                .Invokes((Foo foo) =>
                 {
                     insertedFoo = foo;
-                    return _originalFooRepository.TryInsertFoo(foo);
-                });
-            
+                })
+                .CallsWrappedMethod();
+
             // ACT
             var response = await _fooClient.InsertFoo(createFooRequest);
             
