@@ -10,7 +10,7 @@ namespace Divertr.WebAppTests
 {
     public class WebAppFixture
     {
-        public IDiverterSet DiverterSet { get; } = new DiverterSet();
+        public IDiverter Diverter { get; } = new Diverter();
         
         private readonly WebApplicationFactory<Startup> _webApplicationFactory;
         
@@ -20,7 +20,7 @@ namespace Divertr.WebAppTests
             {
                 builder.ConfigureServices(services =>
                 {
-                    services.DivertRange<IFooRepository, IFooRepository>(DiverterSet);
+                    services.DivertRange<IFooRepository, IFooRepository>(Diverter);
                 });
             });
         }

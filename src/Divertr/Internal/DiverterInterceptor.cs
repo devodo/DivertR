@@ -6,9 +6,9 @@ namespace Divertr.Internal
     internal class DiverterInterceptor<T> : IInterceptor where T : class
     {
         private readonly T? _original;
-        private readonly Func<Director<T>?> _getDirector;
+        private readonly Func<CallRoute<T>?> _getDirector;
 
-        public DiverterInterceptor(T? original, Func<Director<T>?> getDirector)
+        public DiverterInterceptor(T? original, Func<CallRoute<T>?> getDirector)
         {
             _original = original;
             _getDirector = getDirector;

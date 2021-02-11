@@ -7,17 +7,17 @@ namespace Divertr.Internal
     {
         private readonly ConcurrentDictionary<DiverterId, object> _directors = new ConcurrentDictionary<DiverterId, object>();
 
-        public Director<T>? GetDirector<T>(DiverterId diverterId) where T : class
+        public CallRoute<T>? GetDirector<T>(DiverterId diverterId) where T : class
         {
             if (_directors.TryGetValue(diverterId, out var alteration))
             {
-                return (Director<T>)alteration;
+                return (CallRoute<T>)alteration;
             }
 
             return null;
         }
 
-        public Director<T> AddOrUpdateDirector<T>(DiverterId diverterId, Func<Director<T>> addFactory, Func<Director<T>, Director<T>> updateFactory) where T : class
+        public CallRoute<T> AddOrUpdateDirector<T>(DiverterId diverterId, Func<CallRoute<T>> addFactory, Func<CallRoute<T>, CallRoute<T>> updateFactory) where T : class
         {
             object Create(DiverterId _)
             {
@@ -26,15 +26,15 @@ namespace Divertr.Internal
 
             object Update(DiverterId _, object existingDiversion)
             {
-                return updateFactory((Director<T>) existingDiversion);
+                return updateFactory((CallRoute<T>) existingDiversion);
             }
 
-            return (Director<T>)_directors.AddOrUpdate(diverterId, Create, Update);
+            return (CallRoute<T>)_directors.AddOrUpdate(diverterId, Create, Update);
         }
 
-        public void SetDirector<T>(DiverterId diverterId, Director<T> director) where T : class
+        public void SetDirector<T>(DiverterId diverterId, CallRoute<T> callRoute) where T : class
         {
-            _directors[diverterId] = director;
+            _directors[diverterId] = callRoute;
         }
 
         public bool Reset(DiverterId diverterId)

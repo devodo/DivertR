@@ -11,7 +11,7 @@ namespace Divertr.UnitTests.Extensions
     public class ServiceCollectionTests
     {
         private readonly IServiceCollection _services = new ServiceCollection();
-        private readonly DiverterSet _diverters = new();
+        private readonly Diverter _diverters = new();
         
         [Fact]
         public void ShouldInjectDiverterSet()
@@ -24,7 +24,7 @@ namespace Divertr.UnitTests.Extensions
             
             var mock = new Mock<IFoo>();
             mock.Setup(x => x.Message).Returns("Diverted");
-            _diverters.Get<IFoo>().Redirect(mock.Object);
+            _diverters.For<IFoo>().Redirect(mock.Object);
             
             foo.Message.ShouldBe("Diverted");
         }
@@ -32,7 +32,7 @@ namespace Divertr.UnitTests.Extensions
         [Fact]
         public void ShouldInjectDiverter()
         {
-            var diverter = _diverters.Get<IFoo>();
+            var diverter = _diverters.For<IFoo>();
             _services.AddTransient<IFoo>(_ => new Foo {Message = "Original"});
             _services.Divert(diverter);
 
@@ -66,7 +66,7 @@ namespace Divertr.UnitTests.Extensions
             
             var mock = new Mock<IList<string>>();
             mock.Setup(x => x.Count).Returns(10);
-            _diverters.Get<IList<string>>().Redirect(mock.Object);
+            _diverters.For<IList<string>>().Redirect(mock.Object);
             
             list.Count.ShouldBe(10);
             _diverters.ResetAll();

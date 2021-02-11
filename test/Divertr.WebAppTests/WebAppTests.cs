@@ -12,7 +12,7 @@ namespace Divertr.WebAppTests
 {
     public class WebAppTests : IClassFixture<WebAppFixture>
     {
-        private readonly IDiverterSet _divertr;
+        private readonly IDiverter _divertr;
         private readonly IFooClient _fooClient;
         
         private readonly Mock<IFooRepository> _fooRepositoryMock = new();
@@ -21,11 +21,11 @@ namespace Divertr.WebAppTests
         
         public WebAppTests(WebAppFixture webAppFixture)
         {
-            _divertr = webAppFixture.DiverterSet;
+            _divertr = webAppFixture.Diverter;
             _divertr.ResetAll();
-            _originalFooRepository = _divertr.Get<IFooRepository>().CallCtx.Original;
+            _originalFooRepository = _divertr.For<IFooRepository>().CallCtx.Original;
             _fooRepositoryFake  = A.Fake<IFooRepository>(o => o.Wrapping(_originalFooRepository));
-            _divertr.Get<IFooRepository>().Redirect(_fooRepositoryFake);
+            _divertr.For<IFooRepository>().Redirect(_fooRepositoryFake);
             
             _fooClient = webAppFixture.CreateFooClient();
         }
@@ -67,7 +67,7 @@ namespace Divertr.WebAppTests
                     return result;
                 });
 
-            _divertr.Get<IFooRepository>().Redirect(_fooRepositoryMock.Object);
+            _divertr.For<IFooRepository>().Redirect(_fooRepositoryMock.Object);
             
             // ACT
             var response = await _fooClient.InsertFoo(createFooRequest);

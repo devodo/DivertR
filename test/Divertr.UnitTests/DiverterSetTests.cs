@@ -6,18 +6,18 @@ namespace Divertr.UnitTests
 {
     public class DiverterSetTests
     {
-        private readonly IDiverterSet _diverter = new DiverterSet();
+        private readonly IDiverter _diverter = new Diverter();
 
         [Fact]
         public void GivenRedirects_WhenResetAll_ShouldReset()
         {
             // ARRANGE
             var original = new Foo("hello world");
-            var diverter = _diverter.Get<IFoo>();
-            var subject = diverter.Proxy(original);
+            var director = _diverter.For<IFoo>();
+            var subject = director.Proxy(original);
             
-            diverter.AddRedirect(new FooSubstitute(" me", diverter.CallCtx.Replaced));
-            diverter.AddRedirect(new FooSubstitute(" again", diverter.CallCtx.Replaced));
+            director.AddRedirect(new FooSubstitute(" me", director.CallCtx.Replaced));
+            director.AddRedirect(new FooSubstitute(" again", director.CallCtx.Replaced));
 
             // ACT
             _diverter.ResetAll();

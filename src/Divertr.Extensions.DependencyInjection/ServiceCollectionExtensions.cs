@@ -6,45 +6,45 @@ namespace Divertr.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverterSet diverterSet, IEnumerable<Type> types, string? name = null)
+        public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, IEnumerable<Type> types, string? name = null)
         {
-            services.InjectDiverterSet(diverterSet, types, name);
+            services.InjectDiverter(diverter, types, name);
 
             return services;
         }
         
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverterSet diverterSet, params Type[] types)
+        public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, params Type[] types)
         {
-            services.InjectDiverterSet(diverterSet, types);
+            services.InjectDiverter(diverter, types);
 
             return services;
         }
         
-        public static IServiceCollection Divert<T>(this IServiceCollection services, IDiverterSet diverterSet, string? name = null)
+        public static IServiceCollection Divert<T>(this IServiceCollection services, IDiverter diverter, string? name = null)
         {
-            services.InjectDiverterSet(diverterSet, new[] {typeof(T)}, name);
+            services.InjectDiverter(diverter, new[] {typeof(T)}, name);
 
             return services;
         }
         
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverterSet diverterSet, Type type, string? name = null)
+        public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, Type type, string? name = null)
         {
-            services.InjectDiverterSet(diverterSet, new[] {type}, name);
+            services.InjectDiverter(diverter, new[] {type}, name);
 
             return services;
         }
         
-        public static IServiceCollection DivertRange<TStart, TEnd>(this IServiceCollection services, IDiverterSet diverterSet, string? name = null)
+        public static IServiceCollection DivertRange<TStart, TEnd>(this IServiceCollection services, IDiverter diverter, string? name = null)
         {
             var selectedTypes = services.GetRange(typeof(TStart), typeof(TEnd));
-            services.InjectDiverterSet(diverterSet, selectedTypes, name);
+            services.InjectDiverter(diverter, selectedTypes, name);
 
             return services;
         }
         
-        public static IServiceCollection Divert<T>(this IServiceCollection services, IDiverter<T> diverter) where T : class
+        public static IServiceCollection Divert<T>(this IServiceCollection services, IDirector<T> director) where T : class
         {
-            services.InjectDiverter(diverter);
+            services.InjectDiverter(director);
 
             return services;
         }
@@ -76,7 +76,7 @@ namespace Divertr.Extensions.DependencyInjection
             }
         }
 
-        private static void InjectDiverterSet(this IServiceCollection services, IDiverterSet diverterSet, IEnumerable<Type> types, string? name = null)
+        private static void InjectDiverter(this IServiceCollection services, IDiverter diverter, IEnumerable<Type> types, string? name = null)
         {
             var typeHashSet = new HashSet<Type>(types);
             
@@ -89,18 +89,18 @@ namespace Divertr.Extensions.DependencyInjection
                     continue;
                 }
 
-                var diverter = diverterSet.Get(descriptor.ServiceType, name);
+                var redirector = diverter.For(descriptor.ServiceType, name);
                 object ProxyFactory(IServiceProvider provider)
                 {
                     var instance = provider.GetInstance(descriptor);
-                    return diverter.Proxy(instance);
+                    return redirector.Proxy(instance);
                 }
                 
                 services[i] = ServiceDescriptor.Describe(descriptor.ServiceType, ProxyFactory, descriptor.Lifetime);
             }
         }
         
-        private static void InjectDiverter<T>(this IServiceCollection services, IDiverter<T> diverter) where T : class
+        private static void InjectDiverter<T>(this IServiceCollection services, IDirector<T> director) where T : class
         {
             for (var i = 0; i < services.Count; i++)
             {
@@ -114,7 +114,7 @@ namespace Divertr.Extensions.DependencyInjection
                 object ProxyFactory(IServiceProvider provider)
                 {
                     var instance = provider.GetInstance(descriptor);
-                    return diverter.Proxy((T)instance);
+                    return director.Proxy((T)instance);
                 }
 
                 services[i] = ServiceDescriptor.Describe(descriptor.ServiceType, ProxyFactory, descriptor.Lifetime);
