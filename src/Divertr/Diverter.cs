@@ -12,17 +12,22 @@ namespace Divertr
         private readonly DiverterState _diverterState = new DiverterState();
         private readonly ConcurrentDictionary<DiverterId, object> _directors = new ConcurrentDictionary<DiverterId, object>();
 
-        public T Proxy<T>(T? origin = null, string? name = null) where T : class
-        {
-            return For<T>(name).Proxy(origin);
-        }
-
         public IDirector<T> For<T>(string? name = null) where T : class
         {
             return (IDirector<T>) _directors.GetOrAdd(DiverterId.From<T>(name),
                 id => new Director<T>(id, _diverterState));
         }
-
+        
+        public void ResetAll()
+        {
+            _diverterState.Reset();
+        }
+        
+        public T Proxy<T>(T? origin = null, string? name = null) where T : class
+        {
+            return For<T>(name).Proxy(origin);
+        }
+        
         public IDirector<T> Redirect<T>(T target, string? name = null) where T : class
         {
             return For<T>(name).Redirect(target);
@@ -44,12 +49,7 @@ namespace Divertr
                     return Activator.CreateInstance(diverterType, activatorFlags, null, new object[] {id, _diverterState}, default);
                 });
         }
-
-        public void ResetAll()
-        {
-            _diverterState.Reset();
-        }
-
+        
         public IEnumerable<Type> KnownTypes(string? name = null)
         {
             return _directors.Keys
