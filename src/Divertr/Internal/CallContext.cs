@@ -6,40 +6,40 @@ namespace Divertr.Internal
 {
     internal class CallContext<T> : ICallContext<T> where T : class
     {
-        private readonly AsyncLocal<List<RedirectionContext<T>>> _callStack = new AsyncLocal<List<RedirectionContext<T>>>();
+        private readonly AsyncLocal<List<RedirectContext<T>>> _callStack = new AsyncLocal<List<RedirectContext<T>>>();
         public T Replaced { get; }
         
         public T Original { get; }
 
         public CallContext()
         {
-            Replaced =  ProxyFactory.Instance.CreateRedirectProxy(this);
-            Original = ProxyFactory.Instance.CreateOriginProxy(this);
+            Replaced =  ProxyFactory.Instance.CreateReplacedProxy(this);
+            Original = ProxyFactory.Instance.CreateOriginalProxy(this);
         }
         
-        public void Push(RedirectionContext<T> redirectionContext)
+        public void Push(RedirectContext<T> redirectContext)
         {
-            var invocationStack = _callStack.Value?.ToList() ?? new List<RedirectionContext<T>>();
-            invocationStack.Add(redirectionContext);
-            _callStack.Value = invocationStack;
+            var callStack = _callStack.Value?.ToList() ?? new List<RedirectContext<T>>();
+            callStack.Add(redirectContext);
+            _callStack.Value = callStack;
         }
 
-        public RedirectionContext<T>? Pop()
+        public RedirectContext<T>? Pop()
         {
-            var invocationStack = _callStack.Value;
+            var callStack = _callStack.Value;
 
-            if (invocationStack == null || invocationStack.Count == 0)
+            if (callStack == null || callStack.Count == 0)
             {
                 return null;
             }
 
-            var invocationState = invocationStack[invocationStack.Count - 1];
-            invocationStack.RemoveAt(invocationStack.Count - 1);
+            var invocationState = callStack[callStack.Count - 1];
+            callStack.RemoveAt(callStack.Count - 1);
 
             return invocationState;
         }
 
-        public RedirectionContext<T>? Peek()
+        public RedirectContext<T>? Peek()
         {
             var callStack = _callStack.Value;
 

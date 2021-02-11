@@ -3,27 +3,27 @@ using Castle.DynamicProxy;
 
 namespace Divertr.Internal
 {
-    internal class DiversionInterceptor<T> : IInterceptor where T : class
+    internal class DiverterInterceptor<T> : IInterceptor where T : class
     {
-        private readonly T? _origin;
-        private readonly Func<Diversion<T>?> _getDiversion;
+        private readonly T? _original;
+        private readonly Func<Director<T>?> _getDirector;
 
-        public DiversionInterceptor(T? origin, Func<Diversion<T>?> getDiversion)
+        public DiverterInterceptor(T? original, Func<Director<T>?> getDirector)
         {
-            _origin = origin;
-            _getDiversion = getDiversion;
+            _original = original;
+            _getDirector = getDirector;
         }
 
         public void Intercept(IInvocation invocation)
         {
-            var diversion = _getDiversion();
+            var director = _getDirector();
 
-            if (diversion == null ||
-                !diversion.TryBeginRedirectCallContext(_origin, invocation, out T? redirect))
+            if (director == null ||
+                !director.TryBeginCallContext(_original, invocation, out T? redirect))
             {
-                if (_origin == null)
+                if (_original == null)
                 {
-                    throw new DiverterException("Origin reference not set to an instance of an object.");
+                    throw new DiverterException("Original reference not set to an instance of an object.");
                 }
 
                 invocation.Proceed();
@@ -38,7 +38,7 @@ namespace Divertr.Internal
             }
             finally
             {
-                diversion.CloseRedirectCallContext(invocation);
+                director.CloseCallContext(invocation);
             }
         }
     }

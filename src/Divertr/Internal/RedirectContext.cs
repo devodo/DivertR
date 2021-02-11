@@ -5,16 +5,16 @@ using Castle.DynamicProxy;
 
 namespace Divertr.Internal
 {
-    internal class RedirectionContext<T> where T : class
+    internal class RedirectContext<T> where T : class
     {
         private readonly AsyncLocal<List<int>> _indexStack = new AsyncLocal<List<int>>();
         public T? Origin { get; }
         public IInvocation RootInvocation { get; }
-        private readonly List<Redirect<T>> _redirections;
+        private readonly List<Redirect<T>> _redirects;
 
-        public RedirectionContext(T? origin, List<Redirect<T>> redirections, IInvocation rootInvocation)
+        public RedirectContext(T? origin, List<Redirect<T>> redirects, IInvocation rootInvocation)
         {
-            _redirections = redirections;
+            _redirects = redirects;
             Origin = origin;
             RootInvocation = rootInvocation;
         }
@@ -24,7 +24,7 @@ namespace Divertr.Internal
             var indexStack = _indexStack.Value ?? new List<int>();
             var i = indexStack.LastOrDefault();
 
-            if (i >= _redirections.Count)
+            if (i >= _redirects.Count)
             {
                 redirect = null;
                 return false;
@@ -32,12 +32,12 @@ namespace Divertr.Internal
 
             bool matched = false;
             T? matchedRedirect = null;
-            for (; i < _redirections.Count; i++)
+            for (; i < _redirects.Count; i++)
             {
-                if (_redirections[i].IsMatch(invocation))
+                if (_redirects[i].IsMatch(invocation))
                 {
                     matched = true;
-                    matchedRedirect = _redirections[i].Target;
+                    matchedRedirect = _redirects[i].Target;
                     break;
                 }
             }

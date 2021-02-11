@@ -6,14 +6,14 @@ namespace Divertr
     public class Diverter<T> : IDiverter<T> where T : class
     {
         private readonly DiverterId _diverterId;
-        private readonly DiversionState _diversionState;
+        private readonly DiverterState _diverterState;
         private readonly Lazy<CallContext<T>> _callContext;
 
-        public Diverter() : this(DiverterId.From<T>(), new DiversionState())
+        public Diverter() : this(DiverterId.From<T>(), new DiverterState())
         {
         }
         
-        internal Diverter(DiverterId diverterId, DiversionState diversionState)
+        internal Diverter(DiverterId diverterId, DiverterState diverterState)
         {
             if (!typeof(T).IsInterface)
             {
@@ -21,20 +21,20 @@ namespace Divertr
             }
             
             _diverterId = diverterId;
-            _diversionState = diversionState;
+            _diverterState = diverterState;
             _callContext = new Lazy<CallContext<T>>(() => new CallContext<T>());
         }
 
         public ICallContext<T> CallCtx => _callContext.Value;
         
-        public T Proxy(T? origin = null)
+        public T Proxy(T? original = null)
         {
-            Diversion<T>? GetDiversion()
+            Director<T>? GetDirector()
             {
-                return _diversionState.GetDiversion<T>(_diverterId);
+                return _diverterState.GetDirector<T>(_diverterId);
             }
 
-            return ProxyFactory.Instance.CreateInstanceProxy(origin, GetDiversion);
+            return ProxyFactory.Instance.CreateInstanceProxy(original, GetDirector);
         }
         
         public object Proxy(object? origin = null)
@@ -44,42 +44,37 @@ namespace Divertr
                 throw new ArgumentException($"Not assignable to {typeof(T).Name}", nameof(origin));
             }
 
-            Diversion<T>? GetDiversion()
-            {
-                return _diversionState.GetDiversion<T>(_diverterId);
-            }
-
-            return ProxyFactory.Instance.CreateInstanceProxy(origin as T, GetDiversion);
+            return Proxy((T) origin!);
         }
         
         public IDiverter<T> Redirect(T target)
         {
-            var diversion = new Diversion<T>(new Redirect<T>(target), _callContext.Value);
-            _diversionState.SetDiversion(_diverterId, diversion);
+            var diversion = new Director<T>(new Redirect<T>(target), _callContext.Value);
+            _diverterState.SetDirector(_diverterId, diversion);
 
             return this;
         }
 
         public IDiverter<T> AddRedirect(T target)
         {
-            Diversion<T> Create()
+            Director<T> Create()
             {
-                return new Diversion<T>(new Redirect<T>(target), _callContext.Value);
+                return new Director<T>(new Redirect<T>(target), _callContext.Value);
             }
 
-            Diversion<T> Update(Diversion<T> existingDiversion)
+            Director<T> Update(Director<T> existingDiversion)
             {
-                return existingDiversion.AppendRedirection(new Redirect<T>(target));
+                return existingDiversion.AppendRedirect(new Redirect<T>(target));
             }
 
-            _diversionState.AddOrUpdateDiversion(_diverterId, Create, Update);
+            _diverterState.AddOrUpdateDirector(_diverterId, Create, Update);
 
             return this;
         }
 
         public IDiverter<T> Reset()
         {
-            _diversionState.Reset(_diverterId);
+            _diverterState.Reset(_diverterId);
 
             return this;
         }

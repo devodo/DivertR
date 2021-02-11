@@ -8,7 +8,7 @@
     public interface IDiverter<T> : IDiverter  where T : class
     {
         ICallContext<T> CallCtx { get; }
-        T Proxy(T? origin = null);
+        T Proxy(T? original = null);
         IDiverter<T> Redirect(T target);
         IDiverter<T> AddRedirect(T target);
         IDiverter<T> Reset();

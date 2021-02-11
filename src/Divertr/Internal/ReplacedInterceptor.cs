@@ -3,31 +3,31 @@ using Castle.DynamicProxy;
 
 namespace Divertr.Internal
 {
-    internal class RedirectInterceptor<T> : IInterceptor where T : class
+    internal class ReplacedInterceptor<T> : IInterceptor where T : class
     {
         private readonly CallContext<T> _callContext;
 
-        public RedirectInterceptor(CallContext<T> callContext)
+        public ReplacedInterceptor(CallContext<T> callContext)
         {
             _callContext = callContext;
         }
 
         public void Intercept(IInvocation invocation)
         {
-            var redirectionContext = _callContext.Peek();
+            var redirectContext = _callContext.Peek();
             
-            if (redirectionContext == null)
+            if (redirectContext == null)
             {
                 throw new InvalidOperationException("Replaced instances may only be accessed within the context of a Diverter Proxy call");
             }
 
-            if (redirectionContext.MoveNext(invocation, out var redirect))
+            if (redirectContext.MoveNext(invocation, out var redirect))
             {
                 try
                 {
                     if (redirect == null)
                     {
-                        throw new DiverterException("Redirect reference not set to an instance of an object.");
+                        throw new DiverterException("Redirect target reference not set to an instance of an object.");
                     }
                     
                     // ReSharper disable once SuspiciousTypeConversion.Global
@@ -36,18 +36,18 @@ namespace Divertr.Internal
                 }
                 finally
                 {
-                    redirectionContext.MoveBack();
+                    redirectContext.MoveBack();
                 }
 
                 return;
             }
             
-            if (redirectionContext.Origin == null)
+            if (redirectContext.Origin == null)
             {
-                throw new DiverterException("Origin reference not set to an instance of an object.");
+                throw new DiverterException("Original reference not set to an instance of an object.");
             }
 
-            ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectionContext.Origin);
+            ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectContext.Origin);
             invocation.Proceed();
         }
     }
