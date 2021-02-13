@@ -12,44 +12,50 @@ namespace Divertr
         private readonly DiverterState _diverterState = new DiverterState();
         private readonly ConcurrentDictionary<DiverterId, object> _directors = new ConcurrentDictionary<DiverterId, object>();
 
-        public IDirector<T> For<T>(string? name = null) where T : class
+        public IDiversion<T> Of<T>(string? name = null) where T : class
         {
-            return (IDirector<T>) _directors.GetOrAdd(DiverterId.From<T>(name),
-                id => new Director<T>(id, _diverterState));
+            return (IDiversion<T>) _directors.GetOrAdd(DiverterId.From<T>(name),
+                id => new Diversion<T>(id, _diverterState));
         }
         
-        public void ResetAll()
-        {
-            _diverterState.Reset();
-        }
-        
-        public T Proxy<T>(T? origin = null, string? name = null) where T : class
-        {
-            return For<T>(name).Proxy(origin);
-        }
-        
-        public IDirector<T> Redirect<T>(T target, string? name = null) where T : class
-        {
-            return For<T>(name).Redirect(target);
-        }
-
-        public ICallContext<T> CallCtx<T>(string? name = null) where T : class
-        {
-            return For<T>(name).CallCtx;
-        }
-
-        public IDirector For(Type type, string? name = null)
+        public IDiversion Of(Type type, string? name = null)
         {
             const BindingFlags activatorFlags = BindingFlags.NonPublic | BindingFlags.Instance;
 
-            return (IDirector) _directors.GetOrAdd(DiverterId.From(type, name),
+            return (IDiversion) _directors.GetOrAdd(DiverterId.From(type, name),
                 id =>
                 {
-                    var diverterType = typeof(Director<>).MakeGenericType(type);
+                    var diverterType = typeof(Diversion<>).MakeGenericType(type);
                     return Activator.CreateInstance(diverterType, activatorFlags, null, new object[] {id, _diverterState}, default);
                 });
         }
         
+        public IDiversion<T> Redirect<T>(T target, string? name = null) where T : class
+        {
+            return Of<T>(name).Redirect(target);
+        }
+
+        public IDiversion<T> Reset<T>(string? name = null) where T : class
+        {
+            return Of<T>(name).Reset();
+        }
+
+        public IDiverter ResetAll()
+        {
+            _diverterState.Reset();
+            return this;
+        }
+        
+        public T Proxy<T>(T? origin = null, string? name = null) where T : class
+        {
+            return Of<T>(name).Proxy(origin);
+        }
+
+        public ICallContext<T> CallCtx<T>(string? name = null) where T : class
+        {
+            return Of<T>(name).CallCtx;
+        }
+
         public IEnumerable<Type> KnownTypes(string? name = null)
         {
             return _directors.Keys

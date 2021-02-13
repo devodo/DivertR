@@ -25,6 +25,11 @@ namespace Divertr.WebAppTests
             });
         }
 
+        public IDiverter InitDiverter()
+        {
+            return Diverter.ResetAll();
+        }
+
         public HttpClient CreateHttpClient()
         {
             var client = _webApplicationFactory.CreateClient();

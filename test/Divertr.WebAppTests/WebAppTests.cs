@@ -21,8 +21,7 @@ namespace Divertr.WebAppTests
         
         public WebAppTests(WebAppFixture webAppFixture)
         {
-            _diverter = webAppFixture.Diverter;
-            _diverter.ResetAll();
+            _diverter = webAppFixture.InitDiverter();
             _originalFooRepository = _diverter.CallCtx<IFooRepository>().Original;
             _fooRepositoryFake  = A.Fake<IFooRepository>(o => o.Wrapping(_originalFooRepository));
             _diverter.Redirect(_fooRepositoryFake);
@@ -67,7 +66,7 @@ namespace Divertr.WebAppTests
                     return result;
                 });
 
-            _diverter.For<IFooRepository>().Redirect(_fooRepositoryMock.Object);
+            _diverter.Of<IFooRepository>().Redirect(_fooRepositoryMock.Object);
             
             // ACT
             var response = await _fooClient.InsertFoo(createFooRequest);

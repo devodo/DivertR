@@ -42,9 +42,9 @@ namespace Divertr.Extensions.DependencyInjection
             return services;
         }
         
-        public static IServiceCollection Divert<T>(this IServiceCollection services, IDirector<T> director) where T : class
+        public static IServiceCollection Divert<T>(this IServiceCollection services, IDiversion<T> diversion) where T : class
         {
-            services.InjectDiverter(director);
+            services.InjectDiverter(diversion);
 
             return services;
         }
@@ -89,7 +89,7 @@ namespace Divertr.Extensions.DependencyInjection
                     continue;
                 }
 
-                var redirector = diverter.For(descriptor.ServiceType, name);
+                var redirector = diverter.Of(descriptor.ServiceType, name);
                 object ProxyFactory(IServiceProvider provider)
                 {
                     var instance = provider.GetInstance(descriptor);
@@ -100,7 +100,7 @@ namespace Divertr.Extensions.DependencyInjection
             }
         }
         
-        private static void InjectDiverter<T>(this IServiceCollection services, IDirector<T> director) where T : class
+        private static void InjectDiverter<T>(this IServiceCollection services, IDiversion<T> diversion) where T : class
         {
             for (var i = 0; i < services.Count; i++)
             {
@@ -114,7 +114,7 @@ namespace Divertr.Extensions.DependencyInjection
                 object ProxyFactory(IServiceProvider provider)
                 {
                     var instance = provider.GetInstance(descriptor);
-                    return director.Proxy((T)instance);
+                    return diversion.Proxy((T)instance);
                 }
 
                 services[i] = ServiceDescriptor.Describe(descriptor.ServiceType, ProxyFactory, descriptor.Lifetime);

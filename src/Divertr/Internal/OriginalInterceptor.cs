@@ -18,7 +18,7 @@ namespace Divertr.Internal
             
             if (redirectionContext == null)
             {
-                throw new InvalidOperationException("Call context instances may only be accessed within a Diverter Proxy call");
+                throw new DiverterException("Call context instances may only be accessed within a Diverter Proxy call");
             }
 
             if (redirectionContext.Origin == null)

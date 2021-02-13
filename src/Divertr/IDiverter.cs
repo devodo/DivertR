@@ -5,14 +5,15 @@ namespace Divertr
 {
     public interface IDiverter
     {
-        IDirector<T> For<T>(string? name = null) where T : class;
-        void ResetAll();
+        IDiversion<T> Of<T>(string? name = null) where T : class;
+        IDiversion Of(Type type, string? name = null);
+        IDiversion<T> Redirect<T>(T target, string? name = null) where T : class;
+        IDiversion<T> Reset<T>(string? name = null) where T : class;
+        IDiverter ResetAll();
         
         T Proxy<T>(T? origin = null, string? name = null) where T : class;
-        IDirector<T> Redirect<T>(T target, string? name = null) where T : class;
-        ICallContext<T> CallCtx<T>(string? name = null) where T : class;
-        IDirector For(Type type, string? name = null);
         
+        ICallContext<T> CallCtx<T>(string? name = null) where T : class;
         IEnumerable<Type> KnownTypes(string? name = null);
     }
 }

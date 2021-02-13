@@ -19,7 +19,7 @@ namespace Divertr.Internal
             var director = _getDirector();
 
             if (director == null ||
-                !director.TryBeginCallContext(_original, invocation, out T? redirect))
+                !director.TryBeginCall(_original, invocation, out T? redirect))
             {
                 if (_original == null)
                 {
@@ -38,7 +38,7 @@ namespace Divertr.Internal
             }
             finally
             {
-                director.CloseCallContext(invocation);
+                director.EndCall(invocation);
             }
         }
     }

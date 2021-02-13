@@ -13,11 +13,11 @@ namespace Divertr.UnitTests
         {
             // ARRANGE
             var original = new Foo("hello world");
-            var director = _diverter.For<IFoo>();
-            var subject = director.Proxy(original);
+            var diversion = _diverter.Of<IFoo>();
+            var subject = diversion.Proxy(original);
             
-            director.AddRedirect(new FooSubstitute(" me", director.CallCtx.Replaced));
-            director.AddRedirect(new FooSubstitute(" again", director.CallCtx.Replaced));
+            diversion.AddRedirect(new FooSubstitute(" me", diversion.CallCtx.Replaced));
+            diversion.AddRedirect(new FooSubstitute(" again", diversion.CallCtx.Replaced));
 
             // ACT
             _diverter.ResetAll();

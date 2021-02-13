@@ -18,7 +18,7 @@ namespace Divertr.Internal
             
             if (redirectContext == null)
             {
-                throw new InvalidOperationException("Replaced instances may only be accessed within the context of a Diverter Proxy call");
+                throw new DiverterException("Replaced instances may only be accessed within the context of a Diverter Proxy call");
             }
 
             if (redirectContext.MoveNext(invocation, out var redirect))

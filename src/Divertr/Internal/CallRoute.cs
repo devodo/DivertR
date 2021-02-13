@@ -27,7 +27,7 @@ namespace Divertr.Internal
             return new CallRoute<T>(substitutions, _callContext);
         }
 
-        public bool TryBeginCallContext(T? origin, IInvocation invocation, out T? redirect)
+        public bool TryBeginCall(T? origin, IInvocation invocation, out T? redirect)
         {
             if (_redirects.Count == 0)
             {
@@ -47,7 +47,7 @@ namespace Divertr.Internal
             return hasRedirect;
         }
 
-        public void CloseCallContext(IInvocation invocation)
+        public void EndCall(IInvocation invocation)
         {
             var redirectContext = _callContext.Pop();
             

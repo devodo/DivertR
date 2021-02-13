@@ -3,17 +3,17 @@ using Divertr.Internal;
 
 namespace Divertr
 {
-    public class Director<T> : IDirector<T> where T : class
+    public class Diversion<T> : IDiversion<T> where T : class
     {
         private readonly DiverterId _diverterId;
         private readonly DiverterState _diverterState;
         private readonly Lazy<CallContext<T>> _callContext;
 
-        public Director() : this(DiverterId.From<T>(), new DiverterState())
+        public Diversion() : this(DiverterId.From<T>(), new DiverterState())
         {
         }
         
-        internal Director(DiverterId diverterId, DiverterState diverterState)
+        internal Diversion(DiverterId diverterId, DiverterState diverterState)
         {
             if (!typeof(T).IsInterface)
             {
@@ -47,7 +47,7 @@ namespace Divertr
             return Proxy((T) origin!);
         }
         
-        public IDirector<T> Redirect(T target)
+        public IDiversion<T> Redirect(T target)
         {
             var director = new CallRoute<T>(new Redirect<T>(target), _callContext.Value);
             _diverterState.SetDirector(_diverterId, director);
@@ -55,7 +55,7 @@ namespace Divertr
             return this;
         }
 
-        public IDirector<T> AddRedirect(T target)
+        public IDiversion<T> AddRedirect(T target)
         {
             CallRoute<T> Create()
             {
@@ -72,7 +72,7 @@ namespace Divertr
             return this;
         }
 
-        public IDirector<T> Reset()
+        public IDiversion<T> Reset()
         {
             _diverterState.Reset(_diverterId);
 
