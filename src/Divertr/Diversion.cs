@@ -44,7 +44,7 @@ namespace Divertr
                 throw new ArgumentException($"Not assignable to {typeof(T).Name}", nameof(root));
             }
 
-            return Proxy((T) root!);
+            return Proxy(root as T);
         }
         
         public IDiversion<T> Redirect(T target)

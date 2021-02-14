@@ -1,4 +1,7 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using Divertr.Extensions.DependencyInjection;
 using Divertr.SampleWebApp;
@@ -11,6 +14,7 @@ namespace Divertr.WebAppTests
     public class WebAppFixture
     {
         public IDiverter Diverter { get; } = new Diverter();
+        public List<Type> TypesRegistered { get; private set; }
         
         private readonly WebApplicationFactory<Startup> _webApplicationFactory;
         
@@ -20,7 +24,12 @@ namespace Divertr.WebAppTests
             {
                 builder.ConfigureServices(services =>
                 {
-                    services.DivertRange<IFooRepository, IFooRepository>(Diverter);
+                    services.Divert(Diverter, diverterBuilder =>
+                    {
+                        diverterBuilder.IncludeRange<IFooRepository>();
+                        diverterBuilder.ExcludeRange<IFooRepository>(startInclusive: false);
+                        diverterBuilder.WithTypesRegisteredHandler(TypeRegisteredHandler);
+                    });
                 });
             });
         }
@@ -41,6 +50,11 @@ namespace Divertr.WebAppTests
         public IFooClient CreateFooClient()
         {
             return RestService.For<IFooClient>(CreateHttpClient());
+        }
+
+        private void TypeRegisteredHandler(object sender, IEnumerable<Type> typesRegistered)
+        {
+            TypesRegistered = typesRegistered.ToList();
         }
     }
 }

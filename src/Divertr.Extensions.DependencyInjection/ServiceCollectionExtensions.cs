@@ -6,101 +6,28 @@ namespace Divertr.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, IEnumerable<Type> types, string? name = null)
+        public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, Action<DiverterRegistrationBuilder>? configureBuilder = null)
         {
-            services.InjectDiverter(diverter, types, name);
-
+            var builder = new DiverterRegistrationBuilder(services, diverter);
+            configureBuilder?.Invoke(builder);
+            builder.Build().Register();
             return services;
         }
-        
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, params Type[] types)
-        {
-            services.InjectDiverter(diverter, types);
 
-            return services;
-        }
-        
-        public static IServiceCollection Divert<T>(this IServiceCollection services, IDiverter diverter, string? name = null)
+        public static IServiceCollection Divert<T>(this IServiceCollection services, IDiverter diverter, string? name = null) where T : class
         {
-            services.InjectDiverter(diverter, new[] {typeof(T)}, name);
-
-            return services;
+            return services.Divert(diverter, typeof(T), name);
         }
         
         public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, Type type, string? name = null)
         {
-            services.InjectDiverter(diverter, new[] {type}, name);
-
-            return services;
+            return services.Divert(diverter, builder =>
+            {
+                builder.Include(type).WithName(name);
+            });
         }
-        
-        public static IServiceCollection DivertRange<TStart, TEnd>(this IServiceCollection services, IDiverter diverter, string? name = null)
-        {
-            var selectedTypes = services.GetRange(typeof(TStart), typeof(TEnd));
-            services.InjectDiverter(diverter, selectedTypes, name);
 
-            return services;
-        }
-        
         public static IServiceCollection Divert<T>(this IServiceCollection services, IDiversion<T> diversion) where T : class
-        {
-            services.InjectDiverter(diversion);
-
-            return services;
-        }
-
-        private static IEnumerable<Type> GetRange(this IServiceCollection services, Type startType, Type endType)
-        {
-            bool startFound = false;
-            foreach (var descriptor in services)
-            {
-                if (!startFound)
-                {
-                    if (descriptor.ServiceType != startType)
-                    {
-                        continue;
-                    }
-
-                    startFound = true;
-                }
-
-                if (descriptor.ServiceType.IsInterface && !descriptor.ServiceType.ContainsGenericParameters)
-                {
-                    yield return descriptor.ServiceType;
-                }
-
-                if (descriptor.ServiceType == endType)
-                {
-                    break;
-                }
-            }
-        }
-
-        private static void InjectDiverter(this IServiceCollection services, IDiverter diverter, IEnumerable<Type> types, string? name = null)
-        {
-            var typeHashSet = new HashSet<Type>(types);
-            
-            for (var i = 0; i < services.Count; i++)
-            {
-                var descriptor = services[i];
-
-                if (!typeHashSet.Contains(descriptor.ServiceType))
-                {
-                    continue;
-                }
-
-                var redirector = diverter.Of(descriptor.ServiceType, name);
-                object ProxyFactory(IServiceProvider provider)
-                {
-                    var instance = provider.GetInstance(descriptor);
-                    return redirector.Proxy(instance);
-                }
-                
-                services[i] = ServiceDescriptor.Describe(descriptor.ServiceType, ProxyFactory, descriptor.Lifetime);
-            }
-        }
-        
-        private static void InjectDiverter<T>(this IServiceCollection services, IDiversion<T> diversion) where T : class
         {
             for (var i = 0; i < services.Count; i++)
             {
@@ -119,9 +46,48 @@ namespace Divertr.Extensions.DependencyInjection
 
                 services[i] = ServiceDescriptor.Describe(descriptor.ServiceType, ProxyFactory, descriptor.Lifetime);
             }
+
+            return services;
         }
 
-        private static object GetInstance(this IServiceProvider provider, ServiceDescriptor descriptor)
+        internal static IEnumerable<Type> GetRange(this IServiceCollection services, Type? startType = null, Type? endType = null, bool startInclusive = true, bool endInclusive = true)
+        {
+            bool startFound = startType == null;
+            foreach (var descriptor in services)
+            {
+                if (!startFound)
+                {
+                    if (descriptor.ServiceType != startType)
+                    {
+                        continue;
+                    }
+
+                    startFound = true;
+
+                    if (!startInclusive)
+                    {
+                        continue;
+                    }
+                }
+
+                if (!endInclusive && descriptor.ServiceType == endType)
+                {
+                    break;
+                }
+
+                if (descriptor.ServiceType.IsInterface && !descriptor.ServiceType.ContainsGenericParameters)
+                {
+                    yield return descriptor.ServiceType;
+                }
+
+                if (descriptor.ServiceType == endType)
+                {
+                    break;
+                }
+            }
+        }
+        
+        internal static object GetInstance(this IServiceProvider provider, ServiceDescriptor descriptor)
         {
             if (descriptor.ImplementationInstance != null)
             {

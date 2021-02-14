@@ -51,7 +51,7 @@ var foo = new Foo {Message = "hello foo"};
 var fooProxy = diversion.Proxy(foo);
 Console.WriteLine(fooProxy.Message); // "hello foo"
 ```
-> By default Diversion proxies simply forward calls to the original instance. 
+> By default `Diversion` proxies simply forward calls to the original instance. 
 
 ### Configure a redirect
 
@@ -114,10 +114,11 @@ This is useful, for example, to decorate the behaviours of transient DI services
 var fooA = diversion.Proxy(new Foo {Message = "foo A"});
 var fooB = diversion.Proxy(new Foo {Message = "foo B"});
 
+var original = diversion.CallCtx.Root;
 var mock = new Mock<IFoo>();
 mock
     .Setup(x => x.Message)
-    .Returns(() => $"Hello {diversion.CallCtx.Original.Message}");
+    .Returns(() => $"Hello {original.Message}");
 
 diversion.Redirect(mock.Object);
 
