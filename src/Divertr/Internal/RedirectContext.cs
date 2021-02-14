@@ -8,14 +8,14 @@ namespace Divertr.Internal
     internal class RedirectContext<T> where T : class
     {
         private readonly AsyncLocal<List<int>> _indexStack = new AsyncLocal<List<int>>();
-        public T? Origin { get; }
+        public T? Root { get; }
         public IInvocation RootInvocation { get; }
         private readonly List<Redirect<T>> _redirects;
 
-        public RedirectContext(T? origin, List<Redirect<T>> redirects, IInvocation rootInvocation)
+        public RedirectContext(T? root, List<Redirect<T>> redirects, IInvocation rootInvocation)
         {
             _redirects = redirects;
-            Origin = origin;
+            Root = root;
             RootInvocation = rootInvocation;
         }
 

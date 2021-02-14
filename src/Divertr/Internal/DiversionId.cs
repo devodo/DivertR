@@ -2,25 +2,25 @@
 
 namespace Divertr.Internal
 {
-    internal readonly struct DiverterId : IEquatable<DiverterId>
+    internal readonly struct DiversionId : IEquatable<DiversionId>
     {
         public Type Type { get; }
         public string? Name { get; }
 
-        public DiverterId(Type type, string? name)
+        public DiversionId(Type type, string? name)
         {
             Type = type;
             Name = name;
         }
 
-        public bool Equals(DiverterId other)
+        public bool Equals(DiversionId other)
         {
             return ReferenceEquals(Type, other.Type) && Name == other.Name;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is DiverterId other && Equals(other);
+            return obj is DiversionId other && Equals(other);
         }
 
         public override int GetHashCode()
@@ -39,14 +39,14 @@ namespace Divertr.Internal
             }
         }
 
-        public static DiverterId From(Type type, string? name = null)
+        public static DiversionId From(Type type, string? name = null)
         {
-            return new DiverterId(type, name);
+            return new DiversionId(type, name);
         }
 
-        public static DiverterId From<T>(string? name = null)
+        public static DiversionId From<T>(string? name = null)
         {
-            return new DiverterId(typeof(T), name);
+            return new DiversionId(typeof(T), name);
         }
     }
 }

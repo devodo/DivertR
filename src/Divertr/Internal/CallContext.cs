@@ -7,14 +7,14 @@ namespace Divertr.Internal
     internal class CallContext<T> : ICallContext<T> where T : class
     {
         private readonly AsyncLocal<List<RedirectContext<T>>> _callStack = new AsyncLocal<List<RedirectContext<T>>>();
-        public T Replaced { get; }
+        public T Next { get; }
         
-        public T Original { get; }
+        public T Root { get; }
 
         public CallContext()
         {
-            Replaced =  ProxyFactory.Instance.CreateReplacedProxy(this);
-            Original = ProxyFactory.Instance.CreateOriginalProxy(this);
+            Next =  ProxyFactory.Instance.CreateRedirectTargetProxy(this);
+            Root = ProxyFactory.Instance.CreateRootTargetProxy(this);
         }
         
         public void Push(RedirectContext<T> redirectContext)

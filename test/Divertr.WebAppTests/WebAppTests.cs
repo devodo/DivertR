@@ -22,9 +22,9 @@ namespace Divertr.WebAppTests
         public WebAppTests(WebAppFixture webAppFixture)
         {
             _diverter = webAppFixture.InitDiverter();
-            _originalFooRepository = _diverter.CallCtx<IFooRepository>().Original;
+            _originalFooRepository = _diverter.Of<IFooRepository>().CallCtx.Root;
             _fooRepositoryFake  = A.Fake<IFooRepository>(o => o.Wrapping(_originalFooRepository));
-            _diverter.Redirect(_fooRepositoryFake);
+            _diverter.Of<IFooRepository>().Redirect(_fooRepositoryFake);
             
             _fooClient = webAppFixture.CreateFooClient();
         }

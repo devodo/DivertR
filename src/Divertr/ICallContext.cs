@@ -2,7 +2,7 @@
 {
     public interface ICallContext<T> where T : class
     {
-        T Replaced { get; }
-        T Original { get; }
+        T Next { get; }
+        T Root { get; }
     }
 }

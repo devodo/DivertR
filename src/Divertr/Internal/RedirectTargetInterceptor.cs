@@ -3,11 +3,11 @@ using Castle.DynamicProxy;
 
 namespace Divertr.Internal
 {
-    internal class ReplacedInterceptor<T> : IInterceptor where T : class
+    internal class RedirectTargetInterceptor<T> : IInterceptor where T : class
     {
         private readonly CallContext<T> _callContext;
 
-        public ReplacedInterceptor(CallContext<T> callContext)
+        public RedirectTargetInterceptor(CallContext<T> callContext)
         {
             _callContext = callContext;
         }
@@ -18,7 +18,7 @@ namespace Divertr.Internal
             
             if (redirectContext == null)
             {
-                throw new DiverterException("Replaced instances may only be accessed within the context of a Diverter Proxy call");
+                throw new DiverterException("Redirect target may only be accessed within the context of a Diversion call");
             }
 
             if (redirectContext.MoveNext(invocation, out var redirect))
@@ -27,7 +27,7 @@ namespace Divertr.Internal
                 {
                     if (redirect == null)
                     {
-                        throw new DiverterException("Redirect target reference not set to an instance of an object.");
+                        throw new DiverterException("Redirect target not set to an instance of an object.");
                     }
                     
                     // ReSharper disable once SuspiciousTypeConversion.Global
@@ -42,12 +42,12 @@ namespace Divertr.Internal
                 return;
             }
             
-            if (redirectContext.Origin == null)
+            if (redirectContext.Root == null)
             {
                 throw new DiverterException("Original reference not set to an instance of an object.");
             }
 
-            ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectContext.Origin);
+            ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectContext.Root);
             invocation.Proceed();
         }
     }

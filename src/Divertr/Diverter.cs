@@ -10,11 +10,11 @@ namespace Divertr
     public class Diverter : IDiverter
     {
         private readonly DiverterState _diverterState = new DiverterState();
-        private readonly ConcurrentDictionary<DiverterId, object> _directors = new ConcurrentDictionary<DiverterId, object>();
+        private readonly ConcurrentDictionary<DiversionId, object> _diversions = new ConcurrentDictionary<DiversionId, object>();
 
         public IDiversion<T> Of<T>(string? name = null) where T : class
         {
-            return (IDiversion<T>) _directors.GetOrAdd(DiverterId.From<T>(name),
+            return (IDiversion<T>) _diversions.GetOrAdd(DiversionId.From<T>(name),
                 id => new Diversion<T>(id, _diverterState));
         }
         
@@ -22,7 +22,7 @@ namespace Divertr
         {
             const BindingFlags activatorFlags = BindingFlags.NonPublic | BindingFlags.Instance;
 
-            return (IDiversion) _directors.GetOrAdd(DiverterId.From(type, name),
+            return (IDiversion) _diversions.GetOrAdd(DiversionId.From(type, name),
                 id =>
                 {
                     var diverterType = typeof(Diversion<>).MakeGenericType(type);
@@ -30,35 +30,15 @@ namespace Divertr
                 });
         }
         
-        public IDiversion<T> Redirect<T>(T target, string? name = null) where T : class
-        {
-            return Of<T>(name).Redirect(target);
-        }
-
-        public IDiversion<T> Reset<T>(string? name = null) where T : class
-        {
-            return Of<T>(name).Reset();
-        }
-
         public IDiverter ResetAll()
         {
-            _diverterState.Reset();
+            _diverterState.ResetAll();
             return this;
         }
         
-        public T Proxy<T>(T? origin = null, string? name = null) where T : class
-        {
-            return Of<T>(name).Proxy(origin);
-        }
-
-        public ICallContext<T> CallCtx<T>(string? name = null) where T : class
-        {
-            return Of<T>(name).CallCtx;
-        }
-
         public IEnumerable<Type> KnownTypes(string? name = null)
         {
-            return _directors.Keys
+            return _diversions.Keys
                 .Where(diverterId => name == null || diverterId.Name == name)
                 .Select(diverterId => diverterId.Type);
         }

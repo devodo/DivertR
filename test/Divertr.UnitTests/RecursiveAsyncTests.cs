@@ -99,11 +99,11 @@ namespace Divertr.UnitTests
                 _src = src;
             }
 
-            public int Number => _src.Replaced.Number;
+            public int Number => _src.Next.Number;
 
             public async Task<int> Result()
             {
-                var result = await _src.Replaced.Result();
+                var result = await _src.Next.Result();
 
                 return result;
             }

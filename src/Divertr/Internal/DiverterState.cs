@@ -5,46 +5,46 @@ namespace Divertr.Internal
 {
     internal class DiverterState
     {
-        private readonly ConcurrentDictionary<DiverterId, object> _directors = new ConcurrentDictionary<DiverterId, object>();
+        private readonly ConcurrentDictionary<DiversionId, object> _callRoutes = new ConcurrentDictionary<DiversionId, object>();
 
-        public CallRoute<T>? GetDirector<T>(DiverterId diverterId) where T : class
+        public DiversionSnapshot<T>? GetCallRoute<T>(DiversionId diversionId) where T : class
         {
-            if (_directors.TryGetValue(diverterId, out var alteration))
+            if (_callRoutes.TryGetValue(diversionId, out var alteration))
             {
-                return (CallRoute<T>)alteration;
+                return (DiversionSnapshot<T>)alteration;
             }
 
             return null;
         }
 
-        public CallRoute<T> AddOrUpdateDirector<T>(DiverterId diverterId, Func<CallRoute<T>> addFactory, Func<CallRoute<T>, CallRoute<T>> updateFactory) where T : class
+        public DiversionSnapshot<T> AddOrUpdateCallRoute<T>(DiversionId diversionId, Func<DiversionSnapshot<T>> addFactory, Func<DiversionSnapshot<T>, DiversionSnapshot<T>> updateFactory) where T : class
         {
-            object Create(DiverterId _)
+            object Create(DiversionId _)
             {
                 return addFactory.Invoke();
             }
 
-            object Update(DiverterId _, object existingDiversion)
+            object Update(DiversionId _, object existing)
             {
-                return updateFactory((CallRoute<T>) existingDiversion);
+                return updateFactory((DiversionSnapshot<T>) existing);
             }
 
-            return (CallRoute<T>)_directors.AddOrUpdate(diverterId, Create, Update);
+            return (DiversionSnapshot<T>)_callRoutes.AddOrUpdate(diversionId, Create, Update);
         }
 
-        public void SetDirector<T>(DiverterId diverterId, CallRoute<T> callRoute) where T : class
+        public void SetCallRoute<T>(DiversionId diversionId, DiversionSnapshot<T> diversionSnapshot) where T : class
         {
-            _directors[diverterId] = callRoute;
+            _callRoutes[diversionId] = diversionSnapshot;
         }
 
-        public bool Reset(DiverterId diverterId)
+        public bool Reset(DiversionId diversionId)
         {
-            return _directors.TryRemove(diverterId, out _);
+            return _callRoutes.TryRemove(diversionId, out _);
         }
         
-        public void Reset()
+        public void ResetAll()
         {
-            _directors.Clear();
+            _callRoutes.Clear();
         }
     }
 }

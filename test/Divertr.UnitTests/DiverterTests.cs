@@ -16,8 +16,8 @@ namespace Divertr.UnitTests
             var diversion = _diverter.Of<IFoo>();
             var subject = diversion.Proxy(original);
             
-            diversion.AddRedirect(new FooSubstitute(" me", diversion.CallCtx.Replaced));
-            diversion.AddRedirect(new FooSubstitute(" again", diversion.CallCtx.Replaced));
+            diversion.AddRedirect(new FooSubstitute(" me", diversion.CallCtx.Next));
+            diversion.AddRedirect(new FooSubstitute(" again", diversion.CallCtx.Next));
 
             // ACT
             _diverter.ResetAll();
@@ -31,10 +31,10 @@ namespace Divertr.UnitTests
         {
             // ARRANGE
             var original = new Foo("foo");
-            var subject = _diverter.Proxy<IFoo>(original);
+            var subject = _diverter.Of<IFoo>().Proxy(original);
 
             // ACT
-            _diverter.Redirect<IFoo>(new FooSubstitute(" diverted", _diverter.CallCtx<IFoo>().Replaced));
+            _diverter.Of<IFoo>().Redirect(new FooSubstitute(" diverted", _diverter.Of<IFoo>().CallCtx.Next));
             
             // ASSERT
             subject.Message.ShouldBe(original.Message + " diverted");

@@ -29,7 +29,7 @@ namespace Divertr.UnitTests
             // ARRANGE
             var original = new Foo("hello");
             var subject = _diversion.Proxy(original);
-            _diversion.Redirect(new FooSubstitute(" world", _diversion.CallCtx.Original));
+            _diversion.Redirect(new FooSubstitute(" world", _diversion.CallCtx.Root));
 
             // ACT
             var message = subject.Message;
@@ -48,7 +48,7 @@ namespace Divertr.UnitTests
             var mock = new Mock<IFoo>();
             mock
                 .Setup(x => x.Message)
-                .Returns(() => $"{_diversion.CallCtx.Original.Message} world");
+                .Returns(() => $"{_diversion.CallCtx.Root.Message} world");
 
             _diversion.Redirect(mock.Object);
 
@@ -67,9 +67,9 @@ namespace Divertr.UnitTests
 
             // ACT
             _diversion
-                .AddRedirect(new FooSubstitute(" me", _diversion.CallCtx.Replaced))
-                .AddRedirect(new FooSubstitute(" me", _diversion.CallCtx.Replaced))
-                .AddRedirect(new FooSubstitute(" again", _diversion.CallCtx.Replaced));
+                .AddRedirect(new FooSubstitute(" me", _diversion.CallCtx.Next))
+                .AddRedirect(new FooSubstitute(" me", _diversion.CallCtx.Next))
+                .AddRedirect(new FooSubstitute(" again", _diversion.CallCtx.Next));
 
 
             // ASSERT
@@ -84,9 +84,9 @@ namespace Divertr.UnitTests
             var subject = _diversion.Proxy(original);
 
             // ACT
-            _diversion.AddRedirect(new FooSubstitute(" me", _diversion.CallCtx.Replaced));
+            _diversion.AddRedirect(new FooSubstitute(" me", _diversion.CallCtx.Next));
             _diversion.Reset();
-            _diversion.AddRedirect(new FooSubstitute(" again", _diversion.CallCtx.Replaced));
+            _diversion.AddRedirect(new FooSubstitute(" again", _diversion.CallCtx.Next));
 
             // ASSERT
             subject.Message.ShouldBe("hello world again");
@@ -100,8 +100,8 @@ namespace Divertr.UnitTests
             var subject = _diversion.Proxy(original);
 
             // ACT
-            _diversion.AddRedirect(new FooSubstitute(" me", _diversion.CallCtx.Replaced));
-            _diversion.AddRedirect(new FooSubstitute(" again", _diversion.CallCtx.Replaced));
+            _diversion.AddRedirect(new FooSubstitute(" me", _diversion.CallCtx.Next));
+            _diversion.AddRedirect(new FooSubstitute(" again", _diversion.CallCtx.Next));
             _diversion.Reset();
 
 

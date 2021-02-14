@@ -102,11 +102,11 @@ namespace Divertr.UnitTests
                 _output = output;
             }
 
-            public int Number => _src.Replaced.Number;
+            public int Number => _src.Next.Number;
 
             public int Result()
             {
-                var result = _src.Replaced.Result();
+                var result = _src.Next.Result();
                 
                 _output.WriteLine($"{Number} - {result}");
 
