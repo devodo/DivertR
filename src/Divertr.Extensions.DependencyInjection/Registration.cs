@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Divertr.Extensions.DependencyInjection
 {
-    public class DiverterRegistration
+    public class Registration
     {
         private readonly RegistrationConfiguration _configuration;
         private readonly EventHandler<IEnumerable<Type>>? _typesRegistered;
@@ -17,7 +17,7 @@ namespace Divertr.Extensions.DependencyInjection
 
         private int _serviceIndex = 0;
 
-        public DiverterRegistration(RegistrationConfiguration configuration, EventHandler<IEnumerable<Type>>? typesRegistered)
+        public Registration(RegistrationConfiguration configuration, EventHandler<IEnumerable<Type>>? typesRegistered)
         {
             _configuration = configuration;
             _typesRegistered = typesRegistered;

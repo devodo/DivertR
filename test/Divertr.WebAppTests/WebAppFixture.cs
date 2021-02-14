@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Divergic.Logging.Xunit;
 using Divertr.Extensions.DependencyInjection;
 using Divertr.SampleWebApp;
 using Divertr.SampleWebApp.Services;
+using FakeItEasy;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Refit;
+using Xunit.Abstractions;
 
 namespace Divertr.WebAppTests
 {
@@ -27,16 +32,41 @@ namespace Divertr.WebAppTests
                     services.Divert(Diverter, diverterBuilder =>
                     {
                         diverterBuilder.IncludeRange<IFooRepository>();
-                        diverterBuilder.ExcludeRange<IFooRepository>(startInclusive: false);
+                        diverterBuilder.ExcludeRange<IFooPublisher>(startInclusive: false);
+                        diverterBuilder.Include<ILoggerFactory>();
                         diverterBuilder.WithTypesRegisteredHandler(TypeRegisteredHandler);
                     });
                 });
             });
         }
 
-        public IDiverter InitDiverter()
+        public IDiverter InitDiverter(ITestOutputHelper output = null)
         {
-            return Diverter.ResetAll();
+            Diverter.ResetAll();
+
+            if (output != null)
+            {
+                InitLogging(output);
+            }
+
+            return Diverter;
+        }
+
+        public void InitLogging(ITestOutputHelper output)
+        {
+            var fakeLoggerFactory = A.Fake<ILoggerFactory>();
+            A.CallTo(() => fakeLoggerFactory.CreateLogger(A<string>._))
+                .ReturnsLazily((string name) =>
+                {
+                    if (name.StartsWith("Microsoft"))
+                    {
+                        return output.BuildLogger(LogLevel.Warning, name);
+                    }
+                    
+                    return output.BuildLogger(name);
+                });
+            
+            Diverter.Of<ILoggerFactory>().Redirect(fakeLoggerFactory);
         }
 
         public HttpClient CreateHttpClient()

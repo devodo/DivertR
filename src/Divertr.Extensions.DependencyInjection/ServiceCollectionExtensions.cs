@@ -6,9 +6,9 @@ namespace Divertr.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, Action<DiverterRegistrationBuilder>? configureBuilder = null)
+        public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, Action<RegistrationBuilder>? configureBuilder = null)
         {
-            var builder = new DiverterRegistrationBuilder(services, diverter);
+            var builder = new RegistrationBuilder(services, diverter);
             configureBuilder?.Invoke(builder);
             builder.Build().Register();
             return services;

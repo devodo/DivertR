@@ -19,6 +19,7 @@ namespace Divertr.SampleWebApp
         {
             services.AddControllers();
             services.AddTransient<IFooRepository, FooRepository>();
+            services.AddTransient<IFooPublisher, FooPublisher>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

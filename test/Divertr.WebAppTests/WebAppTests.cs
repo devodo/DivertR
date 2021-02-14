@@ -7,6 +7,7 @@ using FakeItEasy;
 using Moq;
 using Shouldly;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Divertr.WebAppTests
 {
@@ -19,9 +20,9 @@ namespace Divertr.WebAppTests
         private readonly IFooRepository _originalFooRepository;
         private readonly IFooRepository _fooRepositoryFake;
         
-        public WebAppTests(WebAppFixture webAppFixture)
+        public WebAppTests(WebAppFixture webAppFixture, ITestOutputHelper output)
         {
-            _diverter = webAppFixture.InitDiverter();
+            _diverter = webAppFixture.InitDiverter(output);
             _originalFooRepository = _diverter.Of<IFooRepository>().CallCtx.Root;
             _fooRepositoryFake  = A.Fake<IFooRepository>(o => o.Wrapping(_originalFooRepository));
             _diverter.Of<IFooRepository>().Redirect(_fooRepositoryFake);

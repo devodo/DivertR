@@ -4,22 +4,22 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Divertr.Extensions.DependencyInjection
 {
-    public class DiverterRegistrationBuilder
+    public class RegistrationBuilder
     {
         private readonly RegistrationConfiguration _configuration;
         private event EventHandler<IEnumerable<Type>>? TypesRegistered;
         
-        public DiverterRegistrationBuilder(IServiceCollection services, IDiverter diverter)
+        public RegistrationBuilder(IServiceCollection services, IDiverter diverter)
         {
             _configuration = new RegistrationConfiguration(services, diverter);
         }
 
-        public DiverterRegistrationBuilder Include<T>() where T : class
+        public RegistrationBuilder Include<T>() where T : class
         {
             return Include(typeof(T));
         }
         
-        public DiverterRegistrationBuilder Include(Type type)
+        public RegistrationBuilder Include(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             
@@ -41,7 +41,7 @@ namespace Divertr.Extensions.DependencyInjection
             return this;
         }
 
-        public DiverterRegistrationBuilder Include(IEnumerable<Type> types)
+        public RegistrationBuilder Include(IEnumerable<Type> types)
         {
             if (types == null) throw new ArgumentNullException(nameof(types));
             
@@ -53,7 +53,7 @@ namespace Divertr.Extensions.DependencyInjection
             return this;
         }
         
-        public DiverterRegistrationBuilder Include(params Type[] types)
+        public RegistrationBuilder Include(params Type[] types)
         {
             if (types == null) throw new ArgumentNullException(nameof(types));
             
@@ -65,17 +65,17 @@ namespace Divertr.Extensions.DependencyInjection
             return this;
         }
         
-        public DiverterRegistrationBuilder IncludeRange<TStartType, TEndType>(bool startInclusive = true, bool endInclusive = true)
+        public RegistrationBuilder IncludeRange<TStartType, TEndType>(bool startInclusive = true, bool endInclusive = true)
         {
             return IncludeRange(typeof(TStartType), typeof(TEndType), startInclusive, endInclusive);
         }
         
-        public DiverterRegistrationBuilder IncludeRange<TStartType>(bool startInclusive = true)
+        public RegistrationBuilder IncludeRange<TStartType>(bool startInclusive = true)
         {
             return IncludeRange(typeof(TStartType), endType: null, startInclusive);
         }
 
-        public DiverterRegistrationBuilder IncludeRange(Type? startType = null, Type? endType = null, bool startInclusive = true, bool endInclusive = true)
+        public RegistrationBuilder IncludeRange(Type? startType = null, Type? endType = null, bool startInclusive = true, bool endInclusive = true)
         {
             foreach (var type in _configuration.Services.GetRange(startType, endType, startInclusive, endInclusive))
             {
@@ -85,7 +85,7 @@ namespace Divertr.Extensions.DependencyInjection
             return this;
         }
         
-        public DiverterRegistrationBuilder Exclude(Type type)
+        public RegistrationBuilder Exclude(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             
@@ -107,17 +107,17 @@ namespace Divertr.Extensions.DependencyInjection
             return this;
         }
         
-        public DiverterRegistrationBuilder ExcludeRange<TStartType, TEndType>(bool startInclusive = true, bool endInclusive = true)
+        public RegistrationBuilder ExcludeRange<TStartType, TEndType>(bool startInclusive = true, bool endInclusive = true)
         {
             return ExcludeRange(typeof(TStartType), typeof(TEndType), startInclusive, endInclusive);
         }
         
-        public DiverterRegistrationBuilder ExcludeRange<TStartType>(bool startInclusive = true)
+        public RegistrationBuilder ExcludeRange<TStartType>(bool startInclusive = true)
         {
             return ExcludeRange(typeof(TStartType), endType: null, startInclusive);
         }
 
-        public DiverterRegistrationBuilder ExcludeRange(Type? startType = null, Type? endType = null, bool startInclusive = true, bool endInclusive = true)
+        public RegistrationBuilder ExcludeRange(Type? startType = null, Type? endType = null, bool startInclusive = true, bool endInclusive = true)
         {
             foreach (var type in _configuration.Services.GetRange(startType, endType, startInclusive, endInclusive))
             {
@@ -127,23 +127,23 @@ namespace Divertr.Extensions.DependencyInjection
             return this;
         }
 
-        public DiverterRegistrationBuilder WithName(string? name)
+        public RegistrationBuilder WithName(string? name)
         {
             _configuration.Name = name;
 
             return this;
         }
         
-        public DiverterRegistrationBuilder WithTypesRegisteredHandler(EventHandler<IEnumerable<Type>> typesRegisteredHandler)
+        public RegistrationBuilder WithTypesRegisteredHandler(EventHandler<IEnumerable<Type>> typesRegisteredHandler)
         {
             TypesRegistered += typesRegisteredHandler;
 
             return this;
         }
 
-        public DiverterRegistration Build()
+        public Registration Build()
         {
-            return new DiverterRegistration(_configuration, TypesRegistered);
+            return new Registration(_configuration, TypesRegistered);
         } 
     }
 }
