@@ -9,7 +9,7 @@ namespace Divertr.Internal
         
         private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
         
-        public T CreateDiversionProxy<T>(T? original, Func<DiversionSnapshot<T>?> getDirector) where T : class
+        public T CreateDiversionProxy<T>(T? original, Func<DiversionRoute<T>?> getDirector) where T : class
         {
             var interceptor = new DiversionInterceptor<T>(original, getDirector);
             return _proxyGenerator.CreateInterfaceProxyWithTargetInterface(original, interceptor)!;

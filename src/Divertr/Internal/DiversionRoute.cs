@@ -4,27 +4,27 @@ using Castle.DynamicProxy;
 
 namespace Divertr.Internal
 {
-    internal class DiversionSnapshot<T> where T : class
+    internal class DiversionRoute<T> where T : class
     {
         private readonly CallContext<T> _callContext;
         private readonly List<Redirect<T>> _redirects;
         
-        public DiversionSnapshot(Redirect<T> redirect, CallContext<T> callContext)
+        public DiversionRoute(Redirect<T> redirect, CallContext<T> callContext)
         {
             _redirects = new List<Redirect<T>> {redirect};
             _callContext = callContext;
         }
 
-        private DiversionSnapshot(List<Redirect<T>> redirects, CallContext<T> callContext)
+        private DiversionRoute(List<Redirect<T>> redirects, CallContext<T> callContext)
         {
             _redirects = redirects;
             _callContext = callContext;
         }
         
-        public DiversionSnapshot<T> AppendRedirect(Redirect<T> redirect)
+        public DiversionRoute<T> AppendRedirect(Redirect<T> redirect)
         {
             var redirects = new[] {redirect}.Concat(_redirects).ToList();
-            return new DiversionSnapshot<T>(redirects, _callContext);
+            return new DiversionRoute<T>(redirects, _callContext);
         }
 
         public bool TryBeginCall(T? origin, IInvocation invocation, out T? redirect)

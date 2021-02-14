@@ -6,14 +6,14 @@ namespace Divertr
     public class Diversion<T> : IDiversion<T> where T : class
     {
         private readonly DiversionId _diversionId;
-        private readonly DiverterState _diverterState;
+        private readonly RouteRepository _routeRepository;
         private readonly Lazy<CallContext<T>> _callContext;
 
-        public Diversion() : this(DiversionId.From<T>(), new DiverterState())
+        public Diversion() : this(DiversionId.From<T>(), new RouteRepository())
         {
         }
         
-        internal Diversion(DiversionId diversionId, DiverterState diverterState)
+        internal Diversion(DiversionId diversionId, RouteRepository routeRepository)
         {
             if (!typeof(T).IsInterface)
             {
@@ -21,61 +21,61 @@ namespace Divertr
             }
             
             _diversionId = diversionId;
-            _diverterState = diverterState;
+            _routeRepository = routeRepository;
             _callContext = new Lazy<CallContext<T>>(() => new CallContext<T>());
         }
 
         public ICallContext<T> CallCtx => _callContext.Value;
         
-        public T Proxy(T? original = null)
+        public T Proxy(T? root = null)
         {
-            DiversionSnapshot<T>? GetDirector()
+            DiversionRoute<T>? GetDiversionRoute()
             {
-                return _diverterState.GetCallRoute<T>(_diversionId);
+                return _routeRepository.GetRoute<T>(_diversionId);
             }
 
-            return ProxyFactory.Instance.CreateDiversionProxy(original, GetDirector);
+            return ProxyFactory.Instance.CreateDiversionProxy(root, GetDiversionRoute);
         }
         
-        public object Proxy(object? origin = null)
+        public object Proxy(object? root = null)
         {
-            if (origin != null && !(origin is T))
+            if (root != null && !(root is T))
             {
-                throw new ArgumentException($"Not assignable to {typeof(T).Name}", nameof(origin));
+                throw new ArgumentException($"Not assignable to {typeof(T).Name}", nameof(root));
             }
 
-            return Proxy((T) origin!);
+            return Proxy((T) root!);
         }
         
         public IDiversion<T> Redirect(T target)
         {
             var redirect = new Redirect<T>(target);
-            var callRoute = new DiversionSnapshot<T>(redirect, _callContext.Value);
-            _diverterState.SetCallRoute(_diversionId, callRoute);
+            var callRoute = new DiversionRoute<T>(redirect, _callContext.Value);
+            _routeRepository.SetRoute(_diversionId, callRoute);
 
             return this;
         }
 
         public IDiversion<T> AddRedirect(T target)
         {
-            DiversionSnapshot<T> Create()
+            DiversionRoute<T> Create()
             {
-                return new DiversionSnapshot<T>(new Redirect<T>(target), _callContext.Value);
+                return new DiversionRoute<T>(new Redirect<T>(target), _callContext.Value);
             }
 
-            DiversionSnapshot<T> Update(DiversionSnapshot<T> existing)
+            DiversionRoute<T> Update(DiversionRoute<T> existing)
             {
                 return existing.AppendRedirect(new Redirect<T>(target));
             }
 
-            _diverterState.AddOrUpdateCallRoute(_diversionId, Create, Update);
+            _routeRepository.AddOrUpdateRoute(_diversionId, Create, Update);
 
             return this;
         }
 
         public IDiversion<T> Reset()
         {
-            _diverterState.Reset(_diversionId);
+            _routeRepository.Reset(_diversionId);
 
             return this;
         }

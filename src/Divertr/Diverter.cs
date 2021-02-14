@@ -9,13 +9,13 @@ namespace Divertr
 {
     public class Diverter : IDiverter
     {
-        private readonly DiverterState _diverterState = new DiverterState();
+        private readonly RouteRepository _routeRepository = new RouteRepository();
         private readonly ConcurrentDictionary<DiversionId, object> _diversions = new ConcurrentDictionary<DiversionId, object>();
 
         public IDiversion<T> Of<T>(string? name = null) where T : class
         {
             return (IDiversion<T>) _diversions.GetOrAdd(DiversionId.From<T>(name),
-                id => new Diversion<T>(id, _diverterState));
+                id => new Diversion<T>(id, _routeRepository));
         }
         
         public IDiversion Of(Type type, string? name = null)
@@ -26,13 +26,13 @@ namespace Divertr
                 id =>
                 {
                     var diverterType = typeof(Diversion<>).MakeGenericType(type);
-                    return Activator.CreateInstance(diverterType, activatorFlags, null, new object[] {id, _diverterState}, default);
+                    return Activator.CreateInstance(diverterType, activatorFlags, null, new object[] {id, _routeRepository}, default);
                 });
         }
         
         public IDiverter ResetAll()
         {
-            _diverterState.ResetAll();
+            _routeRepository.ResetAll();
             return this;
         }
         

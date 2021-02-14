@@ -6,9 +6,9 @@ namespace Divertr.Internal
     internal class DiversionInterceptor<T> : IInterceptor where T : class
     {
         private readonly T? _root;
-        private readonly Func<DiversionSnapshot<T>?> _getDiversionRoute;
+        private readonly Func<DiversionRoute<T>?> _getDiversionRoute;
 
-        public DiversionInterceptor(T? root, Func<DiversionSnapshot<T>?> getDiversionRoute)
+        public DiversionInterceptor(T? root, Func<DiversionRoute<T>?> getDiversionRoute)
         {
             _root = root;
             _getDiversionRoute = getDiversionRoute;
