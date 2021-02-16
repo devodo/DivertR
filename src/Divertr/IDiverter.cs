@@ -1,13 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Divertr.Internal;
 
 namespace Divertr
 {
     public interface IDiverter
     {
-        IDiversion<T> Of<T>(string? name = null) where T : class;
-        IDiversion Of(Type type, string? name = null);
-        IDiverter ResetAll();
-        IEnumerable<Type> KnownTypes(string? name = null);
+        DiverterId DiverterId { get; }
+        object Proxy(object? root = null);
+    }
+    
+    public interface IDiverter<T> : IDiverter  where T : class
+    {
+        ICallContext<T> CallCtx { get; }
+        T Proxy(T? root = null);
+        IDiverter<T> SendTo(T target);
+        IDiverter<T> AddSendTo(T target);
+        IDiverter<T> Reset();
     }
 }

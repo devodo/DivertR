@@ -5,10 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Divertr.Extensions.DependencyInjection
 {
-    public class Registration
+    public class DiverterRegistration
     {
         private readonly RegistrationConfiguration _configuration;
-        private readonly EventHandler<IEnumerable<Type>>? _typesRegistered;
+        private readonly EventHandler<IEnumerable<Type>>? _diversionsRegisteredNotifier;
         private readonly Lazy<Dictionary<Type, List<Type>>> _openGenericTypes;
 
         private readonly HashSet<Type> _registeredTypesHash = new HashSet<Type>();
@@ -17,10 +17,10 @@ namespace Divertr.Extensions.DependencyInjection
 
         private int _serviceIndex = 0;
 
-        public Registration(RegistrationConfiguration configuration, EventHandler<IEnumerable<Type>>? typesRegistered)
+        public DiverterRegistration(RegistrationConfiguration configuration, EventHandler<IEnumerable<Type>>? diversionsRegisteredNotifier)
         {
             _configuration = configuration;
-            _typesRegistered = typesRegistered;
+            _diversionsRegisteredNotifier = diversionsRegisteredNotifier;
 
             _openGenericTypes = new Lazy<Dictionary<Type, List<Type>>>(() =>
             {
@@ -111,7 +111,7 @@ namespace Divertr.Extensions.DependencyInjection
                         
                 var implementationType = descriptor.ImplementationType.MakeGenericType(genericType.GetGenericArguments());
                         
-                var diversion = _configuration.Diverter.Of(genericType, _configuration.Name);
+                var diversion = _configuration.Diverters.Of(genericType, _configuration.Name);
                 object ProxyFactory(IServiceProvider provider)
                 {
                     var instance = ActivatorUtilities.GetServiceOrCreateInstance(provider, implementationType);
@@ -126,7 +126,7 @@ namespace Divertr.Extensions.DependencyInjection
 
         private void InjectDiverter(int servicesIndex, ServiceDescriptor descriptor)
         {
-            var diversion = _configuration.Diverter.Of(descriptor.ServiceType, _configuration.Name);
+            var diversion = _configuration.Diverters.Of(descriptor.ServiceType, _configuration.Name);
             object ProxyFactory(IServiceProvider provider)
             {
                 var instance = provider.GetInstance(descriptor);
@@ -162,7 +162,7 @@ namespace Divertr.Extensions.DependencyInjection
 
             RegisterCreateDescriptors();
 
-            _typesRegistered?.Invoke(this, _registeredTypes);
+            _diversionsRegisteredNotifier?.Invoke(this, _registeredTypes);
         }
     }
 }

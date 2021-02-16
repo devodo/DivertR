@@ -1,46 +1,84 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using Divertr.Internal;
 
 namespace Divertr
 {
-    public class Diverter : IDiverter
+    public class Diverter<T> : IDiverter<T> where T : class
     {
-        private readonly RouteRepository _routeRepository = new RouteRepository();
-        private readonly ConcurrentDictionary<DiversionId, object> _diversions = new ConcurrentDictionary<DiversionId, object>();
+        private readonly RouteRepository _routeRepository;
+        private readonly Lazy<CallContext<T>> _callContext;
 
-        public IDiversion<T> Of<T>(string? name = null) where T : class
+        public Diverter() : this(DiverterId.From<T>(), new RouteRepository())
         {
-            return (IDiversion<T>) _diversions.GetOrAdd(DiversionId.From<T>(name),
-                id => new Diversion<T>(id, _routeRepository));
         }
         
-        public IDiversion Of(Type type, string? name = null)
+        internal Diverter(DiverterId diverterId, RouteRepository routeRepository)
         {
-            const BindingFlags activatorFlags = BindingFlags.NonPublic | BindingFlags.Instance;
+            if (!typeof(T).IsInterface)
+            {
+                throw new ArgumentException("Only interface types are supported", typeof(T).Name);
+            }
+            
+            DiverterId = diverterId;
+            _routeRepository = routeRepository;
+            _callContext = new Lazy<CallContext<T>>(() => new CallContext<T>());
+        }
 
-            return (IDiversion) _diversions.GetOrAdd(DiversionId.From(type, name),
-                id =>
-                {
-                    var diverterType = typeof(Diversion<>).MakeGenericType(type);
-                    return Activator.CreateInstance(diverterType, activatorFlags, null, new object[] {id, _routeRepository}, default);
-                });
+        public DiverterId DiverterId { get; }
+
+        public ICallContext<T> CallCtx => _callContext.Value;
+        
+        public T Proxy(T? root = null)
+        {
+            DiversionRoute<T>? GetDiversionRoute()
+            {
+                return _routeRepository.GetRoute<T>(DiverterId);
+            }
+
+            return ProxyFactory.Instance.CreateDiversionProxy(root, GetDiversionRoute);
+        }
+
+        public object Proxy(object? root = null)
+        {
+            if (root != null && !(root is T))
+            {
+                throw new ArgumentException($"Not assignable to {typeof(T).Name}", nameof(root));
+            }
+
+            return Proxy(root as T);
         }
         
-        public IDiverter ResetAll()
+        public IDiverter<T> SendTo(T target)
         {
-            _routeRepository.ResetAll();
+            var redirect = new Redirect<T>(target);
+            var callRoute = new DiversionRoute<T>(redirect, _callContext.Value);
+            _routeRepository.SetRoute(DiverterId, callRoute);
+
             return this;
         }
-        
-        public IEnumerable<Type> KnownTypes(string? name = null)
+
+        public IDiverter<T> AddSendTo(T target)
         {
-            return _diversions.Keys
-                .Where(diverterId => name == null || diverterId.Name == name)
-                .Select(diverterId => diverterId.Type);
+            DiversionRoute<T> Create()
+            {
+                return new DiversionRoute<T>(new Redirect<T>(target), _callContext.Value);
+            }
+
+            DiversionRoute<T> Update(DiversionRoute<T> existing)
+            {
+                return existing.AppendRedirect(new Redirect<T>(target));
+            }
+
+            _routeRepository.AddOrUpdateRoute(DiverterId, Create, Update);
+
+            return this;
+        }
+
+        public IDiverter<T> Reset()
+        {
+            _routeRepository.Reset(DiverterId);
+
+            return this;
         }
     }
 }

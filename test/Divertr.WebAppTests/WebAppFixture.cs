@@ -18,7 +18,7 @@ namespace Divertr.WebAppTests
 {
     public class WebAppFixture
     {
-        public IDiverter Diverter { get; } = new Diverter();
+        public IDiverterCollection Diverters { get; } = new DiverterCollection();
         public List<Type> TypesRegistered { get; private set; }
         
         private readonly WebApplicationFactory<Startup> _webApplicationFactory;
@@ -29,27 +29,27 @@ namespace Divertr.WebAppTests
             {
                 builder.ConfigureServices(services =>
                 {
-                    services.Divert(Diverter, diverterBuilder =>
+                    services.Divert(Diverters, diverterBuilder =>
                     {
-                        diverterBuilder.IncludeRange<IFooRepository>();
-                        diverterBuilder.ExcludeRange<IFooPublisher>(startInclusive: false);
+                        diverterBuilder.IncludeFrom<IFooRepository>();
+                        diverterBuilder.ExcludeFrom<IFooPublisher>(inclusive: false);
                         diverterBuilder.Include<ILoggerFactory>();
-                        diverterBuilder.WithTypesRegisteredHandler(TypeRegisteredHandler);
+                        diverterBuilder.WithDiversionsRegisteredHandler(TypeRegisteredHandler);
                     });
                 });
             });
         }
 
-        public IDiverter InitDiverter(ITestOutputHelper output = null)
+        public IDiverterCollection InitDiverter(ITestOutputHelper output = null)
         {
-            Diverter.ResetAll();
+            Diverters.ResetAll();
 
             if (output != null)
             {
                 InitLogging(output);
             }
 
-            return Diverter;
+            return Diverters;
         }
 
         public void InitLogging(ITestOutputHelper output)
@@ -66,7 +66,7 @@ namespace Divertr.WebAppTests
                     return output.BuildLogger(name);
                 });
             
-            Diverter.Of<ILoggerFactory>().Redirect(fakeLoggerFactory);
+            Diverters.Of<ILoggerFactory>().SendTo(fakeLoggerFactory);
         }
 
         public HttpClient CreateHttpClient()

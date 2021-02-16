@@ -7,11 +7,11 @@ namespace Divertr.Extensions.DependencyInjection
     public class RegistrationBuilder
     {
         private readonly RegistrationConfiguration _configuration;
-        private event EventHandler<IEnumerable<Type>>? TypesRegistered;
+        private event EventHandler<IEnumerable<Type>>? DiversionsRegisteredEvent;
         
-        public RegistrationBuilder(IServiceCollection services, IDiverter diverter)
+        public RegistrationBuilder(IServiceCollection services, IDiverterCollection diverters)
         {
-            _configuration = new RegistrationConfiguration(services, diverter);
+            _configuration = new RegistrationConfiguration(services, diverters);
         }
 
         public RegistrationBuilder Include<T>() where T : class
@@ -32,11 +32,8 @@ namespace Divertr.Extensions.DependencyInjection
             {
                 throw new ArgumentException("Only closed generic types are supported", type.Name);
             }
-            
-            if (!_configuration.IncludeTypes.Add(type))
-            {
-                throw new DiverterException($"Type {type} already included");
-            }
+
+            _configuration.IncludeTypes.Add(type);
 
             return this;
         }
@@ -55,14 +52,7 @@ namespace Divertr.Extensions.DependencyInjection
         
         public RegistrationBuilder Include(params Type[] types)
         {
-            if (types == null) throw new ArgumentNullException(nameof(types));
-            
-            foreach (var type in types)
-            {
-                Include(type);
-            }
-
-            return this;
+            return Include((IEnumerable<Type>) types);
         }
         
         public RegistrationBuilder IncludeRange<TStartType, TEndType>(bool startInclusive = true, bool endInclusive = true)
@@ -70,11 +60,15 @@ namespace Divertr.Extensions.DependencyInjection
             return IncludeRange(typeof(TStartType), typeof(TEndType), startInclusive, endInclusive);
         }
         
-        public RegistrationBuilder IncludeRange<TStartType>(bool startInclusive = true)
+        public RegistrationBuilder IncludeFrom<TStartType>(bool inclusive = true)
         {
-            return IncludeRange(typeof(TStartType), endType: null, startInclusive);
+            return IncludeRange(typeof(TStartType), endType: null, inclusive);
         }
-
+        
+        public RegistrationBuilder IncludeUntil<TEndTypeType>(bool inclusive = true)
+        {
+            return IncludeRange(startType: null, typeof(TEndTypeType), inclusive);
+        }
         public RegistrationBuilder IncludeRange(Type? startType = null, Type? endType = null, bool startInclusive = true, bool endInclusive = true)
         {
             foreach (var type in _configuration.Services.GetRange(startType, endType, startInclusive, endInclusive))
@@ -83,6 +77,11 @@ namespace Divertr.Extensions.DependencyInjection
             }
 
             return this;
+        }
+        
+        public RegistrationBuilder Exclude<T>() where T : class
+        {
+            return Exclude(typeof(T));
         }
         
         public RegistrationBuilder Exclude(Type type)
@@ -98,23 +97,42 @@ namespace Divertr.Extensions.DependencyInjection
             {
                 throw new ArgumentException("Only closed generic types are supported", type.Name);
             }
+
+            _configuration.ExcludeTypes.Add(type);
+
+            return this;
+        }
+        
+        public RegistrationBuilder Exclude(IEnumerable<Type> types)
+        {
+            if (types == null) throw new ArgumentNullException(nameof(types));
             
-            if (!_configuration.ExcludeTypes.Add(type))
+            foreach (var type in types)
             {
-                throw new DiverterException($"Type {type} already excluded");
+                Exclude(type);
             }
 
             return this;
         }
         
-        public RegistrationBuilder ExcludeRange<TStartType, TEndType>(bool startInclusive = true, bool endInclusive = true)
+        public RegistrationBuilder Exclude(params Type[] types)
         {
-            return ExcludeRange(typeof(TStartType), typeof(TEndType), startInclusive, endInclusive);
+            return Exclude((IEnumerable<Type>) types);
         }
         
-        public RegistrationBuilder ExcludeRange<TStartType>(bool startInclusive = true)
+        public RegistrationBuilder ExcludeRange<TStartType, TEndType>(bool inclusive = true, bool endInclusive = true)
         {
-            return ExcludeRange(typeof(TStartType), endType: null, startInclusive);
+            return ExcludeRange(typeof(TStartType), typeof(TEndType), inclusive, endInclusive);
+        }
+        
+        public RegistrationBuilder ExcludeFrom<TStartType>(bool inclusive = true)
+        {
+            return ExcludeRange(typeof(TStartType), endType: null, inclusive);
+        }
+        
+        public RegistrationBuilder ExcludeUntil<TEndType>(bool inclusive = true)
+        {
+            return ExcludeRange(startType: null, typeof(TEndType), inclusive);
         }
 
         public RegistrationBuilder ExcludeRange(Type? startType = null, Type? endType = null, bool startInclusive = true, bool endInclusive = true)
@@ -134,16 +152,16 @@ namespace Divertr.Extensions.DependencyInjection
             return this;
         }
         
-        public RegistrationBuilder WithTypesRegisteredHandler(EventHandler<IEnumerable<Type>> typesRegisteredHandler)
+        public RegistrationBuilder WithDiversionsRegisteredHandler(EventHandler<IEnumerable<Type>> handler)
         {
-            TypesRegistered += typesRegisteredHandler;
+            DiversionsRegisteredEvent += handler;
 
             return this;
         }
 
-        public Registration Build()
+        public DiverterRegistration Build()
         {
-            return new Registration(_configuration, TypesRegistered);
+            return new DiverterRegistration(_configuration, DiversionsRegisteredEvent);
         } 
     }
 }
