@@ -2,25 +2,25 @@
 
 namespace Divertr
 {
-    public readonly struct DiverterId : IEquatable<DiverterId>
+    public readonly struct RouterId : IEquatable<RouterId>
     {
         public Type Type { get; }
         public string? Name { get; }
 
-        public DiverterId(Type type, string? name)
+        public RouterId(Type type, string? name)
         {
             Type = type;
             Name = name;
         }
 
-        public bool Equals(DiverterId other)
+        public bool Equals(RouterId other)
         {
             return ReferenceEquals(Type, other.Type) && Name == other.Name;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is DiverterId other && Equals(other);
+            return obj is RouterId other && Equals(other);
         }
 
         public override int GetHashCode()
@@ -39,14 +39,14 @@ namespace Divertr
             }
         }
 
-        public static DiverterId From(Type type, string? name = null)
+        public static RouterId From(Type type, string? name = null)
         {
-            return new DiverterId(type, name);
+            return new RouterId(type, name);
         }
 
-        public static DiverterId From<T>(string? name = null)
+        public static RouterId From<T>(string? name = null)
         {
-            return new DiverterId(typeof(T), name);
+            return new RouterId(typeof(T), name);
         }
     }
 }

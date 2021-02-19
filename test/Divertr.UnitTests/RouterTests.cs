@@ -5,16 +5,16 @@ using Xunit;
 
 namespace Divertr.UnitTests
 {
-    public class DiversionTests
+    public class RouterTests
     {
-        private readonly Diverter<IFoo> _diverter = new();
+        private readonly Router<IFoo> _router = new();
         
         [Fact]
         public void GivenProxy_ShouldDefaultToOrigin()
         {
             // ARRANGE
             var original = new Foo("hello world");
-            var proxy = _diverter.Proxy(original);
+            var proxy = _router.Proxy(original);
             
             // ACT
             var message = proxy.Message;
@@ -28,8 +28,8 @@ namespace Divertr.UnitTests
         {
             // ARRANGE
             var original = new Foo("hello");
-            var subject = _diverter.Proxy(original);
-            _diverter.SendTo(new FooSubstitute(" world", _diverter.CallCtx.Root));
+            var subject = _router.Proxy(original);
+            _router.Redirect(new FooSubstitute(" world", _router.Relay.Original));
 
             // ACT
             var message = subject.Message;
@@ -43,14 +43,14 @@ namespace Divertr.UnitTests
         {
             // ARRANGE
             var original = new Foo("hello");
-            var subject = _diverter.Proxy(original);
+            var subject = _router.Proxy(original);
             
             var mock = new Mock<IFoo>();
             mock
                 .Setup(x => x.Message)
-                .Returns(() => $"{_diverter.CallCtx.Root.Message} world");
+                .Returns(() => $"{_router.Relay.Original.Message} world");
 
-            _diverter.SendTo(mock.Object);
+            _router.Redirect(mock.Object);
 
             // ACT
             var message = subject.Message;
@@ -63,13 +63,13 @@ namespace Divertr.UnitTests
         public void MultipleAddRedirects_ShouldChain()
         {
             // ARRANGE
-            var subject = _diverter.Proxy(new Foo("hello world"));
+            var subject = _router.Proxy(new Foo("hello world"));
 
             // ACT
-            _diverter
-                .AddSendTo(new FooSubstitute(" me", _diverter.CallCtx.Next))
-                .AddSendTo(new FooSubstitute(" me", _diverter.CallCtx.Next))
-                .AddSendTo(new FooSubstitute(" again", _diverter.CallCtx.Next));
+            _router
+                .AddRedirect(new FooSubstitute(" me", _router.Relay.Next))
+                .AddRedirect(new FooSubstitute(" me", _router.Relay.Next))
+                .AddRedirect(new FooSubstitute(" again", _router.Relay.Next));
 
 
             // ASSERT
@@ -81,12 +81,12 @@ namespace Divertr.UnitTests
         {
             // ARRANGE
             var original = new Foo("hello world");
-            var subject = _diverter.Proxy(original);
+            var subject = _router.Proxy(original);
 
             // ACT
-            _diverter.AddSendTo(new FooSubstitute(" me", _diverter.CallCtx.Next));
-            _diverter.Reset();
-            _diverter.AddSendTo(new FooSubstitute(" again", _diverter.CallCtx.Next));
+            _router.AddRedirect(new FooSubstitute(" me", _router.Relay.Next));
+            _router.Reset();
+            _router.AddRedirect(new FooSubstitute(" again", _router.Relay.Next));
 
             // ASSERT
             subject.Message.ShouldBe("hello world again");
@@ -97,12 +97,12 @@ namespace Divertr.UnitTests
         {
             // ARRANGE
             var original = new Foo("hello world");
-            var subject = _diverter.Proxy(original);
+            var subject = _router.Proxy(original);
 
             // ACT
-            _diverter.AddSendTo(new FooSubstitute(" me", _diverter.CallCtx.Next));
-            _diverter.AddSendTo(new FooSubstitute(" again", _diverter.CallCtx.Next));
-            _diverter.Reset();
+            _router.AddRedirect(new FooSubstitute(" me", _router.Relay.Next));
+            _router.AddRedirect(new FooSubstitute(" again", _router.Relay.Next));
+            _router.Reset();
 
 
             // ASSERT

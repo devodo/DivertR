@@ -10,7 +10,7 @@ namespace Divertr.UnitTests
     public class RecursiveTests
     {
         private readonly ITestOutputHelper _output;
-        private readonly IDiverter<IFactorial> _diverter = new Diverter<IFactorial>();
+        private readonly IRouter<IFactorial> _router = new Router<IFactorial>();
 
         public RecursiveTests(ITestOutputHelper output)
         {
@@ -24,10 +24,10 @@ namespace Divertr.UnitTests
 
             IFactorial FactorialFactory(int n)
             {
-                return _diverter.Proxy(new Factorial(n, FactorialFactory));
+                return _router.Proxy(new Factorial(n, FactorialFactory));
             }
             
-            _diverter.AddSendTo(new FactorialTest(_diverter.CallCtx, _output));
+            _router.AddRedirect(new FactorialTest(_router.Relay, _output));
 
             var result = FactorialFactory(factorialInput).Result();
             result.ShouldBe(GetFactorial(factorialInput));
@@ -41,12 +41,12 @@ namespace Divertr.UnitTests
 
             IFactorial FactorialFactory(int n)
             {
-                return _diverter.Proxy(new Factorial(n, FactorialFactory));
+                return _router.Proxy(new Factorial(n, FactorialFactory));
             }
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(() =>
             {
-                _diverter.AddSendTo(new FactorialTest(_diverter.CallCtx, _output));
+                _router.AddRedirect(new FactorialTest(_router.Relay, _output));
 
                 return FactorialFactory(factorialInput).Result();
             })).ToArray();
@@ -93,10 +93,10 @@ namespace Divertr.UnitTests
 
         private class FactorialTest : IFactorial
         {
-            private readonly ICallContext<IFactorial> _src;
+            private readonly ICallRelay<IFactorial> _src;
             private readonly ITestOutputHelper _output;
 
-            public FactorialTest(ICallContext<IFactorial> src, ITestOutputHelper output)
+            public FactorialTest(ICallRelay<IFactorial> src, ITestOutputHelper output)
             {
                 _src = src;
                 _output = output;

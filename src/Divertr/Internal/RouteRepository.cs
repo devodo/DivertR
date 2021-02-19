@@ -5,41 +5,41 @@ namespace Divertr.Internal
 {
     internal class RouteRepository
     {
-        private readonly ConcurrentDictionary<DiverterId, object> _routes = new ConcurrentDictionary<DiverterId, object>();
+        private readonly ConcurrentDictionary<RouterId, object> _routes = new ConcurrentDictionary<RouterId, object>();
 
-        public DiversionRoute<T>? GetRoute<T>(DiverterId diverterId) where T : class
+        public RedirectRoute<T>? GetRoute<T>(RouterId routerId) where T : class
         {
-            if (_routes.TryGetValue(diverterId, out var alteration))
+            if (_routes.TryGetValue(routerId, out var alteration))
             {
-                return (DiversionRoute<T>)alteration;
+                return (RedirectRoute<T>)alteration;
             }
 
             return null;
         }
 
-        public DiversionRoute<T> AddOrUpdateRoute<T>(DiverterId diverterId, Func<DiversionRoute<T>> addFactory, Func<DiversionRoute<T>, DiversionRoute<T>> updateFactory) where T : class
+        public RedirectRoute<T> AddOrUpdateRoute<T>(RouterId routerId, Func<RedirectRoute<T>> addFactory, Func<RedirectRoute<T>, RedirectRoute<T>> updateFactory) where T : class
         {
-            object Create(DiverterId _)
+            object Create(RouterId _)
             {
                 return addFactory.Invoke();
             }
 
-            object Update(DiverterId _, object existing)
+            object Update(RouterId _, object existing)
             {
-                return updateFactory((DiversionRoute<T>) existing);
+                return updateFactory((RedirectRoute<T>) existing);
             }
 
-            return (DiversionRoute<T>)_routes.AddOrUpdate(diverterId, Create, Update);
+            return (RedirectRoute<T>)_routes.AddOrUpdate(routerId, Create, Update);
         }
 
-        public void SetRoute<T>(DiverterId diverterId, DiversionRoute<T> diversionRoute) where T : class
+        public void SetRoute<T>(RouterId routerId, RedirectRoute<T> redirectRoute) where T : class
         {
-            _routes[diverterId] = diversionRoute;
+            _routes[routerId] = redirectRoute;
         }
 
-        public bool Reset(DiverterId diverterId)
+        public bool Reset(RouterId routerId)
         {
-            return _routes.TryRemove(diverterId, out _);
+            return _routes.TryRemove(routerId, out _);
         }
         
         public void ResetAll()

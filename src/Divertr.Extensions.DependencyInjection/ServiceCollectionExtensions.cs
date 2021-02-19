@@ -6,28 +6,28 @@ namespace Divertr.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverterCollection diverters, Action<RegistrationBuilder>? configureBuilder = null)
+        public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, Action<RegistrationBuilder>? configureBuilder = null)
         {
-            var builder = new RegistrationBuilder(services, diverters);
+            var builder = new RegistrationBuilder(services, diverter);
             configureBuilder?.Invoke(builder);
             builder.Build().Register();
             return services;
         }
 
-        public static IServiceCollection Divert<T>(this IServiceCollection services, IDiverterCollection diverters, string? name = null) where T : class
+        public static IServiceCollection Divert<T>(this IServiceCollection services, IDiverter diverter, string? name = null) where T : class
         {
-            return services.Divert(diverters, typeof(T), name);
+            return services.Divert(diverter, typeof(T), name);
         }
         
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverterCollection diverters, Type type, string? name = null)
+        public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, Type type, string? name = null)
         {
-            return services.Divert(diverters, builder =>
+            return services.Divert(diverter, builder =>
             {
                 builder.Include(type).WithName(name);
             });
         }
 
-        public static IServiceCollection Divert<T>(this IServiceCollection services, IDiverter<T> diverter) where T : class
+        public static IServiceCollection Divert<T>(this IServiceCollection services, IRouter<T> router) where T : class
         {
             for (var i = 0; i < services.Count; i++)
             {
@@ -41,7 +41,7 @@ namespace Divertr.Extensions.DependencyInjection
                 object ProxyFactory(IServiceProvider provider)
                 {
                     var instance = provider.GetInstance(descriptor);
-                    return diverter.Proxy((T)instance);
+                    return router.Proxy((T)instance);
                 }
 
                 services[i] = ServiceDescriptor.Describe(descriptor.ServiceType, ProxyFactory, descriptor.Lifetime);

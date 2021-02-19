@@ -1,28 +1,34 @@
-# Divertr
+# DivertR
 
 The .NET Dependency Injection Diverter
 
-Divertr is a testing tool that lets you modify your dependency injection services at runtime.
-Use it to replace your DI services with proxies that intercept calls and divert them to substitute instances such as test doubles.
-The proxy behaviour can be reconfigured and reset on the fly while your app is running.
+DivertR is a tool that facilitates an integrated, top-down approach to testing by making it easy to hotswap test code in and out of a working system.
 
-Divertr facilitates an integrated, top-down approach to testing by making it easy to hotswap in and out 
-dependency injected parts of a working system with test code.
+With DivertR you can modify your dependency injection services at runtime by replacing them with configurable proxies.
+These can redirect calls to substitute instances, such as test doubles, and then optionally
+relay back to the original targets. 
+Update and reset proxies, on the fly, while the process is running.
+
+![DivertR Router](./docs/Router.svg)
 
 * [Quickstart](#quickstart)
-    * [Create a Diversion proxy](#create-a-diversion-proxy)
-    * [Configure a redirect](#configure-a-redirect)
+    * [Create a DivertR proxy](#create-a-divertr-proxy)
+    * [Redirect proxy calls](#redirect-proxy-calls)
     * [Redirect to a mock](#redirect-to-a-mock)
-    * [Call the original instance](#call-the-original-instance)
+    * [Relay to the original](#relay-to-the-original)
     * [Divert multiple proxies](#divert-multiple-proxies)
     * [Chain redirects](#chain-redirects)
-    * [Diverter (Diversion Set)](#diverter-diversion-set)
+    * [The Diverter class](#the-diverter-class)
+    * [Diverter shortcuts](#diverter-shortcuts)
+    * [Async support](#async-support)
+    * [Class support](#class-support)
 * [IServiceCollection Extensions](#iservicecollection-extensions)
+    * [Register a Router](#register-a-router)
     * [Register a Diverter](#register-a-diverter)
-    * [Register a Diverter Set](#register-a-diverter-set) 
+    * [Diverter registration builder](#diverter-registration-builder)
 
 ## Quickstart
-### Create a Diversion proxy
+### Create a DivertR proxy
 
 Given an `IFoo` interface and its implementation:
 
@@ -38,139 +44,208 @@ public class Foo : IFoo
 }
 ```
 
-Create a `Diversion` instance:
+Create a `Router` instance:
 
 ```csharp
-var diversion = new Diversion<IFoo>();
+var router = new Router<IFoo>();
 ```
 
 Then use it to create a proxy:
 
 ```csharp
-var foo = new Foo {Message = "hello foo"};
-var fooProxy = diversion.Proxy(foo);
-Console.WriteLine(fooProxy.Message); // "hello foo"
+var foo = new Foo {Message = "original foo"};
+var fooProxy = router.Proxy(foo);
+Console.WriteLine(fooProxy.Message); // "original foo"
 ```
-> By default `Diversion` proxies simply forward calls to the original instance. 
+> By default DivertR proxies simply forward calls to their original instances. 
 
-### Configure a redirect
+### Redirect proxy calls
 
-Modify the proxy behaviour to redirect calls to a different instance:
+Configure the `Router` to redirect its proxy calls to a different instance:
 
 ```csharp
 var altFoo = new Foo {Message = "hi Divertr"};
-diversion.Redirect(altFoo);
+router.Redirect(altFoo);
 Console.WriteLine(fooProxy.Message); // "hi Divertr"
 ```
 
-Then reset the proxy to its default behaviour:
+Then reset the `Router` and its proxy defaults back to the original instance:
 
 ```csharp
-diversion.Reset();
-Console.WriteLine(fooProxy.Message); // "hello foo"
+router.Reset();
+Console.WriteLine(fooProxy.Message); // "original foo"
 ```
 
 ### Redirect to a mock
 
-You can configure proxies to redirect to test doubles such as mocks:
+You can configure the `Router` to redirect its proxies to test doubles such as mocks:
 
 ```csharp
 var mock = new Mock<IFoo>();
 mock
-    .Setup(x => x.Message)
-    .Returns("mocked foo");
+  .Setup(x => x.Message)
+  .Returns("mocked foo");
 
-diversion.Redirect(mock.Object);
+router.Redirect(mock.Object);
 Console.WriteLine(fooProxy.Message); // "mocked foo"
 ```
 
-### Call the original instance
+### Relay to the original
 
-The redirected instance can reference a proxy that forwards to the originally targeted instance from the `CallCtx.Root` property.
-This allows you to intercept calls, run test code and then continue the original execution flow:
+The redirected instance can relay calls to the originally targeted instance from the `Relay.Original` property.
+This allows you to intercept calls and then run test code before and after invoking the original instance:
 
 ```csharp
-var original = diversion.CallCtx.Root;
+var relay = router.Relay.Original;
 var mock = new Mock<IFoo>();
 mock
-    .Setup(x => x.Message)
-    .Returns(() => $"{original.Message} bar");
+  .Setup(x => x.Message)
+  .Returns(() => ${
+    // run test code before
+    // ...
 
-diversion.Redirect(mock.Object);
-Console.WriteLine(fooProxy.Message); // "hello foo bar"
+    // call original instance
+    var original = relay.Message;
+
+    // run test code after
+    // ...
+
+    return $"{original} bar";
+  });
+
+router.Redirect(mock.Object);
+Console.WriteLine(fooProxy.Message); // "original foo bar"
 ```
 
-> The `CallCtx.Root` property can be copied and reused. However its members can only be accessed
-> within the context of call to its Diversion proxy. Attempting to invoke a member outside of this context will
+> The `Relay.Original` property is a proxy that can be copied and reused. However its members can only be accessed
+> within the context of intercepted calls on its `Router` proxies. Attempting to invoke a member outside of this context will
 > result in a `DiverterException` being thrown. 
 
 ### Divert multiple proxies
 
-The configured redirects are applied to all proxies created from the same `Diversion` instance.
-This allows you to divert calls from all instances of a given type to a single redirected instance.
-This is useful, for example, to decorate the behaviours of transient DI services where multiple instances of a type can be created.
+The configured redirects are applied to all proxies created from the same `Router` instance.
+This is useful, for example, to be able to intercept transient DI services where multiple instances of a type may get created.
 
 ```csharp
-var fooA = diversion.Proxy(new Foo {Message = "foo A"});
-var fooB = diversion.Proxy(new Foo {Message = "foo B"});
-
-var original = diversion.CallCtx.Root;
+var relay = router.Relay.Original;
 var mock = new Mock<IFoo>();
 mock
-    .Setup(x => x.Message)
-    .Returns(() => $"Hello {original.Message}");
+  .Setup(x => x.Message)
+  .Returns(() => $"Hello {relay.Message}");
 
-diversion.Redirect(mock.Object);
+router.Redirect(mock.Object);
+
+var fooA = router.Proxy(new Foo {Message = "foo A"});
+var fooB = router.Proxy(new Foo {Message = "foo B"});
 
 Console.WriteLine(fooA.Message); // "Hello foo A"
 Console.WriteLine(fooB.Message); // "Hello foo B"
 ```
+> Note the same relay instance proxies to the correct original instance associated with the call. 
+> Also note redirects can be configured before or after the proxies are created.
 
 ### Chain redirects
 
-Multiple redirects can be appended together and referenced in the call allowing you to create a chain of responsibility pipeline.
-The `CallCtx.Next` property proxies to the next redirect in the chain.
-> If only a single redirect is registered the `Next` and `Root` properties proxy to the same original instance.
+Multiple redirects can be appended together and relayed to within a call as a chain of responsibility pipeline.
+The `Relay.Next` property proxies to the next redirect in the chain from the last redirect added up to and including the original instance.
 
 ```csharp
-var next = diversion.CallCtx.Next;
+var next = router.Relay.Next;
 var mock = new Mock<IFoo>();
 mock
-    .Setup(x => x.Message)
-    .Returns(() => $"{next.Message} bar");
+  .Setup(x => x.Message)
+  .Returns(() => $"{next.Message} bar");
 
-diversion
-    .AddRedirect(mock.Object)
-    .AddRedirect(mock.Object)
-    .AddRedirect(mock.Object);
+router
+  .AddRedirect(mock.Object)
+  .AddRedirect(mock.Object)
+  .AddRedirect(mock.Object);
 
-Console.WriteLine(fooProxy.Message); // "hello foo bar bar bar"
+Console.WriteLine(fooProxy.Message); // "original foo bar bar bar"
 ```
+> If only a single redirect is added the `Next` and `Original` properties proxy to the same original instance.
 
-### Diverter (Diversion Set)
+### The Diverter class
 
-A `Diversion<IFoo>` instance is tied to a single `IFoo` type but
-typically when testing a system you would interact with multiple types.
-The `Diverter` class lets you conveniently access and manage a set of different `Diversion<T>`
+A `Router<IFoo>` instance is tied to a single `IFoo` type but
+typically when testing a system you interact with multiple types.
+The `Diverter` class lets you conveniently access and manage a set of different `Router<T>`
 types from a single instance. This is particularly useful for setting up dependency 
-injection registrations (see [Register Diverter](#register-diverter)). It is also
-handy for resetting all `Diversions` from a single call to `ResetAll()`. 
+injection registrations (see [Register a Diverter](#register-a-diverter)). It is also
+handy for resetting all its `Router` instances from a single call to `ResetAll()`. 
 
 ```csharp
 var diverter = new Diverter();
 
-var diversion = diverter.Of<IFoo>();
-diversion.Redirect(new Foo {Message = "Diverted"});
-diverter.Of<IBar>().Redirect(new TestBar());
+var router = diverter.Router<IFoo>();
+router.Redirect(new Foo {Message = "Diverted"});
+diverter.Router<IBar>().Redirect(new TestBar());
 
 diverter.ResetAll();
 ```
 
+### Diverter shortcuts
+
+For convenience the `Diverter` class provides shortcut helpers for easier access
+to most of the `Router` methods:
+
+```csharp
+var diverter = new Diverter();
+
+var proxy = diverter.Proxy<IFoo>(new Foo {Message = "original"});
+// Shortcut equivalent of:
+// var proxy = diverter.Router<IFoo>().Proxy(new Foo {Message = "original"});
+
+// Similarly other shortcuts for:
+var relay = divert.Relay<IFoo>().Original;
+diverter.Redirect<IFoo>(new Foo {Message = "diverted"});
+diverter.Reset<IFoo>();
+// etc
+```
+
+### Async support
+
+Internally DivertR uses `AsyncLocal` to track the ambient context of the current call.
+Async calls are therefore fully supported on proxy and relay methods e.g.:
+
+```csharp
+public interface IBarRepository
+{
+    Task<Bar> GetBarAsync(Guid id);
+}
+
+var mock = new Mock<IBarRepository>();
+mock
+  .Setup(x => x.GetBarAsync(It.IsAny<Guid>()))
+  .Returns(async (Guid id) => {
+    // Run test code before
+    var bar = await diverter.Relay<IBarRepository>().Original.GetBarAsync(id);
+    // Run test code after
+    return bar;
+  });
+
+diverter.Redirect<IBarRepository>(mock.Object);
+var proxy = diverter.Proxy<IBarRepository>(barRepository);
+var result = await proxy.GetBarAsync(barId);
+```
+> Note all DivertR methods are thread safe. However the thread safety of proxy and relay calls depends
+> on the underlying thread safety of the redirect and original instances that you input.
+
+### Class support
+
+DivertR only supports diverting instances via their interfaces. If you instantiate a `new Router<T>()` and `T` is
+not an interface type a runtime exception will be thrown.
+
+Internally DivertR uses Castle Dynamic Proxy to generate proxies and intercept calls.
+Therefore in the future DivertR may be extended to support virtual and abstract methods on classes
+but for now only interfaces are supported.
+
+
 ## IServiceCollection Extensions
 Extension methods are provided on the .NET `Microsoft.Extensions.DependencyInjection.IServiceCollection` interface
-that convert existing registrations into `Diversion` proxy factories.
+that convert existing registrations into DivertR proxy factories.
 
-### Register a Diversion
+### Register a Router
 
 Starting with an `IServiceCollection` that has an `IFoo` registered:
 
@@ -179,31 +254,32 @@ IServiceCollection services = new ServiceCollection();
 services.AddTransient<IFoo>(_ => new Foo {Message = "Original"});
 ```
 
-The `Divert` extension method replaces the `IFoo` registration with a `Diversion` proxy factory that decorates over the original registration:
+The `Divert` extension method replaces the `IFoo` registration with a factory that creates DivertR proxies
+wrapping the instances provided by the original registration:
 
 ```csharp
-var diversion = new Diversion<IFoo>();
-services.Divert(diversion);
+var router = new Router<IFoo>();
+services.Divert(router);
 ```
 
-The subsequent `IServiceProvider` will now resolve `IFoo` `Diversion` proxy instances whose
-behaviour can be modified by adding redirects to the `diversion` instance (in the same way as before):
+The subsequent `IServiceProvider` will now resolve `IFoo` proxies of the `Router` instance that
+can be configured and redirected as before:
 
 ```csharp
 IServiceProvider provider = services.BuildServiceProvider();
 var foo = provider.GetService<IFoo>();
 Console.WriteLine(foo.Message); // "Original"
 
-diversion.Redirect(new Foo {Message = "Diverted"});
+router.Redirect(new Foo {Message = "Diverted"});
 Console.WriteLine(foo.Message); // "Diverted"
 
-diversion.Reset();
+router.Reset();
 Console.WriteLine(foo.Message); // "Original"
 ```
 
 ### Register a Diverter
 
-Similarly a `Diverter` extension method is provided that converts all existing `IServiceCollection` registrations to
+Similarly a `Diverter` extension method is provided that replaces all existing `IServiceCollection` registrations with
 Divertr proxy factories at once.
 
 ```csharp
@@ -212,33 +288,55 @@ services.AddTransient<IFoo>(_ => new Foo {Message = "Original"});
 services.AddSingleton<IBar, Bar>();
 ```
 
-Passing a `DiverterSet` to the `Divert` extension method will convert both the `IFoo` and `IBar` registrations
+Passing a `Diverter` instance to the `Divert` extension method will convert both the `IFoo` and `IBar` registrations
 into Divertr proxy factories:
 
 ```csharp
-var diverterSet = new DiverterSet();
-services.Divert(diverterSet);
+var diverter = new Diverter();
+services.Divert(diverter);
 ```
 
-> The default behaviour of `Diversion` proxies is to forward calls
-to the original instances. Therefore replacing instances with these proxies
+> By default DivertR proxies forward calls to their original instances. Therefore injecting DivertR proxies
 does not alter the behaviour of the system (when no redirects have been added).
 
-The resulting `Diversion` proxies on all registered types are then configured via the passed in `diverter` instance:
+The resulting DivertR proxies are then configured via the passed in `diverter` instance:
 
 ```csharp
 IServiceProvider provider = services.BuildServiceProvider();
 var foo = provider.GetService<IFoo>();
 
-diverterSet.Get<IFoo>().Redirect(new Foo {Message = "Diverted"});
+diverter.Redirect<IFoo>(new Foo {Message = "Diverted"});
 Console.WriteLine(foo.Message); // "Diverted"
 ```
 
-The redirects across all types can be reset by a single call to `ResetAll()`:
+All redirects configured on the diverter instance can be reset by a single call to `ResetAll()`:
 
 ```csharp
-diverterSet.ResetAll();
+diverter.ResetAll();
 Console.WriteLine(foo.Message); // "Original"
 ```
+
+### Diverter registration builder
+
+As you may not wish to replace the entire `ServiceCollection` a builder extension method is provided with various helper methods to select which registrations
+are to be included or excluded. As the `ServiceCollection` registrations are stored in the order added, ranges of 
+types can be selected. When using ranges only supported types are selected, i.e. interfaces and closed generics.
+```csharp
+services.Divert(diverter, builder =>
+{
+    builder.IncludeRange<IStart, IEnd>(); // include all registrations between IStart and IEnd (inclusive by default)
+    builder.IncludeUntil<IStop>(inclusive:false); // include all from the start until IStop (not inclusive)
+    builder.ExcludeFrom<IBoring>(); // exclude from IBoring to the end (inclusive by default)
+    builder.Include<ILogger>(); // specifically include ILogger only
+    builder.Exclude(typeof(INope)); // specifically exclude INope
+});
+```
+
+### Open generic registrations
+IServiceCollection supports open generic registrations for example:
+services.AddTransient(typeof(IBar<>), typeof(Bar<>);
+
+It is not possible to DivertR let
+
 
 

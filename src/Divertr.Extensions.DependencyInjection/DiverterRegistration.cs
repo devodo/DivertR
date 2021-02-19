@@ -8,19 +8,19 @@ namespace Divertr.Extensions.DependencyInjection
     public class DiverterRegistration
     {
         private readonly RegistrationConfiguration _configuration;
-        private readonly EventHandler<IEnumerable<Type>>? _diversionsRegisteredNotifier;
+        private readonly EventHandler<IEnumerable<Type>>? _typesDivertedNotifier;
         private readonly Lazy<Dictionary<Type, List<Type>>> _openGenericTypes;
 
-        private readonly HashSet<Type> _registeredTypesHash = new HashSet<Type>();
-        private readonly List<Type> _registeredTypes = new List<Type>();
+        private readonly HashSet<Type> _divertedTypesHash = new HashSet<Type>();
+        private readonly List<Type> _divertedTypes = new List<Type>();
         private readonly List<ServiceDescriptor> _createDescriptors = new List<ServiceDescriptor>();
 
         private int _serviceIndex = 0;
 
-        public DiverterRegistration(RegistrationConfiguration configuration, EventHandler<IEnumerable<Type>>? diversionsRegisteredNotifier)
+        public DiverterRegistration(RegistrationConfiguration configuration, EventHandler<IEnumerable<Type>>? typesDivertedNotifier)
         {
             _configuration = configuration;
-            _diversionsRegisteredNotifier = diversionsRegisteredNotifier;
+            _typesDivertedNotifier = typesDivertedNotifier;
 
             _openGenericTypes = new Lazy<Dictionary<Type, List<Type>>>(() =>
             {
@@ -80,11 +80,11 @@ namespace Divertr.Extensions.DependencyInjection
         
         private void RegisterCreateDescriptors()
         {
-            foreach (var descriptor in _createDescriptors.Where(x => !_registeredTypesHash.Contains(x.ServiceType)))
+            foreach (var descriptor in _createDescriptors.Where(x => !_divertedTypesHash.Contains(x.ServiceType)))
             {
                 _configuration.Services.Add(descriptor);
-                _registeredTypesHash.Add(descriptor.ServiceType);
-                _registeredTypes.Add(descriptor.ServiceType);
+                _divertedTypesHash.Add(descriptor.ServiceType);
+                _divertedTypes.Add(descriptor.ServiceType);
             }
         }
         
@@ -111,11 +111,11 @@ namespace Divertr.Extensions.DependencyInjection
                         
                 var implementationType = descriptor.ImplementationType.MakeGenericType(genericType.GetGenericArguments());
                         
-                var diversion = _configuration.Diverters.Of(genericType, _configuration.Name);
+                var router = _configuration.Diverters.Router(genericType, _configuration.Name);
                 object ProxyFactory(IServiceProvider provider)
                 {
                     var instance = ActivatorUtilities.GetServiceOrCreateInstance(provider, implementationType);
-                    return diversion.Proxy(instance);
+                    return router.Proxy(instance);
                 }
                         
                 _createDescriptors.Add(ServiceDescriptor.Describe(genericType, ProxyFactory, descriptor.Lifetime));
@@ -126,16 +126,16 @@ namespace Divertr.Extensions.DependencyInjection
 
         private void InjectDiverter(int servicesIndex, ServiceDescriptor descriptor)
         {
-            var diversion = _configuration.Diverters.Of(descriptor.ServiceType, _configuration.Name);
+            var router = _configuration.Diverters.Router(descriptor.ServiceType, _configuration.Name);
             object ProxyFactory(IServiceProvider provider)
             {
                 var instance = provider.GetInstance(descriptor);
-                return diversion.Proxy(instance);
+                return router.Proxy(instance);
             }
                 
             _configuration.Services[servicesIndex] = ServiceDescriptor.Describe(descriptor.ServiceType, ProxyFactory, descriptor.Lifetime);
-            _registeredTypesHash.Add(descriptor.ServiceType);
-            _registeredTypes.Add(descriptor.ServiceType);
+            _divertedTypesHash.Add(descriptor.ServiceType);
+            _divertedTypes.Add(descriptor.ServiceType);
         }
 
         public void Register()
@@ -162,7 +162,7 @@ namespace Divertr.Extensions.DependencyInjection
 
             RegisterCreateDescriptors();
 
-            _diversionsRegisteredNotifier?.Invoke(this, _registeredTypes);
+            _typesDivertedNotifier?.Invoke(this, _divertedTypes);
         }
     }
 }

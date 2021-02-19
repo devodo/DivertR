@@ -4,30 +4,30 @@ using Castle.DynamicProxy;
 
 namespace Divertr.Internal
 {
-    internal class DiversionRoute<T> where T : class
+    internal class RedirectRoute<T> where T : class
     {
-        private readonly CallContext<T> _callContext;
+        private readonly CallRelay<T> _callRelay;
         private readonly List<Redirect<T>> _redirects;
         
-        public DiversionRoute(Redirect<T> redirect, CallContext<T> callContext)
+        public RedirectRoute(Redirect<T> redirect, CallRelay<T> callRelay)
         {
             _redirects = new List<Redirect<T>> {redirect};
-            _callContext = callContext;
+            _callRelay = callRelay;
         }
 
-        private DiversionRoute(List<Redirect<T>> redirects, CallContext<T> callContext)
+        private RedirectRoute(List<Redirect<T>> redirects, CallRelay<T> callRelay)
         {
             _redirects = redirects;
-            _callContext = callContext;
+            _callRelay = callRelay;
         }
         
-        public DiversionRoute<T> AppendRedirect(Redirect<T> redirect)
+        public RedirectRoute<T> AppendRedirect(Redirect<T> redirect)
         {
             var redirects = new[] {redirect}.Concat(_redirects).ToList();
-            return new DiversionRoute<T>(redirects, _callContext);
+            return new RedirectRoute<T>(redirects, _callRelay);
         }
 
-        public bool TryBeginCall(T? origin, IInvocation invocation, out T? redirect)
+        public bool TryBeginCall(T? original, IInvocation invocation, out T? redirect)
         {
             if (_redirects.Count == 0)
             {
@@ -35,13 +35,13 @@ namespace Divertr.Internal
                 return false;
             }
             
-            var redirectContext = new RedirectContext<T>(origin, _redirects, invocation);
+            var redirectContext = new RedirectContext<T>(original, _redirects, invocation);
             
-            var hasRedirect = redirectContext.MoveNext(invocation, out redirect);
+            var hasRedirect = redirectContext.BeginNextRedirect(invocation, out redirect);
 
             if (hasRedirect)
             {
-                _callContext.Push(redirectContext);
+                _callRelay.Push(redirectContext);
             }
             
             return hasRedirect;
@@ -49,7 +49,7 @@ namespace Divertr.Internal
 
         public void EndCall(IInvocation invocation)
         {
-            var redirectContext = _callContext.Pop();
+            var redirectContext = _callRelay.Pop();
             
             // Assert the call context is as expected
             if (redirectContext == null)

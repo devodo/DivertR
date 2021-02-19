@@ -6,21 +6,21 @@ namespace Divertr.UnitTests
 {
     public class DiverterTests
     {
-        private readonly IDiverterCollection _diverters = new DiverterCollection();
+        private readonly IDiverter _diverter = new Diverter();
 
         [Fact]
         public void GivenRedirects_WhenResetAll_ShouldReset()
         {
             // ARRANGE
             var original = new Foo("hello world");
-            var diversion = _diverters.Of<IFoo>();
-            var subject = diversion.Proxy(original);
+            var router = _diverter.Router<IFoo>();
+            var subject = router.Proxy(original);
             
-            diversion.AddSendTo(new FooSubstitute(" me", diversion.CallCtx.Next));
-            diversion.AddSendTo(new FooSubstitute(" again", diversion.CallCtx.Next));
+            router.AddRedirect(new FooSubstitute(" me", router.Relay.Next));
+            router.AddRedirect(new FooSubstitute(" again", router.Relay.Next));
 
             // ACT
-            _diverters.ResetAll();
+            _diverter.ResetAll();
             
             // ASSERT
             subject.Message.ShouldBe(original.Message);
@@ -31,10 +31,10 @@ namespace Divertr.UnitTests
         {
             // ARRANGE
             var original = new Foo("foo");
-            var subject = _diverters.Of<IFoo>().Proxy(original);
+            var subject = _diverter.Router<IFoo>().Proxy(original);
 
             // ACT
-            _diverters.Of<IFoo>().SendTo(new FooSubstitute(" diverted", _diverters.Of<IFoo>().CallCtx.Next));
+            _diverter.Router<IFoo>().Redirect(new FooSubstitute(" diverted", _diverter.Router<IFoo>().Relay.Next));
             
             // ASSERT
             subject.Message.ShouldBe(original.Message + " diverted");

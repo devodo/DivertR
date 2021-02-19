@@ -4,17 +4,17 @@ using System.Threading;
 
 namespace Divertr.Internal
 {
-    internal class CallContext<T> : ICallContext<T> where T : class
+    internal class CallRelay<T> : ICallRelay<T> where T : class
     {
         private readonly AsyncLocal<List<RedirectContext<T>>> _callStack = new AsyncLocal<List<RedirectContext<T>>>();
         public T Next { get; }
         
-        public T Root { get; }
+        public T Original { get; }
 
-        public CallContext()
+        public CallRelay()
         {
             Next =  ProxyFactory.Instance.CreateRedirectTargetProxy(this);
-            Root = ProxyFactory.Instance.CreateRootTargetProxy(this);
+            Original = ProxyFactory.Instance.CreateOriginalTargetProxy(this);
         }
         
         public void Push(RedirectContext<T> redirectContext)

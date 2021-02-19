@@ -13,19 +13,19 @@ namespace Divertr.WebAppTests
 {
     public class WebAppTests : IClassFixture<WebAppFixture>
     {
-        private readonly IDiverterCollection _diverters;
+        private readonly IDiverter _diverter;
         private readonly IFooClient _fooClient;
         
         private readonly Mock<IFooRepository> _fooRepositoryMock = new();
-        private readonly IFooRepository _fooRepositoryRoot;
         private readonly IFooRepository _fooRepositoryFake;
         
         public WebAppTests(WebAppFixture webAppFixture, ITestOutputHelper output)
         {
-            _diverters = webAppFixture.InitDiverter(output);
-            _fooRepositoryRoot = _diverters.Of<IFooRepository>().CallCtx.Root;
-            _fooRepositoryFake  = A.Fake<IFooRepository>(o => o.Wrapping(_fooRepositoryRoot));
-            _diverters.Of<IFooRepository>().SendTo(_fooRepositoryFake);
+            _diverter = webAppFixture.InitDiverter(output);
+            
+            _fooRepositoryFake = A.Fake<IFooRepository>(o =>
+                o.Wrapping(_diverter.Router<IFooRepository>().Relay.Original));
+            _diverter.Router<IFooRepository>().Redirect(_fooRepositoryFake);
             
             _fooClient = webAppFixture.CreateFooClient();
         }
@@ -63,11 +63,12 @@ namespace Divertr.WebAppTests
                 .Returns(async (Foo foo) =>
                 {
                     insertedFoo = foo;
-                    var result = await _fooRepositoryRoot.TryInsertFoo(foo);
+                    var relay = _diverter.Router<IFooRepository>().Relay.Next;
+                    var result = await relay.TryInsertFoo(foo);
                     return result;
                 });
 
-            _diverters.Of<IFooRepository>().SendTo(_fooRepositoryMock.Object);
+            _diverter.Router<IFooRepository>().Redirect(_fooRepositoryMock.Object);
             
             // ACT
             var response = await _fooClient.InsertFoo(createFooRequest);

@@ -5,29 +5,29 @@ namespace Divertr.Internal
 {
     internal class RedirectTargetInterceptor<T> : IInterceptor where T : class
     {
-        private readonly CallContext<T> _callContext;
+        private readonly CallRelay<T> _callRelay;
 
-        public RedirectTargetInterceptor(CallContext<T> callContext)
+        public RedirectTargetInterceptor(CallRelay<T> callRelay)
         {
-            _callContext = callContext;
+            _callRelay = callRelay;
         }
 
         public void Intercept(IInvocation invocation)
         {
-            var redirectContext = _callContext.Peek();
+            var redirectContext = _callRelay.Peek();
             
             if (redirectContext == null)
             {
-                throw new DiverterException("Redirect target may only be accessed within the context of a Diversion call");
+                throw new DiverterException("Members of this instance may only be accessed from within the context of its DivertR proxy calls");
             }
 
-            if (redirectContext.MoveNext(invocation, out var redirect))
+            if (redirectContext.BeginNextRedirect(invocation, out var redirect))
             {
                 try
                 {
                     if (redirect == null)
                     {
-                        throw new DiverterException("Redirect target not set to an instance of an object.");
+                        throw new DiverterException("The redirect instance reference is null");
                     }
                     
                     // ReSharper disable once SuspiciousTypeConversion.Global
@@ -36,18 +36,18 @@ namespace Divertr.Internal
                 }
                 finally
                 {
-                    redirectContext.MoveBack();
+                    redirectContext.EndRedirect();
                 }
 
                 return;
             }
             
-            if (redirectContext.Root == null)
+            if (redirectContext.Original == null)
             {
-                throw new DiverterException("Original reference not set to an instance of an object.");
+                throw new DiverterException("Proxy original instance reference is null");
             }
 
-            ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectContext.Root);
+            ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectContext.Original);
             invocation.Proceed();
         }
     }

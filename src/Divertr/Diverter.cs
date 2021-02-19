@@ -1,84 +1,64 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Reflection;
 using Divertr.Internal;
 
 namespace Divertr
 {
-    public class Diverter<T> : IDiverter<T> where T : class
+    public class Diverter : IDiverter
     {
-        private readonly RouteRepository _routeRepository;
-        private readonly Lazy<CallContext<T>> _callContext;
+        private readonly RouteRepository _routeRepository = new RouteRepository();
+        private readonly ConcurrentDictionary<RouterId, object> _routers = new ConcurrentDictionary<RouterId, object>();
+        
+        public Diverter() {}
 
-        public Diverter() : this(DiverterId.From<T>(), new RouteRepository())
+        public IRouter<T> Router<T>(string? name = null) where T : class
         {
+            return (IRouter<T>) _routers.GetOrAdd(RouterId.From<T>(name),
+                id => new Router<T>(id, _routeRepository));
         }
         
-        internal Diverter(DiverterId diverterId, RouteRepository routeRepository)
+        public IRouter Router(Type type, string? name = null)
         {
-            if (!typeof(T).IsInterface)
-            {
-                throw new ArgumentException("Only interface types are supported", typeof(T).Name);
-            }
-            
-            DiverterId = diverterId;
-            _routeRepository = routeRepository;
-            _callContext = new Lazy<CallContext<T>>(() => new CallContext<T>());
-        }
+            const BindingFlags activatorFlags = BindingFlags.NonPublic | BindingFlags.Instance;
 
-        public DiverterId DiverterId { get; }
-
-        public ICallContext<T> CallCtx => _callContext.Value;
-        
-        public T Proxy(T? root = null)
-        {
-            DiversionRoute<T>? GetDiversionRoute()
-            {
-                return _routeRepository.GetRoute<T>(DiverterId);
-            }
-
-            return ProxyFactory.Instance.CreateDiversionProxy(root, GetDiversionRoute);
-        }
-
-        public object Proxy(object? root = null)
-        {
-            if (root != null && !(root is T))
-            {
-                throw new ArgumentException($"Not assignable to {typeof(T).Name}", nameof(root));
-            }
-
-            return Proxy(root as T);
+            return (IRouter) _routers.GetOrAdd(RouterId.From(type, name),
+                id =>
+                {
+                    var diverterType = typeof(Router<>).MakeGenericType(type);
+                    return Activator.CreateInstance(diverterType, activatorFlags, null, new object[] {id, _routeRepository}, default);
+                });
         }
         
-        public IDiverter<T> SendTo(T target)
+        public IDiverter ResetAll()
         {
-            var redirect = new Redirect<T>(target);
-            var callRoute = new DiversionRoute<T>(redirect, _callContext.Value);
-            _routeRepository.SetRoute(DiverterId, callRoute);
-
+            _routeRepository.ResetAll();
             return this;
         }
 
-        public IDiverter<T> AddSendTo(T target)
+        public T Proxy<T>(T? original = null) where T : class
         {
-            DiversionRoute<T> Create()
-            {
-                return new DiversionRoute<T>(new Redirect<T>(target), _callContext.Value);
-            }
-
-            DiversionRoute<T> Update(DiversionRoute<T> existing)
-            {
-                return existing.AppendRedirect(new Redirect<T>(target));
-            }
-
-            _routeRepository.AddOrUpdateRoute(DiverterId, Create, Update);
-
-            return this;
+            return Router<T>().Proxy(original);
         }
 
-        public IDiverter<T> Reset()
+        public IRouter<T> Redirect<T>(T target) where T : class
         {
-            _routeRepository.Reset(DiverterId);
+            return Router<T>().Redirect(target);
+        }
 
-            return this;
+        public IRouter<T> AddRedirect<T>(T target) where T : class
+        {
+            return Router<T>().AddRedirect(target);
+        }
+
+        public IRouter<T> Reset<T>() where T : class
+        {
+            return Router<T>().Reset();
+        }
+
+        public ICallRelay<T> Relay<T>() where T : class
+        {
+            return Router<T>().Relay;
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Divertr.WebAppTests
 {
     public class WebAppFixture
     {
-        public IDiverterCollection Diverters { get; } = new DiverterCollection();
+        public IDiverter Diverter { get; } = new Diverter();
         public List<Type> TypesRegistered { get; private set; }
         
         private readonly WebApplicationFactory<Startup> _webApplicationFactory;
@@ -29,27 +29,27 @@ namespace Divertr.WebAppTests
             {
                 builder.ConfigureServices(services =>
                 {
-                    services.Divert(Diverters, diverterBuilder =>
+                    services.Divert(Diverter, diverterBuilder =>
                     {
                         diverterBuilder.IncludeFrom<IFooRepository>();
                         diverterBuilder.ExcludeFrom<IFooPublisher>(inclusive: false);
                         diverterBuilder.Include<ILoggerFactory>();
-                        diverterBuilder.WithDiversionsRegisteredHandler(TypeRegisteredHandler);
+                        diverterBuilder.WithTypesDivertedHandler(TypeRegisteredHandler);
                     });
                 });
             });
         }
 
-        public IDiverterCollection InitDiverter(ITestOutputHelper output = null)
+        public IDiverter InitDiverter(ITestOutputHelper output = null)
         {
-            Diverters.ResetAll();
+            Diverter.ResetAll();
 
             if (output != null)
             {
                 InitLogging(output);
             }
 
-            return Diverters;
+            return Diverter;
         }
 
         public void InitLogging(ITestOutputHelper output)
@@ -66,7 +66,7 @@ namespace Divertr.WebAppTests
                     return output.BuildLogger(name);
                 });
             
-            Diverters.Of<ILoggerFactory>().SendTo(fakeLoggerFactory);
+            Diverter.Router<ILoggerFactory>().Redirect(fakeLoggerFactory);
         }
 
         public HttpClient CreateHttpClient()

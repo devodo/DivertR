@@ -7,9 +7,9 @@ namespace Divertr.Extensions.DependencyInjection
     public class RegistrationBuilder
     {
         private readonly RegistrationConfiguration _configuration;
-        private event EventHandler<IEnumerable<Type>>? DiversionsRegisteredEvent;
+        private event EventHandler<IEnumerable<Type>>? TypesDivertedEvent;
         
-        public RegistrationBuilder(IServiceCollection services, IDiverterCollection diverters)
+        public RegistrationBuilder(IServiceCollection services, IDiverter diverters)
         {
             _configuration = new RegistrationConfiguration(services, diverters);
         }
@@ -152,16 +152,16 @@ namespace Divertr.Extensions.DependencyInjection
             return this;
         }
         
-        public RegistrationBuilder WithDiversionsRegisteredHandler(EventHandler<IEnumerable<Type>> handler)
+        public RegistrationBuilder WithTypesDivertedHandler(EventHandler<IEnumerable<Type>> handler)
         {
-            DiversionsRegisteredEvent += handler;
+            TypesDivertedEvent += handler;
 
             return this;
         }
 
         public DiverterRegistration Build()
         {
-            return new DiverterRegistration(_configuration, DiversionsRegisteredEvent);
+            return new DiverterRegistration(_configuration, TypesDivertedEvent);
         } 
     }
 }
