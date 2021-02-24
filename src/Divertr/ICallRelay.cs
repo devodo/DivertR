@@ -4,5 +4,6 @@
     {
         T Next { get; }
         T Original { get; }
+        object? State { get; }
     }
 }

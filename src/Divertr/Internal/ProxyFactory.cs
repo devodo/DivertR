@@ -11,7 +11,7 @@ namespace Divertr.Internal
         
         public T CreateDiverterProxy<T>(T? original, Func<RedirectRoute<T>?> getRedirectRoute) where T : class
         {
-            var interceptor = new DiverterInterceptor<T>(original, getRedirectRoute);
+            var interceptor = new RouterInterceptor<T>(original, getRedirectRoute);
             return _proxyGenerator.CreateInterfaceProxyWithTargetInterface(original, interceptor)!;
         }
         

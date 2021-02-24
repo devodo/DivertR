@@ -1,5 +1,4 @@
-﻿using System;
-using Castle.DynamicProxy;
+﻿using Castle.DynamicProxy;
 
 namespace Divertr.Internal
 {
@@ -15,40 +14,36 @@ namespace Divertr.Internal
         public void Intercept(IInvocation invocation)
         {
             var redirectContext = _callRelay.Peek();
-            
-            if (redirectContext == null)
-            {
-                throw new DiverterException("Members of this instance may only be accessed from within the context of its DivertR proxy calls");
-            }
+            var redirect = redirectContext.BeginNextRedirect(invocation);
 
-            if (redirectContext.BeginNextRedirect(invocation, out var redirect))
+            if (redirect == null)
             {
-                try
+                if (redirectContext.Original == null)
                 {
-                    if (redirect == null)
-                    {
-                        throw new DiverterException("The redirect instance reference is null");
-                    }
-                    
-                    // ReSharper disable once SuspiciousTypeConversion.Global
-                    ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirect);
-                    invocation.Proceed();
+                    throw new DiverterException("Proxy original instance reference is null");
                 }
-                finally
-                {
-                    redirectContext.EndRedirect();
-                }
+
+                ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectContext.Original);
+                invocation.Proceed();
 
                 return;
             }
-            
-            if (redirectContext.Original == null)
-            {
-                throw new DiverterException("Proxy original instance reference is null");
-            }
 
-            ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectContext.Original);
-            invocation.Proceed();
+            try
+            {
+                if (redirect.Target == null)
+                {
+                    throw new DiverterException("The redirect instance reference is null");
+                }
+                    
+                // ReSharper disable once SuspiciousTypeConversion.Global
+                ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirect.Target);
+                invocation.Proceed();
+            }
+            finally
+            {
+                redirectContext.EndRedirect();
+            }
         }
     }
 }

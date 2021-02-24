@@ -11,6 +11,22 @@ namespace Divertr.Internal
         
         public T Original { get; }
 
+        public object? State
+        {
+            get
+            {
+                var redirectContext = Peek();
+                var redirect = redirectContext.Current;
+
+                if (redirect == null)
+                {
+                    throw new DiverterException("Members of this instance may only be accessed from within the context of its DivertR proxy calls");
+                }
+
+                return redirect.State;
+            }
+        } 
+
         public CallRelay()
         {
             Next =  ProxyFactory.Instance.CreateRedirectTargetProxy(this);
@@ -39,11 +55,16 @@ namespace Divertr.Internal
             return invocationState;
         }
 
-        public RedirectContext<T>? Peek()
+        public RedirectContext<T> Peek()
         {
             var callStack = _callStack.Value;
 
-            return callStack?[callStack.Count - 1];
+            if (callStack == null || callStack.Count == 0)
+            {
+                throw new DiverterException("Members of this instance may only be accessed from within the context of its DivertR proxy calls");
+            }
+
+            return callStack[callStack.Count - 1];
         }
     }
 }

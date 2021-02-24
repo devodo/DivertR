@@ -3,12 +3,12 @@ using Castle.DynamicProxy;
 
 namespace Divertr.Internal
 {
-    internal class DiverterInterceptor<T> : IInterceptor where T : class
+    internal class RouterInterceptor<T> : IInterceptor where T : class
     {
         private readonly T? _original;
         private readonly Func<RedirectRoute<T>?> _getRedirectRoute;
 
-        public DiverterInterceptor(T? original, Func<RedirectRoute<T>?> getRedirectRoute)
+        public RouterInterceptor(T? original, Func<RedirectRoute<T>?> getRedirectRoute)
         {
             _original = original;
             _getRedirectRoute = getRedirectRoute;
@@ -17,9 +17,9 @@ namespace Divertr.Internal
         public void Intercept(IInvocation invocation)
         {
             var route = _getRedirectRoute();
+            var redirect = route?.BeginCall(_original, invocation);
 
-            if (route == null ||
-                !route.TryBeginCall(_original, invocation, out T? redirect))
+            if (redirect == null)
             {
                 if (_original == null)
                 {
@@ -32,13 +32,18 @@ namespace Divertr.Internal
 
             try
             {
+                if (redirect.Target == null)
+                {
+                    throw new DiverterException("The redirect instance reference is null");
+                }
+                
                 // ReSharper disable once SuspiciousTypeConversion.Global
-                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect);
+                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect.Target);
                 invocation.Proceed();
             }
             finally
             {
-                route.EndCall(invocation);
+                route!.EndCall(invocation);
             }
         }
     }

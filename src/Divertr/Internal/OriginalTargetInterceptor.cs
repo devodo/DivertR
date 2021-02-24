@@ -15,11 +15,6 @@ namespace Divertr.Internal
         {
             var redirectionContext = _callRelay.Peek();
             
-            if (redirectionContext == null)
-            {
-                throw new DiverterException("Members of this instance may only be accessed from within the context of its DivertR proxy calls");
-            }
-
             if (redirectionContext.Original == null)
             {
                 throw new DiverterException("The original instance reference is null");

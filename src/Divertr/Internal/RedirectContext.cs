@@ -19,33 +19,41 @@ namespace Divertr.Internal
             RootInvocation = rootInvocation;
         }
 
-        public bool BeginNextRedirect(IInvocation invocation, out T? redirect)
+        public Redirect<T>? Current
+        {
+            get
+            {
+                var index = _indexStack.Value?.LastOrDefault() ?? 0;
+
+                return index > 0 
+                    ? _redirects[index - 1]
+                    : null;
+            }
+        }
+
+        public Redirect<T>? BeginNextRedirect(IInvocation invocation)
         {
             var indexStack = _indexStack.Value ?? new List<int>();
             var i = indexStack.LastOrDefault();
 
             if (i >= _redirects.Count)
             {
-                redirect = null;
-                return false;
+                return null;
             }
-
-            bool matched = false;
-            T? matchedRedirect = null;
+            
+            Redirect<T>? matchedRedirect = null;
             for (; i < _redirects.Count; i++)
             {
                 if (_redirects[i].IsMatch(invocation))
                 {
-                    matched = true;
-                    matchedRedirect = _redirects[i].Target;
+                    matchedRedirect = _redirects[i];
                     break;
                 }
             }
             
             _indexStack.Value = indexStack.Append(i + 1).ToList();
-
-            redirect = matchedRedirect;
-            return matched;
+            
+            return matchedRedirect;
         }
 
         public void EndRedirect()

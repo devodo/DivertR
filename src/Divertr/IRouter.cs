@@ -10,8 +10,8 @@
     {
         ICallRelay<T> Relay { get; }
         T Proxy(T? original = null);
-        IRouter<T> Redirect(T target);
-        IRouter<T> AddRedirect(T target);
+        IRouter<T> Redirect(T target, object? state = null);
+        IRouter<T> AddRedirect(T target, object? state = null);
         IRouter<T> Reset();
     }
 }

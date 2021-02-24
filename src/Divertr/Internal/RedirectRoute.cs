@@ -27,24 +27,22 @@ namespace Divertr.Internal
             return new RedirectRoute<T>(redirects, _callRelay);
         }
 
-        public bool TryBeginCall(T? original, IInvocation invocation, out T? redirect)
+        public Redirect<T>? BeginCall(T? original, IInvocation invocation)
         {
             if (_redirects.Count == 0)
             {
-                redirect = null;
-                return false;
+                return null;
             }
             
             var redirectContext = new RedirectContext<T>(original, _redirects, invocation);
-            
-            var hasRedirect = redirectContext.BeginNextRedirect(invocation, out redirect);
+            var redirect = redirectContext.BeginNextRedirect(invocation);
 
-            if (hasRedirect)
+            if (redirect != null)
             {
                 _callRelay.Push(redirectContext);
             }
-            
-            return hasRedirect;
+
+            return redirect;
         }
 
         public void EndCall(IInvocation invocation)

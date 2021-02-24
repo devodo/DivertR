@@ -48,25 +48,25 @@ namespace Divertr
             return Proxy(original as T);
         }
         
-        public IRouter<T> Redirect(T target)
+        public IRouter<T> Redirect(T target, object? state = null)
         {
-            var redirect = new Redirect<T>(target);
+            var redirect = new Redirect<T>(target, state);
             var callRoute = new RedirectRoute<T>(redirect, _callContext.Value);
             _routeRepository.SetRoute(RouterId, callRoute);
 
             return this;
         }
 
-        public IRouter<T> AddRedirect(T target)
+        public IRouter<T> AddRedirect(T target, object? state = null)
         {
             RedirectRoute<T> Create()
             {
-                return new RedirectRoute<T>(new Redirect<T>(target), _callContext.Value);
+                return new RedirectRoute<T>(new Redirect<T>(target, state), _callContext.Value);
             }
 
             RedirectRoute<T> Update(RedirectRoute<T> existing)
             {
-                return existing.AppendRedirect(new Redirect<T>(target));
+                return existing.AppendRedirect(new Redirect<T>(target, state));
             }
 
             _routeRepository.AddOrUpdateRoute(RouterId, Create, Update);
