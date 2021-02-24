@@ -13,15 +13,15 @@ namespace Divertr.Internal
 
         public void Intercept(IInvocation invocation)
         {
-            var redirectionContext = _callRelay.Peek();
+            var redirectRelay = _callRelay.Current;
             
-            if (redirectionContext.Original == null)
+            if (redirectRelay.Original == null)
             {
                 throw new DiverterException("The original instance reference is null");
             }
             
             // ReSharper disable once SuspiciousTypeConversion.Global
-            ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectionContext.Original);
+            ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectRelay.Original);
             invocation.Proceed();
         }
     }

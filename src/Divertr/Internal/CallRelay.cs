@@ -1,31 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Castle.DynamicProxy;
 
 namespace Divertr.Internal
 {
     internal class CallRelay<T> : ICallRelay<T> where T : class
     {
-        private readonly AsyncLocal<List<RedirectContext<T>>> _callStack = new AsyncLocal<List<RedirectContext<T>>>();
+        private readonly AsyncLocal<List<RedirectRelay<T>>> _callStack = new AsyncLocal<List<RedirectRelay<T>>>();
         public T Next { get; }
         
         public T Original { get; }
 
-        public object? State
-        {
-            get
-            {
-                var redirectContext = Peek();
-                var redirect = redirectContext.Current;
-
-                if (redirect == null)
-                {
-                    throw new DiverterException("Members of this instance may only be accessed from within the context of its DivertR proxy calls");
-                }
-
-                return redirect.State;
-            }
-        } 
+        public object? State => Current.Current.State;
 
         public CallRelay()
         {
@@ -33,38 +20,55 @@ namespace Divertr.Internal
             Original = ProxyFactory.Instance.CreateOriginalTargetProxy(this);
         }
         
-        public void Push(RedirectContext<T> redirectContext)
+        public Redirect<T>? BeginCall(T? original, List<Redirect<T>> redirects, IInvocation invocation)
         {
-            var callStack = _callStack.Value?.ToList() ?? new List<RedirectContext<T>>();
-            callStack.Add(redirectContext);
-            _callStack.Value = callStack;
-        }
+            var redirectRelay = new RedirectRelay<T>(original, redirects, invocation);
+            var redirect = redirectRelay.BeginNextRedirect(invocation);
 
-        public RedirectContext<T>? Pop()
-        {
-            var callStack = _callStack.Value;
-
-            if (callStack == null || callStack.Count == 0)
+            if (redirect == null)
             {
                 return null;
             }
+            
+            var callStack = _callStack.Value?.ToList() ?? new List<RedirectRelay<T>>();
+            callStack.Add(redirectRelay);
+            _callStack.Value = callStack;
 
-            var invocationState = callStack[callStack.Count - 1];
-            callStack.RemoveAt(callStack.Count - 1);
-
-            return invocationState;
+            return redirect;
         }
 
-        public RedirectContext<T> Peek()
+        public void EndCall(IInvocation invocation)
         {
             var callStack = _callStack.Value;
 
             if (callStack == null || callStack.Count == 0)
             {
-                throw new DiverterException("Members of this instance may only be accessed from within the context of its DivertR proxy calls");
+                throw new DiverterException("Fatal error: Encountered an unexpected Router proxy call end state");
             }
 
-            return callStack[callStack.Count - 1];
+            var redirectRelay = callStack[callStack.Count - 1];
+            
+            if (!ReferenceEquals(invocation, redirectRelay.RootInvocation))
+            {
+                throw new DiverterException("Fatal error: Encountered an unexpected redirect relay for the current call");
+            }
+            
+            callStack.RemoveAt(callStack.Count - 1);
+        }
+
+        public RedirectRelay<T> Current
+        {
+            get
+            {
+                var callStack = _callStack.Value;
+
+                if (callStack == null || callStack.Count == 0)
+                {
+                    throw new DiverterException("Members of this instance may only be accessed from within the context of their Router proxy calls");
+                }
+
+                return callStack[callStack.Count - 1];
+            }
         }
     }
 }

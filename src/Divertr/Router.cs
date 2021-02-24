@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Divertr.Internal;
 
 namespace Divertr
@@ -6,7 +7,7 @@ namespace Divertr
     public class Router<T> : IRouter<T> where T : class
     {
         private readonly RouteRepository _routeRepository;
-        private readonly Lazy<CallRelay<T>> _callContext;
+        private readonly Lazy<CallRelay<T>> _callRelay;
 
         public Router() : this(RouterId.From<T>(), new RouteRepository())
         {
@@ -21,12 +22,12 @@ namespace Divertr
             
             RouterId = routerId;
             _routeRepository = routeRepository;
-            _callContext = new Lazy<CallRelay<T>>(() => new CallRelay<T>());
+            _callRelay = new Lazy<CallRelay<T>>(() => new CallRelay<T>());
         }
 
         public RouterId RouterId { get; }
 
-        public ICallRelay<T> Relay => _callContext.Value;
+        public ICallRelay<T> Relay => _callRelay.Value;
         
         public T Proxy(T? original = null)
         {
@@ -51,7 +52,7 @@ namespace Divertr
         public IRouter<T> Redirect(T target, object? state = null)
         {
             var redirect = new Redirect<T>(target, state);
-            var callRoute = new RedirectRoute<T>(redirect, _callContext.Value);
+            var callRoute = new RedirectRoute<T>(redirect, _callRelay.Value);
             _routeRepository.SetRoute(RouterId, callRoute);
 
             return this;
@@ -59,14 +60,17 @@ namespace Divertr
 
         public IRouter<T> AddRedirect(T target, object? state = null)
         {
+            var redirect = new Redirect<T>(target, state);
+            
             RedirectRoute<T> Create()
             {
-                return new RedirectRoute<T>(new Redirect<T>(target, state), _callContext.Value);
+                return new RedirectRoute<T>(redirect, _callRelay.Value);
             }
 
             RedirectRoute<T> Update(RedirectRoute<T> existing)
             {
-                return existing.AppendRedirect(new Redirect<T>(target, state));
+                var redirects = new[] {redirect}.Concat(existing.Redirects).ToList();
+                return new RedirectRoute<T>(redirects, _callRelay.Value);
             }
 
             _routeRepository.AddOrUpdateRoute(RouterId, Create, Update);

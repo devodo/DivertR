@@ -17,7 +17,7 @@ namespace Divertr.Internal
         public void Intercept(IInvocation invocation)
         {
             var route = _getRedirectRoute();
-            var redirect = route?.BeginCall(_original, invocation);
+            var redirect = route?.CallRelay.BeginCall(_original, route.Redirects, invocation);
 
             if (redirect == null)
             {
@@ -43,7 +43,7 @@ namespace Divertr.Internal
             }
             finally
             {
-                route!.EndCall(invocation);
+                route!.CallRelay.EndCall(invocation);
             }
         }
     }

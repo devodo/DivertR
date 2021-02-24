@@ -85,20 +85,15 @@ namespace Divertr.UnitTests
             var mock = new Mock<IFoo>();
             mock
                 .Setup(x => x.Message)
-                .Returns(() =>
-                {
-                    var state = _router.Relay.State as string;
-
-                    return $"{state} {_router.Relay.Next.Message} {state}";
-                });
+                .Returns(() => 
+                    $"{_router.Relay.State} {_router.Relay.Next.Message} {_router.Relay.State}");
 
             // ACT
             _router
                 .AddRedirect(mock.Object, "1")
                 .AddRedirect(mock.Object, "2")
                 .AddRedirect(mock.Object, "3");
-
-
+            
             // ASSERT
             subject.Message.ShouldBe("3 2 1 original foo 1 2 3");
         }
