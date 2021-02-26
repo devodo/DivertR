@@ -34,16 +34,16 @@ namespace DivertR.Extensions.DependencyInjection.Tests
         [Fact]
         public void ShouldReplaceMultipleRegistrations()
         {
-            var diverter = _diverter.Router<IFoo>();
+            var router = _diverter.Router<IFoo>();
             _services.AddTransient<IFoo>(_ => new Foo {Message = "Original"});
-            _services.Divert(diverter);
+            _services.Divert(router);
 
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
             var mock = new Mock<IFoo>();
             mock.Setup(x => x.Message).Returns("Diverted");
-            diverter.Redirect(mock.Object);
+            router.Redirect(mock.Object);
             
             var foo2 = provider.GetRequiredService<IFoo>();
             

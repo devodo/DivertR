@@ -38,6 +38,33 @@ namespace DivertR.Extensions.DependencyInjection
                 return openGenerics;
             });
         }
+        
+        public void Register()
+        {
+            if (_serviceIndex > 0)
+            {
+                throw new InvalidOperationException("Register has already been called");
+            }
+            
+            for (; _serviceIndex < _configuration.Services.Count; _serviceIndex++)
+            {
+                if (TryRegisterInclude(_serviceIndex))
+                {
+                    continue;
+                }
+
+                if (TryAddDescriptorForCreate(_serviceIndex))
+                {
+                    continue;
+                }
+
+                TryRegisterExclude(_serviceIndex);
+            }
+
+            RegisterCreateDescriptors();
+
+            _typesDivertedNotifier?.Invoke(this, _divertedTypes);
+        }
 
         private bool TryRegisterInclude(int servicesIndex)
         {
@@ -111,7 +138,7 @@ namespace DivertR.Extensions.DependencyInjection
                         
                 var implementationType = descriptor.ImplementationType.MakeGenericType(genericType.GetGenericArguments());
                         
-                var router = _configuration.Diverters.Router(genericType, _configuration.Name);
+                var router = _configuration.GetRouterFunc(genericType);
                 object ProxyFactory(IServiceProvider provider)
                 {
                     var instance = ActivatorUtilities.GetServiceOrCreateInstance(provider, implementationType);
@@ -126,10 +153,10 @@ namespace DivertR.Extensions.DependencyInjection
 
         private void InjectDiverter(int servicesIndex, ServiceDescriptor descriptor)
         {
-            var router = _configuration.Diverters.Router(descriptor.ServiceType, _configuration.Name);
+            var router = _configuration.GetRouterFunc.Invoke(descriptor.ServiceType);
             object ProxyFactory(IServiceProvider provider)
             {
-                var instance = provider.GetInstance(descriptor);
+                var instance = GetInstance(provider, descriptor);
                 return router.Proxy(instance);
             }
                 
@@ -137,32 +164,20 @@ namespace DivertR.Extensions.DependencyInjection
             _divertedTypesHash.Add(descriptor.ServiceType);
             _divertedTypes.Add(descriptor.ServiceType);
         }
-
-        public void Register()
+        
+        private static object GetInstance(IServiceProvider provider, ServiceDescriptor descriptor)
         {
-            if (_serviceIndex > 0)
+            if (descriptor.ImplementationInstance != null)
             {
-                throw new InvalidOperationException("Register has already been called");
-            }
-            
-            for (; _serviceIndex < _configuration.Services.Count; _serviceIndex++)
-            {
-                if (TryRegisterInclude(_serviceIndex))
-                {
-                    continue;
-                }
-
-                if (TryAddDescriptorForCreate(_serviceIndex))
-                {
-                    continue;
-                }
-
-                TryRegisterExclude(_serviceIndex);
+                return descriptor.ImplementationInstance;
             }
 
-            RegisterCreateDescriptors();
+            if (descriptor.ImplementationType != null)
+            {
+                return ActivatorUtilities.GetServiceOrCreateInstance(provider, descriptor.ImplementationType);
+            }
 
-            _typesDivertedNotifier?.Invoke(this, _divertedTypes);
+            return descriptor.ImplementationFactory(provider);
         }
     }
 }

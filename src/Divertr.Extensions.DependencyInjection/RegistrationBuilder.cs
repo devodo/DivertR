@@ -9,9 +9,9 @@ namespace DivertR.Extensions.DependencyInjection
         private readonly RegistrationConfiguration _configuration;
         private event EventHandler<IEnumerable<Type>>? TypesDivertedEvent;
         
-        public RegistrationBuilder(IServiceCollection services, IDiverter diverters)
+        public RegistrationBuilder(IServiceCollection services, IDiverter diverter)
         {
-            _configuration = new RegistrationConfiguration(services, diverters);
+            _configuration = new RegistrationConfiguration(services, diverter);
         }
 
         public RegistrationBuilder Include<T>() where T : class
@@ -71,7 +71,7 @@ namespace DivertR.Extensions.DependencyInjection
         }
         public RegistrationBuilder IncludeRange(Type? startType = null, Type? endType = null, bool startInclusive = true, bool endInclusive = true)
         {
-            foreach (var type in _configuration.Services.GetRange(startType, endType, startInclusive, endInclusive))
+            foreach (var type in GetRange(_configuration.Services, startType, endType, startInclusive, endInclusive))
             {
                 _configuration.IncludeTypes.Add(type);
             }
@@ -137,7 +137,7 @@ namespace DivertR.Extensions.DependencyInjection
 
         public RegistrationBuilder ExcludeRange(Type? startType = null, Type? endType = null, bool startInclusive = true, bool endInclusive = true)
         {
-            foreach (var type in _configuration.Services.GetRange(startType, endType, startInclusive, endInclusive))
+            foreach (var type in GetRange(_configuration.Services, startType, endType, startInclusive, endInclusive))
             {
                 _configuration.ExcludeTypes.Add(type);
             }
@@ -162,6 +162,43 @@ namespace DivertR.Extensions.DependencyInjection
         public DiverterRegistration Build()
         {
             return new DiverterRegistration(_configuration, TypesDivertedEvent);
-        } 
+        }
+        
+        private static IEnumerable<Type> GetRange(IServiceCollection services, Type? startType = null, Type? endType = null, bool startInclusive = true, bool endInclusive = true)
+        {
+            bool startFound = startType == null;
+            foreach (var descriptor in services)
+            {
+                if (!startFound)
+                {
+                    if (descriptor.ServiceType != startType)
+                    {
+                        continue;
+                    }
+
+                    startFound = true;
+
+                    if (!startInclusive)
+                    {
+                        continue;
+                    }
+                }
+
+                if (!endInclusive && descriptor.ServiceType == endType)
+                {
+                    break;
+                }
+
+                if (descriptor.ServiceType.IsInterface && !descriptor.ServiceType.ContainsGenericParameters)
+                {
+                    yield return descriptor.ServiceType;
+                }
+
+                if (descriptor.ServiceType == endType)
+                {
+                    break;
+                }
+            }
+        }
     }
 }

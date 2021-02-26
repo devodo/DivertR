@@ -9,8 +9,6 @@ namespace DivertR
     {
         private readonly RouteRepository _routeRepository = new RouteRepository();
         private readonly ConcurrentDictionary<RouterId, object> _routers = new ConcurrentDictionary<RouterId, object>();
-        
-        public Diverter() {}
 
         public IRouter<T> Router<T>(string? name = null) where T : class
         {
