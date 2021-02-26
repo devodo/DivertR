@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Divertr.SampleWebApp.Model;
+using DivertR.SampleWebApp.Model;
 using Refit;
 
-namespace Divertr.WebAppTests
+namespace DivertR.WebAppTests
 {
     public interface IFooClient
     {

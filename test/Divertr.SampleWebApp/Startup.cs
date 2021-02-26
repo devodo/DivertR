@@ -1,10 +1,10 @@
-using Divertr.SampleWebApp.Services;
+using DivertR.SampleWebApp.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Divertr.SampleWebApp
+namespace DivertR.SampleWebApp
 {
     public class Startup
     {

@@ -1,9 +1,9 @@
-using Divertr.UnitTests.Model;
+using DivertR.UnitTests.Model;
 using Moq;
 using Shouldly;
 using Xunit;
 
-namespace Divertr.UnitTests
+namespace DivertR.UnitTests
 {
     public class RouterTests
     {

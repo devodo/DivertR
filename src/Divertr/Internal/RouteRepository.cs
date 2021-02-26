@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace Divertr.Internal
+namespace DivertR.Internal
 {
     internal class RouteRepository
     {

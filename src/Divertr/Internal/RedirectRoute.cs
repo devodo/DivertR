@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Divertr.Internal
+namespace DivertR.Internal
 {
     internal class RedirectRoute<T> where T : class
     {

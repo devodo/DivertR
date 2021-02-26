@@ -1,4 +1,4 @@
-﻿namespace Divertr.UnitTests.Model
+﻿namespace DivertR.UnitTests.Model
 {
     public class FooSubstitute : IFoo
     {

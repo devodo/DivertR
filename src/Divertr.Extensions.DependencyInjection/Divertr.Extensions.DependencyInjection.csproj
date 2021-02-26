@@ -4,6 +4,8 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>8</LangVersion>
         <Nullable>enable</Nullable>
+        <AssemblyName>DivertR.Extensions.DependencyInjection</AssemblyName>
+        <RootNamespace>DivertR.Extensions.DependencyInjection</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -11,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Divertr\Divertr.csproj" />
+      <ProjectReference Include="..\DivertR\DivertR.csproj" />
     </ItemGroup>
 
 </Project>

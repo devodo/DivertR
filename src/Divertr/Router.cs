@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using Divertr.Internal;
+using DivertR.Internal;
 
-namespace Divertr
+namespace DivertR
 {
     public class Router<T> : IRouter<T> where T : class
     {

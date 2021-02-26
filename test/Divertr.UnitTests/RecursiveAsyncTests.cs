@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Shouldly;
 using Xunit;
 
-namespace Divertr.UnitTests
+namespace DivertR.UnitTests
 {
     public class RecursiveAsyncTests
     {

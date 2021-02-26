@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Divertr
+namespace DivertR
 {
     public readonly struct RouterId : IEquatable<RouterId>
     {

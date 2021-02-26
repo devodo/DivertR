@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Divertr
+namespace DivertR
 {
     public interface IDiverter
     {

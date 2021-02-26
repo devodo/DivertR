@@ -1,6 +1,6 @@
 ﻿using Castle.DynamicProxy;
 
-namespace Divertr.Internal
+namespace DivertR.Internal
 {
     internal interface ICallCondition
     {

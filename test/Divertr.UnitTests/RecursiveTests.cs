@@ -5,7 +5,7 @@ using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Divertr.UnitTests
+namespace DivertR.UnitTests
 {
     public class RecursiveTests
     {

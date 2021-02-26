@@ -1,15 +1,15 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using Divertr.SampleWebApp.Model;
-using Divertr.SampleWebApp.Services;
+using DivertR.SampleWebApp.Model;
+using DivertR.SampleWebApp.Services;
 using FakeItEasy;
 using Moq;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Divertr.WebAppTests
+namespace DivertR.WebAppTests
 {
     public class WebAppTests : IClassFixture<WebAppFixture>
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Divertr.Extensions.DependencyInjection
+namespace DivertR.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {

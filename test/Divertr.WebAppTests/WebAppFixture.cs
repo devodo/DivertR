@@ -3,18 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Divergic.Logging.Xunit;
-using Divertr.Extensions.DependencyInjection;
-using Divertr.SampleWebApp;
-using Divertr.SampleWebApp.Services;
+using DivertR.Extensions.DependencyInjection;
+using DivertR.SampleWebApp;
+using DivertR.SampleWebApp.Services;
 using FakeItEasy;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Logging;
-using Moq;
 using Refit;
 using Xunit.Abstractions;
 
-namespace Divertr.WebAppTests
+namespace DivertR.WebAppTests
 {
     public class WebAppFixture
     {

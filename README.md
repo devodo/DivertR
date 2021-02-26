@@ -64,9 +64,9 @@ Console.WriteLine(fooProxy.Message); // "original foo"
 Configure the `Router` to redirect its proxy calls to a different instance:
 
 ```csharp
-var altFoo = new Foo {Message = "hi Divertr"};
+var altFoo = new Foo {Message = "hi DivertR"};
 router.Redirect(altFoo);
-Console.WriteLine(fooProxy.Message); // "hi Divertr"
+Console.WriteLine(fooProxy.Message); // "hi DivertR"
 ```
 
 Then reset the `Router` and its proxy defaults back to the original instance:
@@ -280,7 +280,7 @@ Console.WriteLine(foo.Message); // "Original"
 ### Register a Diverter
 
 Similarly a `Diverter` extension method is provided that replaces all existing `IServiceCollection` registrations with
-Divertr proxy factories at once.
+DivertR proxy factories at once.
 
 ```csharp
 IServiceCollection services = new ServiceCollection();
@@ -289,7 +289,7 @@ services.AddSingleton<IBar, Bar>();
 ```
 
 Passing a `Diverter` instance to the `Divert` extension method will convert both the `IFoo` and `IBar` registrations
-into Divertr proxy factories:
+into DivertR proxy factories:
 
 ```csharp
 var diverter = new Diverter();

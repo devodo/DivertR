@@ -4,6 +4,10 @@
         <TargetFramework>net5.0</TargetFramework>
 
         <IsPackable>false</IsPackable>
+
+        <AssemblyName>DivertR.Extensions.DependencyInjection.Tests</AssemblyName>
+
+        <RootNamespace>DivertR.Extensions.DependencyInjection.Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,8 +27,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Divertr.Extensions.DependencyInjection\Divertr.Extensions.DependencyInjection.csproj" />
-      <ProjectReference Include="..\..\src\Divertr\Divertr.csproj" />
+      <ProjectReference Include="..\..\src\DivertR.Extensions.DependencyInjection\DivertR.Extensions.DependencyInjection.csproj" />
+      <ProjectReference Include="..\..\src\DivertR\DivertR.csproj" />
     </ItemGroup>
 
 </Project>

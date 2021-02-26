@@ -1,4 +1,4 @@
-﻿namespace Divertr.SampleWebApp.Model
+﻿namespace DivertR.SampleWebApp.Model
 {
     public enum FooEventType
     {

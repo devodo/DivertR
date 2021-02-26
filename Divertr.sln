@@ -7,17 +7,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{74CF87C6-EDB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{9275A4A9-A215-4894-83C6-128024B08122}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Divertr", "src\Divertr\Divertr.csproj", "{0E2DABC3-39BF-4B0D-8CA9-A5E88B818573}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DivertR", "src\DivertR\DivertR.csproj", "{0E2DABC3-39BF-4B0D-8CA9-A5E88B818573}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Divertr.UnitTests", "test\Divertr.UnitTests\Divertr.UnitTests.csproj", "{1A70F24F-B257-4183-9247-5C1B6802B69A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DivertR.UnitTests", "test\DivertR.UnitTests\DivertR.UnitTests.csproj", "{1A70F24F-B257-4183-9247-5C1B6802B69A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Divertr.SampleWebApp", "test\Divertr.SampleWebApp\Divertr.SampleWebApp.csproj", "{C18C99BE-811B-4446-AAA6-E6377F08AA01}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.SampleWebApp", "test\DivertR.SampleWebApp\DivertR.SampleWebApp.csproj", "{C18C99BE-811B-4446-AAA6-E6377F08AA01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Divertr.WebAppTests", "test\Divertr.WebAppTests\Divertr.WebAppTests.csproj", "{C411DA96-5AB1-48BC-B238-7610F0701429}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.WebAppTests", "test\DivertR.WebAppTests\DivertR.WebAppTests.csproj", "{C411DA96-5AB1-48BC-B238-7610F0701429}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Divertr.Extensions.DependencyInjection", "src\Divertr.Extensions.DependencyInjection\Divertr.Extensions.DependencyInjection.csproj", "{A47ED4A4-43C0-4BD3-9035-3D853205B72F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.Extensions.DependencyInjection", "src\DivertR.Extensions.DependencyInjection\DivertR.Extensions.DependencyInjection.csproj", "{A47ED4A4-43C0-4BD3-9035-3D853205B72F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Divertr.Extensions.DependencyInjection.Tests", "test\Divertr.Extensions.DependencyInjection.Tests\Divertr.Extensions.DependencyInjection.Tests.csproj", "{0CDF6317-C9EE-48B7-A349-0D3335EBD86F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.Extensions.DependencyInjection.Tests", "test\DivertR.Extensions.DependencyInjection.Tests\DivertR.Extensions.DependencyInjection.Tests.csproj", "{0CDF6317-C9EE-48B7-A349-0D3335EBD86F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

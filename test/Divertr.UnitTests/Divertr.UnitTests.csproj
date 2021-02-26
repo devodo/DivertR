@@ -6,6 +6,10 @@
     <IsPackable>false</IsPackable>
 
     <LangVersion>9</LangVersion>
+
+    <AssemblyName>DivertR.UnitTests</AssemblyName>
+
+    <RootNamespace>DivertR.UnitTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,8 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Divertr.Extensions.DependencyInjection\Divertr.Extensions.DependencyInjection.csproj" />
-    <ProjectReference Include="..\..\src\Divertr\Divertr.csproj" />
+    <ProjectReference Include="..\..\src\DivertR.Extensions.DependencyInjection\DivertR.Extensions.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\src\DivertR\DivertR.csproj" />
   </ItemGroup>
 
 </Project>

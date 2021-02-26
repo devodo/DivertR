@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Divertr.Extensions.DependencyInjection
+namespace DivertR.Extensions.DependencyInjection
 {
     public class DiverterRegistration
     {

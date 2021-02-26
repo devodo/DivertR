@@ -1,7 +1,7 @@
 ﻿using System;
 using Castle.DynamicProxy;
 
-namespace Divertr.Internal
+namespace DivertR.Internal
 {
     internal class RouterInterceptor<T> : IInterceptor where T : class
     {

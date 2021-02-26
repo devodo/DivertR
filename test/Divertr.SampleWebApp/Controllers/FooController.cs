@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Divertr.SampleWebApp.Model;
-using Divertr.SampleWebApp.Services;
+using DivertR.SampleWebApp.Model;
+using DivertR.SampleWebApp.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace Divertr.SampleWebApp.Controllers
+namespace DivertR.SampleWebApp.Controllers
 {
     [ApiController]
     [Route("[controller]")]

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace Divertr.SampleWebApp
+namespace DivertR.SampleWebApp
 {
     public class Program
     {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Reflection;
-using Divertr.Internal;
+using DivertR.Internal;
 
-namespace Divertr
+namespace DivertR
 {
     public class Diverter : IDiverter
     {

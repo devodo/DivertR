@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Divertr.SampleWebApp.Model;
+using DivertR.SampleWebApp.Model;
 
-namespace Divertr.SampleWebApp.Services
+namespace DivertR.SampleWebApp.Services
 {
     public interface IFooRepository
     {

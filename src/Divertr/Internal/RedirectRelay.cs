@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using Castle.DynamicProxy;
 
-namespace Divertr.Internal
+namespace DivertR.Internal
 {
     internal class RedirectRelay<T> where T : class
     {

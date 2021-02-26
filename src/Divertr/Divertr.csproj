@@ -5,12 +5,14 @@
     <LangVersion>8</LangVersion>
     <Nullable>enable</Nullable>
     <PackageVersion>0.0.1</PackageVersion>
-    <Title>Divertr</Title>
+    <Title>DivertR</Title>
     <Authors>David Naylor</Authors>
     <Description>The Dependency Injection Diverter</Description>
     <Copyright>MIT Copyright (c) David Naylor</Copyright>
-    <PackageProjectUrl>https://github.com/devodo/Divertr</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/devodo/DivertR</PackageProjectUrl>
     <PackageTags>test testing divert redirect intercept proxy di dependency injection spy spies</PackageTags>
+    <AssemblyName>DivertR</AssemblyName>
+    <RootNamespace>DivertR</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

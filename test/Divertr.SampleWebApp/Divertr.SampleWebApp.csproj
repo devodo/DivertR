@@ -3,6 +3,8 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp5.0</TargetFramework>
         <LangVersion>9</LangVersion>
+        <AssemblyName>DivertR.SampleWebApp</AssemblyName>
+        <RootNamespace>DivertR.SampleWebApp</RootNamespace>
     </PropertyGroup>
 
 

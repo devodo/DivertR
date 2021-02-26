@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Divertr.SampleWebApp.Model;
+﻿using System.Threading.Tasks;
+using DivertR.SampleWebApp.Model;
 
-namespace Divertr.SampleWebApp.Services
+namespace DivertR.SampleWebApp.Services
 {
     public interface IFooPublisher
     {

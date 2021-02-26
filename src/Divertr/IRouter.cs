@@ -1,4 +1,4 @@
-﻿namespace Divertr
+﻿namespace DivertR
 {
     public interface IRouter
     {
