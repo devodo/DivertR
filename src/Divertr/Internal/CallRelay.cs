@@ -11,6 +11,8 @@ namespace Divertr.Internal
         public T Next { get; }
         
         public T Original { get; }
+        
+        public T? OriginalInstance => Current.Original;
 
         public object? State => Current.Current.State;
 
@@ -30,9 +32,7 @@ namespace Divertr.Internal
                 return null;
             }
             
-            var callStack = _callStack.Value?.ToList() ?? new List<RedirectRelay<T>>();
-            callStack.Add(redirectRelay);
-            _callStack.Value = callStack;
+            _callStack.Value = _callStack.Value?.Append(redirectRelay).ToList() ?? new List<RedirectRelay<T>> { redirectRelay };;
 
             return redirect;
         }

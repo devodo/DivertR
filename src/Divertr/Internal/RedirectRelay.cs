@@ -38,7 +38,7 @@ namespace Divertr.Internal
 
         public Redirect<T>? BeginNextRedirect(IInvocation invocation)
         {
-            var indexStack = _indexStack.Value ?? new List<int>();
+            var indexStack = _indexStack.Value ?? RedirectRelay.EmptyList;
             var startIndex = indexStack.Count == 0 ? 0 : indexStack[indexStack.Count - 1] + 1;
 
             for (var i = startIndex; i < _redirects.Count; i++)
@@ -66,5 +66,10 @@ namespace Divertr.Internal
             
             indexStack.RemoveAt(indexStack.Count - 1);
         }
+    }
+    
+    internal static class RedirectRelay
+    {
+        public static readonly IReadOnlyList<int> EmptyList = new List<int>();
     }
 }
