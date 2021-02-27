@@ -39,7 +39,7 @@ namespace DivertR.Internal
 
         public void EndCall(IInvocation invocation)
         {
-            var callStack = _callStack.Value;
+            var callStack = _callStack.Value?.ToList();
 
             if (callStack == null || callStack.Count == 0)
             {
@@ -54,6 +54,8 @@ namespace DivertR.Internal
             }
             
             callStack.RemoveAt(callStack.Count - 1);
+
+            _callStack.Value = callStack;
         }
 
         public RedirectRelay<T> Current

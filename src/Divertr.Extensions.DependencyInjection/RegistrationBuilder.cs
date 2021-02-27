@@ -159,9 +159,9 @@ namespace DivertR.Extensions.DependencyInjection
             return this;
         }
 
-        public DiverterRegistration Build()
+        public DiverterRegistrar Build()
         {
-            return new DiverterRegistration(_configuration, TypesDivertedEvent);
+            return new DiverterRegistrar(_configuration, TypesDivertedEvent);
         }
         
         private static IEnumerable<Type> GetRange(IServiceCollection services, Type? startType = null, Type? endType = null, bool startInclusive = true, bool endInclusive = true)

@@ -99,6 +99,25 @@ namespace DivertR.Extensions.DependencyInjection.Tests
         }
         
         [Fact]
+        public void GivenOpenGenericShouldRedirectRouter()
+        {
+            var router = _diverter.Router<IList<string>>();
+            _services.AddTransient(typeof(IList<>), typeof(List<>));
+            _services.Divert(router);
+
+            var provider = _services.BuildServiceProvider();
+            var list = provider.GetRequiredService<IList<string>>();
+            
+            var mock = new Mock<IList<string>>();
+            mock.Setup(x => x.Count).Returns(10);
+            router.Redirect(mock.Object);
+            
+            list.Count.ShouldBe(10);
+            _diverter.ResetAll();
+            list.Count.ShouldBe(0);
+        }
+        
+        [Fact]
         public void GivenOpenAndClosedGenericRegistrationsShouldRegisterSingleDiverter()
         {
             _services.AddTransient(typeof(IList<>), typeof(List<>));

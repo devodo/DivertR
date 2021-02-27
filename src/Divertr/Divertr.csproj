@@ -10,7 +10,7 @@
     <Description>The Dependency Injection Diverter</Description>
     <Copyright>MIT Copyright (c) David Naylor</Copyright>
     <PackageProjectUrl>https://github.com/devodo/DivertR</PackageProjectUrl>
-    <PackageTags>test testing divert redirect intercept proxy di dependency injection spy spies</PackageTags>
+    <PackageTags>test testing divert diverter diversion redirect detour intercept proxy di dependency injection spy spies relay</PackageTags>
     <AssemblyName>DivertR</AssemblyName>
     <RootNamespace>DivertR</RootNamespace>
   </PropertyGroup>

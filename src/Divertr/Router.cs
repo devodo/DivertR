@@ -39,7 +39,7 @@ namespace DivertR
             return ProxyFactory.Instance.CreateDiverterProxy(original, GetRedirectRoute);
         }
 
-        public object Proxy(object? original = null)
+        public object ProxyObject(object? original = null)
         {
             if (original != null && !(original is T))
             {

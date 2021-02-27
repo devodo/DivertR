@@ -30,7 +30,7 @@ namespace DivertR.Extensions.DependencyInjection
         {
             var configuration = new RegistrationConfiguration(services, router);
             configuration.IncludeTypes.Add(router.RouterId.Type);
-            new DiverterRegistration(configuration, null).Register();
+            new DiverterRegistrar(configuration, null).Register();
 
             return services;
         }

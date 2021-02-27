@@ -1,13 +1,19 @@
-﻿namespace DivertR.UnitTests.Model
+﻿using System;
+
+namespace DivertR.UnitTests.Model
 {
     public class Foo : IFoo
     {
-        public Foo() {}
-        public Foo(string message)
+        private readonly Func<string> _messageFactory;
+
+        public Foo(Func<string> messageFactory)
         {
-            Message = message;
+            _messageFactory = messageFactory;
         }
-        
-        public string Message { get; init; }
+        public Foo(string message) : this(() => message)
+        {
+        }
+
+        public string Message => _messageFactory.Invoke();
     }
 }

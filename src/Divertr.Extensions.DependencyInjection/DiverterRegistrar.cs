@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DivertR.Extensions.DependencyInjection
 {
-    public class DiverterRegistration
+    public class DiverterRegistrar
     {
         private readonly RegistrationConfiguration _configuration;
         private readonly EventHandler<IEnumerable<Type>>? _typesDivertedNotifier;
@@ -17,7 +17,7 @@ namespace DivertR.Extensions.DependencyInjection
 
         private int _serviceIndex = 0;
 
-        public DiverterRegistration(RegistrationConfiguration configuration, EventHandler<IEnumerable<Type>>? typesDivertedNotifier)
+        public DiverterRegistrar(RegistrationConfiguration configuration, EventHandler<IEnumerable<Type>>? typesDivertedNotifier)
         {
             _configuration = configuration;
             _typesDivertedNotifier = typesDivertedNotifier;
@@ -142,7 +142,7 @@ namespace DivertR.Extensions.DependencyInjection
                 object ProxyFactory(IServiceProvider provider)
                 {
                     var instance = ActivatorUtilities.GetServiceOrCreateInstance(provider, implementationType);
-                    return router.Proxy(instance);
+                    return router.ProxyObject(instance);
                 }
                         
                 _createDescriptors.Add(ServiceDescriptor.Describe(genericType, ProxyFactory, descriptor.Lifetime));
@@ -157,7 +157,7 @@ namespace DivertR.Extensions.DependencyInjection
             object ProxyFactory(IServiceProvider provider)
             {
                 var instance = GetInstance(provider, descriptor);
-                return router.Proxy(instance);
+                return router.ProxyObject(instance);
             }
                 
             _configuration.Services[servicesIndex] = ServiceDescriptor.Describe(descriptor.ServiceType, ProxyFactory, descriptor.Lifetime);

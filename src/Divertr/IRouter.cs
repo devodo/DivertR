@@ -3,7 +3,7 @@
     public interface IRouter
     {
         RouterId RouterId { get; }
-        object Proxy(object? original = null);
+        object ProxyObject(object? original = null);
     }
     
     public interface IRouter<T> : IRouter  where T : class

@@ -12,12 +12,12 @@ namespace DivertR.UnitTests
         public void GivenRedirects_WhenResetAll_ShouldReset()
         {
             // ARRANGE
-            var original = new Foo("hello world");
+            var original = new Foo("hello foo");
             var router = _diverter.Router<IFoo>();
             var subject = router.Proxy(original);
             
-            router.AddRedirect(new FooSubstitute(" me", router.Relay.Next));
-            router.AddRedirect(new FooSubstitute(" again", router.Relay.Next));
+            router.AddRedirect(new Foo(() => $"{router.Relay.Next} me"));
+            router.AddRedirect(new Foo(() => $"{router.Relay.Next} again"));
 
             // ACT
             _diverter.ResetAll();
@@ -34,7 +34,7 @@ namespace DivertR.UnitTests
             var subject = _diverter.Router<IFoo>().Proxy(original);
 
             // ACT
-            _diverter.Router<IFoo>().Redirect(new FooSubstitute(" diverted", _diverter.Router<IFoo>().Relay.Next));
+            _diverter.Router<IFoo>().Redirect(new Foo(() => $"{_diverter.Router<IFoo>().Relay.Next.Message} diverted"));
             
             // ASSERT
             subject.Message.ShouldBe(original.Message + " diverted");

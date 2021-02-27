@@ -57,7 +57,7 @@ namespace DivertR.Internal
 
         public void EndRedirect()
         {
-            var indexStack = _indexStack.Value;
+            var indexStack = _indexStack.Value?.ToList();
 
             if (indexStack == null || indexStack.Count == 0)
             {
@@ -65,6 +65,8 @@ namespace DivertR.Internal
             }
             
             indexStack.RemoveAt(indexStack.Count - 1);
+
+            _indexStack.Value = indexStack;
         }
     }
     
