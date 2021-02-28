@@ -69,7 +69,39 @@ namespace DivertR
 
             RedirectRoute<T> Update(RedirectRoute<T> existing)
             {
-                var redirects = new[] {redirect}.Concat(existing.Redirects).ToList();
+                var redirects = existing.Redirects.ToList();
+                redirects.Add(redirect);
+                return new RedirectRoute<T>(redirects, _callRelay.Value);
+            }
+
+            _routeRepository.AddOrUpdateRoute(RouterId, Create, Update);
+
+            return this;
+        }
+
+        public IRouter<T> InsertRedirect(int index, T target, object? state = null)
+        {
+            var redirect = new Redirect<T>(target, state);
+            
+            RedirectRoute<T> Create()
+            {
+                if (index != 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index), "Index must be 0 if there are no existing redirects");
+                }
+                
+                return new RedirectRoute<T>(redirect, _callRelay.Value);
+            }
+
+            RedirectRoute<T> Update(RedirectRoute<T> existing)
+            {
+                if (index < 0 || index > existing.Redirects.Count)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index), "Index must be within the bounds of the existing redirects");
+                }
+                
+                var redirects = existing.Redirects.ToList();
+                redirects.Insert(index, redirect);
                 return new RedirectRoute<T>(redirects, _callRelay.Value);
             }
 

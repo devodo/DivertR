@@ -65,7 +65,6 @@ namespace DivertR.Internal
             }
             
             indexStack.RemoveAt(indexStack.Count - 1);
-
             _indexStack.Value = indexStack;
         }
     }

@@ -113,15 +113,15 @@ namespace DivertR.UnitTests
             var proxy = _router.Proxy(new ValueTaskFoo("hello foo"));
             var next = _router.Relay.Next;
             _router
-                .AddRedirect(new ValueTaskFoo(async () => $"{await next.MessageAsync} me"))
-                .AddRedirect(new ValueTaskFoo(async () => $"{await next.MessageAsync} here"))
-                .AddRedirect(new ValueTaskFoo(async () => $"{await next.MessageAsync} again"));
+                .AddRedirect(new ValueTaskFoo(async () => $"DivertR {await next.MessageAsync} 1"))
+                .AddRedirect(new ValueTaskFoo(async () => $"here {await next.MessageAsync} 2"))
+                .AddRedirect(new ValueTaskFoo(async () => $"again {await next.MessageAsync} 3"));
 
             // ACT
             var message = await proxy.MessageAsync;
             
             // ASSERT
-            message.ShouldBe("hello foo me here again");
+            message.ShouldBe("DivertR here again hello foo 3 2 1");
         }
         
         [Fact]
@@ -144,7 +144,7 @@ namespace DivertR.UnitTests
             var message = await proxy.MessageAsync;
             
             // ASSERT
-            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Reverse().Select(i => $"{i}"));
+            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Select(i => $"{i}"));
             message.ShouldBe($"foo {join} foo");
         }
         
@@ -178,7 +178,7 @@ namespace DivertR.UnitTests
             var message = await proxy.MessageAsync;
             
             // ASSERT
-            message.ShouldBe("[3bar [2bar [1bar bar bar1] bar2] bar3]");
+            message.ShouldBe("[3bar [2bar [1bar bar foo1] foo2] foo3]");
         }
         
         [Fact]
@@ -202,7 +202,7 @@ namespace DivertR.UnitTests
             var message = await proxy.MessageAsync;
             
             // ASSERT
-            message.ShouldBe("3 2 1 foo 1 2 3");
+            message.ShouldBe("1 2 3 foo 3 2 1");
         }
     }
 }

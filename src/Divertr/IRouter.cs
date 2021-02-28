@@ -12,6 +12,7 @@
         T Proxy(T? original = null);
         IRouter<T> Redirect(T target, object? state = null);
         IRouter<T> AddRedirect(T target, object? state = null);
+        IRouter<T> InsertRedirect(int index, T target, object? state = null);
         IRouter<T> Reset();
     }
 }

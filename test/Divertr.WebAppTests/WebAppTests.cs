@@ -25,7 +25,7 @@ namespace DivertR.WebAppTests
             
             _fooRepositoryFake = A.Fake<IFooRepository>(o =>
                 o.Wrapping(_diverter.Router<IFooRepository>().Relay.Original));
-            _diverter.Router<IFooRepository>().Redirect(_fooRepositoryFake);
+            _diverter.Redirect(_fooRepositoryFake);
             
             _fooClient = webAppFixture.CreateFooClient();
         }

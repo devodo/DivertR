@@ -27,7 +27,7 @@ namespace DivertR.UnitTests
                 return _router.Proxy(new Factorial(n, FactorialFactory));
             }
             
-            _router.AddRedirect(new FactorialTest(_router.Relay, _output));
+            _router.AddRedirect(new FactorialTest(_router.Relay.Next, _output));
 
             var result = FactorialFactory(factorialInput).Result();
             result.ShouldBe(GetFactorial(factorialInput));
@@ -46,7 +46,7 @@ namespace DivertR.UnitTests
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(() =>
             {
-                _router.AddRedirect(new FactorialTest(_router.Relay, _output));
+                _router.AddRedirect(new FactorialTest(_router.Relay.Next, _output));
 
                 return FactorialFactory(factorialInput).Result();
             })).ToArray();
@@ -93,20 +93,20 @@ namespace DivertR.UnitTests
 
         private class FactorialTest : IFactorial
         {
-            private readonly ICallRelay<IFactorial> _src;
+            private readonly IFactorial _src;
             private readonly ITestOutputHelper _output;
 
-            public FactorialTest(ICallRelay<IFactorial> src, ITestOutputHelper output)
+            public FactorialTest(IFactorial src, ITestOutputHelper output)
             {
                 _src = src;
                 _output = output;
             }
 
-            public int Number => _src.Next.Number;
+            public int Number => _src.Number;
 
             public int Result()
             {
-                var result = _src.Next.Result();
+                var result = _src.Result();
                 
                 _output.WriteLine($"{Number} - {result}");
 

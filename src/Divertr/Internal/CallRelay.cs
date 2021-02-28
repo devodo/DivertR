@@ -54,7 +54,6 @@ namespace DivertR.Internal
             }
             
             callStack.RemoveAt(callStack.Count - 1);
-
             _callStack.Value = callStack;
         }
 
