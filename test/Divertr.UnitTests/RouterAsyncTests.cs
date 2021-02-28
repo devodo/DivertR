@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DivertR.UnitTests.Model;
 using Moq;
@@ -40,6 +42,21 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public async Task GivenRedirectBeforeCreateProxy_ShouldDivert()
+        {
+            // ARRANGE
+            var foo = new AsyncFoo("hi DivertR");
+            _router.Redirect(foo);
+            var proxy = _router.Proxy(new AsyncFoo("hello foo"));
+
+            // ACT
+            var message = await proxy.MessageAsync;
+
+            // ASSERT
+            message.ShouldBe(await foo.MessageAsync);
+        }
+        
+        [Fact]
         public async Task GivenReset_ShouldDefaultToOriginal()
         {
             // ARRANGE
@@ -54,7 +71,7 @@ namespace DivertR.UnitTests
             // ASSERT
             message.ShouldBe(await original.MessageAsync);
         }
-        
+
         [Fact]
         public async Task GivenRedirectWithOriginalReference_ShouldRelay()
         {
@@ -107,6 +124,49 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public async Task GivenMultipleProxiesWithOriginalRelay_ShouldDivert()
+        {
+            // ARRANGE
+            var proxies = Enumerable.Range(0, 10)
+                .Select(i => _router.Proxy(new AsyncFoo($"foo{i}")))
+                .ToList();
+            
+            _router.Redirect(new AsyncFoo(async () => $"diverted {await _router.Relay.Original.MessageAsync}"));
+
+            // ACT
+            var messages = proxies.Select(async p => await p.MessageAsync).ToList();
+
+            // ASSERT
+            for (var i = 0; i < messages.Count; i++)
+            {
+                var message = await messages[i];
+                message.ShouldBe($"diverted foo{i}");
+            }
+        }
+        
+        [Fact]
+        public async Task GivenMultipleProxiesWithNextRelay_ShouldDivert()
+        {
+            // ARRANGE
+            var proxies = Enumerable.Range(0, 10)
+                .Select(i => _router.Proxy(new AsyncFoo($"foo{i}")))
+                .ToList();
+
+            _router
+                .Redirect(new AsyncFoo(async () => $"diverted {await _router.Relay.Next.MessageAsync}"));
+
+            // ACT
+            var messages = proxies.Select(async p => await p.MessageAsync).ToList();
+
+            // ASSERT
+            for (var i = 0; i < messages.Count; i++)
+            {
+                var message = await messages[i];
+                message.ShouldBe($"diverted foo{i}");
+            }
+        }
+        
+        [Fact]
         public async Task GivenMockedRedirect_ShouldDivert()
         {
             // ARRANGE
@@ -149,19 +209,57 @@ namespace DivertR.UnitTests
         public async Task GivenMultipleAddRedirectsWithNextAndOriginalRelays_ShouldChain()
         {
             // ARRANGE
+            const int numRedirects = 100;
             var proxy = _router.Proxy(new AsyncFoo("foo"));
             var next = _router.Relay.Next;
             var orig = _router.Relay.Original;
-            _router
-                .AddRedirect(new AsyncFoo(async () => $"{await orig.MessageAsync} 1 {await next.MessageAsync}"))
-                .AddRedirect(new AsyncFoo(async () => $"{await orig.MessageAsync} 2 {await next.MessageAsync}"))
-                .AddRedirect(new AsyncFoo(async () => $"{await orig.MessageAsync} 3 {await next.MessageAsync}"));
+
+            for (var i = 0; i < numRedirects; i++)
+            {
+                var counter = i;
+                _router.AddRedirect(new AsyncFoo(async () =>
+                    $"{await orig.MessageAsync} {counter} {await next.MessageAsync}"));
+            }
 
             // ACT
             var message = await proxy.MessageAsync;
             
             // ASSERT
-            message.ShouldBe("foo 3 foo 2 foo 1 foo");
+            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Reverse().Select(i => $"{i}"));
+            message.ShouldBe($"foo {join} foo");
+        }
+        
+        [Fact]
+        public async Task GivenMultipleAddRedirectsWithRecursiveProxy_ShouldDivert()
+        {
+            // ARRANGE
+            var proxy = _router.Proxy(new AsyncFoo("foo"));
+            var next = _router.Relay.Next;
+            var orig = _router.Relay.Original;
+
+            var recursive = new AsyncFoo(async () =>
+            {
+                var state = (int[]) _router.Relay.State;
+                var decrement = Interlocked.Decrement(ref state[0]);
+
+                if (decrement > 0)
+                {
+                    return $"[{decrement}{await next.MessageAsync} {await proxy.MessageAsync} {await orig.MessageAsync}{decrement}]";
+                }
+
+                return await next.MessageAsync;
+            });
+
+            _router
+                .AddRedirect(recursive, new[] {4})
+                .AddRedirect(new AsyncFoo(async () =>
+                    (await next.MessageAsync).Replace(await orig.MessageAsync, "bar")));
+
+            // ACT
+            var message = await proxy.MessageAsync;
+            
+            // ASSERT
+            message.ShouldBe("[3bar [2bar [1bar bar bar1] bar2] bar3]");
         }
         
         [Fact]
@@ -206,7 +304,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenRedirects_WhenReset_ShouldReset()
+        public async Task GivenMultipleRedirects_WhenReset_ShouldDefaultToOriginal()
         {
             // ARRANGE
             var original = new AsyncFoo("hello foo");

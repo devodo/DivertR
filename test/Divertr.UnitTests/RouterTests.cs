@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Threading;
 using DivertR.UnitTests.Model;
 using Moq;
 using Shouldly;
@@ -106,6 +108,47 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenMultipleProxiesWithOriginalRelay_ShouldDivert()
+        {
+            // ARRANGE
+            var proxies = Enumerable.Range(0, 10)
+                .Select(i => _router.Proxy(new Foo($"foo{i}")))
+                .ToList();
+            
+            _router.Redirect(new Foo( () => $"diverted {_router.Relay.Original.Message}"));
+
+            // ACT
+            var messages = proxies.Select(p => p.Message).ToList();
+
+            // ASSERT
+            for (var i = 0; i < messages.Count; i++)
+            {
+                messages[i].ShouldBe($"diverted foo{i}");
+            }
+        }
+        
+        [Fact]
+        public void GivenMultipleProxiesWithNextRelay_ShouldDivert()
+        {
+            // ARRANGE
+            var proxies = Enumerable.Range(0, 10)
+                .Select(i => _router.Proxy(new Foo($"foo{i}")))
+                .ToList();
+
+            _router
+                .Redirect(new Foo( () => $"diverted {_router.Relay.Next.Message}"));
+
+            // ACT
+            var messages = proxies.Select(p => p.Message).ToList();
+
+            // ASSERT
+            for (var i = 0; i < messages.Count; i++)
+            {
+                messages[i].ShouldBe($"diverted foo{i}");
+            }
+        }
+        
+        [Fact]
         public void GivenMockedRedirect_ShouldDivert()
         {
             // ARRANGE
@@ -147,18 +190,55 @@ namespace DivertR.UnitTests
         public void GivenMultipleAddRedirectsWithNextAndOriginalRelays_ShouldChain()
         {
             // ARRANGE
-            var subject = _router.Proxy(new Foo("foo"));
-
-            // ACT
+            const int numRedirects = 100;
+            var proxy = _router.Proxy(new Foo("foo"));
             var next = _router.Relay.Next;
             var orig = _router.Relay.Original;
-            _router
-                .AddRedirect(new Foo(() => $"{orig.Message} 1 {next.Message}"))
-                .AddRedirect(new Foo(() => $"{orig.Message} 2 {next.Message}"))
-                .AddRedirect(new Foo(() => $"{orig.Message} 3 {next.Message}"));
+
+            for (var i = 0; i < numRedirects; i++)
+            {
+                var counter = i;
+                _router.AddRedirect(new Foo (() => $"{orig.Message} {counter} {next.Message}"));
+            }
+
+            // ACT
+            var message = proxy.Message;
             
             // ASSERT
-            subject.Message.ShouldBe("foo 3 foo 2 foo 1 foo");
+            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Reverse().Select(i => $"{i}"));
+            message.ShouldBe($"foo {join} foo");
+        }
+        
+        [Fact]
+        public void GivenMultipleAddRedirectsWithRecursiveProxy_ShouldDivert()
+        {
+            // ARRANGE
+            var proxy = _router.Proxy(new Foo("foo"));
+            var next = _router.Relay.Next;
+            var orig = _router.Relay.Original;
+
+            var recursive = new Foo( () =>
+            {
+                var state = (int[]) _router.Relay.State;
+                var decrement = Interlocked.Decrement(ref state[0]);
+
+                if (decrement > 0)
+                {
+                    return $"[{decrement}{next.Message} {proxy.Message} {orig.Message}{decrement}]";
+                }
+
+                return next.Message;
+            });
+
+            _router
+                .AddRedirect(recursive, new[] {4})
+                .AddRedirect(new Foo( () => next.Message.Replace(orig.Message, "bar")));
+
+            // ACT
+            var message = proxy.Message;
+            
+            // ASSERT
+            message.ShouldBe("[3bar [2bar [1bar bar bar1] bar2] bar3]");
         }
         
         [Fact]
@@ -200,7 +280,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirects_WhenReset_ShouldReset()
+        public void GivenMultipleRedirects_WhenReset_ShouldDefaultToOriginal()
         {
             // ARRANGE
             var original = new Foo("hello foo");
