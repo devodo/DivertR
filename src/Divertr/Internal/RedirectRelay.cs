@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Immutable;
 using Castle.DynamicProxy;
 
 namespace DivertR.Internal
 {
     internal class RedirectRelay<T> where T : class
     {
-        private readonly List<int> _indexStack = new List<int>();
+        private readonly ImmutableStack<int> _indexStack = ImmutableStack<int>.Empty;
         public T? Original { get; }
         public IInvocation RootInvocation { get; }
         private readonly List<Redirect<T>> _redirects;
@@ -18,7 +18,7 @@ namespace DivertR.Internal
             RootInvocation = rootInvocation;
         }
 
-        private RedirectRelay(T? original, List<Redirect<T>> redirects, IInvocation rootInvocation, List<int> indexStack)
+        private RedirectRelay(T? original, List<Redirect<T>> redirects, IInvocation rootInvocation, ImmutableStack<int> indexStack)
             : this(original, redirects, rootInvocation)
         {
             _indexStack = indexStack;
@@ -28,20 +28,14 @@ namespace DivertR.Internal
         {
             get
             {
-                if (_indexStack.Count == 0)
-                {
-                    throw new DiverterException("Members of this instance may only be accessed from within the context a Redirect call");
-                }
-
-                var index = _indexStack[_indexStack.Count - 1];
-
+                var index = _indexStack.Peek();
                 return _redirects[index];
             }
         }
 
         public RedirectRelay<T>? BeginNextRedirect(IInvocation invocation)
         {
-            var startIndex = _indexStack.Count == 0 ? 0 : _indexStack[_indexStack.Count - 1] + 1;
+            var startIndex = _indexStack.IsEmpty ? 0 : _indexStack.Peek() + 1;
 
             for (var i = startIndex; i < _redirects.Count; i++)
             {
@@ -50,9 +44,8 @@ namespace DivertR.Internal
                     continue;
                 }
 
-                var indexStack = _indexStack.ToList();
-                indexStack.Add(i);
-                
+                var indexStack = _indexStack.Push(i);
+
                 return new RedirectRelay<T>(Original, _redirects, RootInvocation, indexStack);
             }
 
@@ -61,14 +54,7 @@ namespace DivertR.Internal
 
         public RedirectRelay<T> EndRedirect(IInvocation invocation)
         {
-            if (_indexStack.Count == 0)
-            {
-                throw new DiverterException("Fatal error: Encountered an unexpected end redirect state");
-            }
-            
-            var indexStack = _indexStack.ToList();
-            indexStack.RemoveAt(indexStack.Count - 1);
-            
+            var indexStack = _indexStack.Pop();
             return new RedirectRelay<T>(Original, _redirects, RootInvocation, indexStack);
         }
     }

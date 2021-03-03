@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Castle.DynamicProxy;
@@ -7,9 +8,7 @@ namespace DivertR.Internal
 {
     internal class CallRelay<T> : ICallRelay<T> where T : class
     {
-        public int CallCount = 0;
-        
-        private readonly AsyncLocal<List<RedirectRelay<T>>> _callStack = new AsyncLocal<List<RedirectRelay<T>>>();
+        private readonly AsyncLocal<ImmutableStack<RedirectRelay<T>>> _callStack = new AsyncLocal<ImmutableStack<RedirectRelay<T>>>();
         public T Next { get; }
         
         public T Original { get; }
@@ -26,7 +25,6 @@ namespace DivertR.Internal
         
         public Redirect<T>? BeginCall(T? original, List<Redirect<T>> redirects, IInvocation invocation)
         {
-            Interlocked.Increment(ref CallCount);
             var redirectRelay = new RedirectRelay<T>(original, redirects, invocation);
             redirectRelay = redirectRelay.BeginNextRedirect(invocation);
 
@@ -34,30 +32,24 @@ namespace DivertR.Internal
             {
                 return null;
             }
-            
-            _callStack.Value = _callStack.Value?.Append(redirectRelay).ToList() ?? new List<RedirectRelay<T>> { redirectRelay };;
 
+            var callStack = _callStack.Value ?? ImmutableStack<RedirectRelay<T>>.Empty;
+            _callStack.Value = callStack.Push(redirectRelay);
+            
             return redirectRelay.Current;
         }
 
         public void EndCall(IInvocation invocation)
         {
-            var callStack = _callStack.Value?.ToList();
+            var callStack = _callStack.Value;
+            var redirectRelay = callStack.Peek();
 
-            if (callStack == null || callStack.Count == 0)
-            {
-                throw new DiverterException("Fatal error: Encountered an unexpected Router proxy call end state");
-            }
-
-            var redirectRelay = callStack[callStack.Count - 1];
-            
             if (!ReferenceEquals(invocation, redirectRelay.RootInvocation))
             {
                 throw new DiverterException("Fatal error: Encountered an unexpected redirect relay for the current call");
             }
             
-            callStack.RemoveAt(callStack.Count - 1);
-            _callStack.Value = callStack;
+            _callStack.Value = callStack.Pop();
         }
 
         public RedirectRelay<T>? BeginNextRedirect(IInvocation invocation)
@@ -68,9 +60,8 @@ namespace DivertR.Internal
             {
                 return null;
             }
-            
-            var callStack = _callStack.Value.ToList();
-            callStack[callStack.Count - 1] = redirectRelay;
+
+            var callStack = _callStack.Value.Pop().Push(redirectRelay);
             _callStack.Value = callStack;
 
             return redirectRelay;
@@ -79,24 +70,10 @@ namespace DivertR.Internal
         public void EndRedirect(IInvocation invocation)
         {
             var redirectRelay = Current.EndRedirect(invocation);
-            var callStack = _callStack.Value.ToList();
-            callStack[callStack.Count - 1] = redirectRelay;
+            var callStack = _callStack.Value.Pop().Push(redirectRelay);
             _callStack.Value = callStack;
         }
 
-        public RedirectRelay<T> Current
-        {
-            get
-            {
-                var callStack = _callStack.Value;
-
-                if (callStack == null || callStack.Count == 0)
-                {
-                    throw new DiverterException("Members of this instance may only be accessed from within the context of their Router proxy calls");
-                }
-
-                return callStack[callStack.Count - 1];
-            }
-        }
+        public RedirectRelay<T> Current => _callStack.Value.Peek();
     }
 }
