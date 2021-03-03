@@ -7,6 +7,8 @@ namespace DivertR.Internal
 {
     internal class CallRelay<T> : ICallRelay<T> where T : class
     {
+        public int CallCount = 0;
+        
         private readonly AsyncLocal<List<RedirectRelay<T>>> _callStack = new AsyncLocal<List<RedirectRelay<T>>>();
         public T Next { get; }
         
@@ -24,17 +26,18 @@ namespace DivertR.Internal
         
         public Redirect<T>? BeginCall(T? original, List<Redirect<T>> redirects, IInvocation invocation)
         {
+            Interlocked.Increment(ref CallCount);
             var redirectRelay = new RedirectRelay<T>(original, redirects, invocation);
-            var redirect = redirectRelay.BeginNextRedirect(invocation);
+            redirectRelay = redirectRelay.BeginNextRedirect(invocation);
 
-            if (redirect == null)
+            if (redirectRelay == null)
             {
                 return null;
             }
             
             _callStack.Value = _callStack.Value?.Append(redirectRelay).ToList() ?? new List<RedirectRelay<T>> { redirectRelay };;
 
-            return redirect;
+            return redirectRelay.Current;
         }
 
         public void EndCall(IInvocation invocation)
@@ -54,6 +57,30 @@ namespace DivertR.Internal
             }
             
             callStack.RemoveAt(callStack.Count - 1);
+            _callStack.Value = callStack;
+        }
+
+        public RedirectRelay<T>? BeginNextRedirect(IInvocation invocation)
+        {
+            var redirectRelay = Current.BeginNextRedirect(invocation);
+
+            if (redirectRelay == null)
+            {
+                return null;
+            }
+            
+            var callStack = _callStack.Value.ToList();
+            callStack[callStack.Count - 1] = redirectRelay;
+            _callStack.Value = callStack;
+
+            return redirectRelay;
+        }
+
+        public void EndRedirect(IInvocation invocation)
+        {
+            var redirectRelay = Current.EndRedirect(invocation);
+            var callStack = _callStack.Value.ToList();
+            callStack[callStack.Count - 1] = redirectRelay;
             _callStack.Value = callStack;
         }
 

@@ -21,8 +21,11 @@ namespace DivertR.Internal
             }
             
             // ReSharper disable once SuspiciousTypeConversion.Global
-            ((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectRelay.Original);
-            invocation.Proceed();
+            //((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectRelay.Original);
+            //invocation.Proceed();
+            
+            invocation.ReturnValue =
+                invocation.Method.ToDelegate(typeof(T)).Invoke(redirectRelay.Original, invocation.Arguments);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DivertR.UnitTests.Model;
 using Shouldly;
@@ -29,7 +30,7 @@ namespace DivertR.UnitTests
         [Fact]
         public async Task TestRecursiveAsyncMultiThreaded()
         {
-            const int input = 50;
+            const int input = 20;
             const int taskCount = 10;
             var proxy = InitTestProxy();
             
@@ -43,12 +44,14 @@ namespace DivertR.UnitTests
             }
         }
 
+        private int _proxyCount = 0;
         private IAsyncNumber InitTestProxy()
         {
             var proxy = _router.Proxy(new AsyncNumber());
 
             var fibonacci = new AsyncNumber(async i =>
             {
+                Interlocked.Increment(ref _proxyCount);
                 if (i < 2)
                 {
                     return await _router.Relay.Next.GetNumber(i);

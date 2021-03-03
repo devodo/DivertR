@@ -36,7 +36,7 @@ namespace DivertR.UnitTests
         [Fact]
         public async Task TestRecursiveSyncMultiThreaded()
         {
-            const int factorialInput = 10;
+            const int factorialInput = 30;
             const int taskCount = 10;
 
             IFactorial FactorialFactory(int n)

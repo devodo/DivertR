@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Castle.DynamicProxy;
 
 namespace DivertR.Internal
 {
     internal class RedirectRelay<T> where T : class
     {
-        private readonly AsyncLocal<List<int>> _indexStack = new AsyncLocal<List<int>>();
+        private readonly List<int> _indexStack = new List<int>();
         public T? Original { get; }
         public IInvocation RootInvocation { get; }
         private readonly List<Redirect<T>> _redirects;
@@ -19,27 +18,30 @@ namespace DivertR.Internal
             RootInvocation = rootInvocation;
         }
 
+        private RedirectRelay(T? original, List<Redirect<T>> redirects, IInvocation rootInvocation, List<int> indexStack)
+            : this(original, redirects, rootInvocation)
+        {
+            _indexStack = indexStack;
+        }
+
         public Redirect<T> Current
         {
             get
             {
-                var indexStack = _indexStack.Value;
-
-                if (indexStack == null || indexStack.Count == 0)
+                if (_indexStack.Count == 0)
                 {
                     throw new DiverterException("Members of this instance may only be accessed from within the context a Redirect call");
                 }
 
-                var index = indexStack[indexStack.Count - 1];
+                var index = _indexStack[_indexStack.Count - 1];
 
                 return _redirects[index];
             }
         }
 
-        public Redirect<T>? BeginNextRedirect(IInvocation invocation)
+        public RedirectRelay<T>? BeginNextRedirect(IInvocation invocation)
         {
-            var indexStack = _indexStack.Value ?? RedirectRelay.EmptyList;
-            var startIndex = indexStack.Count == 0 ? 0 : indexStack[indexStack.Count - 1] + 1;
+            var startIndex = _indexStack.Count == 0 ? 0 : _indexStack[_indexStack.Count - 1] + 1;
 
             for (var i = startIndex; i < _redirects.Count; i++)
             {
@@ -47,30 +49,27 @@ namespace DivertR.Internal
                 {
                     continue;
                 }
+
+                var indexStack = _indexStack.ToList();
+                indexStack.Add(i);
                 
-                _indexStack.Value = indexStack.Append(i).ToList();
-                return _redirects[i];
+                return new RedirectRelay<T>(Original, _redirects, RootInvocation, indexStack);
             }
 
             return null;
         }
 
-        public void EndRedirect()
+        public RedirectRelay<T> EndRedirect(IInvocation invocation)
         {
-            var indexStack = _indexStack.Value?.ToList();
-
-            if (indexStack == null || indexStack.Count == 0)
+            if (_indexStack.Count == 0)
             {
                 throw new DiverterException("Fatal error: Encountered an unexpected end redirect state");
             }
             
+            var indexStack = _indexStack.ToList();
             indexStack.RemoveAt(indexStack.Count - 1);
-            _indexStack.Value = indexStack;
+            
+            return new RedirectRelay<T>(Original, _redirects, RootInvocation, indexStack);
         }
-    }
-    
-    internal static class RedirectRelay
-    {
-        public static readonly IReadOnlyList<int> EmptyList = new List<int>();
     }
 }

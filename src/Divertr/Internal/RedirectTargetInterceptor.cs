@@ -13,36 +13,41 @@ namespace DivertR.Internal
 
         public void Intercept(IInvocation invocation)
         {
-            var redirectRelay = _callRelay.Current;
-            var redirect = redirectRelay.BeginNextRedirect(invocation);
+            var redirectRelay = _callRelay.BeginNextRedirect(invocation);
             
-            if (redirect == null)
+            if (redirectRelay == null)
             {
-                if (redirectRelay.Original == null)
+                if (_callRelay.Original == null)
                 {
                     throw new DiverterException("Proxy original instance reference is null");
                 }
-
-                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirectRelay.Original);
-                invocation.Proceed();
+                
+                invocation.ReturnValue =
+                    invocation.Method.ToDelegate(typeof(T)).Invoke(_callRelay.Original, invocation.Arguments);
+                
+                //((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirectRelay.Original);
+                //invocation.Proceed();
 
                 return;
             }
 
             try
             {
-                if (redirect.Target == null)
+                if (redirectRelay.Current.Target == null)
                 {
                     throw new DiverterException("The redirect instance reference is null");
                 }
+                
+                invocation.ReturnValue =
+                    invocation.Method.ToDelegate(typeof(T)).Invoke(redirectRelay.Current.Target, invocation.Arguments);
 
                 // ReSharper disable once SuspiciousTypeConversion.Global
-                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect.Target);
-                invocation.Proceed();
+                //((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect.Target);
+                //invocation.Proceed();
             }
             finally
             {
-                redirectRelay.EndRedirect();
+                _callRelay.EndRedirect(invocation);
             }
         }
     }

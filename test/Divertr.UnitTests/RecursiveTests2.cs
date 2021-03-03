@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DivertR.UnitTests.Model;
 using Shouldly;
@@ -24,13 +25,14 @@ namespace DivertR.UnitTests
             const int input = 20;
             var proxy = InitTestProxy();
             var result = proxy.GetNumber(input);
-            result.ShouldBe(Fibonacci(input) * 2);
+            var controlResult = Fibonacci(input) * 2;
+            result.ShouldBe(controlResult);
         }
 
         [Fact]
-        public async Task TestRecursiveSync2()
+        public async Task TestRecursiveSyncBenchmark()
         {
-            const int input = 50;
+            const int input = 20;
             const int taskCount = 10;
             
             var tasks = Enumerable.Range(0, taskCount).Select(_ => 
@@ -59,7 +61,7 @@ namespace DivertR.UnitTests
                 (await task).ShouldBe(controlResult);
             }
         }
-
+        
         private INumber InitTestProxy()
         {
             var proxy = _router.Proxy(new Number());
@@ -82,7 +84,7 @@ namespace DivertR.UnitTests
 
             return _router.Proxy(new Number());;
         }
-        
+
         private static int Fibonacci(int n)
         {
             if (n < 2)
