@@ -1,14 +1,13 @@
 ﻿using System.Collections.Immutable;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Castle.DynamicProxy;
 
 namespace DivertR.Internal
 {
-    internal class CallRelay<T> : ICallRelay<T> where T : class
+    internal class Relay<T> : IRelay<T> where T : class
     {
-        private readonly AsyncLocal<ImmutableStack<RedirectRelay<T>>> _callStack = new AsyncLocal<ImmutableStack<RedirectRelay<T>>>();
+        private readonly AsyncLocal<ImmutableStack<RedirectPipeline<T>>> _callStack = new AsyncLocal<ImmutableStack<RedirectPipeline<T>>>();
         public T Next { get; }
         
         public T Original { get; }
@@ -17,7 +16,7 @@ namespace DivertR.Internal
 
         public object? State => Current.Current.State;
 
-        public CallRelay()
+        public Relay()
         {
             Next =  ProxyFactory.Instance.CreateRedirectTargetProxy(this);
             Original = ProxyFactory.Instance.CreateOriginalTargetProxy(this);
@@ -25,18 +24,17 @@ namespace DivertR.Internal
         
         public Redirect<T>? BeginCall(T? original, List<Redirect<T>> redirects, IInvocation invocation)
         {
-            var redirectRelay = new RedirectRelay<T>(original, redirects, invocation);
-            redirectRelay = redirectRelay.BeginNextRedirect(invocation);
+            var pipeline = RedirectPipeline<T>.Create(original, redirects, invocation);
 
-            if (redirectRelay == null)
+            if (pipeline == null)
             {
                 return null;
             }
-
-            var callStack = _callStack.Value ?? ImmutableStack<RedirectRelay<T>>.Empty;
-            _callStack.Value = callStack.Push(redirectRelay);
             
-            return redirectRelay.Current;
+            var callStack = _callStack.Value ?? ImmutableStack<RedirectPipeline<T>>.Empty;
+            _callStack.Value = callStack.Push(pipeline);
+            
+            return pipeline.Current;
         }
 
         public void EndCall(IInvocation invocation)
@@ -52,28 +50,28 @@ namespace DivertR.Internal
             _callStack.Value = callStack.Pop();
         }
 
-        public RedirectRelay<T>? BeginNextRedirect(IInvocation invocation)
+        public Redirect<T>? BeginNextRedirect(IInvocation invocation)
         {
-            var redirectRelay = Current.BeginNextRedirect(invocation);
+            var callStack = _callStack.Value;
+            var pipeline = callStack.Peek().BeginNextRedirect(invocation);
 
-            if (redirectRelay == null)
+            if (pipeline == null)
             {
                 return null;
             }
+            
+            _callStack.Value = callStack.Pop().Push(pipeline);
 
-            var callStack = _callStack.Value.Pop().Push(redirectRelay);
-            _callStack.Value = callStack;
-
-            return redirectRelay;
+            return pipeline.Current;
         }
 
         public void EndRedirect(IInvocation invocation)
         {
-            var redirectRelay = Current.EndRedirect(invocation);
-            var callStack = _callStack.Value.Pop().Push(redirectRelay);
+            var pipeline = Current.EndRedirect(invocation);
+            var callStack = _callStack.Value.Pop().Push(pipeline);
             _callStack.Value = callStack;
         }
 
-        public RedirectRelay<T> Current => _callStack.Value.Peek();
+        public RedirectPipeline<T> Current => _callStack.Value.Peek();
     }
 }

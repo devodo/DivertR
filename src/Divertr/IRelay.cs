@@ -1,6 +1,6 @@
 ﻿namespace DivertR
 {
-    public interface ICallRelay<out T> where T : class
+    public interface IRelay<out T> where T : class
     {
         T Next { get; }
         T Original { get; }

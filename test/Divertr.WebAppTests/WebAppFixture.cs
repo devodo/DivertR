@@ -64,7 +64,7 @@ namespace DivertR.WebAppTests
                     return output.BuildLogger(name);
                 });
             
-            Diverter.Router<ILoggerFactory>().Redirect(fakeLoggerFactory);
+            Diverter.Via<ILoggerFactory>().Redirect(fakeLoggerFactory);
         }
 
         public HttpClient CreateHttpClient()

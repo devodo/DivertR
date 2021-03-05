@@ -7,56 +7,56 @@ namespace DivertR
 {
     public class Diverter : IDiverter
     {
-        private readonly RouteRepository _routeRepository = new RouteRepository();
-        private readonly ConcurrentDictionary<RouterId, object> _routers = new ConcurrentDictionary<RouterId, object>();
+        private readonly ViaWayRepository _viaWayRepository = new ViaWayRepository();
+        private readonly ConcurrentDictionary<ViaId, IVia> _vias = new ConcurrentDictionary<ViaId, IVia>();
 
-        public IRouter<T> Router<T>(string? name = null) where T : class
+        public IVia<T> Via<T>(string? name = null) where T : class
         {
-            return (IRouter<T>) _routers.GetOrAdd(RouterId.From<T>(name),
-                id => new Router<T>(id, _routeRepository));
+            return (IVia<T>) _vias.GetOrAdd(ViaId.From<T>(name),
+                id => new Via<T>(id, _viaWayRepository));
         }
         
-        public IRouter Router(Type type, string? name = null)
+        public IVia Via(Type type, string? name = null)
         {
             const BindingFlags activatorFlags = BindingFlags.NonPublic | BindingFlags.Instance;
 
-            return (IRouter) _routers.GetOrAdd(RouterId.From(type, name),
+            return _vias.GetOrAdd(ViaId.From(type, name),
                 id =>
                 {
-                    var diverterType = typeof(Router<>).MakeGenericType(type);
-                    return Activator.CreateInstance(diverterType, activatorFlags, null, new object[] {id, _routeRepository}, default);
+                    var diverterType = typeof(Via<>).MakeGenericType(type);
+                    return (IVia) Activator.CreateInstance(diverterType, activatorFlags, null, new object[] {id, _viaWayRepository}, default);
                 });
         }
         
         public IDiverter ResetAll()
         {
-            _routeRepository.ResetAll();
+            _viaWayRepository.ResetAll();
             return this;
         }
 
         public T Proxy<T>(T? original = null) where T : class
         {
-            return Router<T>().Proxy(original);
+            return Via<T>().Proxy(original);
         }
 
-        public IRouter<T> Redirect<T>(T target) where T : class
+        public IVia<T> Redirect<T>(T target) where T : class
         {
-            return Router<T>().Redirect(target);
+            return Via<T>().Redirect(target);
         }
 
-        public IRouter<T> AddRedirect<T>(T target) where T : class
+        public IVia<T> AddRedirect<T>(T target) where T : class
         {
-            return Router<T>().AddRedirect(target);
+            return Via<T>().AddRedirect(target);
         }
 
-        public IRouter<T> Reset<T>() where T : class
+        public IVia<T> Reset<T>() where T : class
         {
-            return Router<T>().Reset();
+            return Via<T>().Reset();
         }
 
-        public ICallRelay<T> Relay<T>() where T : class
+        public IRelay<T> Relay<T>() where T : class
         {
-            return Router<T>().Relay;
+            return Via<T>().Relay;
         }
     }
 }

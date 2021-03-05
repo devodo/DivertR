@@ -8,7 +8,7 @@ namespace DivertR.UnitTests
 {
     public class RecursiveAsyncTests
     {
-        private readonly IRouter<IAsyncFactorial> _router = new Router<IAsyncFactorial>();
+        private readonly IVia<IAsyncFactorial> _via = new Via<IAsyncFactorial>();
 
         [Fact]
         public async Task TestRecursiveAsync()
@@ -17,10 +17,10 @@ namespace DivertR.UnitTests
 
             IAsyncFactorial FactorialFactory(int n)
             {
-                return _router.Proxy(new Factorial(n, FactorialFactory));
+                return _via.Proxy(new Factorial(n, FactorialFactory));
             }
 
-            _router.AddRedirect(new FactorialTest(_router.Relay.Next));
+            _via.AddRedirect(new FactorialTest(_via.Relay.Next));
 
             var result = await FactorialFactory(factorialInput).Result();
             result.ShouldBe(GetFactorial(factorialInput));
@@ -36,12 +36,12 @@ namespace DivertR.UnitTests
 
             IAsyncFactorial FactorialFactory(int n)
             {
-                return _router.Proxy(new Factorial(n, FactorialFactory));
+                return _via.Proxy(new Factorial(n, FactorialFactory));
             }
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(async () =>
             {
-                _router.AddRedirect(new FactorialTest(_router.Relay.Next));
+                _via.AddRedirect(new FactorialTest(_via.Relay.Next));
                 return await FactorialFactory(factorialInput).Result();
             })).ToArray();
 

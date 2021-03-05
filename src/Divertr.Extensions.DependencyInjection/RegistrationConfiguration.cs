@@ -8,7 +8,7 @@ namespace DivertR.Extensions.DependencyInjection
     {
         public IServiceCollection Services { get; }
 
-        public Func<Type, IRouter> GetRouterFunc { get; } 
+        public Func<Type, IVia> GetRouterFunc { get; } 
 
         public HashSet<Type> IncludeTypes { get; } = new HashSet<Type>();
         public HashSet<Type> ExcludeTypes { get; } = new HashSet<Type>();
@@ -20,22 +20,22 @@ namespace DivertR.Extensions.DependencyInjection
             Services = services ?? throw new ArgumentNullException(nameof(services));
             if (diverter == null) throw new ArgumentNullException(nameof(diverter));
             
-            GetRouterFunc = type => diverter.Router(type, Name);
+            GetRouterFunc = type => diverter.Via(type, Name);
         }
         
-        public RegistrationConfiguration(IServiceCollection services, IRouter router)
+        public RegistrationConfiguration(IServiceCollection services, IVia via)
         {
             Services = services ?? throw new ArgumentNullException(nameof(services));
-            if (router == null) throw new ArgumentNullException(nameof(router));
+            if (via == null) throw new ArgumentNullException(nameof(via));
 
             GetRouterFunc = type =>
             {
-                if (type != router.RouterId.Type)
+                if (type != via.ViaId.Type)
                 {
-                    throw new InvalidOperationException($"Include type {type} does not matcher router type {router.RouterId.Type}");
+                    throw new InvalidOperationException($"Include type {type} does not matcher router type {via.ViaId.Type}");
                 }
 
-                return router;
+                return via;
             };
         }
     }

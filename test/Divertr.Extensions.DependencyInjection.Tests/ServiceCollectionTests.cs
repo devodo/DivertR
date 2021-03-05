@@ -26,7 +26,7 @@ namespace DivertR.Extensions.DependencyInjection.Tests
             
             var mock = new Mock<IFoo>();
             mock.Setup(x => x.Message).Returns("Diverted");
-            _diverter.Router<IFoo>().Redirect(mock.Object);
+            _diverter.Via<IFoo>().Redirect(mock.Object);
             
             foo.Message.ShouldBe("Diverted");
         }
@@ -34,7 +34,7 @@ namespace DivertR.Extensions.DependencyInjection.Tests
         [Fact]
         public void ShouldReplaceMultipleRegistrations()
         {
-            var router = _diverter.Router<IFoo>();
+            var router = _diverter.Via<IFoo>();
             _services.AddTransient<IFoo>(_ => new Foo {Message = "Original"});
             _services.Divert(router);
 
@@ -68,7 +68,7 @@ namespace DivertR.Extensions.DependencyInjection.Tests
             
             var mock = new Mock<IList<string>>();
             mock.Setup(x => x.Count).Returns(10);
-            _diverter.Router<IList<string>>().Redirect(mock.Object);
+            _diverter.Via<IList<string>>().Redirect(mock.Object);
             
             list.Count.ShouldBe(10);
             _diverter.ResetAll();
@@ -90,7 +90,7 @@ namespace DivertR.Extensions.DependencyInjection.Tests
             
             var mock = new Mock<IList<string>>();
             mock.Setup(x => x.Count).Returns(10);
-            _diverter.Router<IList<string>>().Redirect(mock.Object);
+            _diverter.Via<IList<string>>().Redirect(mock.Object);
             
             _typesDiverted.ShouldBe(new[] { typeof(IList<string>)});
             list.Count.ShouldBe(10);
@@ -101,7 +101,7 @@ namespace DivertR.Extensions.DependencyInjection.Tests
         [Fact]
         public void GivenOpenGenericShouldRedirectRouter()
         {
-            var router = _diverter.Router<IList<string>>();
+            var router = _diverter.Via<IList<string>>();
             _services.AddTransient(typeof(IList<>), typeof(List<>));
             _services.Divert(router);
 
@@ -133,7 +133,7 @@ namespace DivertR.Extensions.DependencyInjection.Tests
             
             var mock = new Mock<IList<string>>();
             mock.Setup(x => x.Count).Returns(10);
-            _diverter.Router<IList<string>>().Redirect(mock.Object);
+            _diverter.Via<IList<string>>().Redirect(mock.Object);
             
             list.Count.ShouldBe(10);
             _diverter.ResetAll();

@@ -10,7 +10,7 @@ namespace DivertR.UnitTests
     public class RecursiveTests
     {
         private readonly ITestOutputHelper _output;
-        private readonly IRouter<IFactorial> _router = new Router<IFactorial>();
+        private readonly IVia<IFactorial> _via = new Via<IFactorial>();
 
         public RecursiveTests(ITestOutputHelper output)
         {
@@ -24,10 +24,10 @@ namespace DivertR.UnitTests
 
             IFactorial FactorialFactory(int n)
             {
-                return _router.Proxy(new Factorial(n, FactorialFactory));
+                return _via.Proxy(new Factorial(n, FactorialFactory));
             }
             
-            _router.AddRedirect(new FactorialTest(_router.Relay.Next, _output));
+            _via.AddRedirect(new FactorialTest(_via.Relay.Next, _output));
 
             var result = FactorialFactory(factorialInput).Result();
             result.ShouldBe(GetFactorial(factorialInput));
@@ -41,12 +41,12 @@ namespace DivertR.UnitTests
 
             IFactorial FactorialFactory(int n)
             {
-                return _router.Proxy(new Factorial(n, FactorialFactory));
+                return _via.Proxy(new Factorial(n, FactorialFactory));
             }
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(() =>
             {
-                _router.AddRedirect(new FactorialTest(_router.Relay.Next, _output));
+                _via.AddRedirect(new FactorialTest(_via.Relay.Next, _output));
 
                 return FactorialFactory(factorialInput).Result();
             })).ToArray();

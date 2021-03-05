@@ -2,22 +2,22 @@
 
 namespace DivertR.Internal
 {
-    internal class RedirectTargetInterceptor<T> : IInterceptor where T : class
+    internal class RedirectInterceptor<T> : IInterceptor where T : class
     {
-        private readonly CallRelay<T> _callRelay;
+        private readonly Relay<T> _relay;
 
-        public RedirectTargetInterceptor(CallRelay<T> callRelay)
+        public RedirectInterceptor(Relay<T> relay)
         {
-            _callRelay = callRelay;
+            _relay = relay;
         }
 
         public void Intercept(IInvocation invocation)
         {
-            var redirectRelay = _callRelay.BeginNextRedirect(invocation);
+            var redirect = _relay.BeginNextRedirect(invocation);
             
-            if (redirectRelay == null)
+            if (redirect == null)
             {
-                var original = _callRelay.Current.Original;
+                var original = _relay.Current.Original;
                 if (original == null)
                 {
                     throw new DiverterException("Proxy original instance reference is null");
@@ -34,14 +34,14 @@ namespace DivertR.Internal
 
             try
             {
-                var redirect = redirectRelay.Current.Target;
-                if (redirect == null)
+
+                if (redirect.Target == null)
                 {
                     throw new DiverterException("The redirect instance reference is null");
                 }
                 
                 invocation.ReturnValue =
-                    invocation.Method.ToDelegate(typeof(T)).Invoke(redirect, invocation.Arguments);
+                    invocation.Method.ToDelegate(typeof(T)).Invoke(redirect.Target, invocation.Arguments);
 
                 // ReSharper disable once SuspiciousTypeConversion.Global
                 //((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect.Target);
@@ -49,7 +49,7 @@ namespace DivertR.Internal
             }
             finally
             {
-                _callRelay.EndRedirect(invocation);
+                _relay.EndRedirect(invocation);
             }
         }
     }

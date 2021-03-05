@@ -24,7 +24,7 @@ namespace DivertR.WebAppTests
             _diverter = webAppFixture.InitDiverter(output);
             
             _fooRepositoryFake = A.Fake<IFooRepository>(o =>
-                o.Wrapping(_diverter.Router<IFooRepository>().Relay.Original));
+                o.Wrapping(_diverter.Via<IFooRepository>().Relay.Original));
             _diverter.Redirect(_fooRepositoryFake);
             
             _fooClient = webAppFixture.CreateFooClient();
@@ -63,12 +63,12 @@ namespace DivertR.WebAppTests
                 .Returns(async (Foo foo) =>
                 {
                     insertedFoo = foo;
-                    var relay = _diverter.Router<IFooRepository>().Relay.Next;
+                    var relay = _diverter.Via<IFooRepository>().Relay.Next;
                     var result = await relay.TryInsertFoo(foo);
                     return result;
                 });
 
-            _diverter.Router<IFooRepository>().Redirect(_fooRepositoryMock.Object);
+            _diverter.Via<IFooRepository>().Redirect(_fooRepositoryMock.Object);
             
             // ACT
             var response = await _fooClient.InsertFoo(createFooRequest);

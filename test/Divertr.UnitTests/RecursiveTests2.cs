@@ -12,7 +12,7 @@ namespace DivertR.UnitTests
     public class RecursiveTests2
     {
         private readonly ITestOutputHelper _output;
-        private readonly IRouter<INumber> _router = new Router<INumber>();
+        private readonly IVia<INumber> _via = new Via<INumber>();
 
         public RecursiveTests2(ITestOutputHelper output)
         {
@@ -64,25 +64,25 @@ namespace DivertR.UnitTests
         
         private INumber InitTestProxy()
         {
-            var proxy = _router.Proxy(new Number());
+            var proxy = _via.Proxy(new Number());
 
             var fibonacci = new Number(i =>
             {
                 if (i < 2)
                 {
-                    return _router.Relay.Next.GetNumber(i);
+                    return _via.Relay.Next.GetNumber(i);
                 }
 
                 return proxy.GetNumber(i - 1) + proxy.GetNumber(i - 2);
             });
 
-            var times2 = new Number(i => _router.Relay.Original.GetNumber(i) + _router.Relay.Next.GetNumber(i));
+            var times2 = new Number(i => _via.Relay.Original.GetNumber(i) + _via.Relay.Next.GetNumber(i));
 
-            _router
+            _via
                 .AddRedirect(fibonacci)
                 .AddRedirect(times2);
 
-            return _router.Proxy(new Number());;
+            return _via.Proxy(new Number());;
         }
 
         private static int Fibonacci(int n)

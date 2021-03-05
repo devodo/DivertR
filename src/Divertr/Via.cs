@@ -4,36 +4,36 @@ using DivertR.Internal;
 
 namespace DivertR
 {
-    public class Router<T> : IRouter<T> where T : class
+    public class Via<T> : IVia<T> where T : class
     {
-        private readonly RouteRepository _routeRepository;
-        private readonly Lazy<CallRelay<T>> _callRelay;
+        private readonly ViaWayRepository _viaWayRepository;
+        private readonly Lazy<Relay<T>> _callRelay;
 
-        public Router() : this(RouterId.From<T>(), new RouteRepository())
+        public Via() : this(ViaId.From<T>(), new ViaWayRepository())
         {
         }
         
-        internal Router(RouterId routerId, RouteRepository routeRepository)
+        internal Via(ViaId viaId, ViaWayRepository viaWayRepository)
         {
             if (!typeof(T).IsInterface)
             {
                 throw new ArgumentException("Only interface types are supported", typeof(T).Name);
             }
             
-            RouterId = routerId;
-            _routeRepository = routeRepository;
-            _callRelay = new Lazy<CallRelay<T>>(() => new CallRelay<T>());
+            ViaId = viaId;
+            _viaWayRepository = viaWayRepository;
+            _callRelay = new Lazy<Relay<T>>(() => new Relay<T>());
         }
 
-        public RouterId RouterId { get; }
+        public ViaId ViaId { get; }
 
-        public ICallRelay<T> Relay => _callRelay.Value;
+        public IRelay<T> Relay => _callRelay.Value;
         
         public T Proxy(T? original = null)
         {
-            RedirectRoute<T>? GetRedirectRoute()
+            ViaWay<T>? GetRedirectRoute()
             {
-                return _routeRepository.GetRoute<T>(RouterId);
+                return _viaWayRepository.Get<T>(ViaId);
             }
 
             return ProxyFactory.Instance.CreateDiverterProxy(original, GetRedirectRoute);
@@ -49,51 +49,51 @@ namespace DivertR
             return Proxy(original as T);
         }
         
-        public IRouter<T> Redirect(T target, object? state = null)
+        public IVia<T> Redirect(T target, object? state = null)
         {
             var redirect = new Redirect<T>(target, state);
-            var callRoute = new RedirectRoute<T>(redirect, _callRelay.Value);
-            _routeRepository.SetRoute(RouterId, callRoute);
+            var callRoute = new ViaWay<T>(redirect, _callRelay.Value);
+            _viaWayRepository.Set(ViaId, callRoute);
 
             return this;
         }
 
-        public IRouter<T> AddRedirect(T target, object? state = null)
+        public IVia<T> AddRedirect(T target, object? state = null)
         {
             var redirect = new Redirect<T>(target, state);
             
-            RedirectRoute<T> Create()
+            ViaWay<T> Create()
             {
-                return new RedirectRoute<T>(redirect, _callRelay.Value);
+                return new ViaWay<T>(redirect, _callRelay.Value);
             }
 
-            RedirectRoute<T> Update(RedirectRoute<T> existing)
+            ViaWay<T> Update(ViaWay<T> existing)
             {
                 var redirects = existing.Redirects.ToList();
                 redirects.Add(redirect);
-                return new RedirectRoute<T>(redirects, _callRelay.Value);
+                return new ViaWay<T>(redirects, _callRelay.Value);
             }
 
-            _routeRepository.AddOrUpdateRoute(RouterId, Create, Update);
+            _viaWayRepository.AddOrUpdate(ViaId, Create, Update);
 
             return this;
         }
 
-        public IRouter<T> InsertRedirect(int index, T target, object? state = null)
+        public IVia<T> InsertRedirect(int index, T target, object? state = null)
         {
             var redirect = new Redirect<T>(target, state);
             
-            RedirectRoute<T> Create()
+            ViaWay<T> Create()
             {
                 if (index != 0)
                 {
                     throw new ArgumentOutOfRangeException(nameof(index), "Index must be 0 if there are no existing redirects");
                 }
                 
-                return new RedirectRoute<T>(redirect, _callRelay.Value);
+                return new ViaWay<T>(redirect, _callRelay.Value);
             }
 
-            RedirectRoute<T> Update(RedirectRoute<T> existing)
+            ViaWay<T> Update(ViaWay<T> existing)
             {
                 if (index < 0 || index > existing.Redirects.Count)
                 {
@@ -102,17 +102,17 @@ namespace DivertR
                 
                 var redirects = existing.Redirects.ToList();
                 redirects.Insert(index, redirect);
-                return new RedirectRoute<T>(redirects, _callRelay.Value);
+                return new ViaWay<T>(redirects, _callRelay.Value);
             }
 
-            _routeRepository.AddOrUpdateRoute(RouterId, Create, Update);
+            _viaWayRepository.AddOrUpdate(ViaId, Create, Update);
 
             return this;
         }
 
-        public IRouter<T> Reset()
+        public IVia<T> Reset()
         {
-            _routeRepository.Reset(RouterId);
+            _viaWayRepository.Reset(ViaId);
 
             return this;
         }

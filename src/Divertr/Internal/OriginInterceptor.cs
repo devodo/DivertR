@@ -2,20 +2,20 @@
 
 namespace DivertR.Internal
 {
-    internal class OriginalTargetInterceptor<T> : IInterceptor where T : class
+    internal class OriginInterceptor<T> : IInterceptor where T : class
     {
-        private readonly CallRelay<T> _callRelay;
+        private readonly Relay<T> _relay;
 
-        public OriginalTargetInterceptor(CallRelay<T> callRelay)
+        public OriginInterceptor(Relay<T> relay)
         {
-            _callRelay = callRelay;
+            _relay = relay;
         }
 
         public void Intercept(IInvocation invocation)
         {
-            var redirectRelay = _callRelay.Current;
+            var redirectPipeline = _relay.Current;
             
-            if (redirectRelay.Original == null)
+            if (redirectPipeline.Original == null)
             {
                 throw new DiverterException("The original instance reference is null");
             }
@@ -25,7 +25,7 @@ namespace DivertR.Internal
             //invocation.Proceed();
             
             invocation.ReturnValue =
-                invocation.Method.ToDelegate(typeof(T)).Invoke(redirectRelay.Original, invocation.Arguments);
+                invocation.Method.ToDelegate(typeof(T)).Invoke(redirectPipeline.Original, invocation.Arguments);
         }
     }
 }

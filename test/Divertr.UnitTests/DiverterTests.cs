@@ -13,11 +13,11 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var original = new Foo("hello foo");
-            var router = _diverter.Router<IFoo>();
-            var subject = router.Proxy(original);
+            var via = _diverter.Via<IFoo>();
+            var subject = via.Proxy(original);
             
-            router.AddRedirect(new Foo(() => $"{router.Relay.Next} me"));
-            router.AddRedirect(new Foo(() => $"{router.Relay.Next} again"));
+            via.AddRedirect(new Foo(() => $"{via.Relay.Next} me"));
+            via.AddRedirect(new Foo(() => $"{via.Relay.Next} again"));
 
             // ACT
             _diverter.ResetAll();
@@ -31,13 +31,13 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var original = new Foo("foo");
-            var subject = _diverter.Router<IFoo>().Proxy(original);
+            var via = _diverter.Via<IFoo>().Proxy(original);
 
             // ACT
-            _diverter.Router<IFoo>().Redirect(new Foo(() => $"{_diverter.Router<IFoo>().Relay.Next.Message} diverted"));
+            _diverter.Via<IFoo>().Redirect(new Foo(() => $"{_diverter.Via<IFoo>().Relay.Next.Message} diverted"));
             
             // ASSERT
-            subject.Message.ShouldBe(original.Message + " diverted");
+            via.Message.ShouldBe(original.Message + " diverted");
         }
     }
 }

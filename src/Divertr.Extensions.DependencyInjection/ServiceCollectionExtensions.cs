@@ -26,10 +26,10 @@ namespace DivertR.Extensions.DependencyInjection
             });
         }
         
-        public static IServiceCollection Divert(this IServiceCollection services, IRouter router)
+        public static IServiceCollection Divert(this IServiceCollection services, IVia via)
         {
-            var configuration = new RegistrationConfiguration(services, router);
-            configuration.IncludeTypes.Add(router.RouterId.Type);
+            var configuration = new RegistrationConfiguration(services, via);
+            configuration.IncludeTypes.Add(via.ViaId.Type);
             new DiverterRegistrar(configuration, null).Register();
 
             return services;

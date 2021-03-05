@@ -10,15 +10,15 @@ namespace DivertR.UnitTests
 {
     public class RouterValueTaskTests
     {
-        private readonly Router<IValueTaskFoo> _router = new();
+        private readonly Via<IValueTaskFoo> _via = new();
 
         [Fact]
         public async Task GivenRedirectWithOriginalReference_ShouldRelay()
         {
             // ARRANGE
             var original = new ValueTaskFoo("foo");
-            var proxy = _router.Proxy(original);
-            _router.Redirect(new ValueTaskFoo(async () => $"hello {await _router.Relay.Original.MessageAsync}"));
+            var proxy = _via.Proxy(original);
+            _via.Redirect(new ValueTaskFoo(async () => $"hello {await _via.Relay.Original.MessageAsync}"));
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -32,8 +32,8 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var original = new ValueTaskFoo("foo");
-            var proxy = _router.Proxy(original);
-            _router.Redirect(new ValueTaskFoo(async () => $"hello {await _router.Relay.Next.MessageAsync}"));
+            var proxy = _via.Proxy(original);
+            _via.Redirect(new ValueTaskFoo(async () => $"hello {await _via.Relay.Next.MessageAsync}"));
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -47,11 +47,11 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var original = new ValueTaskFoo("foo");
-            var proxy = _router.Proxy(original);
+            var proxy = _via.Proxy(original);
             IValueTaskFoo originalReference = null;
-            _router.Redirect(new ValueTaskFoo(async () =>
+            _via.Redirect(new ValueTaskFoo(async () =>
             {
-                originalReference = _router.Relay.OriginalInstance;
+                originalReference = _via.Relay.OriginalInstance;
                 return $"hello {await originalReference!.MessageAsync}";
             }));
 
@@ -68,10 +68,10 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var proxies = Enumerable.Range(0, 10)
-                .Select(i => _router.Proxy(new ValueTaskFoo($"foo{i}")))
+                .Select(i => _via.Proxy(new ValueTaskFoo($"foo{i}")))
                 .ToList();
             
-            _router.Redirect(new ValueTaskFoo(async () => $"diverted {await _router.Relay.Original.MessageAsync}"));
+            _via.Redirect(new ValueTaskFoo(async () => $"diverted {await _via.Relay.Original.MessageAsync}"));
 
             // ACT
             var messages = proxies.Select(async p => await p.MessageAsync).ToList();
@@ -89,11 +89,11 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var proxies = Enumerable.Range(0, 10)
-                .Select(i => _router.Proxy(new ValueTaskFoo($"foo{i}")))
+                .Select(i => _via.Proxy(new ValueTaskFoo($"foo{i}")))
                 .ToList();
 
-            _router
-                .Redirect(new ValueTaskFoo(async () => $"diverted {await _router.Relay.Next.MessageAsync}"));
+            _via
+                .Redirect(new ValueTaskFoo(async () => $"diverted {await _via.Relay.Next.MessageAsync}"));
 
             // ACT
             var messages = proxies.Select(async p => await p.MessageAsync).ToList();
@@ -110,9 +110,9 @@ namespace DivertR.UnitTests
         public async Task GivenMultipleAddRedirects_ShouldChain()
         {
             // ARRANGE
-            var proxy = _router.Proxy(new ValueTaskFoo("hello foo"));
-            var next = _router.Relay.Next;
-            _router
+            var proxy = _via.Proxy(new ValueTaskFoo("hello foo"));
+            var next = _via.Relay.Next;
+            _via
                 .AddRedirect(new ValueTaskFoo(async () => $"DivertR {await next.MessageAsync} 1"))
                 .AddRedirect(new ValueTaskFoo(async () => $"here {await next.MessageAsync} 2"))
                 .AddRedirect(new ValueTaskFoo(async () => $"again {await next.MessageAsync} 3"));
@@ -129,14 +129,14 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             const int numRedirects = 100;
-            var proxy = _router.Proxy(new ValueTaskFoo("foo"));
-            var next = _router.Relay.Next;
-            var orig = _router.Relay.Original;
+            var proxy = _via.Proxy(new ValueTaskFoo("foo"));
+            var next = _via.Relay.Next;
+            var orig = _via.Relay.Original;
 
             for (var i = 0; i < numRedirects; i++)
             {
                 var counter = i;
-                _router.AddRedirect(new ValueTaskFoo(async () =>
+                _via.AddRedirect(new ValueTaskFoo(async () =>
                     $"{await orig.MessageAsync} {counter} {await next.MessageAsync}"));
             }
 
@@ -152,13 +152,13 @@ namespace DivertR.UnitTests
         public async Task GivenMultipleAddRedirectsWithRecursiveProxy_ShouldDivert()
         {
             // ARRANGE
-            var proxy = _router.Proxy(new ValueTaskFoo("foo"));
-            var next = _router.Relay.Next;
-            var orig = _router.Relay.Original;
+            var proxy = _via.Proxy(new ValueTaskFoo("foo"));
+            var next = _via.Relay.Next;
+            var orig = _via.Relay.Original;
 
             var recursive = new ValueTaskFoo(async () =>
             {
-                var state = (int[]) _router.Relay.State;
+                var state = (int[]) _via.Relay.State;
                 var decrement = Interlocked.Decrement(ref state[0]);
 
                 if (decrement > 0)
@@ -169,7 +169,7 @@ namespace DivertR.UnitTests
                 return await next.MessageAsync;
             });
 
-            _router
+            _via
                 .AddRedirect(recursive, new[] {4})
                 .AddRedirect(new ValueTaskFoo(async () =>
                     (await next.MessageAsync).Replace(await orig.MessageAsync, "bar")));
@@ -185,15 +185,15 @@ namespace DivertR.UnitTests
         public async Task GivenMultipleAddRedirectsWithState_ShouldChain()
         {
             // ARRANGE
-            var proxy = _router.Proxy(new ValueTaskFoo("foo"));
+            var proxy = _via.Proxy(new ValueTaskFoo("foo"));
 
             var mock = new Mock<IValueTaskFoo>();
             mock
                 .Setup(x => x.MessageAsync)
                 .Returns(async () => 
-                    $"{_router.Relay.State} {await _router.Relay.Next.MessageAsync} {_router.Relay.State}");
+                    $"{_via.Relay.State} {await _via.Relay.Next.MessageAsync} {_via.Relay.State}");
             
-            _router
+            _via
                 .AddRedirect(mock.Object, "1")
                 .AddRedirect(mock.Object, "2")
                 .AddRedirect(mock.Object, "3");

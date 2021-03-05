@@ -9,21 +9,21 @@ namespace DivertR.Internal
         
         private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
         
-        public T CreateDiverterProxy<T>(T? original, Func<RedirectRoute<T>?> getRedirectRoute) where T : class
+        public T CreateDiverterProxy<T>(T? original, Func<ViaWay<T>?> getRedirectRoute) where T : class
         {
-            var interceptor = new RouterInterceptor<T>(original, getRedirectRoute);
+            var interceptor = new ViaInterceptor<T>(original, getRedirectRoute);
             return _proxyGenerator.CreateInterfaceProxyWithTargetInterface(original, interceptor)!;
         }
         
-        public T CreateRedirectTargetProxy<T>(CallRelay<T> callRelay) where T : class
+        public T CreateRedirectTargetProxy<T>(Relay<T> relay) where T : class
         {
-            var interceptor = new RedirectTargetInterceptor<T>(callRelay);
+            var interceptor = new RedirectInterceptor<T>(relay);
             return _proxyGenerator.CreateInterfaceProxyWithTargetInterface<T>(null!, interceptor);
         }
         
-        public T CreateOriginalTargetProxy<T>(CallRelay<T> callRelay) where T : class
+        public T CreateOriginalTargetProxy<T>(Relay<T> relay) where T : class
         {
-            var interceptor = new OriginalTargetInterceptor<T>(callRelay);
+            var interceptor = new OriginInterceptor<T>(relay);
             return _proxyGenerator.CreateInterfaceProxyWithTargetInterface<T>(null!, interceptor);
         }
     }

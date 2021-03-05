@@ -11,7 +11,7 @@ namespace DivertR.UnitTests
     public class RecursiveAsyncTests2
     {
         private readonly ITestOutputHelper _output;
-        private readonly IRouter<IAsyncNumber> _router = new Router<IAsyncNumber>();
+        private readonly IVia<IAsyncNumber> _via = new Via<IAsyncNumber>();
 
         public RecursiveAsyncTests2(ITestOutputHelper output)
         {
@@ -47,27 +47,27 @@ namespace DivertR.UnitTests
         private int _proxyCount = 0;
         private IAsyncNumber InitTestProxy()
         {
-            var proxy = _router.Proxy(new AsyncNumber());
+            var proxy = _via.Proxy(new AsyncNumber());
 
             var fibonacci = new AsyncNumber(async i =>
             {
                 Interlocked.Increment(ref _proxyCount);
                 if (i < 2)
                 {
-                    return await _router.Relay.Next.GetNumber(i);
+                    return await _via.Relay.Next.GetNumber(i);
                 }
 
                 return await proxy.GetNumber(i - 1) + await proxy.GetNumber(i - 2);
             });
 
             var times2 = new AsyncNumber(async i =>
-                await _router.Relay.Original.GetNumber(i) + await _router.Relay.Next.GetNumber(i));
+                await _via.Relay.Original.GetNumber(i) + await _via.Relay.Next.GetNumber(i));
 
-            _router
+            _via
                 .AddRedirect(fibonacci)
                 .AddRedirect(times2);
 
-            return _router.Proxy(new AsyncNumber());;
+            return _via.Proxy(new AsyncNumber());;
         }
         
         private static int Fibonacci(int n)
