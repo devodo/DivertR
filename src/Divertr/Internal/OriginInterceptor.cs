@@ -13,19 +13,19 @@ namespace DivertR.Internal
 
         public void Intercept(IInvocation invocation)
         {
-            var redirectPipeline = _relay.Current;
+            var original = _relay.Current.Original;
             
-            if (redirectPipeline.Original == null)
+            if (original == null)
             {
                 throw new DiverterException("The original instance reference is null");
             }
             
             // ReSharper disable once SuspiciousTypeConversion.Global
-            //((IChangeProxyTarget)invocation).ChangeInvocationTarget(redirectRelay.Original);
-            //invocation.Proceed();
+            ((IChangeProxyTarget)invocation).ChangeInvocationTarget(original);
+            invocation.Proceed();
             
-            invocation.ReturnValue =
-                invocation.Method.ToDelegate(typeof(T)).Invoke(redirectPipeline.Original, invocation.Arguments);
+            //invocation.ReturnValue =
+            //    invocation.Method.ToDelegate(typeof(T)).Invoke(redirectPipeline.Original, invocation.Arguments);
         }
     }
 }

@@ -9,7 +9,7 @@ These can redirect calls to substitute instances, such as test doubles, and then
 relay back to the original targets. 
 Update and reset proxies, on the fly, while the process is running.
 
-![DivertR Router](./docs/Router.svg)
+![DivertR Via](./docs/Via.svg)
 
 * [Quickstart](#quickstart)
     * [Create a DivertR proxy](#create-a-divertr-proxy)
@@ -23,7 +23,7 @@ Update and reset proxies, on the fly, while the process is running.
     * [Async support](#async-support)
     * [Class support](#class-support)
 * [IServiceCollection Extensions](#iservicecollection-extensions)
-    * [Register a Router](#register-a-router)
+    * [Register a Via](#register-a-via)
     * [Register a Diverter](#register-a-diverter)
     * [Diverter registration builder](#diverter-registration-builder)
 
@@ -44,41 +44,41 @@ public class Foo : IFoo
 }
 ```
 
-Create a `Router` instance:
+Create a `Via` instance:
 
 ```csharp
-var router = new Router<IFoo>();
+var via = new Via<IFoo>();
 ```
 
 Then use it to create a proxy:
 
 ```csharp
 var foo = new Foo {Message = "original foo"};
-var fooProxy = router.Proxy(foo);
+var fooProxy = via.Proxy(foo);
 Console.WriteLine(fooProxy.Message); // "original foo"
 ```
 > By default DivertR proxies simply forward calls to their original instances. 
 
 ### Redirect proxy calls
 
-Configure the `Router` to redirect its proxy calls to a different instance:
+Configure the `Via` to redirect its proxy calls to a different instance:
 
 ```csharp
 var altFoo = new Foo {Message = "hi DivertR"};
-router.Redirect(altFoo);
+via.Redirect(altFoo);
 Console.WriteLine(fooProxy.Message); // "hi DivertR"
 ```
 
-Then reset the `Router` and its proxy defaults back to the original instance:
+Then reset the `Via` and its proxy defaults back to the original instance:
 
 ```csharp
-router.Reset();
+via.Reset();
 Console.WriteLine(fooProxy.Message); // "original foo"
 ```
 
 ### Redirect to a mock
 
-You can configure the `Router` to redirect its proxies to test doubles such as mocks:
+You can configure the `Via` to redirect its proxies to test doubles such as mocks:
 
 ```csharp
 var mock = new Mock<IFoo>();
@@ -86,7 +86,7 @@ mock
   .Setup(x => x.Message)
   .Returns("mocked foo");
 
-router.Redirect(mock.Object);
+via.Redirect(mock.Object);
 Console.WriteLine(fooProxy.Message); // "mocked foo"
 ```
 
@@ -96,7 +96,7 @@ The redirected instance can relay calls to the originally targeted instance from
 This allows you to intercept calls and then run test code before and after invoking the original instance:
 
 ```csharp
-var relay = router.Relay.Original;
+var relay = via.Relay.Original;
 var mock = new Mock<IFoo>();
 mock
   .Setup(x => x.Message)
@@ -113,30 +113,30 @@ mock
     return $"{original} bar";
   });
 
-router.Redirect(mock.Object);
+via.Redirect(mock.Object);
 Console.WriteLine(fooProxy.Message); // "original foo bar"
 ```
 
 > The `Relay.Original` property is a proxy that can be copied and reused. However its members can only be accessed
-> within the context of intercepted calls on its `Router` proxies. Attempting to invoke a member outside of this context will
+> within the context of intercepted calls on its `Via` proxies. Attempting to invoke a member outside of this context will
 > result in a `DiverterException` being thrown. 
 
 ### Divert multiple proxies
 
-The configured redirects are applied to all proxies created from the same `Router` instance.
+The configured redirects are applied to all proxies created from the same `Via` instance.
 This is useful, for example, to be able to intercept transient DI services where multiple instances of a type may get created.
 
 ```csharp
-var relay = router.Relay.Original;
+var relay = via.Relay.Original;
 var mock = new Mock<IFoo>();
 mock
   .Setup(x => x.Message)
   .Returns(() => $"Hello {relay.Message}");
 
-router.Redirect(mock.Object);
+via.Redirect(mock.Object);
 
-var fooA = router.Proxy(new Foo {Message = "foo A"});
-var fooB = router.Proxy(new Foo {Message = "foo B"});
+var fooA = via.Proxy(new Foo {Message = "foo A"});
+var fooB = via.Proxy(new Foo {Message = "foo B"});
 
 Console.WriteLine(fooA.Message); // "Hello foo A"
 Console.WriteLine(fooB.Message); // "Hello foo B"
@@ -150,13 +150,13 @@ Multiple redirects can be appended together and relayed to within a call as a ch
 The `Relay.Next` property proxies to the next redirect in the chain from the last redirect added up to and including the original instance.
 
 ```csharp
-var next = router.Relay.Next;
+var next = via.Relay.Next;
 var mock = new Mock<IFoo>();
 mock
   .Setup(x => x.Message)
   .Returns(() => $"{next.Message} bar");
 
-router
+via
   .AddRedirect(mock.Object)
   .AddRedirect(mock.Object)
   .AddRedirect(mock.Object);
@@ -167,19 +167,19 @@ Console.WriteLine(fooProxy.Message); // "original foo bar bar bar"
 
 ### The Diverter class
 
-A `Router<IFoo>` instance is tied to a single `IFoo` type but
+A `Via<IFoo>` instance is tied to a single `IFoo` type but
 typically when testing a system you interact with multiple types.
-The `Diverter` class lets you conveniently access and manage a set of different `Router<T>`
+The `Diverter` class lets you conveniently access and manage a set of different `Via<T>`
 types from a single instance. This is particularly useful for setting up dependency 
 injection registrations (see [Register a Diverter](#register-a-diverter)). It is also
-handy for resetting all its `Router` instances from a single call to `ResetAll()`. 
+handy for resetting all its `Via` instances from a single call to `ResetAll()`. 
 
 ```csharp
 var diverter = new Diverter();
 
-var router = diverter.Router<IFoo>();
-router.Redirect(new Foo {Message = "Diverted"});
-diverter.Router<IBar>().Redirect(new TestBar());
+var via = diverter.Via<IFoo>();
+via.Redirect(new Foo {Message = "Diverted"});
+diverter.Via<IBar>().Redirect(new TestBar());
 
 diverter.ResetAll();
 ```
@@ -187,14 +187,14 @@ diverter.ResetAll();
 ### Diverter shortcuts
 
 For convenience the `Diverter` class provides shortcut helpers for easier access
-to most of the `Router` methods:
+to most of the `Via` methods:
 
 ```csharp
 var diverter = new Diverter();
 
 var proxy = diverter.Proxy<IFoo>(new Foo {Message = "original"});
 // Shortcut equivalent of:
-// var proxy = diverter.Router<IFoo>().Proxy(new Foo {Message = "original"});
+// var proxy = diverter.Via<IFoo>().Proxy(new Foo {Message = "original"});
 
 // Similarly other shortcuts for:
 var relay = divert.Relay<IFoo>().Original;
@@ -233,7 +233,7 @@ var result = await proxy.GetBarAsync(barId);
 
 ### Class support
 
-DivertR only supports diverting instances via their interfaces. If you instantiate a `new Router<T>()` and `T` is
+DivertR only supports diverting instances via their interfaces. If you instantiate a `new Via<T>()` and `T` is
 not an interface type a runtime exception will be thrown.
 
 Internally DivertR uses Castle Dynamic Proxy to generate proxies and intercept calls.
@@ -245,7 +245,7 @@ but for now only interfaces are supported.
 Extension methods are provided on the .NET `Microsoft.Extensions.DependencyInjection.IServiceCollection` interface
 that convert existing registrations into DivertR proxy factories.
 
-### Register a Router
+### Register a Via
 
 Starting with an `IServiceCollection` that has an `IFoo` registered:
 
@@ -258,11 +258,11 @@ The `Divert` extension method replaces the `IFoo` registration with a factory th
 wrapping the instances provided by the original registration:
 
 ```csharp
-var router = new Router<IFoo>();
-services.Divert(router);
+var via = new Via<IFoo>();
+services.Divert(via);
 ```
 
-The subsequent `IServiceProvider` will now resolve `IFoo` proxies of the `Router` instance that
+The subsequent `IServiceProvider` will now resolve `IFoo` proxies of the `Via` instance that
 can be configured and redirected as before:
 
 ```csharp
@@ -270,10 +270,10 @@ IServiceProvider provider = services.BuildServiceProvider();
 var foo = provider.GetService<IFoo>();
 Console.WriteLine(foo.Message); // "Original"
 
-router.Redirect(new Foo {Message = "Diverted"});
+via.Redirect(new Foo {Message = "Diverted"});
 Console.WriteLine(foo.Message); // "Diverted"
 
-router.Reset();
+via.Reset();
 Console.WriteLine(foo.Message); // "Original"
 ```
 

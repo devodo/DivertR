@@ -23,11 +23,11 @@ namespace DivertR.Internal
                     throw new DiverterException("Proxy original instance reference is null");
                 }
                 
-                invocation.ReturnValue =
-                    invocation.Method.ToDelegate(typeof(T)).Invoke(original, invocation.Arguments);
+                //invocation.ReturnValue =
+                //    invocation.Method.ToDelegate(typeof(T)).Invoke(original, invocation.Arguments);
                 
-                //((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirectRelay.Original);
-                //invocation.Proceed();
+                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(original);
+                invocation.Proceed();
 
                 return;
             }
@@ -40,12 +40,12 @@ namespace DivertR.Internal
                     throw new DiverterException("The redirect instance reference is null");
                 }
                 
-                invocation.ReturnValue =
-                    invocation.Method.ToDelegate(typeof(T)).Invoke(redirect.Target, invocation.Arguments);
+                //invocation.ReturnValue =
+                //    invocation.Method.ToDelegate(typeof(T)).Invoke(redirect.Target, invocation.Arguments);
 
                 // ReSharper disable once SuspiciousTypeConversion.Global
-                //((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect.Target);
-                //invocation.Proceed();
+                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect.Target);
+                invocation.Proceed();
             }
             finally
             {

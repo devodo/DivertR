@@ -37,12 +37,12 @@ namespace DivertR.Internal
                     throw new DiverterException("The redirect instance reference is null");
                 }
 
-                invocation.ReturnValue =
-                    invocation.Method.ToDelegate(typeof(T)).Invoke(redirect.Target, invocation.Arguments);
+                //invocation.ReturnValue =
+                //    invocation.Method.ToDelegate(typeof(T)).Invoke(redirect.Target, invocation.Arguments);
 
                 // ReSharper disable once SuspiciousTypeConversion.Global
-                //((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect.Target);
-                //invocation.Proceed();
+                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect.Target);
+                invocation.Proceed();
             }
             finally
             {
