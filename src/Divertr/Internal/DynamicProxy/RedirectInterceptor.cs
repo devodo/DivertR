@@ -1,6 +1,6 @@
 ﻿using Castle.DynamicProxy;
 
-namespace DivertR.Internal
+namespace DivertR.Internal.DynamicProxy
 {
     internal class RedirectInterceptor<T> : IInterceptor where T : class
     {
@@ -13,7 +13,8 @@ namespace DivertR.Internal
 
         public void Intercept(IInvocation invocation)
         {
-            var redirect = _relay.BeginNextRedirect(invocation);
+            var call = new DynamicProxyCall(invocation);
+            var redirect = _relay.BeginNextRedirect(call);
             
             if (redirect == null)
             {
@@ -23,11 +24,11 @@ namespace DivertR.Internal
                     throw new DiverterException("Proxy original instance reference is null");
                 }
                 
-                //invocation.ReturnValue =
-                //    invocation.Method.ToDelegate(typeof(T)).Invoke(original, invocation.Arguments);
+                invocation.ReturnValue =
+                    invocation.Method.ToDelegate(typeof(T)).Invoke(original, invocation.Arguments);
                 
-                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(original);
-                invocation.Proceed();
+                //((IChangeProxyTarget) invocation).ChangeInvocationTarget(original);
+                //invocation.Proceed();
 
                 return;
             }
@@ -40,16 +41,16 @@ namespace DivertR.Internal
                     throw new DiverterException("The redirect instance reference is null");
                 }
                 
-                //invocation.ReturnValue =
-                //    invocation.Method.ToDelegate(typeof(T)).Invoke(redirect.Target, invocation.Arguments);
+                invocation.ReturnValue =
+                    invocation.Method.ToDelegate(typeof(T)).Invoke(redirect.Target, invocation.Arguments);
 
                 // ReSharper disable once SuspiciousTypeConversion.Global
-                ((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect.Target);
-                invocation.Proceed();
+                //((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect.Target);
+                //invocation.Proceed();
             }
             finally
             {
-                _relay.EndRedirect(invocation);
+                _relay.EndRedirect(call);
             }
         }
     }

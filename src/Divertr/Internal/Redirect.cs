@@ -15,9 +15,9 @@ namespace DivertR.Internal
             State = state;
         }
 
-        public bool IsMatch(IInvocation invocation)
+        public bool IsMatch(ICall call)
         {
-            return _callCondition?.IsMatch(invocation) ?? true;
+            return _callCondition?.IsMatch(call) ?? true;
         }
     }
 }

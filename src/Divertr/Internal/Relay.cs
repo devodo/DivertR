@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Collections.Generic;
 using System.Threading;
-using Castle.DynamicProxy;
+using DivertR.Internal.DynamicProxy;
 
 namespace DivertR.Internal
 {
@@ -22,9 +22,9 @@ namespace DivertR.Internal
             Original = ProxyFactory.Instance.CreateOriginalTargetProxy(this);
         }
         
-        public Redirect<T>? BeginCall(T? original, List<Redirect<T>> redirects, IInvocation invocation)
+        public Redirect<T>? BeginCall(T? original, List<Redirect<T>> redirects, ICall call)
         {
-            var redirectState = RedirectState<T>.Create(original, redirects, invocation);
+            var redirectState = RedirectState<T>.Create(original, redirects, call);
 
             if (redirectState == null)
             {
@@ -37,20 +37,20 @@ namespace DivertR.Internal
             return redirectState.Current;
         }
 
-        public void EndCall(IInvocation invocation)
+        public void EndCall(ICall call)
         {
             _callStack.Value = _callStack.Value.Pop(out var redirectState);
 
-            if (!ReferenceEquals(invocation, redirectState.Invocation))
+            if (!ReferenceEquals(call, redirectState.Call))
             {
                 throw new DiverterException("Fatal error: Encountered an unexpected redirect state for the current call");
             }
         }
 
-        public Redirect<T>? BeginNextRedirect(IInvocation invocation)
+        public Redirect<T>? BeginNextRedirect(ICall call)
         {
             var callStack = _callStack.Value;
-            var redirectState = callStack.Peek().MoveNext(invocation);
+            var redirectState = callStack.Peek().MoveNext(call);
 
             if (redirectState == null)
             {
@@ -62,11 +62,11 @@ namespace DivertR.Internal
             return redirectState.Current;
         }
 
-        public void EndRedirect(IInvocation invocation)
+        public void EndRedirect(ICall invocation)
         {
             _callStack.Value = _callStack.Value.Pop(out var redirectState);
             
-            if (!ReferenceEquals(invocation, redirectState.Invocation))
+            if (!ReferenceEquals(invocation, redirectState.Call))
             {
                 throw new DiverterException("Fatal error: Encountered an unexpected redirect state for the current call");
             }

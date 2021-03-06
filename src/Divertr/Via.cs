@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using DivertR.Internal;
+using DivertR.Internal.DynamicProxy;
 
 namespace DivertR
 {
@@ -9,15 +10,15 @@ namespace DivertR
         private readonly ViaWayRepository _viaWayRepository;
         private readonly Lazy<Relay<T>> _callRelay;
 
-        public Via() : this(this.ViaId.From<T>(), new ViaWayRepository())
+        public Via() : this(ViaId.From<T>(), new ViaWayRepository())
         {
         }
         
         internal Via(ViaId viaId, ViaWayRepository viaWayRepository)
         {
-            if (!typeof(T).IsInterface)
+            if (!typeof(T).IsInterface && !typeof(T).IsClass)
             {
-                throw new ArgumentException("Only interface types are supported", typeof(T).Name);
+                throw new ArgumentException("Only interface and types are supported", typeof(T).Name);
             }
             
             ViaId = viaId;

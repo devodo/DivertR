@@ -1,6 +1,6 @@
 ﻿using Castle.DynamicProxy;
 
-namespace DivertR.Internal
+namespace DivertR.Internal.DynamicProxy
 {
     internal class OriginInterceptor<T> : IInterceptor where T : class
     {
@@ -21,11 +21,11 @@ namespace DivertR.Internal
             }
             
             // ReSharper disable once SuspiciousTypeConversion.Global
-            ((IChangeProxyTarget)invocation).ChangeInvocationTarget(original);
-            invocation.Proceed();
+            //((IChangeProxyTarget)invocation).ChangeInvocationTarget(original);
+            //invocation.Proceed();
             
-            //invocation.ReturnValue =
-            //    invocation.Method.ToDelegate(typeof(T)).Invoke(redirectPipeline.Original, invocation.Arguments);
+            invocation.ReturnValue =
+                invocation.Method.ToDelegate(typeof(T)).Invoke(original, invocation.Arguments);
         }
     }
 }

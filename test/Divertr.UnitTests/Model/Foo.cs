@@ -5,6 +5,8 @@ namespace DivertR.UnitTests.Model
     public class Foo : IFoo
     {
         private readonly Func<string> _messageFactory;
+        
+        public Foo() {}
 
         public Foo(Func<string> messageFactory)
         {
@@ -14,6 +16,6 @@ namespace DivertR.UnitTests.Model
         {
         }
 
-        public string Message => _messageFactory.Invoke();
+        public virtual string Message => _messageFactory.Invoke();
     }
 }

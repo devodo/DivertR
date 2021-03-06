@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Castle.DynamicProxy;
 
 namespace DivertR.Internal
 {
@@ -19,11 +18,11 @@ namespace DivertR.Internal
         private readonly InternalData _data;
         private readonly int _index;
         public T? Original => _data.Original;
-        public IInvocation Invocation { get; }
+        public ICall Call { get; }
 
-        public static RedirectState<T>? Create(T? original, List<Redirect<T>> redirects, IInvocation invocation)
+        public static RedirectState<T>? Create(T? original, List<Redirect<T>> redirects, ICall call)
         {
-            var index = GetNextIndex(-1, redirects, invocation);
+            var index = GetNextIndex(-1, redirects, call);
 
             if (index == -1)
             {
@@ -31,37 +30,37 @@ namespace DivertR.Internal
             }
             
             var data = new InternalData(original, redirects);
-            return new RedirectState<T>(data, index, invocation);
+            return new RedirectState<T>(data, index, call);
         }
 
-        private RedirectState(InternalData data, int index, IInvocation invocation)
+        private RedirectState(InternalData data, int index, ICall call)
         {
-            Invocation = invocation;
+            Call = call;
             _data = data;
             _index = index;
         }
 
         public Redirect<T> Current => _data.Redirects[_index];
 
-        public RedirectState<T>? MoveNext(IInvocation invocation)
+        public RedirectState<T>? MoveNext(ICall call)
         {
-            var index = GetNextIndex(_index, _data.Redirects, invocation);
+            var index = GetNextIndex(_index, _data.Redirects, call);
 
             if (index == -1)
             {
                 return null;
             }
 
-            return new RedirectState<T>(_data, index, invocation);
+            return new RedirectState<T>(_data, index, call);
         }
         
-        private static int GetNextIndex(int index, List<Redirect<T>> redirects, IInvocation invocation)
+        private static int GetNextIndex(int index, List<Redirect<T>> redirects, ICall call)
         {
             var startIndex = index + 1;
 
             for (var i = startIndex; i < redirects.Count; i++)
             {
-                if (!redirects[i].IsMatch(invocation))
+                if (!redirects[i].IsMatch(call))
                 {
                     continue;
                 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DivertR.UnitTests.Model;
@@ -20,7 +21,7 @@ namespace DivertR.UnitTests
         [Fact]
         public void TestRecursiveSync()
         {
-            const int input = 20;
+            const int input = 30;
             var proxy = InitTestProxy();
             var result = proxy.GetNumber(input);
             var controlResult = Fibonacci(input) * 2;
@@ -46,18 +47,22 @@ namespace DivertR.UnitTests
         [Fact]
         public async Task TestRecursiveSyncMultiThreaded()
         {
-            const int input = 20;
+            const int input = 30;
             const int taskCount = 10;
+            var controlResult = Fibonacci(input) * 2;
+
+            var sw = Stopwatch.StartNew();
             var proxy = InitTestProxy();
             
             var tasks = Enumerable.Range(0, taskCount).Select(_ => 
                 Task.Run(() => proxy.GetNumber(input))).ToArray();
-
-            var controlResult = Fibonacci(input) * 2;
+            
             foreach (var task in tasks)
             {
                 (await task).ShouldBe(controlResult);
             }
+            
+            _output.WriteLine($"Elapsed: {sw.Elapsed}");
         }
         
         private INumber InitTestProxy()

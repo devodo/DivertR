@@ -7,7 +7,7 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class RouterTests
+    public class ViaTests
     {
         private readonly Via<IFoo> _via = new();
         
@@ -313,6 +313,37 @@ namespace DivertR.UnitTests
 
             // ASSERT
             proxy.Message.ShouldBe(original.Message);
+        }
+        
+        [Fact]
+        public void GivenClassProxy_ShouldDefaultToOriginal()
+        {
+            // ARRANGE
+            var original = new Foo("hello foo");
+            var via = new Via<Foo>();
+            var proxy = via.Proxy(original);
+            
+            // ACT
+            var message = proxy.Message;
+            
+            // ASSERT
+            message.ShouldBe(original.Message);
+        }
+        
+        [Fact]
+        public void GivenClassProxy_ShouldDivert()
+        {
+            // ARRANGE
+            var via = new Via<Foo>();
+            var proxy = via.Proxy(new Foo("hello foo"));
+            var foo = new Foo("hi DivertR");
+            via.Redirect(foo);
+
+            // ACT
+            var message = proxy.Message;
+
+            // ASSERT
+            message.ShouldBe(foo.Message);
         }
     }
 }

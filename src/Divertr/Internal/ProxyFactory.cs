@@ -1,30 +1,31 @@
 ﻿using System;
-using Castle.DynamicProxy;
+using DivertR.Internal.DynamicProxy;
 
 namespace DivertR.Internal
 {
-    internal class ProxyFactory
+    internal class ProxyFactory : IProxyFactory
     {
-        public static readonly ProxyFactory Instance = new ProxyFactory();
+        public static readonly IProxyFactory Instance = new ProxyFactory(new DynamicProxyFactory());
         
-        private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
-        
-        public T CreateDiverterProxy<T>(T? original, Func<ViaWay<T>?> getRedirectRoute) where T : class
+        private readonly IProxyFactory _proxyFactory;
+
+        private ProxyFactory(IProxyFactory proxyFactory)
         {
-            var interceptor = new ViaInterceptor<T>(original, getRedirectRoute);
-            return _proxyGenerator.CreateInterfaceProxyWithTargetInterface(original, interceptor)!;
+            _proxyFactory = proxyFactory;
         }
-        
+        public T CreateDiverterProxy<T>(T? original, Func<ViaWay<T>?> getViaWay) where T : class
+        {
+            return _proxyFactory.CreateDiverterProxy(original, getViaWay);
+        }
+
         public T CreateRedirectTargetProxy<T>(Relay<T> relay) where T : class
         {
-            var interceptor = new RedirectInterceptor<T>(relay);
-            return _proxyGenerator.CreateInterfaceProxyWithTargetInterface<T>(null!, interceptor);
+            return _proxyFactory.CreateRedirectTargetProxy(relay);
         }
-        
+
         public T CreateOriginalTargetProxy<T>(Relay<T> relay) where T : class
         {
-            var interceptor = new OriginInterceptor<T>(relay);
-            return _proxyGenerator.CreateInterfaceProxyWithTargetInterface<T>(null!, interceptor);
+            return _proxyFactory.CreateOriginalTargetProxy(relay);
         }
     }
 }
