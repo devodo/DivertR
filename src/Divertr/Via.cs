@@ -9,7 +9,7 @@ namespace DivertR
         private readonly ViaWayRepository _viaWayRepository;
         private readonly Lazy<Relay<T>> _callRelay;
 
-        public Via() : this(ViaId.From<T>(), new ViaWayRepository())
+        public Via() : this(this.ViaId.From<T>(), new ViaWayRepository())
         {
         }
         

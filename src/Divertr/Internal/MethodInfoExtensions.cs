@@ -7,14 +7,15 @@ namespace DivertR.Internal
 {
     internal static class MethodInfoExtensions
     {
-        private static readonly ConcurrentDictionary<MethodInfo, Func<object, object[], object>> DelegateCache =
-            new ConcurrentDictionary<MethodInfo, Func<object, object[], object>>();
+        private static readonly ConcurrentDictionary<MethodId, Func<object, object[], object>> DelegateCache =
+            new ConcurrentDictionary<MethodId, Func<object, object[], object>>();
         private static readonly ParameterExpression TargetParameterExpression = Expression.Parameter(typeof(object), "target");
         private static readonly ParameterExpression ArgsParameterExpression = Expression.Parameter(typeof(object[]), "args");
 
         public static Func<object, object[], object> ToDelegate(this MethodInfo methodInfo, Type targetType)
         {
-            return DelegateCache.GetOrAdd(methodInfo, m => m.ToDelegateInternal(targetType));
+            var methodId = new MethodId(targetType, methodInfo);
+            return DelegateCache.GetOrAdd(methodId, m => m.ToDelegateInternal(targetType));
         }
         
         private static Func<object, object[], object> ToDelegateInternal(this MethodInfo methodInfo, Type targetType)

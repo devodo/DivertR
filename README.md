@@ -5,14 +5,14 @@ The .NET Dependency Injection Diverter
 DivertR is a tool that facilitates an integrated, top-down approach to testing by making it easy to hotswap test code in and out of a working system.
 
 With DivertR you can modify your dependency injection services at runtime by replacing them with configurable proxies.
-These can redirect calls to substitute instances, such as test doubles, and then optionally
-relay back to the original targets. 
+These can redirect calls to substitute, such as test doubles, and then optionally
+relay back to the original instances. 
 Update and reset proxies, on the fly, while the process is running.
 
-![DivertR Via](./docs/Via.svg)
+![DivertR Via](./docs/assets/images/DivertR_Via.svg)
 
 * [Quickstart](#quickstart)
-    * [Create a DivertR proxy](#create-a-divertr-proxy)
+    * [Create a Via proxy](#create-a-via-proxy)
     * [Redirect proxy calls](#redirect-proxy-calls)
     * [Redirect to a mock](#redirect-to-a-mock)
     * [Relay to the original](#relay-to-the-original)
@@ -28,7 +28,7 @@ Update and reset proxies, on the fly, while the process is running.
     * [Diverter registration builder](#diverter-registration-builder)
 
 ## Quickstart
-### Create a DivertR proxy
+### Create a Via proxy
 
 Given an `IFoo` interface and its implementation:
 
@@ -57,7 +57,7 @@ var foo = new Foo {Message = "original foo"};
 var fooProxy = via.Proxy(foo);
 Console.WriteLine(fooProxy.Message); // "original foo"
 ```
-> By default DivertR proxies simply forward calls to their original instances. 
+> By default Via proxies simply forward calls to their original instances. 
 
 ### Redirect proxy calls
 
@@ -96,7 +96,7 @@ The redirected instance can relay calls to the originally targeted instance from
 This allows you to intercept calls and then run test code before and after invoking the original instance:
 
 ```csharp
-var relay = via.Relay.Original;
+var original = via.Relay.Original;
 var mock = new Mock<IFoo>();
 mock
   .Setup(x => x.Message)
@@ -105,12 +105,12 @@ mock
     // ...
 
     // call original instance
-    var original = relay.Message;
+    var message = original.Message;
 
     // run test code after
     // ...
 
-    return $"{original} bar";
+    return $"{message} bar";
   });
 
 via.Redirect(mock.Object);
@@ -127,11 +127,11 @@ The configured redirects are applied to all proxies created from the same `Via` 
 This is useful, for example, to be able to intercept transient DI services where multiple instances of a type may get created.
 
 ```csharp
-var relay = via.Relay.Original;
+var original = via.Relay.Original;
 var mock = new Mock<IFoo>();
 mock
   .Setup(x => x.Message)
-  .Returns(() => $"Hello {relay.Message}");
+  .Returns(() => $"Hello {original.Message}");
 
 via.Redirect(mock.Object);
 
@@ -167,9 +167,9 @@ Console.WriteLine(fooProxy.Message); // "original foo bar bar bar"
 
 ### The Diverter class
 
-A `Via<IFoo>` instance is tied to a single `IFoo` type but
+A `Via<T>` instance can only be used to proxy instances of type `T` but
 typically when testing a system you interact with multiple types.
-The `Diverter` class lets you conveniently access and manage a set of different `Via<T>`
+The `Diverter` class lets you conveniently access and manage a set of Vias instances of different
 types from a single instance. This is particularly useful for setting up dependency 
 injection registrations (see [Register a Diverter](#register-a-diverter)). It is also
 handy for resetting all its `Via` instances from a single call to `ResetAll()`. 
@@ -197,7 +197,7 @@ var proxy = diverter.Proxy<IFoo>(new Foo {Message = "original"});
 // var proxy = diverter.Via<IFoo>().Proxy(new Foo {Message = "original"});
 
 // Similarly other shortcuts for:
-var relay = divert.Relay<IFoo>().Original;
+var relay = diverter.Relay<IFoo>().Original;
 diverter.Redirect<IFoo>(new Foo {Message = "diverted"});
 diverter.Reset<IFoo>();
 // etc
@@ -243,7 +243,7 @@ but for now only interfaces are supported.
 
 ## IServiceCollection Extensions
 Extension methods are provided on the .NET `Microsoft.Extensions.DependencyInjection.IServiceCollection` interface
-that convert existing registrations into DivertR proxy factories.
+that convert existing registrations into Via proxy factories.
 
 ### Register a Via
 
@@ -254,7 +254,7 @@ IServiceCollection services = new ServiceCollection();
 services.AddTransient<IFoo>(_ => new Foo {Message = "Original"});
 ```
 
-The `Divert` extension method replaces the `IFoo` registration with a factory that creates DivertR proxies
+The `Divert` extension method replaces the `IFoo` registration with a factory that creates Via proxies
 wrapping the instances provided by the original registration:
 
 ```csharp
@@ -280,7 +280,7 @@ Console.WriteLine(foo.Message); // "Original"
 ### Register a Diverter
 
 Similarly a `Diverter` extension method is provided that replaces all existing `IServiceCollection` registrations with
-DivertR proxy factories at once.
+Via proxy factories at once.
 
 ```csharp
 IServiceCollection services = new ServiceCollection();
@@ -289,17 +289,17 @@ services.AddSingleton<IBar, Bar>();
 ```
 
 Passing a `Diverter` instance to the `Divert` extension method will convert both the `IFoo` and `IBar` registrations
-into DivertR proxy factories:
+into Via proxy factories:
 
 ```csharp
 var diverter = new Diverter();
 services.Divert(diverter);
 ```
 
-> By default DivertR proxies forward calls to their original instances. Therefore injecting DivertR proxies
+> By default Via proxies forward calls to their original instances. Therefore injecting Via proxies
 does not alter the behaviour of the system (when no redirects have been added).
 
-The resulting DivertR proxies are then configured via the passed in `diverter` instance:
+The resulting Via proxies are then configured via the passed in `diverter` instance:
 
 ```csharp
 IServiceProvider provider = services.BuildServiceProvider();
