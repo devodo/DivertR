@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>8</LangVersion>
     <Nullable>enable</Nullable>
     <PackageVersion>0.0.1</PackageVersion>
@@ -13,14 +12,16 @@
     <PackageTags>test testing divert diverter diversion redirect detour intercept proxy di dependency injection spy spies relay</PackageTags>
     <AssemblyName>DivertR</AssemblyName>
     <RootNamespace>DivertR</RootNamespace>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable" Version="1.7.1" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.6.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DivertR.Core\DivertR.Core.csproj" />
+    <ProjectReference Include="..\DivertR.DispatchProxy\DivertR.DispatchProxy.csproj" />
     <ProjectReference Include="..\DivertR.DynamicProxy\DivertR.DynamicProxy.csproj" />
   </ItemGroup>
 

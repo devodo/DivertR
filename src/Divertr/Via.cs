@@ -2,6 +2,7 @@
 using System.Linq;
 using DivertR.Core;
 using DivertR.Core.Internal;
+using DivertR.DispatchProxy;
 using DivertR.DynamicProxy;
 using DivertR.Internal;
 
@@ -27,7 +28,7 @@ namespace DivertR
             
             ViaId = viaId;
             _viaStateRepository = viaStateRepository;
-            _proxyFactory = DynamicProxyFactory.Instance;
+            _proxyFactory = DispatchProxyFactory.Instance;
             _relayState = new RelayState<T>();
             _relay = new Lazy<IRelay<T>>(() => new Relay<T>(_relayState, _proxyFactory));
         }

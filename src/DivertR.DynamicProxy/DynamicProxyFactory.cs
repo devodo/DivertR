@@ -15,48 +15,37 @@ namespace DivertR.DynamicProxy
         {
             var interceptor = new ViaInterceptor<T>(original, getViaState);
 
-            if (typeof(T).IsInterface)
-            {
-                return _proxyGenerator.CreateInterfaceProxyWithTargetInterface(original, interceptor)!;
-            }
-
-            if (typeof(T).IsClass)
-            {
-                return _proxyGenerator.CreateClassProxyWithTarget(original, interceptor)!;
-            }
-
-            throw new DiverterException($"Invalid type argument {typeof(T).Name}. Only interface or class types are supported");
+            return CreateProxy(interceptor, original);
         }
         
         public T CreateRedirectTargetProxy<T>(IRelayState<T> relayState) where T : class
         {
             var interceptor = new RedirectInterceptor<T>(relayState);
             
-            if (typeof(T).IsInterface)
-            {
-                return _proxyGenerator.CreateInterfaceProxyWithTargetInterface<T>(null!, interceptor);
-            }
-
-            if (typeof(T).IsClass)
-            {
-                return _proxyGenerator.CreateClassProxy<T>(interceptor)!;
-            }
-            
-            throw new DiverterException($"Invalid type argument {typeof(T).Name}. Only interface or class types are supported");
+            return CreateProxy<T>(interceptor);
         }
         
         public T CreateOriginalTargetProxy<T>(IRelayState<T> relayState) where T : class
         {
             var interceptor = new OriginInterceptor<T>(relayState);
             
+            return CreateProxy<T>(interceptor);
+        }
+
+        private T CreateProxy<T>(IInterceptor interceptor, T? target = null) where T : class
+        {
             if (typeof(T).IsInterface)
             {
-                return _proxyGenerator.CreateInterfaceProxyWithTargetInterface<T>(null!, interceptor);
+                return target == null
+                    ? _proxyGenerator.CreateInterfaceProxyWithoutTarget<T>(interceptor)
+                    : _proxyGenerator.CreateInterfaceProxyWithTarget(target, interceptor);
             }
 
             if (typeof(T).IsClass)
             {
-                return _proxyGenerator.CreateClassProxy<T>(interceptor)!;
+                return target == null
+                    ? _proxyGenerator.CreateClassProxy<T>(interceptor)
+                    : _proxyGenerator.CreateClassProxyWithTarget(target, interceptor);
             }
             
             throw new DiverterException($"Invalid type argument {typeof(T).Name}. Only interface or class types are supported");

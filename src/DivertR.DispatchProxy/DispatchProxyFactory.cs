@@ -6,6 +6,8 @@ namespace DivertR.DispatchProxy
 {
     internal class DispatchProxyFactory : IProxyFactory
     {
+        public static readonly DispatchProxyFactory Instance = new DispatchProxyFactory();
+        
         public T CreateDiverterProxy<T>(T? original, Func<IViaState<T>?> getViaState) where T : class
         {
             var invoker = new ViaInvoker<T>(original, getViaState);

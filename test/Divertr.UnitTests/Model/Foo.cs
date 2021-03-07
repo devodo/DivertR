@@ -6,12 +6,15 @@ namespace DivertR.UnitTests.Model
     {
         private readonly Func<string> _messageFactory;
         
-        public Foo() {}
+        public Foo()
+        {
+        }
 
         public Foo(Func<string> messageFactory)
         {
             _messageFactory = messageFactory;
         }
+
         public Foo(string message) : this(() => message)
         {
         }
