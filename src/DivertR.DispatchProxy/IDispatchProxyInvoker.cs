@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 
-namespace DivertR.Internal.DispatchProxy
+namespace DivertR.DispatchProxy
 {
-    public interface IDispatchProxyInvoker
+    internal interface IDispatchProxyInvoker
     {
         object Invoke(MethodInfo targetMethod, object[] args);
     }

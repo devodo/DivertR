@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DivertR.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DivertR.Extensions.DependencyInjection

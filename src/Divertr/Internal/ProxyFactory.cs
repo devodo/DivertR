@@ -1,5 +1,6 @@
 ﻿using System;
-using DivertR.Internal.DynamicProxy;
+using DivertR.Core.Internal;
+using DivertR.DynamicProxy;
 
 namespace DivertR.Internal
 {
@@ -13,19 +14,19 @@ namespace DivertR.Internal
         {
             _proxyFactory = proxyFactory;
         }
-        public T CreateDiverterProxy<T>(T? original, Func<ViaWay<T>?> getViaWay) where T : class
+        public T CreateDiverterProxy<T>(T? original, Func<IViaState<T>?> getViaState) where T : class
         {
-            return _proxyFactory.CreateDiverterProxy(original, getViaWay);
+            return _proxyFactory.CreateDiverterProxy(original, getViaState);
         }
 
-        public T CreateRedirectTargetProxy<T>(Relay<T> relay) where T : class
+        public T CreateRedirectTargetProxy<T>(IRelayState<T> relayState) where T : class
         {
-            return _proxyFactory.CreateRedirectTargetProxy(relay);
+            return _proxyFactory.CreateRedirectTargetProxy(relayState);
         }
 
-        public T CreateOriginalTargetProxy<T>(Relay<T> relay) where T : class
+        public T CreateOriginalTargetProxy<T>(IRelayState<T> relayState) where T : class
         {
-            return _proxyFactory.CreateOriginalTargetProxy(relay);
+            return _proxyFactory.CreateOriginalTargetProxy(relayState);
         }
     }
 }

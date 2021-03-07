@@ -1,4 +1,4 @@
-﻿namespace DivertR
+﻿namespace DivertR.Core
 {
     public interface IVia
     {

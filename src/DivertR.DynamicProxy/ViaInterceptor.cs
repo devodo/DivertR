@@ -1,14 +1,16 @@
 ﻿using System;
 using Castle.DynamicProxy;
+using DivertR.Core;
+using DivertR.Core.Internal;
 
-namespace DivertR.Internal.DynamicProxy
+namespace DivertR.DynamicProxy
 {
     internal class ViaInterceptor<T> : IInterceptor where T : class
     {
         private readonly T? _original;
-        private readonly Func<ViaWay<T>?> _getRedirectRoute;
+        private readonly Func<IViaState<T>?> _getRedirectRoute;
 
-        public ViaInterceptor(T? original, Func<ViaWay<T>?> getRedirectRoute)
+        public ViaInterceptor(T? original, Func<IViaState<T>?> getRedirectRoute)
         {
             _original = original;
             _getRedirectRoute = getRedirectRoute;
@@ -18,7 +20,7 @@ namespace DivertR.Internal.DynamicProxy
         {
             var call = new DynamicProxyCall(invocation);
             var route = _getRedirectRoute();
-            var redirect = route?.Relay.BeginCall(_original, route.Redirects, call);
+            var redirect = route?.RelayState.BeginCall(_original, route.Redirects, call);
 
             if (redirect == null)
             {
@@ -47,7 +49,7 @@ namespace DivertR.Internal.DynamicProxy
             }
             finally
             {
-                route!.Relay.EndCall(call);
+                route!.RelayState.EndCall(call);
             }
         }
     }

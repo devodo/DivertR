@@ -1,24 +1,26 @@
 ﻿using System;
 using System.Reflection;
+using DivertR.Core;
+using DivertR.Core.Internal;
 
-namespace DivertR.Internal.DispatchProxy
+namespace DivertR.DispatchProxy
 {
     internal class ViaInvoker<T> : IDispatchProxyInvoker where T : class
     {
         private readonly T? _original;
-        private readonly Func<ViaWay<T>?> _getRedirectRoute;
+        private readonly Func<IViaState<T>?> _getViaState;
 
-        public ViaInvoker(T? original, Func<ViaWay<T>?> getRedirectRoute)
+        public ViaInvoker(T? original, Func<IViaState<T>?> getViaState)
         {
             _original = original;
-            _getRedirectRoute = getRedirectRoute;
+            _getViaState = getViaState;
         }
 
         public object Invoke(MethodInfo targetMethod, object[] args)
         {
             var call = new DispatchProxyCall(targetMethod, args);
-            var route = _getRedirectRoute();
-            var redirect = route?.Relay.BeginCall(_original, route.Redirects, call);
+            var viaState = _getViaState();
+            var redirect = viaState?.RelayState.BeginCall(_original, viaState.Redirects, call);
 
             if (redirect == null)
             {
@@ -41,7 +43,7 @@ namespace DivertR.Internal.DispatchProxy
             }
             finally
             {
-                route!.Relay.EndCall(call);
+                viaState!.RelayState.EndCall(call);
             }
         }
     }

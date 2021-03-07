@@ -1,24 +1,26 @@
 ﻿using Castle.DynamicProxy;
+using DivertR.Core;
+using DivertR.Core.Internal;
 
-namespace DivertR.Internal.DynamicProxy
+namespace DivertR.DynamicProxy
 {
     internal class RedirectInterceptor<T> : IInterceptor where T : class
     {
-        private readonly Relay<T> _relay;
+        private readonly IRelayState<T> _relayState;
 
-        public RedirectInterceptor(Relay<T> relay)
+        public RedirectInterceptor(IRelayState<T> relayState)
         {
-            _relay = relay;
+            _relayState = relayState;
         }
 
         public void Intercept(IInvocation invocation)
         {
             var call = new DynamicProxyCall(invocation);
-            var redirect = _relay.BeginNextRedirect(call);
+            var redirect = _relayState.BeginNextRedirect(call);
             
             if (redirect == null)
             {
-                var original = _relay.Current.Original;
+                var original = _relayState.Original;
                 if (original == null)
                 {
                     throw new DiverterException("Proxy original instance reference is null");
@@ -50,7 +52,7 @@ namespace DivertR.Internal.DynamicProxy
             }
             finally
             {
-                _relay.EndRedirect(call);
+                _relayState.EndRedirect(call);
             }
         }
     }

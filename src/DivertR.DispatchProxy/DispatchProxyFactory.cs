@@ -1,13 +1,14 @@
 ﻿using System;
-using Castle.DynamicProxy;
+using DivertR.Core;
+using DivertR.Core.Internal;
 
-namespace DivertR.Internal.DispatchProxy
+namespace DivertR.DispatchProxy
 {
     internal class DispatchProxyFactory : IProxyFactory
     {
-        public T CreateDiverterProxy<T>(T? original, Func<ViaWay<T>?> getViaWay) where T : class
+        public T CreateDiverterProxy<T>(T? original, Func<IViaState<T>?> getViaState) where T : class
         {
-            var invoker = new ViaInvoker<T>(original, getViaWay);
+            var invoker = new ViaInvoker<T>(original, getViaState);
 
             if (typeof(T).IsInterface)
             {
@@ -17,7 +18,7 @@ namespace DivertR.Internal.DispatchProxy
             throw new DiverterException($"Invalid type argument {typeof(T).Name}. Only interface types are supported");
         }
         
-        public T CreateRedirectTargetProxy<T>(Relay<T> relay) where T : class
+        public T CreateRedirectTargetProxy<T>(IRelayState<T> relay) where T : class
         {
             var invoker = new RedirectInvoker<T>(relay);
             
@@ -29,9 +30,9 @@ namespace DivertR.Internal.DispatchProxy
             throw new DiverterException($"Invalid type argument {typeof(T).Name}. Only interface types are supported");
         }
         
-        public T CreateOriginalTargetProxy<T>(Relay<T> relay) where T : class
+        public T CreateOriginalTargetProxy<T>(IRelayState<T> relayState) where T : class
         {
-            var invoker = new OriginInvoker<T>(relay);
+            var invoker = new OriginInvoker<T>(relayState);
             
             if (typeof(T).IsInterface)
             {

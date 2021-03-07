@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 
-namespace DivertR.Internal.DispatchProxy
+namespace DivertR.DispatchProxy
 {
-    public class DiverterProxy : System.Reflection.DispatchProxy 
+    internal class DiverterProxy : System.Reflection.DispatchProxy 
     {
         private IDispatchProxyInvoker _invoker = null!;
 

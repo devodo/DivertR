@@ -1,19 +1,21 @@
 ﻿using Castle.DynamicProxy;
+using DivertR.Core;
+using DivertR.Core.Internal;
 
-namespace DivertR.Internal.DynamicProxy
+namespace DivertR.DynamicProxy
 {
     internal class OriginInterceptor<T> : IInterceptor where T : class
     {
-        private readonly Relay<T> _relay;
+        private readonly IRelayState<T> _relayState;
 
-        public OriginInterceptor(Relay<T> relay)
+        public OriginInterceptor(IRelayState<T> relayState)
         {
-            _relay = relay;
+            _relayState = relayState;
         }
 
         public void Intercept(IInvocation invocation)
         {
-            var original = _relay.Current.Original;
+            var original = _relayState.Original;
             
             if (original == null)
             {

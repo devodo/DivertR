@@ -1,4 +1,4 @@
-﻿namespace DivertR
+﻿namespace DivertR.Core
 {
     public interface IRelay<out T> where T : class
     {

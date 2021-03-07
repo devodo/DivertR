@@ -1,24 +1,26 @@
 ﻿using System.Reflection;
+using DivertR.Core;
+using DivertR.Core.Internal;
 
-namespace DivertR.Internal.DispatchProxy
+namespace DivertR.DispatchProxy
 {
     internal class RedirectInvoker<T> : IDispatchProxyInvoker where T : class
     {
-        private readonly Relay<T> _relay;
+        private readonly IRelayState<T> _relayState;
 
-        public RedirectInvoker(Relay<T> relay)
+        public RedirectInvoker(IRelayState<T> relayState)
         {
-            _relay = relay;
+            _relayState = relayState;
         }
         
         public object Invoke(MethodInfo targetMethod, object[] args)
         {
             var call = new DispatchProxyCall(targetMethod, args);
-            var redirect = _relay.BeginNextRedirect(call);
+            var redirect = _relayState.BeginNextRedirect(call);
             
             if (redirect == null)
             {
-                var original = _relay.Current.Original;
+                var original = _relayState.Original;
                 if (original == null)
                 {
                     throw new DiverterException("Proxy original instance reference is null");
@@ -39,7 +41,7 @@ namespace DivertR.Internal.DispatchProxy
             }
             finally
             {
-                _relay.EndRedirect(call);
+                _relayState.EndRedirect(call);
             }
         }
     }

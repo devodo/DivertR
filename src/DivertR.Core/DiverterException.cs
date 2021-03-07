@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DivertR
+namespace DivertR.Core
 {
     public class DiverterException : Exception
     {

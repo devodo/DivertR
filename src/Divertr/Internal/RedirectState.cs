@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using DivertR.Core;
+using DivertR.Core.Internal;
 
 namespace DivertR.Internal
 {
@@ -7,8 +9,8 @@ namespace DivertR.Internal
         private class InternalData
         {
             public T? Original { get; }
-            public List<Redirect<T>> Redirects { get; }
-            public InternalData(T? original, List<Redirect<T>> redirects)
+            public List<IRedirect<T>> Redirects { get; }
+            public InternalData(T? original, List<IRedirect<T>> redirects)
             {
                 Original = original;
                 Redirects = redirects;
@@ -20,7 +22,7 @@ namespace DivertR.Internal
         public T? Original => _data.Original;
         public ICall Call { get; }
 
-        public static RedirectState<T>? Create(T? original, List<Redirect<T>> redirects, ICall call)
+        public static RedirectState<T>? Create(T? original, List<IRedirect<T>> redirects, ICall call)
         {
             var index = GetNextIndex(-1, redirects, call);
 
@@ -40,7 +42,7 @@ namespace DivertR.Internal
             _index = index;
         }
 
-        public Redirect<T> Current => _data.Redirects[_index];
+        public IRedirect<T> Current => _data.Redirects[_index];
 
         public RedirectState<T>? MoveNext(ICall call)
         {
@@ -54,7 +56,7 @@ namespace DivertR.Internal
             return new RedirectState<T>(_data, index, call);
         }
         
-        private static int GetNextIndex(int index, List<Redirect<T>> redirects, ICall call)
+        private static int GetNextIndex(int index, List<IRedirect<T>> redirects, ICall call)
         {
             var startIndex = index + 1;
 

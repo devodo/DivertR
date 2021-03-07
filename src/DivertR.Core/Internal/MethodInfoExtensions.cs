@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace DivertR.Internal
+namespace DivertR.Core.Internal
 {
     internal static class MethodInfoExtensions
     {

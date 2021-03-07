@@ -1,15 +1,17 @@
 ﻿using System;
 using Castle.DynamicProxy;
+using DivertR.Core;
+using DivertR.Core.Internal;
 
-namespace DivertR.Internal.DynamicProxy
+namespace DivertR.DynamicProxy
 {
     internal class DynamicProxyFactory : IProxyFactory
     {
         private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
         
-        public T CreateDiverterProxy<T>(T? original, Func<ViaWay<T>?> getViaWay) where T : class
+        public T CreateDiverterProxy<T>(T? original, Func<IViaState<T>?> getViaState) where T : class
         {
-            var interceptor = new ViaInterceptor<T>(original, getViaWay);
+            var interceptor = new ViaInterceptor<T>(original, getViaState);
 
             if (typeof(T).IsInterface)
             {
@@ -24,9 +26,9 @@ namespace DivertR.Internal.DynamicProxy
             throw new DiverterException($"Invalid type argument {typeof(T).Name}. Only interface or class types are supported");
         }
         
-        public T CreateRedirectTargetProxy<T>(Relay<T> relay) where T : class
+        public T CreateRedirectTargetProxy<T>(IRelayState<T> relayState) where T : class
         {
-            var interceptor = new RedirectInterceptor<T>(relay);
+            var interceptor = new RedirectInterceptor<T>(relayState);
             
             if (typeof(T).IsInterface)
             {
@@ -41,9 +43,9 @@ namespace DivertR.Internal.DynamicProxy
             throw new DiverterException($"Invalid type argument {typeof(T).Name}. Only interface or class types are supported");
         }
         
-        public T CreateOriginalTargetProxy<T>(Relay<T> relay) where T : class
+        public T CreateOriginalTargetProxy<T>(IRelayState<T> relayState) where T : class
         {
-            var interceptor = new OriginInterceptor<T>(relay);
+            var interceptor = new OriginInterceptor<T>(relayState);
             
             if (typeof(T).IsInterface)
             {

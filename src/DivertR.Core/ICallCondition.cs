@@ -1,4 +1,4 @@
-﻿namespace DivertR.Internal
+﻿namespace DivertR.Core
 {
     public interface ICallCondition
     {

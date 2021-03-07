@@ -1,8 +1,9 @@
-﻿using Castle.DynamicProxy;
+﻿using DivertR.Core;
+using DivertR.Core.Internal;
 
 namespace DivertR.Internal
 {
-    internal class Redirect<T> where T : class
+    internal class Redirect<T> : IRedirect<T> where T : class
     {
         private readonly ICallCondition? _callCondition;
         public T Target { get; }

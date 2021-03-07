@@ -1,19 +1,21 @@
 ﻿using System.Reflection;
+using DivertR.Core;
+using DivertR.Core.Internal;
 
-namespace DivertR.Internal.DispatchProxy
+namespace DivertR.DispatchProxy
 {
     internal class OriginInvoker<T> : IDispatchProxyInvoker where T : class
     {
-        private readonly Relay<T> _relay;
+        private readonly IRelayState<T> _relayState;
 
-        public OriginInvoker(Relay<T> relay)
+        public OriginInvoker(IRelayState<T> relayState)
         {
-            _relay = relay;
+            _relayState = relayState;
         }
 
         public object Invoke(MethodInfo targetMethod, object[] args)
         {
-            var original = _relay.Current.Original;
+            var original = _relayState.Original;
             
             if (original == null)
             {
