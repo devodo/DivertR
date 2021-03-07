@@ -6,7 +6,7 @@
         object ProxyObject(object? original = null);
     }
     
-    public interface IVia<T> : IVia  where T : class
+    public interface IVia<T> : IVia where T : class
     {
         IRelay<T> Relay { get; }
         T Proxy(T? original = null);

@@ -9,9 +9,9 @@ namespace DivertR.DispatchProxy
         public static T Create<T>(IDispatchProxyInvoker invoker) where T : class
         {
             object proxy = Create<T, DiverterProxy>()!;
-            ((DiverterProxy)proxy)._invoker = invoker;
+            ((DiverterProxy) proxy)._invoker = invoker;
 
-            return (T)proxy;
+            return (T) proxy;
         }
         
         protected override object Invoke(MethodInfo targetMethod, object[] args)

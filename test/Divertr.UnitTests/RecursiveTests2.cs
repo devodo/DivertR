@@ -22,7 +22,7 @@ namespace DivertR.UnitTests
         [Fact]
         public void TestRecursiveSync()
         {
-            const int input = 30;
+            const int input = 20;
             var proxy = InitTestProxy();
             var result = proxy.GetNumber(input);
             var controlResult = Fibonacci(input) * 2;
@@ -48,7 +48,7 @@ namespace DivertR.UnitTests
         [Fact]
         public async Task TestRecursiveSyncMultiThreaded()
         {
-            const int input = 30;
+            const int input = 20;
             const int taskCount = 10;
             var controlResult = Fibonacci(input) * 2;
 

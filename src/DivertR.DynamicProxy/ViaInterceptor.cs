@@ -8,28 +8,30 @@ namespace DivertR.DynamicProxy
     internal class ViaInterceptor<T> : IInterceptor where T : class
     {
         private readonly T? _original;
-        private readonly Func<IViaState<T>?> _getRedirectRoute;
+        private readonly Func<IViaState<T>?> _getViaState;
 
-        public ViaInterceptor(T? original, Func<IViaState<T>?> getRedirectRoute)
+        public ViaInterceptor(T? original, Func<IViaState<T>?> getViaState)
         {
             _original = original;
-            _getRedirectRoute = getRedirectRoute;
+            _getViaState = getViaState;
         }
 
         public void Intercept(IInvocation invocation)
         {
+            var viaState = _getViaState();
+
+            if (viaState == null)
+            {
+                DefaultProceed(invocation);
+                return;
+            }
+            
             var call = new DynamicProxyCall(invocation);
-            var route = _getRedirectRoute();
-            var redirect = route?.RelayState.BeginCall(_original, route.Redirects, call);
+            var redirect = viaState.RelayState.BeginCall(_original, viaState.Redirects, call);
 
             if (redirect == null)
             {
-                if (_original == null)
-                {
-                    throw new DiverterException("The original instance reference is null");
-                }
-
-                invocation.Proceed();
+                DefaultProceed(invocation);
                 return;
             }
 
@@ -49,8 +51,18 @@ namespace DivertR.DynamicProxy
             }
             finally
             {
-                route!.RelayState.EndCall(call);
+                viaState.RelayState.EndCall(call);
             }
+        }
+
+        private void DefaultProceed(IInvocation invocation)
+        {
+            if (_original == null)
+            {
+                throw new DiverterException("The original instance reference is null");
+            }
+
+            invocation.Proceed();
         }
     }
 }

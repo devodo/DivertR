@@ -15,7 +15,7 @@ namespace DivertR.Core
 
         public bool Equals(ViaId other)
         {
-            return ReferenceEquals(Type, other.Type) && Name == other.Name;
+            return Type == other.Type && Name == other.Name;
         }
 
         public override bool Equals(object obj)
@@ -27,7 +27,7 @@ namespace DivertR.Core
         {
             unchecked
             {
-                int hash = 17;
+                var hash = 17;
                 hash = hash * 31 + Type.GetHashCode();
 
                 if (Name != null)

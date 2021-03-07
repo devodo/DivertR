@@ -4,16 +4,17 @@ using DivertR.DynamicProxy;
 
 namespace DivertR.Internal
 {
-    internal class ProxyFactory : IProxyFactory
+    internal class ProxyFactory2 : IProxyFactory
     {
-        public static readonly IProxyFactory Instance = new ProxyFactory(new DynamicProxyFactory());
+        public static readonly IProxyFactory Instance = new ProxyFactory2(new DynamicProxyFactory());
         
         private readonly IProxyFactory _proxyFactory;
 
-        private ProxyFactory(IProxyFactory proxyFactory)
+        private ProxyFactory2(IProxyFactory proxyFactory)
         {
             _proxyFactory = proxyFactory;
         }
+        
         public T CreateDiverterProxy<T>(T? original, Func<IViaState<T>?> getViaState) where T : class
         {
             return _proxyFactory.CreateDiverterProxy(original, getViaState);

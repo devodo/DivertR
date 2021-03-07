@@ -12,7 +12,7 @@ namespace DivertR.Internal
         {
             if (_viaStates.TryGetValue(viaId, out var alteration))
             {
-                return (ViaState<T>)alteration;
+                return (ViaState<T>) alteration;
             }
 
             return null;
@@ -35,7 +35,7 @@ namespace DivertR.Internal
                 return updateFactory((ViaState<T>) existing);
             }
 
-            return (ViaState<T>)_viaStates.AddOrUpdate(viaId, Create, Update);
+            return (ViaState<T>) _viaStates.AddOrUpdate(viaId, Create, Update);
         }
         
         public bool Reset(ViaId viaId)

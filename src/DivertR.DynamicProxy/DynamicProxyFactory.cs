@@ -7,6 +7,8 @@ namespace DivertR.DynamicProxy
 {
     internal class DynamicProxyFactory : IProxyFactory
     {
+        public static readonly DynamicProxyFactory Instance = new DynamicProxyFactory();
+        
         private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
         
         public T CreateDiverterProxy<T>(T? original, Func<IViaState<T>?> getViaState) where T : class

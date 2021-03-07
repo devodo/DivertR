@@ -10,6 +10,7 @@ namespace DivertR.Internal
         {
             public T? Original { get; }
             public List<IRedirect<T>> Redirects { get; }
+
             public InternalData(T? original, List<IRedirect<T>> redirects)
             {
                 Original = original;

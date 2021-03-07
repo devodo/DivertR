@@ -18,18 +18,19 @@ namespace DivertR.DispatchProxy
 
         public object Invoke(MethodInfo targetMethod, object[] args)
         {
-            var call = new DispatchProxyCall(targetMethod, args);
             var viaState = _getViaState();
-            var redirect = viaState?.RelayState.BeginCall(_original, viaState.Redirects, call);
+
+            if (viaState == null)
+            {
+                return DefaultProceed(targetMethod, args);
+            }
+            
+            var call = new DispatchProxyCall(targetMethod, args);
+            var redirect = viaState.RelayState.BeginCall(_original, viaState.Redirects, call);
 
             if (redirect == null)
             {
-                if (_original == null)
-                {
-                    throw new DiverterException("The original instance reference is null");
-                }
-                
-                return targetMethod.ToDelegate(typeof(T)).Invoke(_original, args);
+                return DefaultProceed(targetMethod, args);
             }
 
             try
@@ -45,6 +46,16 @@ namespace DivertR.DispatchProxy
             {
                 viaState!.RelayState.EndCall(call);
             }
+        }
+        
+        private object DefaultProceed(MethodInfo targetMethod, object[] args)
+        {
+            if (_original == null)
+            {
+                throw new DiverterException("The original instance reference is null");
+            }
+
+            return targetMethod.ToDelegate(typeof(T)).Invoke(_original, args);
         }
     }
 }

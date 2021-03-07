@@ -14,11 +14,11 @@ namespace DivertR.Internal
 
         public object? State => _relayState.Redirect.State;
 
-        public Relay(IRelayState<T> relayState)
+        public Relay(IRelayState<T> relayState, IProxyFactory proxyFactory)
         {
             _relayState = relayState;
-            Next =  ProxyFactory.Instance.CreateRedirectTargetProxy(relayState);
-            Original = ProxyFactory.Instance.CreateOriginalTargetProxy(relayState);
+            Next = proxyFactory.CreateRedirectTargetProxy(relayState);
+            Original = proxyFactory.CreateOriginalTargetProxy(relayState);
         }
     }
 }

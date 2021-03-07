@@ -9,6 +9,7 @@ namespace DivertR.Core.Internal
     {
         private static readonly ConcurrentDictionary<MethodId, Func<object, object[], object>> DelegateCache =
             new ConcurrentDictionary<MethodId, Func<object, object[], object>>();
+
         private static readonly ParameterExpression TargetParameterExpression = Expression.Parameter(typeof(object), "target");
         private static readonly ParameterExpression ArgsParameterExpression = Expression.Parameter(typeof(object[]), "args");
 
@@ -61,7 +62,7 @@ namespace DivertR.Core.Internal
 
             public bool Equals(MethodId other)
             {
-                return ReferenceEquals(TargetType, other.TargetType) && MethodInfo == other.MethodInfo;
+                return TargetType == other.TargetType && MethodInfo == other.MethodInfo;
             }
 
             public override bool Equals(object obj)
@@ -73,7 +74,7 @@ namespace DivertR.Core.Internal
             {
                 unchecked
                 {
-                    int hash = 17 * 31 + TargetType.GetHashCode();
+                    var hash = 17 * 31 + TargetType.GetHashCode();
                     hash = hash * 31 + MethodInfo.GetHashCode();
                 
                     return hash;

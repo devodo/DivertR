@@ -70,6 +70,7 @@ namespace DivertR.Extensions.DependencyInjection
         {
             return IncludeRange(startType: null, typeof(TEndTypeType), inclusive);
         }
+        
         public RegistrationBuilder IncludeRange(Type? startType = null, Type? endType = null, bool startInclusive = true, bool endInclusive = true)
         {
             foreach (var type in GetRange(_configuration.Services, startType, endType, startInclusive, endInclusive))

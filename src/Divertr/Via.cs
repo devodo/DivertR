@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using DivertR.Core;
+using DivertR.Core.Internal;
+using DivertR.DynamicProxy;
 using DivertR.Internal;
 
 namespace DivertR
@@ -8,6 +10,7 @@ namespace DivertR
     public class Via<T> : IVia<T> where T : class
     {
         private readonly ViaStateRepository _viaStateRepository;
+        private readonly IProxyFactory _proxyFactory;
         private readonly RelayState<T> _relayState;
         private readonly Lazy<IRelay<T>> _relay;
 
@@ -24,8 +27,9 @@ namespace DivertR
             
             ViaId = viaId;
             _viaStateRepository = viaStateRepository;
+            _proxyFactory = DynamicProxyFactory.Instance;
             _relayState = new RelayState<T>();
-            _relay = new Lazy<IRelay<T>>(() => new Relay<T>(_relayState));
+            _relay = new Lazy<IRelay<T>>(() => new Relay<T>(_relayState, _proxyFactory));
         }
 
         public ViaId ViaId { get; }
@@ -39,7 +43,7 @@ namespace DivertR
                 return _viaStateRepository.Get<T>(ViaId);
             }
 
-            return ProxyFactory.Instance.CreateDiverterProxy(original, GetRedirectRoute);
+            return _proxyFactory.CreateDiverterProxy(original, GetRedirectRoute);
         }
 
         public object ProxyObject(object? original = null)
