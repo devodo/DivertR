@@ -1,4 +1,5 @@
-﻿using DivertR.Core;
+﻿using System.Reflection;
+using DivertR.Core;
 using DivertR.Core.Internal;
 
 namespace DivertR.Internal
@@ -14,6 +15,16 @@ namespace DivertR.Internal
             _callCondition = callCondition;
             Target = target;
             State = state;
+        }
+
+        public object? Invoke(MethodInfo methodInfo, object[] args)
+        {
+            if (Target == null)
+            {
+                throw new DiverterException("The redirect instance reference is null");
+            }
+            
+            return methodInfo.ToDelegate(typeof(T)).Invoke(Target, args);
         }
 
         public bool IsMatch(ICall call)

@@ -37,13 +37,7 @@ namespace DivertR.DynamicProxy
 
             try
             {
-                if (redirect.Target == null)
-                {
-                    throw new DiverterException("The redirect instance reference is null");
-                }
-                
-                invocation.ReturnValue =
-                    invocation.Method.ToDelegate(typeof(T)).Invoke(redirect.Target, invocation.Arguments);
+                invocation.ReturnValue = redirect.Invoke(invocation.Method, invocation.Arguments)!;
 
                 // ReSharper disable once SuspiciousTypeConversion.Global
                 //((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect.Target);

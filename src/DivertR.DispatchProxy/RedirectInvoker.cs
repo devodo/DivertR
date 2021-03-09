@@ -31,12 +31,7 @@ namespace DivertR.DispatchProxy
 
             try
             {
-                if (redirect.Target == null)
-                {
-                    throw new DiverterException("The redirect instance reference is null");
-                }
-                
-                return targetMethod.ToDelegate(typeof(T)).Invoke(redirect.Target, args);
+                return redirect.Invoke(targetMethod, args)!;
             }
             finally
             {

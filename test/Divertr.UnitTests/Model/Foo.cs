@@ -20,5 +20,10 @@ namespace DivertR.UnitTests.Model
         }
 
         public virtual string Message => _messageFactory.Invoke();
+        
+        public string GetMessage(string input)
+        {
+            return _messageFactory.Invoke();
+        }
     }
 }

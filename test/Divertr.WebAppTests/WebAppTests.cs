@@ -41,7 +41,7 @@ namespace DivertR.WebAppTests
             };
 
             A.CallTo(() => _fooRepositoryFake.GetFoo(foo.Id))
-                .ReturnsLazily( () => Task.FromResult(foo));
+                .ReturnsLazily(() => Task.FromResult(foo));
 
             var response = await _fooClient.GetFoo(foo.Id);
             

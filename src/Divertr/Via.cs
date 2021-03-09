@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Expressions;
 using DivertR.Core;
 using DivertR.Core.Internal;
 using DivertR.DispatchProxy;
-using DivertR.DynamicProxy;
 using DivertR.Internal;
 
 namespace DivertR
@@ -60,6 +60,14 @@ namespace DivertR
         public IVia<T> Redirect(T target, object? state = null)
         {
             var redirect = new Redirect<T>(target, state);
+            var callRoute = new ViaState<T>(redirect, _relayState);
+            _viaStateRepository.Set(ViaId, callRoute);
+
+            return this;
+        }
+        
+        public IVia<T> Redirect(IRedirect<T> redirect)
+        {
             var callRoute = new ViaState<T>(redirect, _relayState);
             _viaStateRepository.Set(ViaId, callRoute);
 
@@ -123,6 +131,11 @@ namespace DivertR
             _viaStateRepository.Reset(ViaId);
 
             return this;
+        }
+
+        public WhenBuilder<T, TResult> When<TResult>(Expression<Func<T, TResult>> expression)
+        {
+            return new WhenBuilder<T, TResult>(this, expression);
         }
     }
 }
