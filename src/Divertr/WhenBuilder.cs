@@ -45,8 +45,6 @@ namespace DivertR
 
         private IArgumentCondition CreateArgumentCondition(Expression argument)
         {
-            var argType = argument.GetType();
-            
             if (argument is ConstantExpression constantExpression)
             {
                 return new ConstantArgumentCondition(constantExpression.Value);
@@ -54,8 +52,11 @@ namespace DivertR
 
             if (argument is MemberExpression memberExpression)
             {
-                memberExpression.Member.DeclaringType.
-                return TrueArgumentCondition.Instance;
+                if (memberExpression.Member.DeclaringType?.GetGenericTypeDefinition() == typeof(Is<>) &&
+                    memberExpression.Member.Name == nameof(Is<object>.Any))
+                {
+                    return TrueArgumentCondition.Instance;
+                }
             }
 
             if (argument is MethodCallExpression callExpression)
