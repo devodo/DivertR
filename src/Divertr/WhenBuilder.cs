@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using DivertR.Core;
@@ -9,7 +10,7 @@ namespace DivertR
     public class WhenBuilder<T, TResult> where T : class
     {
         private readonly IVia<T> _via;
-        private ICallCondition _callCondition;
+        private readonly ICallCondition _callCondition;
         private MethodInfo _methodInfo;
         
         public WhenBuilder(IVia<T> via, LambdaExpression whenExpression)
@@ -36,7 +37,35 @@ namespace DivertR
         private LambdaCallCondition CreateMethodCallCondition(MethodCallExpression expression)
         {
             _methodInfo = expression.Method;
-            return new LambdaCallCondition(expression.Method, expression.Arguments, expression.Method.GetParameters());
+
+            var argumentConditions = expression.Arguments.Select(CreateArgumentCondition).ToList();
+            
+            return new LambdaCallCondition(expression.Method, argumentConditions);
+        }
+
+        private IArgumentCondition CreateArgumentCondition(Expression argument)
+        {
+            var argType = argument.GetType();
+            
+            if (argument is ConstantExpression constantExpression)
+            {
+                return new ConstantArgumentCondition(constantExpression.Value);
+            }
+
+            if (argument is MemberExpression memberExpression)
+            {
+                memberExpression.Member.DeclaringType.
+                return TrueArgumentCondition.Instance;
+            }
+
+            if (argument is MethodCallExpression callExpression)
+            {
+                const BindingFlags activatorFlags = BindingFlags.Public | BindingFlags.Instance;
+                var lambdaType = typeof(LambdaArgumentCondition<>).MakeGenericType(callExpression.Type);
+                return (IArgumentCondition) Activator.CreateInstance(lambdaType, activatorFlags, null, new object[] {callExpression.Arguments[0]}, default);
+            }
+            
+            return FalseArgumentCondition.Instance;
         }
     }
 }

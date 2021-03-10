@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Reflection;
 using DivertR.Core;
@@ -9,14 +10,12 @@ namespace DivertR.Internal
     internal class LambdaCallCondition : ICallCondition
     {
         private readonly MethodInfo _methodInfo;
-        private readonly ReadOnlyCollection<Expression> _arguments;
-        private readonly ParameterInfo[] _parameters;
+        private readonly List<IArgumentCondition> _argumentConditions;
 
-        public LambdaCallCondition(MethodInfo methodInfo, ReadOnlyCollection<Expression> arguments, ParameterInfo[] parameters)
+        public LambdaCallCondition(MethodInfo methodInfo, List<IArgumentCondition> argumentConditions)
         {
             _methodInfo = methodInfo;
-            _arguments = arguments;
-            _parameters = parameters;
+            _argumentConditions = argumentConditions;
         }
 
         public bool IsMatch(ICall call)
@@ -26,14 +25,9 @@ namespace DivertR.Internal
                 return false;
             }
 
-            for (var i = 0; i < _arguments.Count; i++)
+            for (var i = 0; i < _argumentConditions.Count; i++)
             {
-                if (!(_arguments[i] is ConstantExpression expressionValue))
-                {
-                    continue;
-                }
-
-                if (expressionValue.Value != call.Arguments[i])
+                if (!_argumentConditions[i].IsMatch(call.Arguments[i]))
                 {
                     return false;
                 }

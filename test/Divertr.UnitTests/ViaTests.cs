@@ -362,5 +362,39 @@ namespace DivertR.UnitTests
             // ASSERT
             message.ShouldBe("hello foo test");
         }
+        
+        [Fact]
+        public void GivenWhenRedirectWithMatchParam_ShouldDivert()
+        {
+            // ARRANGE
+            var via = new Via<IFoo>();
+            via
+                .When(x => x.GetMessage(Is<string>.Match(p => p == "test")))
+                .Redirect((string input) => $"{via.Relay.Original.Message} {input}");
+
+            // ACT
+            var proxy = via.Proxy(new Foo("hello foo"));
+            var message = proxy.GetMessage("test");
+
+            // ASSERT
+            message.ShouldBe("hello foo test");
+        }
+        
+        [Fact]
+        public void GivenWhenRedirectWithAnyParam_ShouldDivert()
+        {
+            // ARRANGE
+            var via = new Via<IFoo>();
+            via
+                .When(x => x.GetMessage(Is<string>.Any))
+                .Redirect((string input) => $"{via.Relay.Original.Message} {input}");
+
+            // ACT
+            var proxy = via.Proxy(new Foo("hello foo"));
+            var message = proxy.GetMessage("test");
+
+            // ASSERT
+            message.ShouldBe("hello foo test");
+        }
     }
 }

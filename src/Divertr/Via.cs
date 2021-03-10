@@ -59,7 +59,7 @@ namespace DivertR
         
         public IVia<T> Redirect(T target, object? state = null)
         {
-            var redirect = new Redirect<T>(target, state);
+            var redirect = new TargetRedirect<T>(target, state);
             var callRoute = new ViaState<T>(redirect, _relayState);
             _viaStateRepository.Set(ViaId, callRoute);
 
@@ -76,7 +76,7 @@ namespace DivertR
 
         public IVia<T> AddRedirect(T target, object? state = null)
         {
-            var redirect = new Redirect<T>(target, state);
+            var redirect = new TargetRedirect<T>(target, state);
             
             ViaState<T> Create()
             {
@@ -97,7 +97,7 @@ namespace DivertR
 
         public IVia<T> InsertRedirect(int index, T target, object? state = null)
         {
-            var redirect = new Redirect<T>(target, state);
+            var redirect = new TargetRedirect<T>(target, state);
             
             ViaState<T> Create()
             {
