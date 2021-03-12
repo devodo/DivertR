@@ -10,10 +10,10 @@ namespace DivertR.Internal
         private readonly ICallCondition _callCondition;
         public object? State { get; }
 
-        public CallRedirect(Func<object[], object?> redirectDelegate, ICallCondition callCondition)
+        public CallRedirect(Func<object[], object?> redirectDelegate, ICallCondition? callCondition)
         {
             _redirectDelegate = redirectDelegate;
-            _callCondition = callCondition;
+            _callCondition = callCondition ?? TrueCallCondition.Instance;
         }
 
         public object? Invoke(MethodInfo methodInfo, object[] args)

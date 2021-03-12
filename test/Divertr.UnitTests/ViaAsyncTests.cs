@@ -8,7 +8,7 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class RouterAsyncTests
+    public class ViaAsyncTests
     {
         private readonly Via<IAsyncFoo> _via = new();
         
@@ -32,7 +32,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new AsyncFoo("hello foo"));
             var foo = new AsyncFoo("hi DivertR");
-            _via.Redirect(foo);
+            _via.RedirectTo(foo);
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -46,7 +46,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var foo = new AsyncFoo("hi DivertR");
-            _via.Redirect(foo);
+            _via.RedirectTo(foo);
             var proxy = _via.Proxy(new AsyncFoo("hello foo"));
 
             // ACT
@@ -62,7 +62,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new AsyncFoo("foo");
             var proxy = _via.Proxy(original);
-            _via.Redirect(new AsyncFoo("diverted"));
+            _via.RedirectTo(new AsyncFoo("diverted"));
             _via.Reset();
 
             // ACT
@@ -78,7 +78,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new AsyncFoo("foo");
             var proxy = _via.Proxy(original);
-            _via.Redirect(new AsyncFoo(async () => $"hello {await _via.Relay.Original.MessageAsync}"));
+            _via.RedirectTo(new AsyncFoo(async () => $"hello {await _via.Relay.Original.MessageAsync}"));
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -93,7 +93,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new AsyncFoo("foo");
             var proxy = _via.Proxy(original);
-            _via.Redirect(new AsyncFoo(async () => $"hello {await _via.Relay.Next.MessageAsync}"));
+            _via.RedirectTo(new AsyncFoo(async () => $"hello {await _via.Relay.Next.MessageAsync}"));
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -109,7 +109,7 @@ namespace DivertR.UnitTests
             var original = new AsyncFoo("foo");
             var proxy = _via.Proxy(original);
             IAsyncFoo originalReference = null;
-            _via.Redirect(new AsyncFoo(async () =>
+            _via.RedirectTo(new AsyncFoo(async () =>
             {
                 originalReference = _via.Relay.OriginalInstance;
                 return $"hello {await originalReference!.MessageAsync}";
@@ -131,7 +131,7 @@ namespace DivertR.UnitTests
                 .Select(i => _via.Proxy(new AsyncFoo($"foo{i}")))
                 .ToList();
             
-            _via.Redirect(new AsyncFoo(async () => $"diverted {await _via.Relay.Original.MessageAsync}"));
+            _via.RedirectTo(new AsyncFoo(async () => $"diverted {await _via.Relay.Original.MessageAsync}"));
 
             // ACT
             var messages = proxies.Select(async p => await p.MessageAsync).ToList();
@@ -153,7 +153,7 @@ namespace DivertR.UnitTests
                 .ToList();
 
             _via
-                .Redirect(new AsyncFoo(async () => $"diverted {await _via.Relay.Next.MessageAsync}"));
+                .RedirectTo(new AsyncFoo(async () => $"diverted {await _via.Relay.Next.MessageAsync}"));
 
             // ACT
             var messages = proxies.Select(async p => await p.MessageAsync).ToList();
@@ -178,7 +178,7 @@ namespace DivertR.UnitTests
                 .Setup(x => x.MessageAsync)
                 .Returns(async () => $"{await _via.Relay.Original.MessageAsync} world");
 
-            _via.Redirect(mock.Object);
+            _via.RedirectTo(mock.Object);
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -194,9 +194,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new AsyncFoo("hello foo"));
             var next = _via.Relay.Next;
             _via
-                .AddRedirect(new AsyncFoo(async () => $"DivertR {await next.MessageAsync} 1"))
-                .AddRedirect(new AsyncFoo(async () => $"here {await next.MessageAsync} 2"))
-                .AddRedirect(new AsyncFoo(async () => $"again {await next.MessageAsync} 3"));
+                .RedirectTo(new AsyncFoo(async () => $"DivertR {await next.MessageAsync} 1"))
+                .RedirectTo(new AsyncFoo(async () => $"here {await next.MessageAsync} 2"))
+                .RedirectTo(new AsyncFoo(async () => $"again {await next.MessageAsync} 3"));
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -235,7 +235,7 @@ namespace DivertR.UnitTests
             for (var i = 0; i < numRedirects; i++)
             {
                 var counter = i;
-                _via.AddRedirect(new AsyncFoo(async () =>
+                _via.RedirectTo(new AsyncFoo(async () =>
                     $"{await orig.MessageAsync} {counter} {await next.MessageAsync}"));
             }
 
@@ -269,8 +269,8 @@ namespace DivertR.UnitTests
             });
 
             _via
-                .AddRedirect(recursive, new[] {4})
-                .AddRedirect(new AsyncFoo(async () =>
+                .RedirectTo(recursive, new[] {4})
+                .RedirectTo(new AsyncFoo(async () =>
                     (await next.MessageAsync).Replace(await orig.MessageAsync, "bar")));
 
             // ACT
@@ -293,9 +293,9 @@ namespace DivertR.UnitTests
                     $"{_via.Relay.State} {await _via.Relay.Next.MessageAsync} {_via.Relay.State}");
             
             _via
-                .AddRedirect(mock.Object, "1")
-                .AddRedirect(mock.Object, "2")
-                .AddRedirect(mock.Object, "3");
+                .RedirectTo(mock.Object, "1")
+                .RedirectTo(mock.Object, "2")
+                .RedirectTo(mock.Object, "3");
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -310,9 +310,9 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new AsyncFoo("hello foo");
             var proxy = _via.Proxy(original);
-            _via.AddRedirect(new AsyncFoo(async () => $"{await _via.Relay.Next.MessageAsync} me"));
+            _via.RedirectTo(new AsyncFoo(async () => $"{await _via.Relay.Next.MessageAsync} me"));
             _via.Reset();
-            _via.AddRedirect(new AsyncFoo(async () => $"{await _via.Relay.Next.MessageAsync} again"));
+            _via.RedirectTo(new AsyncFoo(async () => $"{await _via.Relay.Next.MessageAsync} again"));
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -327,8 +327,8 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new AsyncFoo("hello foo");
             var proxy = _via.Proxy(original);
-            _via.AddRedirect(new AsyncFoo(async () => $"{await _via.Relay.Next.MessageAsync} me"));
-            _via.AddRedirect(new AsyncFoo(async () => $"{await _via.Relay.Next.MessageAsync} again"));
+            _via.RedirectTo(new AsyncFoo(async () => $"{await _via.Relay.Next.MessageAsync} me"));
+            _via.RedirectTo(new AsyncFoo(async () => $"{await _via.Relay.Next.MessageAsync} again"));
             _via.Reset();
 
             // ACT
@@ -336,6 +336,22 @@ namespace DivertR.UnitTests
             
             // ASSERT
             message.ShouldBe(await original.MessageAsync);
+        }
+        
+        [Fact]
+        public async Task GivenWhenPropertyRedirect_ShouldDivert()
+        {
+            // ARRANGE
+            _via
+                .Redirect(x => x.MessageAsync)
+                .To(async () => $"before {await _via.Relay.Original.MessageAsync} after");
+
+            // ACT
+            var proxy = _via.Proxy(new AsyncFoo("hello foo"));
+            var message = await proxy.MessageAsync;
+
+            // ASSERT
+            message.ShouldBe("before hello foo after");
         }
     }
 }

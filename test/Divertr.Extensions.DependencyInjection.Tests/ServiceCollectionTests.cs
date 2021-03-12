@@ -26,7 +26,7 @@ namespace DivertR.Extensions.DependencyInjection.Tests
             
             var mock = new Mock<IFoo>();
             mock.Setup(x => x.Message).Returns("Diverted");
-            _diverter.Via<IFoo>().Redirect(mock.Object);
+            _diverter.Via<IFoo>().RedirectTo(mock.Object);
             
             foo.Message.ShouldBe("Diverted");
         }
@@ -43,7 +43,7 @@ namespace DivertR.Extensions.DependencyInjection.Tests
             
             var mock = new Mock<IFoo>();
             mock.Setup(x => x.Message).Returns("Diverted");
-            router.Redirect(mock.Object);
+            router.RedirectTo(mock.Object);
             
             var foo2 = provider.GetRequiredService<IFoo>();
             
@@ -68,7 +68,7 @@ namespace DivertR.Extensions.DependencyInjection.Tests
             
             var mock = new Mock<IList<string>>();
             mock.Setup(x => x.Count).Returns(10);
-            _diverter.Via<IList<string>>().Redirect(mock.Object);
+            _diverter.Via<IList<string>>().RedirectTo(mock.Object);
             
             list.Count.ShouldBe(10);
             _diverter.ResetAll();
@@ -90,7 +90,7 @@ namespace DivertR.Extensions.DependencyInjection.Tests
             
             var mock = new Mock<IList<string>>();
             mock.Setup(x => x.Count).Returns(10);
-            _diverter.Via<IList<string>>().Redirect(mock.Object);
+            _diverter.Via<IList<string>>().RedirectTo(mock.Object);
             
             _typesDiverted.ShouldBe(new[] { typeof(IList<string>)});
             list.Count.ShouldBe(10);
@@ -110,7 +110,7 @@ namespace DivertR.Extensions.DependencyInjection.Tests
             
             var mock = new Mock<IList<string>>();
             mock.Setup(x => x.Count).Returns(10);
-            router.Redirect(mock.Object);
+            router.RedirectTo(mock.Object);
             
             list.Count.ShouldBe(10);
             _diverter.ResetAll();
@@ -133,7 +133,7 @@ namespace DivertR.Extensions.DependencyInjection.Tests
             
             var mock = new Mock<IList<string>>();
             mock.Setup(x => x.Count).Returns(10);
-            _diverter.Via<IList<string>>().Redirect(mock.Object);
+            _diverter.Via<IList<string>>().RedirectTo(mock.Object);
             
             list.Count.ShouldBe(10);
             _diverter.ResetAll();

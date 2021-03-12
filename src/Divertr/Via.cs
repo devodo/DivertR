@@ -57,27 +57,25 @@ namespace DivertR
             return Proxy(original as T);
         }
         
-        public IVia<T> Redirect(T target, object? state = null)
-        {
-            var redirect = new TargetRedirect<T>(target, state);
-            var callRoute = new ViaState<T>(redirect, _relayState);
-            _viaStateRepository.Set(ViaId, callRoute);
-
-            return this;
-        }
-        
-        public IVia<T> Redirect(IRedirect<T> redirect)
-        {
-            var callRoute = new ViaState<T>(redirect, _relayState);
-            _viaStateRepository.Set(ViaId, callRoute);
-
-            return this;
-        }
-
-        public IVia<T> AddRedirect(T target, object? state = null)
+        public IVia<T> RedirectTo(T target, object? state = null)
         {
             var redirect = new TargetRedirect<T>(target, state);
             
+            return AddRedirect(redirect);
+        }
+
+        public IRedirectBuilder<T> Redirect(ICallCondition? callCondition = null)
+        {
+            return new RedirectBuilder<T>(this, callCondition);
+        }
+        
+        public IRedirectBuilder<T, TResult> Redirect<TResult>(Expression<Func<T, TResult>> expression)
+        {
+            return new RedirectBuilder<T, TResult>(this, expression);
+        }
+
+        public IVia<T> AddRedirect(IRedirect<T> redirect)
+        {
             ViaState<T> Create()
             {
                 return new ViaState<T>(redirect, _relayState);
@@ -131,11 +129,6 @@ namespace DivertR
             _viaStateRepository.Reset(ViaId);
 
             return this;
-        }
-
-        public WhenBuilder<T, TResult> When<TResult>(Expression<Func<T, TResult>> expression)
-        {
-            return new WhenBuilder<T, TResult>(this, expression);
         }
     }
 }

@@ -83,10 +83,10 @@ namespace DivertR.UnitTests
             var times2 = new Number(i => _via.Relay.Original.GetNumber(i) + _via.Relay.Next.GetNumber(i));
 
             _via
-                .AddRedirect(fibonacci)
-                .AddRedirect(times2);
+                .RedirectTo(fibonacci)
+                .RedirectTo(times2);
 
-            return _via.Proxy(new Number());;
+            return _via.Proxy(new Number());
         }
 
         private static int Fibonacci(int n)

@@ -34,30 +34,5 @@ namespace DivertR
             _viaStateRepository.ResetAll();
             return this;
         }
-
-        public T Proxy<T>(T? original = null) where T : class
-        {
-            return Via<T>().Proxy(original);
-        }
-
-        public IVia<T> Redirect<T>(T target) where T : class
-        {
-            return Via<T>().Redirect(target);
-        }
-
-        public IVia<T> AddRedirect<T>(T target) where T : class
-        {
-            return Via<T>().AddRedirect(target);
-        }
-
-        public IVia<T> Reset<T>() where T : class
-        {
-            return Via<T>().Reset();
-        }
-
-        public IRelay<T> Relay<T>() where T : class
-        {
-            return Via<T>().Relay;
-        }
     }
 }

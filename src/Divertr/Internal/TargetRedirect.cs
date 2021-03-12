@@ -7,12 +7,12 @@ namespace DivertR.Internal
     internal class TargetRedirect<T> : IRedirect<T> where T : class
     {
         private readonly T _target;
-        private readonly ICallCondition? _callCondition;
+        private readonly ICallCondition _callCondition;
         public object? State { get; }
 
         public TargetRedirect(T target, object? state = null, ICallCondition? callCondition = null)
         {
-            _callCondition = callCondition;
+            _callCondition = callCondition ?? TrueCallCondition.Instance;
             _target = target;
             State = state;
         }
@@ -29,7 +29,7 @@ namespace DivertR.Internal
 
         public bool IsMatch(ICall call)
         {
-            return _callCondition?.IsMatch(call) ?? true;
+            return _callCondition.IsMatch(call);
         }
     }
 }

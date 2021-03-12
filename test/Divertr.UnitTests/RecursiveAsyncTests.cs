@@ -21,7 +21,7 @@ namespace DivertR.UnitTests
                 return _via.Proxy(new Factorial(n, FactorialFactory));
             }
 
-            _via.AddRedirect(new FactorialTest(_via.Relay.Next));
+            _via.RedirectTo(new FactorialTest(_via.Relay.Next));
 
             var result = await FactorialFactory(factorialInput).Result();
             result.ShouldBe(GetFactorial(factorialInput));
@@ -42,7 +42,7 @@ namespace DivertR.UnitTests
 
             var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(async () =>
             {
-                _via.AddRedirect(new FactorialTest(_via.Relay.Next));
+                _via.RedirectTo(new FactorialTest(_via.Relay.Next));
                 return await FactorialFactory(factorialInput).Result();
             })).ToArray();
 

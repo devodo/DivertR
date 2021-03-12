@@ -67,10 +67,10 @@ namespace DivertR.UnitTests
                 await _via.Relay.Original.GetNumber(i) + await _via.Relay.Next.GetNumber(i));
 
             _via
-                .AddRedirect(fibonacci)
-                .AddRedirect(times2);
+                .RedirectTo(fibonacci)
+                .RedirectTo(times2);
 
-            return _via.Proxy(new AsyncNumber());;
+            return _via.Proxy(new AsyncNumber());
         }
         
         private static int Fibonacci(int n)

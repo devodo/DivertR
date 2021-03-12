@@ -31,7 +31,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
             var foo = new Foo("hi DivertR");
-            _via.Redirect(foo);
+            _via.Redirect().To(foo);
 
             // ACT
             var message = proxy.Message;
@@ -46,7 +46,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.Redirect(new Foo("diverted"));
+            _via.RedirectTo(new Foo("diverted"));
             _via.Reset();
 
             // ACT
@@ -62,7 +62,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.Redirect(new Foo(() => $"hello {_via.Relay.Original.Message}"));
+            _via.RedirectTo(new Foo(() => $"hello {_via.Relay.Original.Message}"));
 
             // ACT
             var message = proxy.Message;
@@ -77,7 +77,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.Redirect(new Foo(() => $"hello {_via.Relay.Next.Message}"));
+            _via.RedirectTo(new Foo(() => $"hello {_via.Relay.Next.Message}"));
 
             // ACT
             var message = proxy.Message;
@@ -93,7 +93,7 @@ namespace DivertR.UnitTests
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             IFoo originalReference = null;
-            _via.Redirect(new Foo(() =>
+            _via.RedirectTo(new Foo(() =>
             {
                 originalReference = _via.Relay.OriginalInstance;
                 return $"hello {originalReference!.Message}";
@@ -115,7 +115,7 @@ namespace DivertR.UnitTests
                 .Select(i => _via.Proxy(new Foo($"foo{i}")))
                 .ToList();
             
-            _via.Redirect(new Foo( () => $"diverted {_via.Relay.Original.Message}"));
+            _via.RedirectTo(new Foo( () => $"diverted {_via.Relay.Original.Message}"));
 
             // ACT
             var messages = proxies.Select(p => p.Message).ToList();
@@ -136,7 +136,7 @@ namespace DivertR.UnitTests
                 .ToList();
 
             _via
-                .Redirect(new Foo( () => $"diverted {_via.Relay.Next.Message}"));
+                .RedirectTo(new Foo( () => $"diverted {_via.Relay.Next.Message}"));
 
             // ACT
             var messages = proxies.Select(p => p.Message).ToList();
@@ -160,7 +160,7 @@ namespace DivertR.UnitTests
                 .Setup(x => x.Message)
                 .Returns(() => $"{_via.Relay.Original.Message} world");
 
-            _via.Redirect(mock.Object);
+            _via.RedirectTo(mock.Object);
 
             // ACT
             var message = proxy.Message;
@@ -176,9 +176,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new Foo("hello foo"));
             var next = _via.Relay.Next;
             _via
-                .AddRedirect(new Foo(() => $"DivertR {next.Message} 1"))
-                .AddRedirect(new Foo(() => $"here {next.Message} 2"))
-                .AddRedirect(new Foo(() => $"again {next.Message} 3"));
+                .RedirectTo(new Foo(() => $"DivertR {next.Message} 1"))
+                .RedirectTo(new Foo(() => $"here {next.Message} 2"))
+                .RedirectTo(new Foo(() => $"again {next.Message} 3"));
 
             // ACT
             var message = proxy.Message;
@@ -217,7 +217,7 @@ namespace DivertR.UnitTests
             for (var i = 0; i < numRedirects; i++)
             {
                 var counter = i;
-                _via.AddRedirect(new Foo (() => $"{orig.Message} {counter} {next.Message}"));
+                _via.RedirectTo(new Foo(() => $"{orig.Message} {counter} {next.Message}"));
             }
 
             // ACT
@@ -250,8 +250,8 @@ namespace DivertR.UnitTests
             });
 
             _via
-                .AddRedirect(recursive, new[] {4})
-                .AddRedirect(new Foo( () => next.Message.Replace(orig.Message, "bar")));
+                .RedirectTo(recursive, new[] {4})
+                .RedirectTo(new Foo( () => next.Message.Replace(orig.Message, "bar")));
 
             // ACT
             var message = proxy.Message;
@@ -274,9 +274,9 @@ namespace DivertR.UnitTests
 
             // ACT
             _via
-                .AddRedirect(mock.Object, "1")
-                .AddRedirect(mock.Object, "2")
-                .AddRedirect(mock.Object, "3");
+                .RedirectTo(mock.Object, "1")
+                .RedirectTo(mock.Object, "2")
+                .RedirectTo(mock.Object, "3");
             
             // ASSERT
             proxy.Message.ShouldBe("1 2 3 foo 3 2 1");
@@ -290,9 +290,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
 
             // ACT
-            _via.AddRedirect(new Foo(() => $"{_via.Relay.Next.Message} me"));
+            _via.RedirectTo(new Foo(() => $"{_via.Relay.Next.Message} me"));
             _via.Reset();
-            _via.AddRedirect(new Foo(() => $"{_via.Relay.Next.Message} again"));
+            _via.RedirectTo(new Foo(() => $"{_via.Relay.Next.Message} again"));
 
             // ASSERT
             proxy.Message.ShouldBe("hello foo again");
@@ -306,8 +306,8 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
 
             // ACT
-            _via.AddRedirect(new Foo(() => $"{_via.Relay.Next.Message} me"));
-            _via.AddRedirect(new Foo(() => $"{_via.Relay.Next.Message} again"));
+            _via.RedirectTo(new Foo(() => $"{_via.Relay.Next.Message} me"));
+            _via.RedirectTo(new Foo(() => $"{_via.Relay.Next.Message} again"));
             _via.Reset();
 
 
@@ -337,7 +337,7 @@ namespace DivertR.UnitTests
             var via = new Via<Foo>();
             var proxy = via.Proxy(new Foo("hello foo"));
             var foo = new Foo("hi DivertR");
-            via.Redirect(foo);
+            via.RedirectTo(foo);
 
             // ACT
             var message = proxy.Message;
@@ -352,8 +352,25 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<IFoo>();
             via
-                .When(x => x.GetMessage("test"))
-                .Redirect((string input) => $"{via.Relay.Original.Message} {input}");
+                .Redirect(x => x.GetMessage("test"))
+                .To((string input) => $"{via.Relay.Original.Message} {input}");
+
+            // ACT
+            var proxy = via.Proxy(new Foo("hello foo"));
+            var message = proxy.GetMessage("test");
+
+            // ASSERT
+            message.ShouldBe("hello foo test");
+        }
+        
+        [Fact]
+        public void GivenRedirectWithExpression_ShouldDivert()
+        {
+            // ARRANGE
+            var via = new Via<IFoo>();
+            via
+                .Redirect(x => x.GetMessage("test"))
+                .To((string input) => $"{via.Relay.Original.Message} {input}");
 
             // ACT
             var proxy = via.Proxy(new Foo("hello foo"));
@@ -369,8 +386,8 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<IFoo>();
             via
-                .When(x => x.GetMessage(Is<string>.Match(p => p == "test")))
-                .Redirect((string input) => $"{via.Relay.Original.Message} {input}");
+                .Redirect(x => x.GetMessage(Is<string>.Match(p => p == "test")))
+                .To((string input) => $"{via.Relay.Original.Message} {input}");
 
             // ACT
             var proxy = via.Proxy(new Foo("hello foo"));
@@ -386,8 +403,8 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<IFoo>();
             via
-                .When(x => x.GetMessage(Is<string>.Any))
-                .Redirect((string input) => $"{via.Relay.Original.Message} {input}");
+                .Redirect(x => x.GetMessage(Is<string>.Any))
+                .To((string input) => $"{via.Relay.Original.Message} {input}");
 
             // ACT
             var proxy = via.Proxy(new Foo("hello foo"));
@@ -395,6 +412,23 @@ namespace DivertR.UnitTests
 
             // ASSERT
             message.ShouldBe("hello foo test");
+        }
+        
+        [Fact]
+        public void GivenWhenPropertyRedirect_ShouldDivert()
+        {
+            // ARRANGE
+            var via = new Via<IFoo>();
+            via
+                .Redirect(x => x.Message)
+                .To(() => $"before {via.Relay.Original.Message} after");
+
+            // ACT
+            var proxy = via.Proxy(new Foo("hello foo"));
+            var message = proxy.Message;
+
+            // ASSERT
+            message.ShouldBe("before hello foo after");
         }
     }
 }
