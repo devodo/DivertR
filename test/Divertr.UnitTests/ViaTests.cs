@@ -404,7 +404,7 @@ namespace DivertR.UnitTests
             var via = new Via<IFoo>();
             via
                 .Redirect(x => x.GetMessage(Is<string>.Any))
-                .To((string input) => $"{via.Relay.Original.Message} {input}");
+                .To((int input) => $"{via.Relay.Original.Message} {input}");
 
             // ACT
             var proxy = via.Proxy(new Foo("hello foo"));
@@ -429,6 +429,22 @@ namespace DivertR.UnitTests
 
             // ASSERT
             message.ShouldBe("before hello foo after");
+        }
+        
+        [Fact]
+        public void GivenSetPropertyRedirect_ShouldDivert()
+        {
+            // ARRANGE
+            _via
+                .RedirectSet(x => x.Message, () => Is<string>.Any)
+                .To((string value) => _via.Relay.Original.Message = $"New {value} set");
+
+            // ACT
+            var proxy = _via.Proxy(new Foo("hello foo"));
+            proxy.Message = "test";
+
+            // ASSERT
+            proxy.Message.ShouldBe("New test set");
         }
     }
 }

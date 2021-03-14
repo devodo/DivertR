@@ -4,7 +4,7 @@ namespace DivertR.UnitTests.Model
 {
     public class Foo : IFoo
     {
-        private readonly Func<string> _messageFactory;
+        private Func<string> _messageFactory;
         
         public Foo()
         {
@@ -19,7 +19,14 @@ namespace DivertR.UnitTests.Model
         {
         }
 
-        public virtual string Message => _messageFactory.Invoke();
+        public virtual string Message
+        {
+            get => _messageFactory.Invoke();
+            set
+            {
+                _messageFactory = () => value;
+            }
+        } 
         
         public string GetMessage(string input)
         {

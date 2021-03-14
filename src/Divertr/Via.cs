@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using DivertR.Core;
 using DivertR.Core.Internal;
 using DivertR.DispatchProxy;
@@ -8,40 +9,40 @@ using DivertR.Internal;
 
 namespace DivertR
 {
-    public class Via<T> : IVia<T> where T : class
+    public class Via<TTarget> : IVia<TTarget> where TTarget : class
     {
         private readonly ViaStateRepository _viaStateRepository;
         private readonly IProxyFactory _proxyFactory;
-        private readonly RelayState<T> _relayState;
-        private readonly Lazy<IRelay<T>> _relay;
+        private readonly RelayState<TTarget> _relayState;
+        private readonly Lazy<IRelay<TTarget>> _relay;
 
-        public Via() : this(ViaId.From<T>(), new ViaStateRepository())
+        public Via() : this(ViaId.From<TTarget>(), new ViaStateRepository())
         {
         }
         
         internal Via(ViaId viaId, ViaStateRepository viaStateRepository)
         {
-            if (!typeof(T).IsInterface && !typeof(T).IsClass)
+            if (!typeof(TTarget).IsInterface && !typeof(TTarget).IsClass)
             {
-                throw new ArgumentException("Only interface and types are supported", typeof(T).Name);
+                throw new ArgumentException("Only interface and types are supported", typeof(TTarget).Name);
             }
             
             ViaId = viaId;
             _viaStateRepository = viaStateRepository;
             _proxyFactory = DispatchProxyFactory.Instance;
-            _relayState = new RelayState<T>();
-            _relay = new Lazy<IRelay<T>>(() => new Relay<T>(_relayState, _proxyFactory));
+            _relayState = new RelayState<TTarget>();
+            _relay = new Lazy<IRelay<TTarget>>(() => new Relay<TTarget>(_relayState, _proxyFactory));
         }
 
         public ViaId ViaId { get; }
 
-        public IRelay<T> Relay => _relay.Value;
+        public IRelay<TTarget> Relay => _relay.Value;
         
-        public T Proxy(T? original = null)
+        public TTarget Proxy(TTarget? original = null)
         {
-            ViaState<T>? GetRedirectRoute()
+            ViaState<TTarget>? GetRedirectRoute()
             {
-                return _viaStateRepository.Get<T>(ViaId);
+                return _viaStateRepository.Get<TTarget>(ViaId);
             }
 
             return _proxyFactory.CreateDiverterProxy(original, GetRedirectRoute);
@@ -49,43 +50,69 @@ namespace DivertR
 
         public object ProxyObject(object? original = null)
         {
-            if (original != null && !(original is T))
+            if (original != null && !(original is TTarget))
             {
-                throw new ArgumentException($"Not assignable to {typeof(T).Name}", nameof(original));
+                throw new ArgumentException($"Not assignable to {typeof(TTarget).Name}", nameof(original));
             }
 
-            return Proxy(original as T);
+            return Proxy(original as TTarget);
         }
         
-        public IVia<T> RedirectTo(T target, object? state = null)
+        public IVia<TTarget> RedirectTo(TTarget target, object? state = null)
         {
-            var redirect = new TargetRedirect<T>(target, state);
+            return Redirect().To(target, state);
+        }
+
+        public IRedirectBuilder<TTarget> Redirect(ICallCondition? callCondition = null)
+        {
+            return new RedirectBuilder<TTarget>(this, callCondition);
+        }
+        
+        public IRedirectBuilder<TTarget, TReturn> Redirect<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
+        {
+            if (lambdaExpression?.Body == null)
+            {
+                throw new ArgumentNullException(nameof(lambdaExpression));
+            }
             
-            return AddRedirect(redirect);
-        }
-
-        public IRedirectBuilder<T> Redirect(ICallCondition? callCondition = null)
-        {
-            return new RedirectBuilder<T>(this, callCondition);
+            return lambdaExpression.Body switch
+            {
+                MethodCallExpression methodExpression => new LambdaRedirectBuilder<TTarget, TReturn>(this, methodExpression),
+                MemberExpression propertyExpression => new LambdaRedirectBuilder<TTarget, TReturn>(this, propertyExpression),
+                _ => throw new ArgumentException($"Invalid expression type: {lambdaExpression.Body.GetType()}", nameof(lambdaExpression))
+            };
         }
         
-        public IRedirectBuilder<T, TResult> Redirect<TResult>(Expression<Func<T, TResult>> expression)
+        public IRedirectBuilder<TTarget> RedirectSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
         {
-            return new RedirectBuilder<T, TResult>(this, expression);
-        }
+            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
+            if (valueExpression?.Body == null) throw new ArgumentNullException(nameof(valueExpression));
 
-        public IVia<T> AddRedirect(IRedirect<T> redirect)
-        {
-            ViaState<T> Create()
+            if (!(lambdaExpression.Body is MemberExpression propertyExpression))
             {
-                return new ViaState<T>(redirect, _relayState);
+                throw new ArgumentException($"Invalid expression type: {lambdaExpression.Body.GetType()}. Only Property members are valid for RedirectSet", nameof(propertyExpression));
             }
 
-            ViaState<T> Update(ViaState<T> existing)
+            if (!(propertyExpression.Member is PropertyInfo property))
+            {
+                throw new ArgumentException($"Member expression must be of type PropertyInfo but got: {propertyExpression.Member?.GetType()}", nameof(propertyExpression));
+            }
+            
+            return new RedirectBuilder<TTarget>(this, propertyExpression, valueExpression.Body);
+        }
+
+        public IVia<TTarget> AddRedirect(IRedirect<TTarget> redirect)
+        {
+            ViaState<TTarget> Create()
+            {
+                return new ViaState<TTarget>(redirect, _relayState);
+            }
+
+            ViaState<TTarget> Update(ViaState<TTarget> existing)
             {
                 var redirects = existing.Redirects.ToList();
                 redirects.Add(redirect);
-                return new ViaState<T>(redirects, _relayState);
+                return new ViaState<TTarget>(redirects, _relayState);
             }
 
             _viaStateRepository.AddOrUpdate(ViaId, Create, Update);
@@ -93,21 +120,21 @@ namespace DivertR
             return this;
         }
 
-        public IVia<T> InsertRedirect(int index, T target, object? state = null)
+        public IVia<TTarget> InsertRedirect(int index, TTarget target, object? state = null)
         {
-            var redirect = new TargetRedirect<T>(target, state);
+            var redirect = new TargetRedirect<TTarget>(target, state);
             
-            ViaState<T> Create()
+            ViaState<TTarget> Create()
             {
                 if (index != 0)
                 {
                     throw new ArgumentOutOfRangeException(nameof(index), "Index must be 0 if there are no existing redirects");
                 }
                 
-                return new ViaState<T>(redirect, _relayState);
+                return new ViaState<TTarget>(redirect, _relayState);
             }
 
-            ViaState<T> Update(ViaState<T> existing)
+            ViaState<TTarget> Update(ViaState<TTarget> existing)
             {
                 if (index < 0 || index > existing.Redirects.Count)
                 {
@@ -116,7 +143,7 @@ namespace DivertR
                 
                 var redirects = existing.Redirects.ToList();
                 redirects.Insert(index, redirect);
-                return new ViaState<T>(redirects, _relayState);
+                return new ViaState<TTarget>(redirects, _relayState);
             }
 
             _viaStateRepository.AddOrUpdate(ViaId, Create, Update);
@@ -124,7 +151,7 @@ namespace DivertR
             return this;
         }
 
-        public IVia<T> Reset()
+        public IVia<TTarget> Reset()
         {
             _viaStateRepository.Reset(ViaId);
 

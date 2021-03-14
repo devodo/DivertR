@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -8,55 +7,121 @@ using DivertR.Internal;
 
 namespace DivertR
 {
-    public class RedirectBuilder<T> : IRedirectBuilder<T> where T : class
+    internal class RedirectBuilder<T> : IRedirectBuilder<T> where T : class
     {
-        protected readonly IVia<T> _via;
-        protected readonly ICallCondition? _callCondition;
+        protected readonly IVia<T> Via;
+        protected readonly ICallCondition CallCondition;
+        private readonly MethodInfo? _methodInfo;
+        private readonly ParameterInfo[] _parameterInfos = Array.Empty<ParameterInfo>();
 
-        public RedirectBuilder(IVia<T> via, LambdaExpression whenExpression)
-            : this(via, CreateLambdaCallCondition(whenExpression))
+        public RedirectBuilder(IVia<T> via, ICallCondition? callCondition = null)
         {
-        }
-
-        public RedirectBuilder(IVia<T> via, ICallCondition? callCondition)
-        {
-            _via = via;
-            _callCondition = callCondition;
-        }
-
-        public IVia<T> To(T target, object? state = null)
-        {
-            var redirect = new TargetRedirect<T>(target, state, _callCondition);
-            _via.AddRedirect(redirect);
-            
-            return _via;
-        }
-
-        private static ICallCondition CreateLambdaCallCondition(LambdaExpression lambdaExpression)
-        {
-            return lambdaExpression.Body switch
-            {
-                MethodCallExpression methodExpression => CreateMethodCallCondition(methodExpression),
-                MemberExpression propertyExpression => ParsePropertyCallExpression(propertyExpression),
-                //_ => ParseInvocationExpression((InvocationExpression)callExpression.Body),
-            };
-        }
-
-        private static LambdaCallCondition CreateMethodCallCondition(MethodCallExpression expression)
-        {
-            var argumentConditions = expression.Arguments.Select(CreateArgumentCondition).ToList();
-            
-            return new LambdaCallCondition(expression.Method, argumentConditions);
+            Via = via ?? throw new ArgumentNullException(nameof(via));
+            CallCondition = callCondition ?? TrueCallCondition.Instance;
         }
         
-        private static LambdaCallCondition ParsePropertyCallExpression(MemberExpression expression)
+        public RedirectBuilder(IVia<T> via, MemberExpression propertyExpression, Expression valueExpression)
         {
-            if (!(expression.Member is PropertyInfo property))
+            if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
+            if (valueExpression == null) throw new ArgumentNullException(nameof(valueExpression));
+            
+            if (!(propertyExpression.Member is PropertyInfo property))
             {
-                throw new ArgumentException("MemberExpression member is not a property", nameof(expression));
+                throw new ArgumentException($"Member expression must be of type PropertyInfo but got: {propertyExpression.Member?.GetType()}", nameof(propertyExpression));
             }
             
-            return new LambdaCallCondition(property.GetGetMethod(true)!, new List<IArgumentCondition>());
+            Via = via ?? throw new ArgumentNullException(nameof(via));
+            _methodInfo = property.GetSetMethod(true);
+            _parameterInfos = _methodInfo.GetParameters();
+            var argumentConditions = new[] {CreateArgumentCondition(valueExpression)};
+            CallCondition = new LambdaCallCondition(_methodInfo, argumentConditions);
+        }
+
+        protected RedirectBuilder(IVia<T> via, MethodCallExpression methodExpression)
+        {
+            Via = via ?? throw new ArgumentNullException(nameof(via));
+            _methodInfo = methodExpression?.Method ?? throw new ArgumentNullException(nameof(methodExpression));
+            _parameterInfos = _methodInfo.GetParameters();
+            var argumentConditions = methodExpression.Arguments.Select(CreateArgumentCondition).ToArray();
+            CallCondition = new LambdaCallCondition(_methodInfo, argumentConditions);
+        }
+
+        protected RedirectBuilder(IVia<T> via, MemberExpression propertyExpression)
+        {
+            if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
+            if (!(propertyExpression.Member is PropertyInfo property))
+            {
+                throw new ArgumentException($"Member expression must be of type PropertyInfo but got: {propertyExpression.Member?.GetType()}", nameof(propertyExpression));
+            }
+            
+            Via = via ?? throw new ArgumentNullException(nameof(via));
+            _methodInfo = property.GetGetMethod(true);
+            _parameterInfos = _methodInfo.GetParameters();
+            CallCondition = new LambdaCallCondition(_methodInfo, Array.Empty<IArgumentCondition>());
+        }
+        
+        public IVia<T> To(T target, object? state = null)
+        {
+            var redirect = new TargetRedirect<T>(target, state, CallCondition);
+            Via.AddRedirect(redirect);
+            
+            return Via;
+        }
+
+        public IVia<T> To<T1>(Action<T1> redirectDelegate)
+        {
+            ValidateParameters(redirectDelegate);
+            var redirect = new CallRedirect<T>(args =>
+            {
+                redirectDelegate.Invoke((T1) args[0]);
+                return default;
+            }, CallCondition);
+            
+            return Via.AddRedirect(redirect);
+        }
+        
+        protected void ValidateParameters(Delegate redirectDelegate)
+        {
+            var delegateParameters = redirectDelegate.Method.GetParameters();
+            
+            if (!DelegateParametersValid(delegateParameters, _parameterInfos))
+            {
+                string DelegateToString(ParameterInfo[] parameters)
+                {
+                    var parameterTypes = parameters.Select(x => x.ParameterType.FullName);
+                    return $"{redirectDelegate.Method.ReturnType.FullName} ({string.Join(", ", parameterTypes)})";
+                }
+                
+                throw new DiverterException($"Invalid To delegate '{DelegateToString(delegateParameters)} for redirect expression method '{_methodInfo}'");
+            }
+        }
+
+        private static bool DelegateParametersValid(ParameterInfo[] delegateParams, ParameterInfo[] callParams)
+        {
+            if (delegateParams.Length == 0)
+            {
+                return true;
+            }
+
+            if (callParams.Length == 0)
+            {
+                return false;
+            }
+
+            if (delegateParams.Length != callParams.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < delegateParams.Length; i++)
+            {
+                if (!delegateParams[i].ParameterType.IsAssignableFrom(callParams[i].ParameterType))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static IArgumentCondition CreateArgumentCondition(Expression argument)
@@ -83,35 +148,6 @@ namespace DivertR
             }
             
             return FalseArgumentCondition.Instance;
-        }
-    }
-
-    public class RedirectBuilder<T, TResult> : RedirectBuilder<T>, IRedirectBuilder<T, TResult> where T : class
-    {
-        public RedirectBuilder(IVia<T> via, LambdaExpression whenExpression) : base(via, whenExpression)
-        {
-        }
-        
-        public IVia<T> To<T1>(Func<T1, TResult> redirectDelegate)
-        {
-            var redirect = new CallRedirect<T>(args =>
-            {
-                var result = redirectDelegate.Invoke((T1) args[0]);
-                return result;
-            }, _callCondition);
-            
-            return _via.AddRedirect(redirect);
-        }
-        
-        public IVia<T> To(Func<TResult> redirectDelegate)
-        {
-            var redirect = new CallRedirect<T>(args =>
-            {
-                var result = redirectDelegate.Invoke();
-                return result;
-            }, _callCondition);
-            
-            return _via.AddRedirect(redirect);
         }
     }
 }

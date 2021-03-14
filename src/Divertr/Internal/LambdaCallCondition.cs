@@ -10,9 +10,9 @@ namespace DivertR.Internal
     internal class LambdaCallCondition : ICallCondition
     {
         private readonly MethodInfo _methodInfo;
-        private readonly List<IArgumentCondition> _argumentConditions;
+        private readonly IArgumentCondition[] _argumentConditions;
 
-        public LambdaCallCondition(MethodInfo methodInfo, List<IArgumentCondition> argumentConditions)
+        public LambdaCallCondition(MethodInfo methodInfo, IArgumentCondition[] argumentConditions)
         {
             _methodInfo = methodInfo;
             _argumentConditions = argumentConditions;
@@ -25,7 +25,7 @@ namespace DivertR.Internal
                 return false;
             }
 
-            for (var i = 0; i < _argumentConditions.Count; i++)
+            for (var i = 0; i < _argumentConditions.Length; i++)
             {
                 if (!_argumentConditions[i].IsMatch(call.Arguments[i]))
                 {

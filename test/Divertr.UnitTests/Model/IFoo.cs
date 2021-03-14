@@ -2,7 +2,7 @@
 {
     public interface IFoo
     {
-        string Message { get; }
+        string Message { get; set; }
 
         string GetMessage(string input);
     }
