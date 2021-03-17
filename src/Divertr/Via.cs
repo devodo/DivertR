@@ -83,6 +83,21 @@ namespace DivertR
             };
         }
         
+        public IRedirectBuilder<TTarget> Redirect(Expression<Action<TTarget>> lambdaExpression)
+        {
+            if (lambdaExpression?.Body == null)
+            {
+                throw new ArgumentNullException(nameof(lambdaExpression));
+            }
+            
+            return lambdaExpression.Body switch
+            {
+                MethodCallExpression methodExpression => new RedirectBuilder<TTarget>(this, methodExpression),
+                MemberExpression propertyExpression => new RedirectBuilder<TTarget>(this, propertyExpression),
+                _ => throw new ArgumentException($"Invalid expression type: {lambdaExpression.Body.GetType()}", nameof(lambdaExpression))
+            };
+        }
+        
         public IRedirectBuilder<TTarget> RedirectSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
         {
             if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
@@ -90,14 +105,9 @@ namespace DivertR
 
             if (!(lambdaExpression.Body is MemberExpression propertyExpression))
             {
-                throw new ArgumentException($"Invalid expression type: {lambdaExpression.Body.GetType()}. Only Property members are valid for RedirectSet", nameof(propertyExpression));
+                throw new ArgumentException("Only property member expressions are valid input to RedirectSet", nameof(propertyExpression));
             }
 
-            if (!(propertyExpression.Member is PropertyInfo property))
-            {
-                throw new ArgumentException($"Member expression must be of type PropertyInfo but got: {propertyExpression.Member?.GetType()}", nameof(propertyExpression));
-            }
-            
             return new RedirectBuilder<TTarget>(this, propertyExpression, valueExpression.Body);
         }
 

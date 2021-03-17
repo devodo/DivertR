@@ -18,4 +18,8 @@
         </AssemblyAttribute>
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="fasterflect" Version="3.0.0" />
+    </ItemGroup>
+
 </Project>

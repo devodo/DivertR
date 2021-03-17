@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading;
 using DivertR.UnitTests.Model;
@@ -405,6 +406,7 @@ namespace DivertR.UnitTests
             via
                 .Redirect(x => x.GetMessage(Is<string>.Any))
                 .To((int input) => $"{via.Relay.Original.Message} {input}");
+                //.To((int input) => Console.WriteLine("hello"));
 
             // ACT
             var proxy = via.Proxy(new Foo("hello foo"));
@@ -445,6 +447,119 @@ namespace DivertR.UnitTests
 
             // ASSERT
             proxy.Message.ShouldBe("New test set");
+        }
+        
+        [Fact]
+        public void GivenRefInputRedirect_ShouldDivert()
+        {
+            // ARRANGE
+            var via = new Via<INumber>();
+            var test = new Number(x => x * 2);
+            via
+                .Redirect()
+                .To(test);
+
+            // ACT
+            int input = 5;
+            var proxy = via.Proxy(new Number());
+            proxy.RefNumber(ref input);
+
+            // ASSERT
+            input.ShouldBe(test.GetNumber(5));
+        }
+        
+        [Fact]
+        public void GivenRefArrayInputRedirect_ShouldDivert()
+        {
+            // ARRANGE
+            var via = new Via<INumber>();
+            var test = new Number(x => x * 2);
+            via
+                .Redirect()
+                .To(test);
+
+            // ACT
+            int[] inputOriginal = {5};
+            var input = inputOriginal;
+            var proxy = via.Proxy(new Number());
+            proxy.RefArrayNumber(ref input);
+
+            // ASSERT
+            input[0].ShouldBe(test.GetNumber(5));
+        }
+
+        delegate void RefCall(ref int input);
+        
+        [Fact]
+        public void GivenRefDelegate_ShouldDivert()
+        {
+            // ARRANGE
+            var via = new Via<INumber>();
+            int i1 = 5;
+            via
+                .Redirect(x => x.RefNumber(ref i1))
+                .To(new RefCall((ref int i2) =>
+                {
+                    i2 = 50;
+                }));
+
+            // ACT
+            int input = 1;
+            var proxy = via.Proxy(new Number());
+            proxy.RefNumber(ref input);
+
+            // ASSERT
+            input.ShouldBe(50);
+        }
+
+        [Fact]
+        public void GivenGenericInputRedirect_ShouldDivert()
+        {
+            // ARRANGE
+            var via = new Via<INumber>();
+            
+            via
+                .Redirect(x => x.GenericNumber(Is<string>.Any, Is<int>.Any))
+                .To((string s, int i) => via.Relay.Next.GenericNumber(s, i) + " - again");
+            
+            via.RedirectTo(new Number(x => x * 2));
+
+            // ACT
+            var proxy = via.Proxy(new Number());
+            var result = proxy.GenericNumber("Hello", 5);
+
+            // ASSERT
+            result.ShouldBe("Hello - 10 - again");
+        }
+        
+        [Fact]
+        public void GivenArrayInputRedirect_ShouldDivert()
+        {
+            // ARRANGE
+            var via = new Via<INumber>();
+
+            via
+                .Redirect(x => x.ArrayNumber(Is<int[]>.Any))
+                .To((int[] inputs) =>
+                {
+                    via.Relay.Next.ArrayNumber(inputs);
+                    
+                    for (var i = 0; i < inputs.Length; i++)
+                    {
+                        inputs[i] = inputs[i] + 1;
+                    }
+                });
+            
+            via.RedirectTo(new Number(x => x * 2));
+
+            // ACT
+            var input = new[] {1, 5};
+            var proxy = via.Proxy(new Number());
+            proxy.ArrayNumber(input);
+
+            // ASSERT
+            input[0].ShouldBe(3);
+            input[1].ShouldBe(11);
         }
     }
 }

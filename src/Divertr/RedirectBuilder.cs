@@ -3,6 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using DivertR.Core;
+using DivertR.Core.Internal;
 using DivertR.Internal;
 
 namespace DivertR
@@ -37,7 +38,7 @@ namespace DivertR
             CallCondition = new LambdaCallCondition(_methodInfo, argumentConditions);
         }
 
-        protected RedirectBuilder(IVia<T> via, MethodCallExpression methodExpression)
+        public RedirectBuilder(IVia<T> via, MethodCallExpression methodExpression)
         {
             Via = via ?? throw new ArgumentNullException(nameof(via));
             _methodInfo = methodExpression?.Method ?? throw new ArgumentNullException(nameof(methodExpression));
@@ -46,7 +47,7 @@ namespace DivertR
             CallCondition = new LambdaCallCondition(_methodInfo, argumentConditions);
         }
 
-        protected RedirectBuilder(IVia<T> via, MemberExpression propertyExpression)
+        public RedirectBuilder(IVia<T> via, MemberExpression propertyExpression)
         {
             if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
             if (!(propertyExpression.Member is PropertyInfo property))
@@ -79,7 +80,18 @@ namespace DivertR
             
             return Via.AddRedirect(redirect);
         }
-        
+
+        public IVia<T> To(Delegate redirectDelegate)
+        {
+            ValidateParameters(redirectDelegate);
+            var redirect = new CallRedirect<T>(args =>
+            {
+                return redirectDelegate.GetMethodInfo().ToDelegate(redirectDelegate.GetType()).Invoke(redirectDelegate, args);
+            }, CallCondition);
+            
+            return Via.AddRedirect(redirect);
+        }
+
         protected void ValidateParameters(Delegate redirectDelegate)
         {
             var delegateParameters = redirectDelegate.Method.GetParameters();
@@ -126,6 +138,8 @@ namespace DivertR
 
         private static IArgumentCondition CreateArgumentCondition(Expression argument)
         {
+            return TrueArgumentCondition.Instance;
+            
             if (argument is ConstantExpression constantExpression)
             {
                 return new ConstantArgumentCondition(constantExpression.Value);

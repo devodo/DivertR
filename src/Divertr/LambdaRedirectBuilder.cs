@@ -17,6 +17,14 @@ namespace DivertR
         {
         }
         
+        public IVia<T> To(Func<TReturn> redirectDelegate)
+        {
+            ValidateParameters(redirectDelegate);
+            var redirect = new CallRedirect<T>(args => redirectDelegate.Invoke(), CallCondition);
+            
+            return Via.AddRedirect(redirect);
+        }
+        
         public IVia<T> To<T1>(Func<T1, TReturn> redirectDelegate)
         {
             ValidateParameters(redirectDelegate);
@@ -24,11 +32,11 @@ namespace DivertR
             
             return Via.AddRedirect(redirect);
         }
-        
-        public IVia<T> To(Func<TReturn> redirectDelegate)
+
+        public IVia<T> To<T1, T2>(Func<T1, T2, TReturn> redirectDelegate)
         {
             ValidateParameters(redirectDelegate);
-            var redirect = new CallRedirect<T>(args => redirectDelegate.Invoke(), CallCondition);
+            var redirect = new CallRedirect<T>(args => redirectDelegate.Invoke((T1) args[0], (T2) args[1]), CallCondition);
             
             return Via.AddRedirect(redirect);
         }
