@@ -37,7 +37,8 @@ namespace DivertR
         public ViaId ViaId { get; }
 
         public IRelay<TTarget> Relay => _relay.Value;
-        
+        public TTarget Next => Relay.Next;
+
         public TTarget Proxy(TTarget? original = null)
         {
             ViaState<TTarget>? GetRedirectRoute()
@@ -63,12 +64,12 @@ namespace DivertR
             return Redirect().To(target, state);
         }
 
-        public IRedirectBuilder<TTarget> Redirect(ICallCondition? callCondition = null)
+        public IRedirectBuilder<TTarget> Redirect(ICallConstraint? callCondition = null)
         {
             return new RedirectBuilder<TTarget>(this, callCondition);
         }
         
-        public IRedirectBuilder<TTarget, TReturn> Redirect<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
+        public IFuncRedirectBuilder<TTarget, TReturn> Redirect<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
         {
             if (lambdaExpression?.Body == null)
             {
@@ -77,13 +78,13 @@ namespace DivertR
             
             return lambdaExpression.Body switch
             {
-                MethodCallExpression methodExpression => new LambdaRedirectBuilder<TTarget, TReturn>(this, methodExpression),
-                MemberExpression propertyExpression => new LambdaRedirectBuilder<TTarget, TReturn>(this, propertyExpression),
+                MethodCallExpression methodExpression => new FuncRedirectBuilder<TTarget, TReturn>(this, methodExpression),
+                MemberExpression propertyExpression => new FuncRedirectBuilder<TTarget, TReturn>(this, propertyExpression),
                 _ => throw new ArgumentException($"Invalid expression type: {lambdaExpression.Body.GetType()}", nameof(lambdaExpression))
             };
         }
         
-        public IRedirectBuilder<TTarget> Redirect(Expression<Action<TTarget>> lambdaExpression)
+        public IActionRedirectBuilder<TTarget> Redirect(Expression<Action<TTarget>> lambdaExpression)
         {
             if (lambdaExpression?.Body == null)
             {
@@ -92,13 +93,13 @@ namespace DivertR
             
             return lambdaExpression.Body switch
             {
-                MethodCallExpression methodExpression => new RedirectBuilder<TTarget>(this, methodExpression),
-                MemberExpression propertyExpression => new RedirectBuilder<TTarget>(this, propertyExpression),
+                MethodCallExpression methodExpression => new ActionRedirectBuilder<TTarget>(this, methodExpression),
+                MemberExpression propertyExpression => new ActionRedirectBuilder<TTarget>(this, propertyExpression),
                 _ => throw new ArgumentException($"Invalid expression type: {lambdaExpression.Body.GetType()}", nameof(lambdaExpression))
             };
         }
         
-        public IRedirectBuilder<TTarget> RedirectSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
+        public IActionRedirectBuilder<TTarget> RedirectSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
         {
             if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
             if (valueExpression?.Body == null) throw new ArgumentNullException(nameof(valueExpression));
@@ -108,7 +109,7 @@ namespace DivertR
                 throw new ArgumentException("Only property member expressions are valid input to RedirectSet", nameof(propertyExpression));
             }
 
-            return new RedirectBuilder<TTarget>(this, propertyExpression, valueExpression.Body);
+            return new ActionRedirectBuilder<TTarget>(this, propertyExpression, valueExpression.Body);
         }
 
         public IVia<TTarget> AddRedirect(IRedirect<TTarget> redirect)

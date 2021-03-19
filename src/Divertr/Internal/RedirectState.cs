@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using DivertR.Core;
-using DivertR.Core.Internal;
 
 namespace DivertR.Internal
 {

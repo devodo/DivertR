@@ -6,5 +6,6 @@
         T Original { get; }
         T? OriginalInstance { get; }
         object? State { get; }
+        object? InvokeNext(ICall call);
     }
 }

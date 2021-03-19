@@ -1,6 +1,6 @@
 ﻿namespace DivertR.Core
 {
-    public interface IArgumentCondition
+    public interface IArgumentConstraint
     {
         bool IsMatch(object? argument);
     }

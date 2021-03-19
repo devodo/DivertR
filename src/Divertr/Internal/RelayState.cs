@@ -10,7 +10,7 @@ namespace DivertR.Internal
     {
         private readonly AsyncLocal<ImmutableStack<RedirectState<T>>> _callStack = new AsyncLocal<ImmutableStack<RedirectState<T>>>();
         
-        public IRedirect<T>? BeginCall(T? original, List<IRedirect<T>> redirects, ICall call)
+        private IRedirect<T>? BeginCall(T? original, List<IRedirect<T>> redirects, ICall call)
         {
             var redirectState = RedirectState<T>.Create(original, redirects, call);
 
@@ -25,7 +25,7 @@ namespace DivertR.Internal
             return redirectState.Current;
         }
 
-        public void EndCall(ICall call)
+        private void EndCall(ICall call)
         {
             _callStack.Value = _callStack.Value.Pop(out var redirectState);
 
@@ -35,7 +35,56 @@ namespace DivertR.Internal
             }
         }
 
-        public IRedirect<T>? BeginNextRedirect(ICall call)
+        public object? CallBegin(T? original, List<IRedirect<T>> redirects, ICall call)
+        {
+            var redirect = BeginCall(original, redirects, call);
+
+            if (redirect == null)
+            {
+                if (original == null)
+                {
+                    throw new DiverterException("Proxy original instance reference is null");
+                }
+                
+                return call.Method.ToDelegate(typeof(T)).Invoke(original, call.Arguments);
+            }
+
+            try
+            {
+                return redirect.Invoke(call);
+            }
+            finally
+            {
+                EndCall(call);
+            }
+        }
+
+        public object? InvokeNext(ICall call)
+        {
+            var redirect = BeginNextRedirect(call);
+            
+            if (redirect == null)
+            {
+                var original = Original;
+                if (original == null)
+                {
+                    throw new DiverterException("Proxy original instance reference is null");
+                }
+                
+                return call.Method.ToDelegate(typeof(T)).Invoke(original, call.Arguments);
+            }
+
+            try
+            {
+                return redirect.Invoke(call);
+            }
+            finally
+            {
+                EndRedirect(call);
+            }
+        }
+
+        private IRedirect<T>? BeginNextRedirect(ICall call)
         {
             var callStack = _callStack.Value;
             var redirectState = callStack.Peek().MoveNext(call);
@@ -50,7 +99,7 @@ namespace DivertR.Internal
             return redirectState.Current;
         }
 
-        public void EndRedirect(ICall invocation)
+        private void EndRedirect(ICall invocation)
         {
             _callStack.Value = _callStack.Value.Pop(out var redirectState);
             

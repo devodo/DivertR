@@ -4,10 +4,8 @@ namespace DivertR.Core.Internal
 {
     internal interface IRelayState<T> where T : class
     {
-        IRedirect<T>? BeginCall(T? original, List<IRedirect<T>> redirects, ICall call);
-        void EndCall(ICall call);
-        IRedirect<T>? BeginNextRedirect(ICall call);
-        void EndRedirect(ICall invocation);
+        object? CallBegin(T? original, List<IRedirect<T>> redirects, ICall call);
+        object? InvokeNext(ICall call);
         T? Original { get; }
         IRedirect<T> Redirect { get; }
     }

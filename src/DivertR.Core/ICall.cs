@@ -5,7 +5,7 @@ namespace DivertR.Core
     public interface ICall
     {
         public MethodInfo Method { get; }
-
         public object[] Arguments { get; }
+        public ParameterInfo[] Parameters { get; }
     }
 }

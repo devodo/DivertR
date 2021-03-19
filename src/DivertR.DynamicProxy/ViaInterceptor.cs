@@ -27,26 +27,7 @@ namespace DivertR.DynamicProxy
             }
             
             var call = new DynamicProxyCall(invocation);
-            var redirect = viaState.RelayState.BeginCall(_original, viaState.Redirects, call);
-
-            if (redirect == null)
-            {
-                DefaultProceed(invocation);
-                return;
-            }
-
-            try
-            {
-                invocation.ReturnValue = redirect.Invoke(invocation.Method, invocation.Arguments)!;
-
-                // ReSharper disable once SuspiciousTypeConversion.Global
-                //((IChangeProxyTarget) invocation).ChangeInvocationTarget(redirect.Target);
-                //invocation.Proceed();
-            }
-            finally
-            {
-                viaState.RelayState.EndCall(call);
-            }
+            invocation.ReturnValue = viaState.RelayState.CallBegin(_original, viaState.Redirects, call);
         }
 
         private void DefaultProceed(IInvocation invocation)

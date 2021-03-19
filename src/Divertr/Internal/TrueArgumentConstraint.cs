@@ -2,9 +2,9 @@
 
 namespace DivertR.Internal
 {
-    internal class TrueArgumentCondition : IArgumentCondition
+    internal class TrueArgumentConstraint : IArgumentConstraint
     {
-        public static readonly TrueArgumentCondition Instance = new TrueArgumentCondition();
+        public static readonly TrueArgumentConstraint Instance = new TrueArgumentConstraint();
         
         public bool IsMatch(object? argument)
         {

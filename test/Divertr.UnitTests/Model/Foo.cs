@@ -30,6 +30,13 @@ namespace DivertR.UnitTests.Model
         
         public string GetMessage(string input)
         {
+            return _messageFactory.Invoke() + input;
+        }
+
+        public string SetMessage(Wrapper<string> input)
+        {
+            _messageFactory = () => input.Item;
+            
             return _messageFactory.Invoke();
         }
     }

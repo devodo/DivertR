@@ -15,6 +15,7 @@ namespace DivertR.WebAppTests
     public class WebAppTests : IClassFixture<WebAppFixture>
     {
         private readonly IDiverter _diverter;
+        private readonly IVia<IFooRepository> _fooRepositoryVia;
         private readonly IFooClient _fooClient;
         
         private readonly Mock<IFooRepository> _fooRepositoryMock = new();
@@ -23,9 +24,10 @@ namespace DivertR.WebAppTests
         public WebAppTests(WebAppFixture webAppFixture, ITestOutputHelper output)
         {
             _diverter = webAppFixture.InitDiverter(output);
-            
+            _fooRepositoryVia = _diverter.Via<IFooRepository>();
+
             _fooRepositoryFake = A.Fake<IFooRepository>(o =>
-                o.Wrapping(_diverter.Via<IFooRepository>().Relay.Original));
+                o.Wrapping(_diverter.Via<IFooRepository>().Relay.Next));
             _diverter.Via<IFooRepository>().RedirectTo(_fooRepositoryFake);
             
             _fooClient = webAppFixture.CreateFooClient();
@@ -104,6 +106,38 @@ namespace DivertR.WebAppTests
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
             response.Headers.Location.PathAndQuery.ShouldBe($"/Foo/{insertedFoo.Id}");
             insertedFoo.Name.ShouldBe(createFooRequest.Name);
+            response.Content.ShouldBeEquivalentTo(insertedFoo);
+        }
+
+        [Fact]
+        public async Task CanInsertFooRedirect()
+        {
+            // ARRANGE
+            var createFooRequest = new CreateFooRequest
+            {
+                Name = Guid.NewGuid().ToString()
+            };
+
+            Foo insertedFoo = null;
+            bool? insertResult = null;
+
+            _fooRepositoryVia
+                .Redirect(x => x.TryInsertFoo(Is<Foo>.Any))
+                .To(async (Foo foo) =>
+                {
+                    insertedFoo = foo;
+                    insertResult = await _fooRepositoryVia.Next.TryInsertFoo(foo);
+                    return insertResult.Value;
+                });
+
+            // ACT
+            var response = await _fooClient.InsertFoo(createFooRequest);
+
+            // ASSERT
+            response.StatusCode.ShouldBe(HttpStatusCode.Created);
+            response.Headers.Location.PathAndQuery.ShouldBe($"/Foo/{insertedFoo.Id}");
+            insertedFoo.Name.ShouldBe(createFooRequest.Name);
+            insertResult.ShouldBe(true);
             response.Content.ShouldBeEquivalentTo(insertedFoo);
         }
     }

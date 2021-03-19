@@ -2,11 +2,11 @@
 
 namespace DivertR.Internal
 {
-    internal class ConstantArgumentCondition : IArgumentCondition
+    internal class ConstantArgumentConstraint : IArgumentConstraint
     {
         private readonly object? _constantValue;
 
-        public ConstantArgumentCondition(object? constantValue)
+        public ConstantArgumentConstraint(object? constantValue)
         {
             _constantValue = constantValue;
         }

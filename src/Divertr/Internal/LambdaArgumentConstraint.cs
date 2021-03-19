@@ -4,11 +4,11 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class LambdaArgumentCondition<T> : IArgumentCondition
+    internal class LambdaArgumentConstraint<T> : IArgumentConstraint
     {
         private readonly Func<T, bool> _matchFunc;
 
-        public LambdaArgumentCondition(LambdaExpression lambdaExpression)
+        public LambdaArgumentConstraint(LambdaExpression lambdaExpression)
         {
             _matchFunc = (Func<T, bool>) lambdaExpression.Compile();
         }

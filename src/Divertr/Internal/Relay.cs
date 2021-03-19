@@ -20,5 +20,10 @@ namespace DivertR.Internal
             Next = proxyFactory.CreateRedirectTargetProxy(relayState);
             Original = proxyFactory.CreateOriginalTargetProxy(relayState);
         }
+
+        public object? InvokeNext(ICall call)
+        {
+            return _relayState.InvokeNext(call);
+        }
     }
 }

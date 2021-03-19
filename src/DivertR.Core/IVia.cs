@@ -1,4 +1,7 @@
-﻿namespace DivertR.Core
+﻿using System;
+using System.Linq.Expressions;
+
+namespace DivertR.Core
 {
     public interface IVia
     {
@@ -9,10 +12,15 @@
     public interface IVia<T> : IVia where T : class
     {
         IRelay<T> Relay { get; }
+        T Next { get; }
         T Proxy(T? original = null);
         IVia<T> RedirectTo(T target, object? state = null);
         IVia<T> AddRedirect(IRedirect<T> redirect);
         IVia<T> InsertRedirect(int index, T target, object? state = null);
         IVia<T> Reset();
+        IRedirectBuilder<T> Redirect(ICallConstraint? callCondition = null);
+        IFuncRedirectBuilder<T, TReturn> Redirect<TReturn>(Expression<Func<T, TReturn>> lambdaExpression);
+        IActionRedirectBuilder<T> Redirect(Expression<Action<T>> lambdaExpression);
+        IActionRedirectBuilder<T> RedirectSet<TProperty>(Expression<Func<T, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression);
     }
 }

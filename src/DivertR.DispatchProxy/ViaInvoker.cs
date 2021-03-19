@@ -26,21 +26,7 @@ namespace DivertR.DispatchProxy
             }
             
             var call = new DispatchProxyCall(targetMethod, args);
-            var redirect = viaState.RelayState.BeginCall(_original, viaState.Redirects, call);
-
-            if (redirect == null)
-            {
-                return DefaultProceed(targetMethod, args);
-            }
-
-            try
-            {
-                return redirect.Invoke(targetMethod, args)!;
-            }
-            finally
-            {
-                viaState.RelayState.EndCall(call);
-            }
+            return viaState.RelayState.CallBegin(_original, viaState.Redirects, call)!;
         }
         
         private object DefaultProceed(MethodInfo targetMethod, object[] args)

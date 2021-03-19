@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -11,17 +12,17 @@ namespace DivertR
     internal class RedirectBuilder<T> : IRedirectBuilder<T> where T : class
     {
         protected readonly IVia<T> Via;
-        protected readonly ICallCondition CallCondition;
+        protected readonly ICallConstraint CallConstraint;
         private readonly MethodInfo? _methodInfo;
         private readonly ParameterInfo[] _parameterInfos = Array.Empty<ParameterInfo>();
 
-        public RedirectBuilder(IVia<T> via, ICallCondition? callCondition = null)
+        public RedirectBuilder(IVia<T> via, ICallConstraint? callCondition = null)
         {
             Via = via ?? throw new ArgumentNullException(nameof(via));
-            CallCondition = callCondition ?? TrueCallCondition.Instance;
+            CallConstraint = callCondition ?? TrueCallConstraint.Instance;
         }
-        
-        public RedirectBuilder(IVia<T> via, MemberExpression propertyExpression, Expression valueExpression)
+
+        protected RedirectBuilder(IVia<T> via, MemberExpression propertyExpression, Expression valueExpression)
         {
             if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
             if (valueExpression == null) throw new ArgumentNullException(nameof(valueExpression));
@@ -34,20 +35,22 @@ namespace DivertR
             Via = via ?? throw new ArgumentNullException(nameof(via));
             _methodInfo = property.GetSetMethod(true);
             _parameterInfos = _methodInfo.GetParameters();
-            var argumentConditions = new[] {CreateArgumentCondition(valueExpression)};
-            CallCondition = new LambdaCallCondition(_methodInfo, argumentConditions);
+            var methodConstraint = CreateMethodConstraint(_methodInfo);
+            var argumentConstraints = CreateArgumentConstraints(_parameterInfos, new[] {valueExpression});
+            CallConstraint = new MethodCallConstraint(_methodInfo, methodConstraint, argumentConstraints);
         }
 
-        public RedirectBuilder(IVia<T> via, MethodCallExpression methodExpression)
+        protected RedirectBuilder(IVia<T> via, MethodCallExpression methodExpression)
         {
             Via = via ?? throw new ArgumentNullException(nameof(via));
-            _methodInfo = methodExpression?.Method ?? throw new ArgumentNullException(nameof(methodExpression));
+            _methodInfo = methodExpression.Method ?? throw new ArgumentNullException(nameof(methodExpression));
             _parameterInfos = _methodInfo.GetParameters();
-            var argumentConditions = methodExpression.Arguments.Select(CreateArgumentCondition).ToArray();
-            CallCondition = new LambdaCallCondition(_methodInfo, argumentConditions);
+            var argumentConstraints = CreateArgumentConstraints(_parameterInfos, methodExpression.Arguments);
+            var methodConstraint = CreateMethodConstraint(_methodInfo);
+            CallConstraint = new MethodCallConstraint(_methodInfo, methodConstraint, argumentConstraints);
         }
 
-        public RedirectBuilder(IVia<T> via, MemberExpression propertyExpression)
+        protected RedirectBuilder(IVia<T> via, MemberExpression propertyExpression)
         {
             if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
             if (!(propertyExpression.Member is PropertyInfo property))
@@ -58,36 +61,25 @@ namespace DivertR
             Via = via ?? throw new ArgumentNullException(nameof(via));
             _methodInfo = property.GetGetMethod(true);
             _parameterInfos = _methodInfo.GetParameters();
-            CallCondition = new LambdaCallCondition(_methodInfo, Array.Empty<IArgumentCondition>());
+            var methodConstraint = CreateMethodConstraint(_methodInfo);
+            CallConstraint = new MethodCallConstraint(_methodInfo, methodConstraint, Array.Empty<IArgumentConstraint>());
         }
         
         public IVia<T> To(T target, object? state = null)
         {
-            var redirect = new TargetRedirect<T>(target, state, CallCondition);
+            var redirect = new TargetRedirect<T>(target, state, CallConstraint);
             Via.AddRedirect(redirect);
             
             return Via;
         }
-
-        public IVia<T> To<T1>(Action<T1> redirectDelegate)
-        {
-            ValidateParameters(redirectDelegate);
-            var redirect = new CallRedirect<T>(args =>
-            {
-                redirectDelegate.Invoke((T1) args[0]);
-                return default;
-            }, CallCondition);
-            
-            return Via.AddRedirect(redirect);
-        }
-
+        
         public IVia<T> To(Delegate redirectDelegate)
         {
             ValidateParameters(redirectDelegate);
-            var redirect = new CallRedirect<T>(args =>
-            {
-                return redirectDelegate.GetMethodInfo().ToDelegate(redirectDelegate.GetType()).Invoke(redirectDelegate, args);
-            }, CallCondition);
+            ValidateReturnType(redirectDelegate);
+            
+            var redirect = new CallRedirect<T>(args => 
+                redirectDelegate.GetMethodInfo().ToDelegate(redirectDelegate.GetType()).Invoke(redirectDelegate, args), CallConstraint);
             
             return Via.AddRedirect(redirect);
         }
@@ -98,14 +90,30 @@ namespace DivertR
             
             if (!DelegateParametersValid(delegateParameters, _parameterInfos))
             {
-                string DelegateToString(ParameterInfo[] parameters)
-                {
-                    var parameterTypes = parameters.Select(x => x.ParameterType.FullName);
-                    return $"{redirectDelegate.Method.ReturnType.FullName} ({string.Join(", ", parameterTypes)})";
-                }
-                
-                throw new DiverterException($"Invalid To delegate '{DelegateToString(delegateParameters)} for redirect expression method '{_methodInfo}'");
+                throw new DiverterException(CreateIncompatibleMessage(redirectDelegate, _methodInfo!));
             }
+        }
+
+        private void ValidateReturnType(Delegate redirectDelegate)
+        {
+            var returnType = redirectDelegate.Method.ReturnType;
+
+            if (returnType != _methodInfo!.ReturnType && !_methodInfo.ReturnType.IsAssignableFrom(returnType))
+            {
+                throw new DiverterException(CreateIncompatibleMessage(redirectDelegate, _methodInfo!));
+            }
+        }
+        
+        private static string CreateDelegateSignature(Delegate redirectDelegate)
+        {
+            var delegateParameters = redirectDelegate.Method.GetParameters();
+            var parameterTypes = delegateParameters.Select(x => x.ParameterType.FullName);
+            return $"{redirectDelegate.Method.ReturnType.FullName} Invoke({string.Join(", ", parameterTypes)})";
+        }
+
+        private static string CreateIncompatibleMessage(Delegate redirectDelegate, MethodInfo methodInfo)
+        {
+            return $"To() delegate '{CreateDelegateSignature(redirectDelegate)}' invalid for redirect method '{methodInfo}'";
         }
 
         private static bool DelegateParametersValid(ParameterInfo[] delegateParams, ParameterInfo[] callParams)
@@ -136,32 +144,61 @@ namespace DivertR
             return true;
         }
 
-        private static IArgumentCondition CreateArgumentCondition(Expression argument)
+        private static IArgumentConstraint[] CreateArgumentConstraints(ParameterInfo[] parameterInfos, IReadOnlyCollection<Expression> arguments)
         {
-            return TrueArgumentCondition.Instance;
-            
+            if (parameterInfos.Length != arguments.Count)
+            {
+                throw new ArgumentException("Number of parameters does not match number of arguments", nameof(parameterInfos));
+            }
+
+            return arguments
+                .Select((arg, i) => CreateArgumentConstraint(parameterInfos[i], arg))
+                .ToArray();
+        }
+
+        private static IArgumentConstraint CreateArgumentConstraint(ParameterInfo parameterInfo, Expression argument)
+        {
             if (argument is ConstantExpression constantExpression)
             {
-                return new ConstantArgumentCondition(constantExpression.Value);
+                return new ConstantArgumentConstraint(constantExpression.Value);
             }
 
             if (argument is MemberExpression memberExpression)
             {
-                if (memberExpression.Member.DeclaringType?.GetGenericTypeDefinition() == typeof(Is<>) &&
-                    memberExpression.Member.Name == nameof(Is<object>.Any))
+                if (memberExpression.Member.DeclaringType != null &&
+                    memberExpression.Member.DeclaringType.IsGenericType &&
+                    memberExpression.Member.DeclaringType.GetGenericTypeDefinition() == typeof(Is<>) &&
+                    (memberExpression.Member.Name == nameof(Is<object>.Any) ||
+                     memberExpression.Member.Name == nameof(Is<object>.AnyRef) && parameterInfo.ParameterType.IsByRef))
                 {
-                    return TrueArgumentCondition.Instance;
+                    return TrueArgumentConstraint.Instance;
                 }
             }
 
-            if (argument is MethodCallExpression callExpression)
+            if (argument is MethodCallExpression callExpression &&
+                callExpression.Method.DeclaringType != null &&
+                callExpression.Method.DeclaringType.IsGenericType &&
+                callExpression.Method.DeclaringType.GetGenericTypeDefinition() == typeof(Is<>))
             {
                 const BindingFlags activatorFlags = BindingFlags.Public | BindingFlags.Instance;
-                var lambdaType = typeof(LambdaArgumentCondition<>).MakeGenericType(callExpression.Type);
-                return (IArgumentCondition) Activator.CreateInstance(lambdaType, activatorFlags, null, new object[] {callExpression.Arguments[0]}, default);
+                var lambdaType = typeof(LambdaArgumentConstraint<>).MakeGenericType(callExpression.Type);
+                return (IArgumentConstraint) Activator.CreateInstance(lambdaType, activatorFlags, null, new object[] {callExpression.Arguments[0]}, default);
             }
             
-            return FalseArgumentCondition.Instance;
+            var value = Expression.Lambda(argument).Compile().DynamicInvoke();
+            return new ConstantArgumentConstraint(value);
+        }
+
+        private static IMethodConstraint CreateMethodConstraint(MethodInfo methodInfo)
+        {
+            if (!methodInfo.IsGenericMethod)
+            {
+                return new ReferenceMethodConstraint(methodInfo);
+            }
+
+            var genericArguments = methodInfo.GetGenericArguments();
+
+            return new GenericMethodConstraint(methodInfo, genericArguments);
         }
     }
 }

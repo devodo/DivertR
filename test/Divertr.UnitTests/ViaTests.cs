@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Threading;
 using DivertR.UnitTests.Model;
@@ -316,7 +315,7 @@ namespace DivertR.UnitTests
             proxy.Message.ShouldBe(original.Message);
         }
         
-        [Fact]
+        [Fact(Skip = "Class support removed")]
         public void GivenClassProxy_ShouldDefaultToOriginal()
         {
             // ARRANGE
@@ -331,7 +330,7 @@ namespace DivertR.UnitTests
             message.ShouldBe(original.Message);
         }
         
-        [Fact]
+        [Fact(Skip = "Class support removed")]
         public void GivenClassProxy_ShouldDivert()
         {
             // ARRANGE
@@ -365,7 +364,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirectWithExpression_ShouldDivert()
+        public void GivenExpressionRedirectWithLiteralParam_ShouldDivert()
         {
             // ARRANGE
             var via = new Via<IFoo>();
@@ -380,22 +379,42 @@ namespace DivertR.UnitTests
             // ASSERT
             message.ShouldBe("hello foo test");
         }
-        
+
+        [Fact]
+        public void GivenExpressionRedirectWithVariableParam_ShouldDivert()
+        {
+            // ARRANGE
+            var via = new Via<IFoo>();
+            var match = "test";
+            via
+                .Redirect(x => x.GetMessage(match))
+                .To((string input) => $"{via.Relay.Original.Message} {input}");
+
+            // ACT
+            var proxy = via.Proxy(new Foo("hello foo"));
+            var message = proxy.GetMessage(match);
+
+            // ASSERT
+            message.ShouldBe("hello foo test");
+        }
+
         [Fact]
         public void GivenWhenRedirectWithMatchParam_ShouldDivert()
         {
             // ARRANGE
             var via = new Via<IFoo>();
+            var input = new Wrapper<string>("test");
             via
-                .Redirect(x => x.GetMessage(Is<string>.Match(p => p == "test")))
-                .To((string input) => $"{via.Relay.Original.Message} {input}");
+                .Redirect(x => x.GetMessage(Is<string>.Match(p => p == input.Item)))
+                .To((string i) => $"{via.Relay.Original.Message} {i}");
 
             // ACT
+            input.Item = "other";
             var proxy = via.Proxy(new Foo("hello foo"));
-            var message = proxy.GetMessage("test");
+            var message = proxy.GetMessage(input.Item);
 
             // ASSERT
-            message.ShouldBe("hello foo test");
+            message.ShouldBe("hello foo other");
         }
         
         [Fact]
@@ -405,8 +424,7 @@ namespace DivertR.UnitTests
             var via = new Via<IFoo>();
             via
                 .Redirect(x => x.GetMessage(Is<string>.Any))
-                .To((int input) => $"{via.Relay.Original.Message} {input}");
-                //.To((int input) => Console.WriteLine("hello"));
+                .To((string input) => $"{via.Relay.Original.Message} {input}");
 
             // ACT
             var proxy = via.Proxy(new Foo("hello foo"));
@@ -495,16 +513,37 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var via = new Via<INumber>();
-            int i1 = 5;
+            int input = 5;
             via
-                .Redirect(x => x.RefNumber(ref i1))
+                .Redirect(x => x.RefNumber(ref input))
                 .To(new RefCall((ref int i2) =>
                 {
                     i2 = 50;
                 }));
 
             // ACT
-            int input = 1;
+            var i2 = 5;
+            var proxy = via.Proxy(new Number());
+            proxy.RefNumber(ref i2);
+
+            // ASSERT
+            i2.ShouldBe(50);
+        }
+
+        [Fact]
+        public void GivenRefDelegateWithAnyParam_ShouldDivert()
+        {
+            // ARRANGE
+            var via = new Via<INumber>();
+            via
+                .Redirect(x => x.RefNumber(ref Is<int>.AnyRef))
+                .To(new RefCall((ref int i2) =>
+                {
+                    i2 = 50;
+                }));
+
+            // ACT
+            var input = 5;
             var proxy = via.Proxy(new Number());
             proxy.RefNumber(ref input);
 
@@ -530,6 +569,26 @@ namespace DivertR.UnitTests
 
             // ASSERT
             result.ShouldBe("Hello - 10 - again");
+        }
+        
+        [Fact]
+        public void GivenRedirectWithGenericMismatch_ShouldNotDivert()
+        {
+            // ARRANGE
+            var via = new Via<INumber>();
+            
+            via
+                .Redirect(x => x.GenericNumber(Is<object>.Any, Is<int>.Any))
+                .To((object s, int i) => via.Relay.Next.GenericNumber(s, i) + " - again");
+            
+            via.RedirectTo(new Number(x => x * 2));
+
+            // ACT
+            var proxy = via.Proxy(new Number());
+            var result = proxy.GenericNumber(5, 5);
+
+            // ASSERT
+            result.ShouldBe("5 - 10");
         }
         
         [Fact]
@@ -560,6 +619,79 @@ namespace DivertR.UnitTests
             // ASSERT
             input[0].ShouldBe(3);
             input[1].ShouldBe(11);
+        }
+        
+        [Fact]
+        public void TestMock()
+        {
+            // ARRANGE
+            var mock = new Mock<IFoo>();
+
+            var input = new Wrapper<string>("test");
+            
+            mock
+                .Setup(x => x.SetMessage(input))
+                .Returns((Wrapper<string> i) => i.Item);
+            
+            _via.Redirect(x => x.SetMessage(input))
+                .To((Wrapper<string> i) => i.Item);
+            
+            // ACT
+            input.Item = "result";
+            
+            var result = _via.Proxy().SetMessage(input);
+
+            // ASSERT
+            result.ShouldBe("result");
+        }
+        
+        [Fact]
+        public void TestProperty()
+        {
+            // ARRANGE
+            var mock = new Mock<IFoo>();
+
+            var input = new Wrapper<string>("test");
+            
+            mock
+                .Setup(x => x.SetMessage(input))
+                .Returns((Wrapper<string> i) => i.Item);
+            
+            _via.Redirect(x => x.GetMessage(input.Item))
+                .To((string i) => i);
+            
+            // ACT
+            input.Item = "test";
+            
+            var result = _via.Proxy().GetMessage(input.Item);
+
+            // ASSERT
+            result.ShouldBe("test");
+        }
+        
+        Wrapper<string> GetInput()
+        {
+            return new("test");
+        }
+        
+        [Fact]
+        public void TestMethod()
+        {
+            // ARRANGE
+            var mock = new Mock<IFoo>();
+            
+            mock
+                .Setup(x => x.SetMessage(GetInput()))
+                .Returns((Wrapper<string> i) => i.Item);
+            
+            _via.Redirect(x => x.SetMessage(GetInput()))
+                .To((Wrapper<string> i) => i.Item);
+            
+            // ACT
+            var result = _via.Proxy().SetMessage(GetInput());
+
+            // ASSERT
+            result.ShouldBe("test");
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using DivertR.Core;
 
 namespace DivertR.Internal
@@ -7,23 +6,23 @@ namespace DivertR.Internal
     internal class CallRedirect<T> : IRedirect<T> where T : class
     {
         private readonly Func<object[], object?> _redirectDelegate;
-        private readonly ICallCondition _callCondition;
+        private readonly ICallConstraint _callConstraint;
         public object? State { get; }
 
-        public CallRedirect(Func<object[], object?> redirectDelegate, ICallCondition? callCondition)
+        public CallRedirect(Func<object[], object?> redirectDelegate, ICallConstraint? callCondition)
         {
             _redirectDelegate = redirectDelegate;
-            _callCondition = callCondition ?? TrueCallCondition.Instance;
+            _callConstraint = callCondition ?? TrueCallConstraint.Instance;
         }
 
-        public object? Invoke(MethodInfo methodInfo, object[] args)
+        public object? Invoke(ICall call)
         {
-            return _redirectDelegate.Invoke(args);
+            return _redirectDelegate.Invoke(call.Arguments);
         }
 
         public bool IsMatch(ICall call)
         {
-            return _callCondition.IsMatch(call);
+            return _callConstraint.IsMatch(call);
         }
     }
 }

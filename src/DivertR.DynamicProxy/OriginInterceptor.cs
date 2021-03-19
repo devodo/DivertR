@@ -21,11 +21,7 @@ namespace DivertR.DynamicProxy
             {
                 throw new DiverterException("The original instance reference is null");
             }
-            
-            // ReSharper disable once SuspiciousTypeConversion.Global
-            //((IChangeProxyTarget)invocation).ChangeInvocationTarget(original);
-            //invocation.Proceed();
-            
+
             invocation.ReturnValue =
                 invocation.Method.ToDelegate(typeof(T)).Invoke(original, invocation.Arguments);
         }

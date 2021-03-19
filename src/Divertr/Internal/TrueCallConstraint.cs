@@ -2,9 +2,9 @@
 
 namespace DivertR.Internal
 {
-    internal class TrueCallCondition : ICallCondition
+    internal class TrueCallConstraint : ICallConstraint
     {
-        public static readonly TrueCallCondition Instance = new TrueCallCondition();
+        public static readonly TrueCallConstraint Instance = new TrueCallConstraint();
         
         public bool IsMatch(ICall call)
         {

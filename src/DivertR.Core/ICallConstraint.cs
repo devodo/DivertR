@@ -1,6 +1,6 @@
 ﻿namespace DivertR.Core
 {
-    public interface ICallCondition
+    public interface ICallConstraint
     {
         bool IsMatch(ICall call);
     }

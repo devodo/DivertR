@@ -1,12 +1,10 @@
-﻿using System.Reflection;
-
-namespace DivertR.Core
+﻿namespace DivertR.Core
 {
     public interface IRedirect<out T> where T : class
     {
         object? State { get; }
 
-        object? Invoke(MethodInfo methodInfo, object[] args);
+        object? Invoke(ICall call);
         bool IsMatch(ICall call);
     }
 }

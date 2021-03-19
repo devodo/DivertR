@@ -5,5 +5,7 @@
         string Message { get; set; }
 
         string GetMessage(string input);
+        
+        string SetMessage(Wrapper<string> input);
     }
 }
