@@ -10,34 +10,13 @@ namespace DivertR.Internal
     {
         private readonly AsyncLocal<ImmutableStack<RedirectState<T>>> _callStack = new AsyncLocal<ImmutableStack<RedirectState<T>>>();
         
-        private IRedirect<T>? BeginCall(T? original, List<IRedirect<T>> redirects, ICall call)
-        {
-            var redirectState = RedirectState<T>.Create(original, redirects, call);
-
-            if (redirectState == null)
-            {
-                return null;
-            }
-            
-            var callStack = _callStack.Value ?? ImmutableStack<RedirectState<T>>.Empty;
-            _callStack.Value = callStack.Push(redirectState);
-            
-            return redirectState.Current;
-        }
-
-        private void EndCall(ICall call)
-        {
-            _callStack.Value = _callStack.Value.Pop(out var redirectState);
-
-            if (!ReferenceEquals(call, redirectState.Call))
-            {
-                throw new DiverterException("Fatal error: Encountered an unexpected redirect state for the current call");
-            }
-        }
-
+        public T? Original => _callStack.Value.Peek().Original;
+        
+        public IRedirect<T> Redirect => _callStack.Value.Peek().Current;
+        
         public object? CallBegin(T? original, List<IRedirect<T>> redirects, ICall call)
         {
-            var redirect = BeginCall(original, redirects, call);
+            var redirect = BeginNewCall(original, redirects, call);
 
             if (redirect == null)
             {
@@ -59,7 +38,7 @@ namespace DivertR.Internal
             }
         }
 
-        public object? InvokeNext(ICall call)
+        public object? CallNext(ICall call)
         {
             var redirect = BeginNextRedirect(call);
             
@@ -81,6 +60,31 @@ namespace DivertR.Internal
             finally
             {
                 EndRedirect(call);
+            }
+        }
+        
+        private IRedirect<T>? BeginNewCall(T? original, List<IRedirect<T>> redirects, ICall call)
+        {
+            var redirectState = RedirectState<T>.Create(original, redirects, call);
+
+            if (redirectState == null)
+            {
+                return null;
+            }
+            
+            var callStack = _callStack.Value ?? ImmutableStack<RedirectState<T>>.Empty;
+            _callStack.Value = callStack.Push(redirectState);
+            
+            return redirectState.Current;
+        }
+
+        private void EndCall(ICall call)
+        {
+            _callStack.Value = _callStack.Value.Pop(out var redirectState);
+
+            if (!ReferenceEquals(call, redirectState.Call))
+            {
+                throw new DiverterException("Fatal error: Encountered an unexpected redirect state ending the current call");
             }
         }
 
@@ -105,12 +109,8 @@ namespace DivertR.Internal
             
             if (!ReferenceEquals(invocation, redirectState.Call))
             {
-                throw new DiverterException("Fatal error: Encountered an unexpected redirect state for the current call");
+                throw new DiverterException("Fatal error: Encountered an unexpected redirect state ending the current redirect");
             }
         }
-
-        public T? Original => _callStack.Value.Peek().Original;
-        
-        public IRedirect<T> Redirect => _callStack.Value.Peek().Current;
     }
 }

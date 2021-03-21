@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using DivertR.Core;
 
 namespace DivertR.Internal
@@ -6,13 +8,13 @@ namespace DivertR.Internal
     internal class CallRedirect<T> : IRedirect<T> where T : class
     {
         private readonly Func<object[], object?> _redirectDelegate;
-        private readonly ICallConstraint _callConstraint;
+        private readonly IEnumerable<ICallConstraint> _callConstraints;
         public object? State { get; }
 
-        public CallRedirect(Func<object[], object?> redirectDelegate, ICallConstraint? callCondition)
+        public CallRedirect(Func<object[], object?> redirectDelegate, IEnumerable<ICallConstraint> callConstraints)
         {
-            _redirectDelegate = redirectDelegate;
-            _callConstraint = callCondition ?? TrueCallConstraint.Instance;
+            _redirectDelegate = redirectDelegate ?? throw new ArgumentNullException(nameof(redirectDelegate));
+            _callConstraints = callConstraints ?? throw new ArgumentNullException(nameof(callConstraints));
         }
 
         public object? Invoke(ICall call)
@@ -22,7 +24,7 @@ namespace DivertR.Internal
 
         public bool IsMatch(ICall call)
         {
-            return _callConstraint.IsMatch(call);
+            return _callConstraints.All(callConstraint => callConstraint.IsMatch(call));
         }
     }
 }

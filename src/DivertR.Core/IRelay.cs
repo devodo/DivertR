@@ -5,7 +5,8 @@
         T Next { get; }
         T Original { get; }
         T? OriginalInstance { get; }
+        IRedirect<T> Redirect { get; }
         object? State { get; }
-        object? InvokeNext(ICall call);
+        object? CallNext(ICall call);
     }
 }

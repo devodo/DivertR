@@ -16,7 +16,7 @@ namespace DivertR.DispatchProxy
         {
             var call = new DispatchProxyCall(targetMethod, args);
 
-            return _relayState.InvokeNext(call)!;
+            return _relayState.CallNext(call)!;
         }
     }
 }

@@ -11,6 +11,9 @@ namespace DivertR.Internal
         public T Original { get; }
         
         public T? OriginalInstance => _relayState.Original;
+        
+
+        public IRedirect<T> Redirect => _relayState.Redirect;
 
         public object? State => _relayState.Redirect.State;
 
@@ -21,9 +24,9 @@ namespace DivertR.Internal
             Original = proxyFactory.CreateOriginalTargetProxy(relayState);
         }
 
-        public object? InvokeNext(ICall call)
+        public object? CallNext(ICall call)
         {
-            return _relayState.InvokeNext(call);
+            return _relayState.CallNext(call);
         }
     }
 }

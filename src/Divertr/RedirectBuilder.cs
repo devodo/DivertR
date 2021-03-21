@@ -12,14 +12,18 @@ namespace DivertR
     internal class RedirectBuilder<T> : IRedirectBuilder<T> where T : class
     {
         protected readonly IVia<T> Via;
-        protected readonly ICallConstraint CallConstraint;
+        protected readonly List<ICallConstraint> CallConstraints = new List<ICallConstraint>();
         private readonly MethodInfo? _methodInfo;
         private readonly ParameterInfo[] _parameterInfos = Array.Empty<ParameterInfo>();
 
-        public RedirectBuilder(IVia<T> via, ICallConstraint? callCondition = null)
+        public RedirectBuilder(IVia<T> via, ICallConstraint? callConstraint = null)
         {
             Via = via ?? throw new ArgumentNullException(nameof(via));
-            CallConstraint = callCondition ?? TrueCallConstraint.Instance;
+
+            if (callConstraint != null)
+            {
+                CallConstraints.Add(callConstraint);
+            }
         }
 
         protected RedirectBuilder(IVia<T> via, MemberExpression propertyExpression, Expression valueExpression)
@@ -37,7 +41,7 @@ namespace DivertR
             _parameterInfos = _methodInfo.GetParameters();
             var methodConstraint = CreateMethodConstraint(_methodInfo);
             var argumentConstraints = CreateArgumentConstraints(_parameterInfos, new[] {valueExpression});
-            CallConstraint = new MethodCallConstraint(_methodInfo, methodConstraint, argumentConstraints);
+            CallConstraints.Add(new MethodCallConstraint(_methodInfo, methodConstraint, argumentConstraints));
         }
 
         protected RedirectBuilder(IVia<T> via, MethodCallExpression methodExpression)
@@ -47,7 +51,7 @@ namespace DivertR
             _parameterInfos = _methodInfo.GetParameters();
             var argumentConstraints = CreateArgumentConstraints(_parameterInfos, methodExpression.Arguments);
             var methodConstraint = CreateMethodConstraint(_methodInfo);
-            CallConstraint = new MethodCallConstraint(_methodInfo, methodConstraint, argumentConstraints);
+            CallConstraints.Add(new MethodCallConstraint(_methodInfo, methodConstraint, argumentConstraints));
         }
 
         protected RedirectBuilder(IVia<T> via, MemberExpression propertyExpression)
@@ -62,12 +66,12 @@ namespace DivertR
             _methodInfo = property.GetGetMethod(true);
             _parameterInfos = _methodInfo.GetParameters();
             var methodConstraint = CreateMethodConstraint(_methodInfo);
-            CallConstraint = new MethodCallConstraint(_methodInfo, methodConstraint, Array.Empty<IArgumentConstraint>());
+            CallConstraints.Add(new MethodCallConstraint(_methodInfo, methodConstraint, Array.Empty<IArgumentConstraint>()));
         }
         
         public IVia<T> To(T target, object? state = null)
         {
-            var redirect = new TargetRedirect<T>(target, state, CallConstraint);
+            var redirect = new TargetRedirect<T>(target, state, CallConstraints);
             Via.AddRedirect(redirect);
             
             return Via;
@@ -79,7 +83,7 @@ namespace DivertR
             ValidateReturnType(redirectDelegate);
             
             var redirect = new CallRedirect<T>(args => 
-                redirectDelegate.GetMethodInfo().ToDelegate(redirectDelegate.GetType()).Invoke(redirectDelegate, args), CallConstraint);
+                redirectDelegate.GetMethodInfo().ToDelegate(redirectDelegate.GetType()).Invoke(redirectDelegate, args), CallConstraints);
             
             return Via.AddRedirect(redirect);
         }
@@ -122,12 +126,7 @@ namespace DivertR
             {
                 return true;
             }
-
-            if (callParams.Length == 0)
-            {
-                return false;
-            }
-
+            
             if (delegateParams.Length != callParams.Length)
             {
                 return false;
@@ -135,6 +134,11 @@ namespace DivertR
 
             for (var i = 0; i < delegateParams.Length; i++)
             {
+                if (ReferenceEquals(delegateParams[i].ParameterType, callParams[i].ParameterType))
+                {
+                    continue;
+                }
+                
                 if (!delegateParams[i].ParameterType.IsAssignableFrom(callParams[i].ParameterType))
                 {
                     return false;

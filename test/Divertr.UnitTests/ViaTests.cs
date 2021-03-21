@@ -578,8 +578,8 @@ namespace DivertR.UnitTests
             var via = new Via<INumber>();
             
             via
-                .Redirect(x => x.GenericNumber(Is<object>.Any, Is<int>.Any))
-                .To((object s, int i) => via.Relay.Next.GenericNumber(s, i) + " - again");
+                .Redirect(x => x.GenericNumber(Is<string>.Any, Is<int>.Any))
+                .To((string s, int i) => via.Relay.Next.GenericNumber(s, i) + " - again");
             
             via.RedirectTo(new Number(x => x * 2));
 

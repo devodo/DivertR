@@ -29,7 +29,7 @@ namespace DivertR
             {
                 redirectDelegate.Invoke((T1) args[0]);
                 return default;
-            }, CallConstraint);
+            }, CallConstraints);
             
             return Via.AddRedirect(redirect);
         }

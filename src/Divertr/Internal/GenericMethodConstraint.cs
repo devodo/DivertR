@@ -31,7 +31,7 @@ namespace DivertR.Internal
 
             for (var i = 0; i < _genericTypes.Length; i++)
             {
-                if (_genericTypes[i] == compareTypes[i])
+                if (ReferenceEquals(_genericTypes[i], compareTypes[i]))
                 {
                     continue;
                 }
