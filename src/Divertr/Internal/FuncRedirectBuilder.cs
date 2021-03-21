@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
 using DivertR.Core;
-using DivertR.Internal;
 
-namespace DivertR
+namespace DivertR.Internal
 {
     internal class FuncRedirectBuilder<T, TReturn> : RedirectBuilder<T>, IFuncRedirectBuilder<T, TReturn> where T : class
     {
@@ -25,7 +24,7 @@ namespace DivertR
         public IVia<T> To(Func<TReturn> redirectDelegate)
         {
             ValidateParameters(redirectDelegate);
-            var redirect = new CallRedirect<T>(args => redirectDelegate.Invoke(), CallConstraints);
+            var redirect = new DelegateRedirect<T>(args => redirectDelegate.Invoke(), BuildCallConstraint());
             
             return Via.AddRedirect(redirect);
         }
@@ -33,7 +32,7 @@ namespace DivertR
         public IVia<T> To<T1>(Func<T1, TReturn> redirectDelegate)
         {
             ValidateParameters(redirectDelegate);
-            var redirect = new CallRedirect<T>(args => redirectDelegate.Invoke((T1) args[0]), CallConstraints);
+            var redirect = new DelegateRedirect<T>(args => redirectDelegate.Invoke((T1) args[0]), BuildCallConstraint());
             
             return Via.AddRedirect(redirect);
         }
@@ -41,7 +40,7 @@ namespace DivertR
         public IVia<T> To<T1, T2>(Func<T1, T2, TReturn> redirectDelegate)
         {
             ValidateParameters(redirectDelegate);
-            var redirect = new CallRedirect<T>(args => redirectDelegate.Invoke((T1) args[0], (T2) args[1]), CallConstraints);
+            var redirect = new DelegateRedirect<T>(args => redirectDelegate.Invoke((T1) args[0], (T2) args[1]), BuildCallConstraint());
             
             return Via.AddRedirect(redirect);
         }

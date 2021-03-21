@@ -1,21 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using DivertR.Core;
-using DivertR.Core.Internal;
+﻿using DivertR.Core;
 
 namespace DivertR.Internal
 {
     internal class TargetRedirect<T> : IRedirect<T> where T : class
     {
         private readonly T _target;
-        private readonly IEnumerable<ICallConstraint> _callConstraints;
+        private readonly ICallConstraint _callConstraint;
         public object? State { get; }
 
-        public TargetRedirect(T target, object? state = null, IEnumerable<ICallConstraint>? callConstraints = null)
+        public TargetRedirect(T target, object? state = null, ICallConstraint? callConstraint = null)
         {
             _target = target;
             State = state;
-            _callConstraints = callConstraints ?? Enumerable.Empty<ICallConstraint>();
+            _callConstraint = callConstraint ?? TrueCallConstraint.Instance;
         }
 
         public object? Invoke(ICall call)
@@ -30,7 +27,7 @@ namespace DivertR.Internal
 
         public bool IsMatch(ICall call)
         {
-            return _callConstraints.All(callConstraint => callConstraint.IsMatch(call));
+            return _callConstraint.IsMatch(call);
         }
     }
 }

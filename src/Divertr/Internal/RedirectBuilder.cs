@@ -4,15 +4,13 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using DivertR.Core;
-using DivertR.Core.Internal;
-using DivertR.Internal;
 
-namespace DivertR
+namespace DivertR.Internal
 {
     internal class RedirectBuilder<T> : IRedirectBuilder<T> where T : class
     {
         protected readonly IVia<T> Via;
-        protected readonly List<ICallConstraint> CallConstraints = new List<ICallConstraint>();
+        private readonly List<ICallConstraint> _callConstraints = new List<ICallConstraint>();
         private readonly MethodInfo? _methodInfo;
         private readonly ParameterInfo[] _parameterInfos = Array.Empty<ParameterInfo>();
 
@@ -22,7 +20,7 @@ namespace DivertR
 
             if (callConstraint != null)
             {
-                CallConstraints.Add(callConstraint);
+                _callConstraints.Add(callConstraint);
             }
         }
 
@@ -41,7 +39,7 @@ namespace DivertR
             _parameterInfos = _methodInfo.GetParameters();
             var methodConstraint = CreateMethodConstraint(_methodInfo);
             var argumentConstraints = CreateArgumentConstraints(_parameterInfos, new[] {valueExpression});
-            CallConstraints.Add(new MethodCallConstraint(_methodInfo, methodConstraint, argumentConstraints));
+            _callConstraints.Add(new MethodCallConstraint(_methodInfo, methodConstraint, argumentConstraints));
         }
 
         protected RedirectBuilder(IVia<T> via, MethodCallExpression methodExpression)
@@ -51,7 +49,7 @@ namespace DivertR
             _parameterInfos = _methodInfo.GetParameters();
             var argumentConstraints = CreateArgumentConstraints(_parameterInfos, methodExpression.Arguments);
             var methodConstraint = CreateMethodConstraint(_methodInfo);
-            CallConstraints.Add(new MethodCallConstraint(_methodInfo, methodConstraint, argumentConstraints));
+            _callConstraints.Add(new MethodCallConstraint(_methodInfo, methodConstraint, argumentConstraints));
         }
 
         protected RedirectBuilder(IVia<T> via, MemberExpression propertyExpression)
@@ -66,12 +64,22 @@ namespace DivertR
             _methodInfo = property.GetGetMethod(true);
             _parameterInfos = _methodInfo.GetParameters();
             var methodConstraint = CreateMethodConstraint(_methodInfo);
-            CallConstraints.Add(new MethodCallConstraint(_methodInfo, methodConstraint, Array.Empty<IArgumentConstraint>()));
+            _callConstraints.Add(new MethodCallConstraint(_methodInfo, methodConstraint, Array.Empty<IArgumentConstraint>()));
         }
-        
+
+        public ICallConstraint BuildCallConstraint()
+        {
+            return _callConstraints.Count switch
+            {
+                0 => TrueCallConstraint.Instance,
+                1 => _callConstraints[0],
+                _ => new CompositeCallConstraint(_callConstraints)
+            };
+        }
+
         public IVia<T> To(T target, object? state = null)
         {
-            var redirect = new TargetRedirect<T>(target, state, CallConstraints);
+            var redirect = new TargetRedirect<T>(target, state, BuildCallConstraint());
             Via.AddRedirect(redirect);
             
             return Via;
@@ -82,8 +90,8 @@ namespace DivertR
             ValidateParameters(redirectDelegate);
             ValidateReturnType(redirectDelegate);
             
-            var redirect = new CallRedirect<T>(args => 
-                redirectDelegate.GetMethodInfo().ToDelegate(redirectDelegate.GetType()).Invoke(redirectDelegate, args), CallConstraints);
+            var redirect = new DelegateRedirect<T>(args => 
+                redirectDelegate.GetMethodInfo().ToDelegate(redirectDelegate.GetType()).Invoke(redirectDelegate, args), BuildCallConstraint());
             
             return Via.AddRedirect(redirect);
         }

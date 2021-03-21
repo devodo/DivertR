@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
 using DivertR.Core;
-using DivertR.Internal;
 
-namespace DivertR
+namespace DivertR.Internal
 {
     internal class ActionRedirectBuilder<T> : RedirectBuilder<T>, IActionRedirectBuilder<T> where T : class
     {
@@ -25,11 +24,11 @@ namespace DivertR
         public IVia<T> To<T1>(Action<T1> redirectDelegate)
         {
             ValidateParameters(redirectDelegate);
-            var redirect = new CallRedirect<T>(args =>
+            var redirect = new DelegateRedirect<T>(args =>
             {
                 redirectDelegate.Invoke((T1) args[0]);
                 return default;
-            }, CallConstraints);
+            }, BuildCallConstraint());
             
             return Via.AddRedirect(redirect);
         }

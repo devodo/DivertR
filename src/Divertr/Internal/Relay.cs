@@ -15,7 +15,7 @@ namespace DivertR.Internal
 
         public IRedirect<T> Redirect => _relayState.Redirect;
 
-        public object? State => _relayState.Redirect.State;
+        //public object? State => _relayState.Redirect.State;
 
         public Relay(IRelayState<T> relayState, IProxyFactory proxyFactory)
         {

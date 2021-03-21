@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 
-namespace DivertR.Core
+namespace DivertR.Internal
 {
-    public interface IMethodConstraint
+    internal interface IMethodConstraint
     {
         bool IsMatch(MethodInfo methodInfo);
     }

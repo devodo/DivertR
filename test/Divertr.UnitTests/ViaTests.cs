@@ -236,7 +236,7 @@ namespace DivertR.UnitTests
             var next = _via.Relay.Next;
             var orig = _via.Relay.Original;
 
-            var recursive = new Foo( () =>
+            var recursive = new Foo(() =>
             {
                 var state = (int[]) _via.Relay.State;
                 var decrement = Interlocked.Decrement(ref state[0]);
@@ -251,7 +251,7 @@ namespace DivertR.UnitTests
 
             _via
                 .RedirectTo(recursive, new[] {4})
-                .RedirectTo(new Foo( () => next.Message.Replace(orig.Message, "bar")));
+                .RedirectTo(new Foo(() => next.Message.Replace(orig.Message, "bar")));
 
             // ACT
             var message = proxy.Message;
