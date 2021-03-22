@@ -13,11 +13,11 @@ namespace DivertR.Internal
             _parsedCall = parsedCall;
         }
 
-        public override IVia<T> To(Delegate redirectDelegate)
+        public override IRedirect<T> BuildRedirect(Delegate redirectDelegate)
         {
             _parsedCall.Validate(redirectDelegate);
 
-            return base.To(redirectDelegate);
+            return base.BuildRedirect(redirectDelegate);
         }
 
         public IVia<T> To(TReturn instance)

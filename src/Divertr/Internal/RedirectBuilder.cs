@@ -30,18 +30,28 @@ namespace DivertR.Internal
             };
         }
 
+        public IRedirect<T> BuildRedirect(T target)
+        {
+            return new TargetRedirect<T>(target, BuildCallConstraint());
+        }
+        
+        public virtual IRedirect<T> BuildRedirect(Delegate redirectDelegate)
+        {
+            return new DelegateRedirect<T>(args => 
+                redirectDelegate.GetMethodInfo().ToDelegate(redirectDelegate.GetType()).Invoke(redirectDelegate, args), BuildCallConstraint());
+        }
+
         public IVia<T> To(T target)
         {
-            var redirect = new TargetRedirect<T>(target, BuildCallConstraint());
+            var redirect = BuildRedirect(target);
             Via.AddRedirect(redirect);
             
             return Via;
         }
         
-        public virtual IVia<T> To(Delegate redirectDelegate)
+        public IVia<T> To(Delegate redirectDelegate)
         {
-            var redirect = new DelegateRedirect<T>(args => 
-                redirectDelegate.GetMethodInfo().ToDelegate(redirectDelegate.GetType()).Invoke(redirectDelegate, args), BuildCallConstraint());
+            var redirect = BuildRedirect(redirectDelegate);
             
             return Via.AddRedirect(redirect);
         }

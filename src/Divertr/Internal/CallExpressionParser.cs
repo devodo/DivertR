@@ -12,22 +12,12 @@ namespace DivertR.Internal
         {
             return expression switch
             {
-                MethodCallExpression methodExpression => CallExpressionParser.FromMethodCall(methodExpression),
-                MemberExpression propertyExpression => CallExpressionParser.FromPropertyGetter(propertyExpression),
+                MethodCallExpression methodExpression => FromMethodCall(methodExpression),
+                MemberExpression propertyExpression => FromPropertyGetter(propertyExpression),
                 _ => throw new ArgumentException($"Invalid expression type: {expression.GetType()}", nameof(expression))
             };
         }
         
-        public static ParsedCall FromMethodCall(MethodCallExpression methodExpression)
-        {
-            var methodInfo = methodExpression?.Method ?? throw new ArgumentNullException(nameof(methodExpression));
-            var parameterInfos = methodInfo.GetParameters();
-            var argumentConstraints = CreateArgumentConstraints(parameterInfos, methodExpression.Arguments);
-            var methodConstraint = CreateMethodConstraint(methodInfo);
-            
-            return new ParsedCall(methodInfo, parameterInfos, methodConstraint, argumentConstraints);
-        }
-
         public static ParsedCall FromPropertySetter(MemberExpression propertyExpression, Expression valueExpression)
         {
             if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
@@ -45,8 +35,18 @@ namespace DivertR.Internal
 
             return new ParsedCall(methodInfo, parameterInfos, methodConstraint, argumentConstraints);
         }
+        
+        private static ParsedCall FromMethodCall(MethodCallExpression methodExpression)
+        {
+            var methodInfo = methodExpression?.Method ?? throw new ArgumentNullException(nameof(methodExpression));
+            var parameterInfos = methodInfo.GetParameters();
+            var argumentConstraints = CreateArgumentConstraints(parameterInfos, methodExpression.Arguments);
+            var methodConstraint = CreateMethodConstraint(methodInfo);
+            
+            return new ParsedCall(methodInfo, parameterInfos, methodConstraint, argumentConstraints);
+        }
 
-        public static ParsedCall FromPropertyGetter(MemberExpression propertyExpression)
+        private static ParsedCall FromPropertyGetter(MemberExpression propertyExpression)
         {
             if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
             

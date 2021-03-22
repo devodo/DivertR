@@ -194,9 +194,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new Foo("hello foo"));
             var next = _via.Relay.Next;
             _via
-                .InsertRedirect(0, new Foo(() => $"DivertR {next.Message} 1"))
-                .InsertRedirect(0, new Foo(() => $"here {next.Message} 2"))
-                .InsertRedirect(2, new Foo(() => $"again {next.Message} 3"));
+                .InsertRedirect(0, _via.Redirect().BuildRedirect(new Foo(() => $"DivertR {next.Message} 1")))
+                .InsertRedirect(0, _via.Redirect().BuildRedirect(new Foo(() => $"here {next.Message} 2")))
+                .InsertRedirect(2, _via.Redirect().BuildRedirect(new Foo(() => $"again {next.Message} 3")));
 
             // ACT
             var message = proxy.Message;

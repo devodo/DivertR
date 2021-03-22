@@ -39,7 +39,7 @@ namespace DivertR.Internal
         {
             var delegateParameters = redirectDelegate.Method.GetParameters();
 
-            return !DelegateParametersValid(delegateParameters, _parameterInfos);
+            return DelegateParametersValid(delegateParameters, _parameterInfos);
         }
 
         private bool ReturnTypeValid(Delegate redirectDelegate)

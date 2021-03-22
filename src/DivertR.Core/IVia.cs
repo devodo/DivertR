@@ -16,7 +16,7 @@ namespace DivertR.Core
         T Proxy(T? original = null);
         IVia<T> RedirectTo(T target);
         IVia<T> AddRedirect(IRedirect<T> redirect);
-        IVia<T> InsertRedirect(int index, T target);
+        IVia<T> InsertRedirect(int index, IRedirect<T> redirect);
         IVia<T> Reset();
         IRedirectBuilder<T> Redirect(ICallConstraint? callCondition = null);
         IFuncRedirectBuilder<T, TReturn> Redirect<TReturn>(Expression<Func<T, TReturn>> lambdaExpression);
