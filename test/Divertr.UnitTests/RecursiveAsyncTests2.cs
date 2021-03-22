@@ -1,5 +1,4 @@
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using DivertR.Core;
 using DivertR.UnitTests.Model;
@@ -44,15 +43,13 @@ namespace DivertR.UnitTests
                 (await task).ShouldBe(controlResult);
             }
         }
-
-        private int _proxyCount = 0;
+        
         private IAsyncNumber InitTestProxy()
         {
             var proxy = _via.Proxy(new AsyncNumber());
 
             var fibonacci = new AsyncNumber(async i =>
             {
-                Interlocked.Increment(ref _proxyCount);
                 if (i < 2)
                 {
                     return await _via.Relay.Next.GetNumber(i);

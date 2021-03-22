@@ -1,29 +1,21 @@
 ﻿using System;
-using System.Linq.Expressions;
 using DivertR.Core;
 
 namespace DivertR.Internal
 {
     internal class ActionRedirectBuilder<T> : RedirectBuilder<T>, IActionRedirectBuilder<T> where T : class
     {
-        public ActionRedirectBuilder(IVia<T> via, MemberExpression propertyExpression, Expression valueExpression)
-            : base(via, propertyExpression, valueExpression)
+        private readonly ParsedCall _parsedCall;
+
+        public ActionRedirectBuilder(IVia<T> via, ParsedCall parsedCall)
+            : base(via, parsedCall.CreateCallConstraint())
         {
-        }
-        
-        public ActionRedirectBuilder(IVia<T> via, MethodCallExpression methodExpression)
-            : base(via, methodExpression)
-        {
-        }
-        
-        public ActionRedirectBuilder(IVia<T> via, MemberExpression propertyExpression)
-            : base(via, propertyExpression)
-        {
+            _parsedCall = parsedCall;
         }
         
         public IVia<T> To<T1>(Action<T1> redirectDelegate)
         {
-            ValidateParameters(redirectDelegate);
+            _parsedCall.Validate(redirectDelegate);
             var redirect = new DelegateRedirect<T>(args =>
             {
                 redirectDelegate.Invoke((T1) args[0]);

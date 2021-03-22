@@ -74,13 +74,9 @@ namespace DivertR
             {
                 throw new ArgumentNullException(nameof(lambdaExpression));
             }
-            
-            return lambdaExpression.Body switch
-            {
-                MethodCallExpression methodExpression => new FuncRedirectBuilder<TTarget, TReturn>(this, methodExpression),
-                MemberExpression propertyExpression => new FuncRedirectBuilder<TTarget, TReturn>(this, propertyExpression),
-                _ => throw new ArgumentException($"Invalid expression type: {lambdaExpression.Body.GetType()}", nameof(lambdaExpression))
-            };
+
+            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            return new FuncRedirectBuilder<TTarget, TReturn>(this, parsedCall);
         }
         
         public IActionRedirectBuilder<TTarget> Redirect(Expression<Action<TTarget>> lambdaExpression)
@@ -90,12 +86,8 @@ namespace DivertR
                 throw new ArgumentNullException(nameof(lambdaExpression));
             }
             
-            return lambdaExpression.Body switch
-            {
-                MethodCallExpression methodExpression => new ActionRedirectBuilder<TTarget>(this, methodExpression),
-                MemberExpression propertyExpression => new ActionRedirectBuilder<TTarget>(this, propertyExpression),
-                _ => throw new ArgumentException($"Invalid expression type: {lambdaExpression.Body.GetType()}", nameof(lambdaExpression))
-            };
+            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            return new ActionRedirectBuilder<TTarget>(this, parsedCall);
         }
         
         public IActionRedirectBuilder<TTarget> RedirectSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
@@ -108,7 +100,9 @@ namespace DivertR
                 throw new ArgumentException("Only property member expressions are valid input to RedirectSet", nameof(propertyExpression));
             }
 
-            return new ActionRedirectBuilder<TTarget>(this, propertyExpression, valueExpression.Body);
+            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
+
+            return new ActionRedirectBuilder<TTarget>(this, parsedCall);
         }
 
         public IVia<TTarget> AddRedirect(IRedirect<TTarget> redirect)
