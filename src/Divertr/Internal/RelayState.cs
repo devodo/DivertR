@@ -20,12 +20,7 @@ namespace DivertR.Internal
 
             if (redirect == null)
             {
-                if (original == null)
-                {
-                    throw new DiverterException("Proxy original instance reference is null");
-                }
-                
-                return call.Method.ToDelegate(typeof(T)).Invoke(original, call.Arguments);
+                return CallOriginal(original, call);
             }
 
             try
@@ -38,19 +33,20 @@ namespace DivertR.Internal
             }
         }
 
+        public object? CallOriginal(ICall call)
+        {
+            var original = Original;
+
+            return CallOriginal(original, call);
+        }
+
         public object? CallNext(ICall call)
         {
             var redirect = BeginNextRedirect(call);
             
             if (redirect == null)
             {
-                var original = Original;
-                if (original == null)
-                {
-                    throw new DiverterException("Proxy original instance reference is null");
-                }
-                
-                return call.Method.ToDelegate(typeof(T)).Invoke(original, call.Arguments);
+                return CallOriginal(call);
             }
 
             try
@@ -111,6 +107,16 @@ namespace DivertR.Internal
             {
                 throw new DiverterException("Fatal error: Encountered an unexpected redirect state ending the current redirect");
             }
+        }
+
+        private static object? CallOriginal(T? original, ICall call)
+        {
+            if (original == null)
+            {
+                throw new DiverterException("Proxy original instance reference is null");
+            }
+                
+            return call.Method.ToDelegate(typeof(T)).Invoke(original, call.Arguments);
         }
     }
 }

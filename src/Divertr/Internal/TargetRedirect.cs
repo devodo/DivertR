@@ -6,12 +6,10 @@ namespace DivertR.Internal
     {
         private readonly T _target;
         private readonly ICallConstraint _callConstraint;
-        public object? State { get; }
 
-        public TargetRedirect(T target, object? state = null, ICallConstraint? callConstraint = null)
+        public TargetRedirect(T target, ICallConstraint? callConstraint = null)
         {
             _target = target;
-            State = state;
             _callConstraint = callConstraint ?? TrueCallConstraint.Instance;
         }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using DivertR.Core;
 using DivertR.Core.Internal;
 using DivertR.DispatchProxy;
@@ -59,9 +58,9 @@ namespace DivertR
             return Proxy(original as TTarget);
         }
         
-        public IVia<TTarget> RedirectTo(TTarget target, object? state = null)
+        public IVia<TTarget> RedirectTo(TTarget target)
         {
-            return Redirect().To(target, state);
+            return Redirect().To(target);
         }
 
         public IRedirectBuilder<TTarget> Redirect(ICallConstraint? callCondition = null)
@@ -131,9 +130,9 @@ namespace DivertR
             return this;
         }
 
-        public IVia<TTarget> InsertRedirect(int index, TTarget target, object? state = null)
+        public IVia<TTarget> InsertRedirect(int index, TTarget target)
         {
-            var redirect = new TargetRedirect<TTarget>(target, state);
+            var redirect = new TargetRedirect<TTarget>(target);
             
             ViaState<TTarget> Create()
             {

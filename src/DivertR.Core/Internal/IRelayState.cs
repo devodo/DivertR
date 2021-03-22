@@ -7,6 +7,7 @@ namespace DivertR.Core.Internal
         T? Original { get; }
         IRedirect<T> Redirect { get; }
         object? CallBegin(T? original, List<IRedirect<T>> redirects, ICall call);
+        object? CallOriginal(ICall call);
         object? CallNext(ICall call);
     }
 }

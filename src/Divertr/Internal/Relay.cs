@@ -28,5 +28,10 @@ namespace DivertR.Internal
         {
             return _relayState.CallNext(call);
         }
+        
+        public object? CallOriginal(ICall call)
+        {
+            return _relayState.CallOriginal(call);
+        }
     }
 }

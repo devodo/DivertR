@@ -235,11 +235,11 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new Foo("foo"));
             var next = _via.Relay.Next;
             var orig = _via.Relay.Original;
+            var count = 4;
 
             var recursive = new Foo(() =>
             {
-                var state = (int[]) _via.Relay.State;
-                var decrement = Interlocked.Decrement(ref state[0]);
+                var decrement = Interlocked.Decrement(ref count);
 
                 if (decrement > 0)
                 {
@@ -250,7 +250,7 @@ namespace DivertR.UnitTests
             });
 
             _via
-                .RedirectTo(recursive, new[] {4})
+                .RedirectTo(recursive)
                 .RedirectTo(new Foo(() => next.Message.Replace(orig.Message, "bar")));
 
             // ACT
@@ -265,19 +265,18 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var proxy = _via.Proxy(new Foo("foo"));
-
-            var mock = new Mock<IFoo>();
-            mock
-                .Setup(x => x.Message)
-                .Returns(() => 
-                    $"{_via.Relay.State} {_via.Relay.Next.Message} {_via.Relay.State}");
+            
+            string WriteMessage(int num)
+            {
+                return $"{num} {_via.Relay.Next.Message} {num}";
+            }
 
             // ACT
             _via
-                .RedirectTo(mock.Object, "1")
-                .RedirectTo(mock.Object, "2")
-                .RedirectTo(mock.Object, "3");
-            
+                .Redirect(x => x.Message).To(() => WriteMessage(1))
+                .Redirect(x => x.Message).To(() => WriteMessage(2))
+                .Redirect(x => x.Message).To(() => WriteMessage(3));
+
             // ASSERT
             proxy.Message.ShouldBe("1 2 3 foo 3 2 1");
         }

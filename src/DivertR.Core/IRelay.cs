@@ -8,5 +8,6 @@
         IRedirect<T> Redirect { get; }
         //object? State { get; }
         object? CallNext(ICall call);
+        object? CallOriginal(ICall call);
     }
 }

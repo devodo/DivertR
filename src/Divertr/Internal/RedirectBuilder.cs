@@ -77,9 +77,9 @@ namespace DivertR.Internal
             };
         }
 
-        public IVia<T> To(T target, object? state = null)
+        public IVia<T> To(T target)
         {
-            var redirect = new TargetRedirect<T>(target, state, BuildCallConstraint());
+            var redirect = new TargetRedirect<T>(target, BuildCallConstraint());
             Via.AddRedirect(redirect);
             
             return Via;

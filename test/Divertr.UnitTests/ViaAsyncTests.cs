@@ -254,11 +254,11 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new AsyncFoo("foo"));
             var next = _via.Relay.Next;
             var orig = _via.Relay.Original;
+            var count = 4;
 
             var recursive = new AsyncFoo(async () =>
             {
-                var state = (int[]) _via.Relay.State;
-                var decrement = Interlocked.Decrement(ref state[0]);
+                var decrement = Interlocked.Decrement(ref count);
 
                 if (decrement > 0)
                 {
@@ -269,7 +269,7 @@ namespace DivertR.UnitTests
             });
 
             _via
-                .RedirectTo(recursive, new[] {4})
+                .RedirectTo(recursive)
                 .RedirectTo(new AsyncFoo(async () =>
                     (await next.MessageAsync).Replace(await orig.MessageAsync, "bar")));
 
@@ -286,16 +286,15 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new AsyncFoo("foo"));
 
-            var mock = new Mock<IAsyncFoo>();
-            mock
-                .Setup(x => x.MessageAsync)
-                .Returns(async () => 
-                    $"{_via.Relay.State} {await _via.Relay.Next.MessageAsync} {_via.Relay.State}");
-            
+            async Task<string> WriteMessage(int num)
+            {
+                return $"{num} {await _via.Relay.Next.MessageAsync} {num}";
+            }
+
             _via
-                .RedirectTo(mock.Object, "1")
-                .RedirectTo(mock.Object, "2")
-                .RedirectTo(mock.Object, "3");
+                .Redirect(x => x.MessageAsync).To(() => WriteMessage(1))
+                .Redirect(x => x.MessageAsync).To(() => WriteMessage(2))
+                .Redirect(x => x.MessageAsync).To(() => WriteMessage(3));
 
             // ACT
             var message = await proxy.MessageAsync;
