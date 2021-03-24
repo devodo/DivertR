@@ -5,64 +5,53 @@ namespace DivertR.Internal
 {
     internal class RedirectState<T> where T : class
     {
-        private class InternalData
-        {
-            public T? Original { get; }
-            public List<IRedirect<T>> Redirects { get; }
-
-            public InternalData(T? original, List<IRedirect<T>> redirects)
-            {
-                Original = original;
-                Redirects = redirects;
-            }
-        }
-        
         private readonly InternalData _data;
         private readonly int _index;
+        
+        public T Proxy => _data.Proxy;
         public T? Original => _data.Original;
-        public ICall Call { get; }
+        public CallInfo CallInfo { get; }
+        public IRedirect<T> Redirect => _data.Redirects[_index];
 
-        public static RedirectState<T>? Create(T? original, List<IRedirect<T>> redirects, ICall call)
+        public static RedirectState<T>? Create(T proxy, T? original, List<IRedirect<T>> redirects, CallInfo callInfo)
         {
-            var index = GetNextIndex(-1, redirects, call);
+            var index = GetNextIndex(-1, redirects, callInfo);
 
             if (index == -1)
             {
                 return null;
             }
             
-            var data = new InternalData(original, redirects);
-            return new RedirectState<T>(data, index, call);
+            var data = new InternalData(proxy, original, redirects);
+            return new RedirectState<T>(data, index, callInfo);
         }
 
-        private RedirectState(InternalData data, int index, ICall call)
+        private RedirectState(InternalData data, int index, CallInfo callInfo)
         {
-            Call = call;
+            CallInfo = callInfo;
             _data = data;
             _index = index;
         }
 
-        public IRedirect<T> Current => _data.Redirects[_index];
-
-        public RedirectState<T>? MoveNext(ICall call)
+        public RedirectState<T>? MoveNext(CallInfo callInfo)
         {
-            var index = GetNextIndex(_index, _data.Redirects, call);
+            var index = GetNextIndex(_index, _data.Redirects, callInfo);
 
             if (index == -1)
             {
                 return null;
             }
 
-            return new RedirectState<T>(_data, index, call);
+            return new RedirectState<T>(_data, index, callInfo);
         }
         
-        private static int GetNextIndex(int index, List<IRedirect<T>> redirects, ICall call)
+        private static int GetNextIndex(int index, List<IRedirect<T>> redirects, CallInfo callInfo)
         {
             var startIndex = index + 1;
 
             for (var i = startIndex; i < redirects.Count; i++)
             {
-                if (!redirects[i].IsMatch(call))
+                if (!redirects[i].IsMatch(callInfo))
                 {
                     continue;
                 }
@@ -71,6 +60,20 @@ namespace DivertR.Internal
             }
 
             return -1;
+        }
+        
+        private class InternalData
+        {
+            public T Proxy { get; }
+            public T? Original { get; }
+            public List<IRedirect<T>> Redirects { get; }
+
+            public InternalData(T proxy, T? original, List<IRedirect<T>> redirects)
+            {
+                Proxy = proxy;
+                Original = original;
+                Redirects = redirects;
+            }
         }
     }
 }

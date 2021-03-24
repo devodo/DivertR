@@ -6,7 +6,7 @@ namespace DivertR.Internal
     {
         public static readonly TrueCallConstraint Instance = new TrueCallConstraint();
         
-        public bool IsMatch(ICall call)
+        public bool IsMatch(CallInfo callInfo)
         {
             return true;
         }

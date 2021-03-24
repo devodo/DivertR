@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using DivertR.Core;
 using DivertR.Core.Internal;
 
 namespace DivertR.DispatchProxy
@@ -14,7 +15,7 @@ namespace DivertR.DispatchProxy
         
         public object Invoke(MethodInfo targetMethod, object[] args)
         {
-            var call = new DispatchProxyCall(targetMethod, args);
+            var call = new CallInfo(targetMethod, args);
 
             return _relayState.CallNext(call)!;
         }

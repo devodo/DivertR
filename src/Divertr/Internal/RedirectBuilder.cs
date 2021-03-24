@@ -37,8 +37,8 @@ namespace DivertR.Internal
         
         public virtual IRedirect<T> BuildRedirect(Delegate redirectDelegate)
         {
-            return new DelegateRedirect<T>(args => 
-                redirectDelegate.GetMethodInfo().ToDelegate(redirectDelegate.GetType()).Invoke(redirectDelegate, args), BuildCallConstraint());
+            return new DelegateRedirect<T>(callInfo => 
+                redirectDelegate.GetMethodInfo().ToDelegate(redirectDelegate.GetType()).Invoke(redirectDelegate, callInfo.CallArguments.InternalArgs), BuildCallConstraint());
         }
 
         public IVia<T> To(T target)

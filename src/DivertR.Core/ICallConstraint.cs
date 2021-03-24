@@ -2,6 +2,6 @@
 {
     public interface ICallConstraint
     {
-        bool IsMatch(ICall call);
+        bool IsMatch(CallInfo callInfo);
     }
 }

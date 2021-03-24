@@ -12,6 +12,17 @@ namespace DivertR.Core
         private static readonly ConcurrentDictionary<MethodId, Func<object, object[], object>> DelegateCache =
             new ConcurrentDictionary<MethodId, Func<object, object[], object>>();
 
+        public static Func<object, CallArguments, object> ToCallDelegate(this MethodInfo methodInfo, Type targetType)
+        {
+            var delegateInternal = methodInfo.ToDelegate(targetType);
+            return (target, arguments) => delegateInternal.Invoke(target, arguments.InternalArgs);
+        }
+
+        public static object? Invoke<T>(this CallInfo callInfo, T target)
+        {
+            return callInfo.Method.ToDelegate(typeof(T)).Invoke(target, callInfo.CallArguments.InternalArgs);
+        }
+        
         public static Func<object, object[], object> ToDelegate(this MethodInfo methodInfo, Type targetType)
         {
             var methodId = new MethodId(targetType, methodInfo);

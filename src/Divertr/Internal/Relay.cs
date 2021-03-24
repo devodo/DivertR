@@ -9,8 +9,13 @@ namespace DivertR.Internal
         
         public T Next { get; }
         public T Original { get; }
+
+        public T Proxy => _relayState.Proxy;
         public T? OriginalInstance => _relayState.Original;
+        
         public IRedirect<T> Redirect => _relayState.Redirect;
+
+        public CallInfo CallInfo => _relayState.CallInfo;
 
         public Relay(IRelayState<T> relayState, IProxyFactory proxyFactory)
         {
@@ -19,14 +24,14 @@ namespace DivertR.Internal
             Original = proxyFactory.CreateOriginalTargetProxy(relayState);
         }
 
-        public object? CallNext(ICall call)
+        public object? CallNext(CallInfo callInfo)
         {
-            return _relayState.CallNext(call);
+            return _relayState.CallNext(callInfo);
         }
         
-        public object? CallOriginal(ICall call)
+        public object? CallOriginal(CallInfo callInfo)
         {
-            return _relayState.CallOriginal(call);
+            return _relayState.CallOriginal(callInfo);
         }
     }
 }

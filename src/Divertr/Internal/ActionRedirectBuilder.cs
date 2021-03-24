@@ -23,9 +23,9 @@ namespace DivertR.Internal
         public IVia<T> To<T1>(Action<T1> redirectDelegate)
         {
             _parsedCall.Validate(redirectDelegate);
-            var redirect = new DelegateRedirect<T>(args =>
+            var redirect = new DelegateRedirect<T>(callInfo =>
             {
-                redirectDelegate.Invoke((T1) args[0]);
+                redirectDelegate.Invoke((T1) callInfo.Arguments[0]);
                 return default;
             }, BuildCallConstraint());
             

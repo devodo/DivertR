@@ -5,24 +5,23 @@ namespace DivertR.Internal
 {
     internal class DelegateRedirect<T> : IRedirect<T> where T : class
     {
-        private readonly Func<object[], object?> _redirectDelegate;
+        private readonly Func<CallInfo, object?> _redirectDelegate;
         private readonly ICallConstraint _callConstraint;
-        public object? State { get; }
 
-        public DelegateRedirect(Func<object[], object?> redirectDelegate, ICallConstraint callConstraint)
+        public DelegateRedirect(Func<CallInfo, object?> redirectDelegate, ICallConstraint callConstraint)
         {
             _redirectDelegate = redirectDelegate ?? throw new ArgumentNullException(nameof(redirectDelegate));
             _callConstraint = callConstraint ?? throw new ArgumentNullException(nameof(callConstraint));
         }
 
-        public object? Invoke(ICall call)
+        public object? Call(CallInfo callInfo)
         {
-            return _redirectDelegate.Invoke(call.Arguments);
+            return _redirectDelegate.Invoke(callInfo);
         }
 
-        public bool IsMatch(ICall call)
+        public bool IsMatch(CallInfo callInfo)
         {
-            return _callConstraint.IsMatch(call);
+            return _callConstraint.IsMatch(callInfo);
         }
     }
 }

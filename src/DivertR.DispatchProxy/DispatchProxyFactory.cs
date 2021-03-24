@@ -10,11 +10,9 @@ namespace DivertR.DispatchProxy
         
         public T CreateDiverterProxy<T>(T? original, Func<IViaState<T>?> getViaState) where T : class
         {
-            var invoker = new ViaInvoker<T>(original, getViaState);
-
             if (typeof(T).IsInterface)
             {
-                return DiverterProxy.Create<T>(invoker);
+                return DiverterProxy.Create<T>(proxy => new ViaInvoker<T>(proxy, original, getViaState));
             }
 
             throw new DiverterException($"Invalid type argument {typeof(T).Name}. Only interface types are supported");

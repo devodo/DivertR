@@ -7,11 +7,13 @@ namespace DivertR.DispatchProxy
 {
     internal class ViaInvoker<T> : IDispatchProxyInvoker where T : class
     {
+        private readonly T _proxy;
         private readonly T? _original;
         private readonly Func<IViaState<T>?> _getViaState;
 
-        public ViaInvoker(T? original, Func<IViaState<T>?> getViaState)
+        public ViaInvoker(T proxy, T? original, Func<IViaState<T>?> getViaState)
         {
+            _proxy = proxy;
             _original = original;
             _getViaState = getViaState;
         }
@@ -25,8 +27,8 @@ namespace DivertR.DispatchProxy
                 return DefaultProceed(targetMethod, args);
             }
             
-            var call = new DispatchProxyCall(targetMethod, args);
-            return viaState.RelayState.CallBegin(_original, viaState.Redirects, call)!;
+            var call = new CallInfo(targetMethod, args);
+            return viaState.RelayState.CallBegin(_proxy, _original, viaState.Redirects, call)!;
         }
         
         private object DefaultProceed(MethodInfo targetMethod, object[] args)

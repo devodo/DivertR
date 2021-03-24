@@ -16,21 +16,21 @@ namespace DivertR.Internal
             _argumentConditions = argumentConditions;
         }
 
-        public bool IsMatch(ICall call)
+        public bool IsMatch(CallInfo callInfo)
         {
-            if (!_methodConstraint.IsMatch(call.Method))
+            if (!_methodConstraint.IsMatch(callInfo.Method))
             {
                 return false;
             }
 
-            if (_argumentConditions.Length != call.Arguments.Length)
+            if (_argumentConditions.Length != callInfo.Arguments.Count)
             {
                 return false;
             }
 
             for (var i = 0; i < _argumentConditions.Length; i++)
             {
-                if (!_argumentConditions[i].IsMatch(call.Arguments[i]))
+                if (!_argumentConditions[i].IsMatch(callInfo.Arguments[i]))
                 {
                     return false;
                 }

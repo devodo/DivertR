@@ -2,7 +2,7 @@
 {
     public interface IRedirect<out T> where T : class
     {
-        object? Invoke(ICall call);
-        bool IsMatch(ICall call);
+        object? Call(CallInfo callInfo);
+        bool IsMatch(CallInfo callInfo);
     }
 }

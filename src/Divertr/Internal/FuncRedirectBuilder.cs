@@ -36,7 +36,7 @@ namespace DivertR.Internal
         public IVia<T> To<T1>(Func<T1, TReturn> redirectDelegate)
         {
             _parsedCall.Validate(redirectDelegate);
-            var redirect = new DelegateRedirect<T>(args => redirectDelegate.Invoke((T1) args[0]), BuildCallConstraint());
+            var redirect = new DelegateRedirect<T>(callInfo => redirectDelegate.Invoke((T1) callInfo.Arguments[0]), BuildCallConstraint());
             
             return Via.AddRedirect(redirect);
         }
@@ -44,7 +44,7 @@ namespace DivertR.Internal
         public IVia<T> To<T1, T2>(Func<T1, T2, TReturn> redirectDelegate)
         {
             _parsedCall.Validate(redirectDelegate);
-            var redirect = new DelegateRedirect<T>(args => redirectDelegate.Invoke((T1) args[0], (T2) args[1]), BuildCallConstraint());
+            var redirect = new DelegateRedirect<T>(callInfo => redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1]), BuildCallConstraint());
             
             return Via.AddRedirect(redirect);
         }

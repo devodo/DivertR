@@ -6,8 +6,9 @@
         T Original { get; }
         T? OriginalInstance { get; }
         IRedirect<T> Redirect { get; }
-        //object? State { get; }
-        object? CallNext(ICall call);
-        object? CallOriginal(ICall call);
+        T Proxy { get; }
+        CallInfo CallInfo { get; }
+        object? CallNext(CallInfo callInfo);
+        object? CallOriginal(CallInfo callInfo);
     }
 }

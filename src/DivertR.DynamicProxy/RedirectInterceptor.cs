@@ -1,4 +1,5 @@
 ﻿using Castle.DynamicProxy;
+using DivertR.Core;
 using DivertR.Core.Internal;
 
 namespace DivertR.DynamicProxy
@@ -14,7 +15,7 @@ namespace DivertR.DynamicProxy
 
         public void Intercept(IInvocation invocation)
         {
-            var call = new DynamicProxyCall(invocation);
+            var call = new CallInfo(invocation.Method, invocation.Arguments);
             invocation.ReturnValue = _relayState.CallNext(call);
         }
     }

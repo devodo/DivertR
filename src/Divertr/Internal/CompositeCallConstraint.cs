@@ -18,9 +18,9 @@ namespace DivertR.Internal
             _callConstraints = new List<ICallConstraint>(callConstraints);
         }
 
-        public bool IsMatch(ICall call)
+        public bool IsMatch(CallInfo callInfo)
         {
-            return _callConstraints.All(callConstraint => callConstraint.IsMatch(call));
+            return _callConstraints.All(callConstraint => callConstraint.IsMatch(callInfo));
         }
     }
 }
