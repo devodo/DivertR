@@ -12,17 +12,16 @@ namespace DivertR.Internal
         private readonly IMethodConstraint _methodConstraint;
         private readonly IArgumentConstraint[] _argumentConstraints;
 
+        public ICallConstraint CallConstraint { get; }
+
         internal ParsedCall(MethodInfo method, ParameterInfo[] parameterInfos, IMethodConstraint methodConstraint, IArgumentConstraint[] argumentConstraints)
         {
             _method = method;
             _parameterInfos = parameterInfos;
             _methodConstraint = methodConstraint;
             _argumentConstraints = argumentConstraints;
-        }
-        
-        public ICallConstraint CreateCallConstraint()
-        {
-            return new MethodCallConstraint(_method, _methodConstraint, _argumentConstraints);
+            
+            CallConstraint = new MethodCallConstraint(_method, _methodConstraint, _argumentConstraints);
         }
 
         public void Validate(Delegate redirectDelegate)

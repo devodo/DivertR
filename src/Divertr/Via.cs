@@ -63,9 +63,9 @@ namespace DivertR
             return Redirect().To(target);
         }
 
-        public IRedirectBuilder<T> Redirect(ICallConstraint? callCondition = null)
+        public IRedirectBuilder<T> Redirect(ICallConstraint? callConstraint = null)
         {
-            return new RedirectBuilder<T>(this, callCondition);
+            return new RedirectBuilder<T>(this, callConstraint);
         }
         
         public IFuncRedirectBuilder<T, TReturn> Redirect<TReturn>(Expression<Func<T, TReturn>> lambdaExpression)
@@ -158,6 +158,14 @@ namespace DivertR
             _viaStateRepository.Reset(ViaId);
 
             return this;
+        }
+
+        public ICallCapture<T> CaptureCalls(ICallConstraint? callConstraint = null)
+        {
+            var callCapture = new CallCaptureRedirect<T>(Relay);
+            InsertRedirect(0, callCapture);
+
+            return callCapture;
         }
     }
 }

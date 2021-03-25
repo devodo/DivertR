@@ -10,7 +10,7 @@ namespace DivertR.Internal
         public T Next { get; }
         public T Original { get; }
 
-        public T Proxy => _relayState.Proxy;
+        public T ProxyInstance => _relayState.Proxy;
         public T? OriginalInstance => _relayState.Original;
         
         public IRedirect<T> Redirect => _relayState.Redirect;

@@ -20,9 +20,12 @@ namespace DivertR.Core
 
         public static object? Invoke<T>(this CallInfo callInfo, T target)
         {
-            return callInfo.Method.ToDelegate(typeof(T)).Invoke(target, callInfo.CallArguments.InternalArgs);
+            if (target == null) throw new ArgumentNullException(nameof(target));
+            
+            var delegateInternal = callInfo.Method.ToDelegate(typeof(T));
+            return delegateInternal.Invoke(target, callInfo.CallArguments.InternalArgs);
         }
-        
+
         public static Func<object, object[], object> ToDelegate(this MethodInfo methodInfo, Type targetType)
         {
             var methodId = new MethodId(targetType, methodInfo);

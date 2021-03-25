@@ -8,7 +8,7 @@ namespace DivertR.Internal
         private readonly ParsedCall _parsedCall;
 
         public ActionRedirectBuilder(IVia<T> via, ParsedCall parsedCall)
-            : base(via, parsedCall.CreateCallConstraint())
+            : base(via, parsedCall.CallConstraint)
         {
             _parsedCall = parsedCall;
         }
@@ -20,15 +20,30 @@ namespace DivertR.Internal
             return base.BuildRedirect(redirectDelegate);
         }
         
+        public IVia<T> To(Action redirectDelegate)
+        {
+            _parsedCall.Validate(redirectDelegate);
+            return AddRedirect(callInfo =>
+            {
+                redirectDelegate.Invoke();
+                return default;
+            });
+        }
+        
         public IVia<T> To<T1>(Action<T1> redirectDelegate)
         {
             _parsedCall.Validate(redirectDelegate);
-            var redirect = new DelegateRedirect<T>(callInfo =>
+            return AddRedirect(callInfo =>
             {
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0]);
                 return default;
-            }, BuildCallConstraint());
-            
+            });
+        }
+
+        private IVia<T> AddRedirect(Func<CallInfo, object?> redirectDelegate)
+        {
+            var redirect = new DelegateRedirect<T>(redirectDelegate, BuildCallConstraint());
+
             return Via.AddRedirect(redirect);
         }
     }

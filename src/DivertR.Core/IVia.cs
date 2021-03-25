@@ -18,9 +18,11 @@ namespace DivertR.Core
         IVia<T> AddRedirect(IRedirect<T> redirect);
         IVia<T> InsertRedirect(int index, IRedirect<T> redirect);
         IVia<T> Reset();
-        IRedirectBuilder<T> Redirect(ICallConstraint? callCondition = null);
+        IRedirectBuilder<T> Redirect(ICallConstraint? callConstraint = null);
         IFuncRedirectBuilder<T, TReturn> Redirect<TReturn>(Expression<Func<T, TReturn>> lambdaExpression);
         IActionRedirectBuilder<T> Redirect(Expression<Action<T>> lambdaExpression);
         IActionRedirectBuilder<T> RedirectSet<TProperty>(Expression<Func<T, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression);
+
+        ICallCapture<T> CaptureCalls(ICallConstraint? callConstraint = null);
     }
 }

@@ -8,7 +8,7 @@ namespace DivertR.Internal
         private readonly ParsedCall _parsedCall;
 
         public FuncRedirectBuilder(IVia<T> via, ParsedCall parsedCall)
-            : base(via, parsedCall.CreateCallConstraint())
+            : base(via, parsedCall.CallConstraint)
         {
             _parsedCall = parsedCall;
         }
