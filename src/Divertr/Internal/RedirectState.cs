@@ -5,15 +5,13 @@ namespace DivertR.Internal
 {
     internal class RedirectState<T> where T : class
     {
-        private readonly InternalData _data;
         private readonly int _index;
-        
-        public T Proxy => _data.Proxy;
-        public T? Original => _data.Original;
-        public CallInfo CallInfo { get; }
-        public IRedirect<T> Redirect => _data.Redirects[_index];
 
-        public static RedirectState<T>? Create(T proxy, T? original, List<IRedirect<T>> redirects, CallInfo callInfo)
+        private readonly List<IRedirect<T>> _redirects;
+        public CallInfo<T> CallInfo { get; }
+        public IRedirect<T> Redirect => _redirects[_index];
+
+        public static RedirectState<T>? Create(List<IRedirect<T>> redirects, CallInfo<T> callInfo)
         {
             var index = GetNextIndex(-1, redirects, callInfo);
 
@@ -22,30 +20,29 @@ namespace DivertR.Internal
                 return null;
             }
             
-            var data = new InternalData(proxy, original, redirects);
-            return new RedirectState<T>(data, index, callInfo);
+            return new RedirectState<T>(redirects, index, callInfo);
         }
 
-        private RedirectState(InternalData data, int index, CallInfo callInfo)
+        private RedirectState(List<IRedirect<T>> redirects, int index, CallInfo<T> callInfo)
         {
             CallInfo = callInfo;
-            _data = data;
+            _redirects = redirects;
             _index = index;
         }
 
-        public RedirectState<T>? MoveNext(CallInfo callInfo)
+        public RedirectState<T>? MoveNext(CallInfo<T> callInfo)
         {
-            var index = GetNextIndex(_index, _data.Redirects, callInfo);
+            var index = GetNextIndex(_index, _redirects, callInfo);
 
             if (index == -1)
             {
                 return null;
             }
 
-            return new RedirectState<T>(_data, index, callInfo);
+            return new RedirectState<T>(_redirects, index, callInfo);
         }
         
-        private static int GetNextIndex(int index, List<IRedirect<T>> redirects, CallInfo callInfo)
+        private static int GetNextIndex(int index, List<IRedirect<T>> redirects, CallInfo<T> callInfo)
         {
             var startIndex = index + 1;
 
@@ -60,20 +57,6 @@ namespace DivertR.Internal
             }
 
             return -1;
-        }
-        
-        private class InternalData
-        {
-            public T Proxy { get; }
-            public T? Original { get; }
-            public List<IRedirect<T>> Redirects { get; }
-
-            public InternalData(T proxy, T? original, List<IRedirect<T>> redirects)
-            {
-                Proxy = proxy;
-                Original = original;
-                Redirects = redirects;
-            }
         }
     }
 }

@@ -111,7 +111,7 @@ namespace DivertR.UnitTests
             IAsyncFoo originalReference = null;
             _via.RedirectTo(new AsyncFoo(async () =>
             {
-                originalReference = _via.Relay.OriginalInstance;
+                originalReference = _via.Relay.CallInfo.Original;
                 return $"hello {await originalReference!.MessageAsync}";
             }));
 

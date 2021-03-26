@@ -1,8 +1,8 @@
 ﻿namespace DivertR.Core
 {
-    public interface IRedirect<out T> where T : class
+    public interface IRedirect<T> where T : class
     {
-        object? Call(CallInfo callInfo);
-        bool IsMatch(CallInfo callInfo);
+        object? Call(CallInfo<T> callInfo);
+        bool IsMatch(CallInfo<T> callInfo);
     }
 }

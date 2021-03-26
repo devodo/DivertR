@@ -26,8 +26,8 @@ namespace DivertR.DynamicProxy
                 return;
             }
             
-            var call = new CallInfo(invocation.Method, invocation.Arguments);
-            invocation.ReturnValue = viaState.RelayState.CallBegin((T) invocation.Proxy, _original, viaState.Redirects, call);
+            var call = new CallInfo<T>((T) invocation.Proxy, _original, invocation.Method, invocation.Arguments);
+            invocation.ReturnValue = viaState.RelayState.CallBegin(viaState.Redirects, call);
         }
 
         private void DefaultProceed(IInvocation invocation)

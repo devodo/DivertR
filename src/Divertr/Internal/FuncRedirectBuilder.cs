@@ -5,9 +5,9 @@ namespace DivertR.Internal
 {
     internal class FuncRedirectBuilder<T, TReturn> : RedirectBuilder<T>, IFuncRedirectBuilder<T, TReturn> where T : class
     {
-        private readonly ParsedCall _parsedCall;
+        private readonly ParsedCall<T> _parsedCall;
 
-        public FuncRedirectBuilder(IVia<T> via, ParsedCall parsedCall)
+        public FuncRedirectBuilder(IVia<T> via, ParsedCall<T> parsedCall)
             : base(via, parsedCall.CallConstraint)
         {
             _parsedCall = parsedCall;

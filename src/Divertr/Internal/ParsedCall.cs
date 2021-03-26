@@ -5,14 +5,14 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    public class ParsedCall
+    public class ParsedCall<T> where T : class
     {
         private readonly MethodInfo _method;
         private readonly ParameterInfo[] _parameterInfos;
         private readonly IMethodConstraint _methodConstraint;
         private readonly IArgumentConstraint[] _argumentConstraints;
 
-        public ICallConstraint CallConstraint { get; }
+        public ICallConstraint<T> CallConstraint { get; }
 
         internal ParsedCall(MethodInfo method, ParameterInfo[] parameterInfos, IMethodConstraint methodConstraint, IArgumentConstraint[] argumentConstraints)
         {
@@ -21,7 +21,7 @@ namespace DivertR.Internal
             _methodConstraint = methodConstraint;
             _argumentConstraints = argumentConstraints;
             
-            CallConstraint = new MethodCallConstraint(_method, _methodConstraint, _argumentConstraints);
+            CallConstraint = new MethodCallConstraint<T>(_method, _methodConstraint, _argumentConstraints);
         }
 
         public void Validate(Delegate redirectDelegate)

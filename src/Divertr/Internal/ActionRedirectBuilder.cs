@@ -5,9 +5,9 @@ namespace DivertR.Internal
 {
     internal class ActionRedirectBuilder<T> : RedirectBuilder<T>, IActionRedirectBuilder<T> where T : class
     {
-        private readonly ParsedCall _parsedCall;
+        private readonly ParsedCall<T> _parsedCall;
 
-        public ActionRedirectBuilder(IVia<T> via, ParsedCall parsedCall)
+        public ActionRedirectBuilder(IVia<T> via, ParsedCall<T> parsedCall)
             : base(via, parsedCall.CallConstraint)
         {
             _parsedCall = parsedCall;
@@ -40,7 +40,7 @@ namespace DivertR.Internal
             });
         }
 
-        private IVia<T> AddRedirect(Func<CallInfo, object?> redirectDelegate)
+        private IVia<T> AddRedirect(Func<CallInfo<T>, object?> redirectDelegate)
         {
             var redirect = new DelegateRedirect<T>(redirectDelegate, BuildCallConstraint());
 

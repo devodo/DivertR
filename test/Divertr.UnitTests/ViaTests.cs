@@ -95,7 +95,7 @@ namespace DivertR.UnitTests
             IFoo originalReference = null;
             _via.RedirectTo(new Foo(() =>
             {
-                originalReference = _via.Relay.OriginalInstance;
+                originalReference = _via.Relay.CallInfo.Original;
                 return $"hello {originalReference!.Message}";
             }));
 

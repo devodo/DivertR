@@ -15,7 +15,7 @@ namespace DivertR.DispatchProxy
 
         public object Invoke(MethodInfo targetMethod, object[] args)
         {
-            var original = _relayState.Original;
+            var original = _relayState.CallInfo.Original;
             
             if (original == null)
             {

@@ -1,7 +1,7 @@
 ﻿namespace DivertR.Core
 {
-    public interface ICallConstraint
+    public interface ICallConstraint<T> where T : class
     {
-        bool IsMatch(CallInfo callInfo);
+        bool IsMatch(CallInfo<T> callInfo);
     }
 }

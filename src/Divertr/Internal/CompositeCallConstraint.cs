@@ -4,21 +4,21 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class CompositeCallConstraint : ICallConstraint
+    internal class CompositeCallConstraint<T> : ICallConstraint<T> where T : class
     {
-        private readonly IReadOnlyCollection<ICallConstraint> _callConstraints;
+        private readonly IReadOnlyCollection<ICallConstraint<T>> _callConstraints;
 
-        public CompositeCallConstraint(IReadOnlyCollection<ICallConstraint> callConstraints)
+        public CompositeCallConstraint(IReadOnlyCollection<ICallConstraint<T>> callConstraints)
         {
             _callConstraints = callConstraints;
         }
 
-        public CompositeCallConstraint(IEnumerable<ICallConstraint> callConstraints)
+        public CompositeCallConstraint(IEnumerable<ICallConstraint<T>> callConstraints)
         {
-            _callConstraints = new List<ICallConstraint>(callConstraints);
+            _callConstraints = new List<ICallConstraint<T>>(callConstraints);
         }
 
-        public bool IsMatch(CallInfo callInfo)
+        public bool IsMatch(CallInfo<T> callInfo)
         {
             return _callConstraints.All(callConstraint => callConstraint.IsMatch(callInfo));
         }

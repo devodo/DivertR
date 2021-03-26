@@ -51,7 +51,7 @@ namespace DivertR.UnitTests
             IValueTaskFoo originalReference = null;
             _via.RedirectTo(new ValueTaskFoo(async () =>
             {
-                originalReference = _via.Relay.OriginalInstance;
+                originalReference = _via.Relay.CallInfo.Original;
                 return $"hello {await originalReference!.MessageAsync}";
             }));
 

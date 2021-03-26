@@ -63,7 +63,7 @@ namespace DivertR.UnitTests
             calls[0].CallInfo.Arguments.Count.ShouldBe(1);
             calls[0].CallInfo.Arguments[0].ShouldBe(inputs[0]);
             calls[0].ReturnValue.ShouldBe(outputs[0]);
-            calls[0].Proxy.ShouldBeSameAs(fooProxy);
+            calls[0].CallInfo.Proxy.ShouldBeSameAs(fooProxy);
         }
     }
 }

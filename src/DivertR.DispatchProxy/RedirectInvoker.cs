@@ -15,7 +15,8 @@ namespace DivertR.DispatchProxy
         
         public object Invoke(MethodInfo targetMethod, object[] args)
         {
-            var call = new CallInfo(targetMethod, args);
+            var lastCall = _relayState.CallInfo;
+            var call = new CallInfo<T>(lastCall.Proxy, lastCall.Original, targetMethod, args);
 
             return _relayState.CallNext(call)!;
         }

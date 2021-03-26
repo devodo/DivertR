@@ -10,37 +10,37 @@ namespace DivertR
     public class CallCaptureRedirect<T> : IRedirect<T>, ICallCapture<T> where T : class
     {
         private readonly IRelay<T> _relay;
-        private readonly ICallConstraint _callConstraint;
+        private readonly ICallConstraint<T> _callConstraint;
         private readonly object _lockObject = new object();
 
         private readonly List<CapturedCall<T>> _calls = new List<CapturedCall<T>>();
 
-        public CallCaptureRedirect(IRelay<T> relay, ICallConstraint? callConstraint = null)
+        public CallCaptureRedirect(IRelay<T> relay, ICallConstraint<T>? callConstraint = null)
         {
             _relay = relay ?? throw new ArgumentNullException(nameof(relay));
-            _callConstraint = callConstraint ?? TrueCallConstraint.Instance;
+            _callConstraint = callConstraint ?? TrueCallConstraint<T>.Instance;
         }
         
-        public object? Call(CallInfo callInfo)
+        public object? Call(CallInfo<T> callInfo)
         {
             var returnValue = _relay.CallNext(callInfo);
             
             lock (_lockObject)
             {
-                _calls.Add(new CapturedCall<T>(callInfo, returnValue, _relay.ProxyInstance, _relay.OriginalInstance));
+                _calls.Add(new CapturedCall<T>(callInfo, returnValue));
             }
 
             return returnValue;
         }
         
-        public bool IsMatch(CallInfo callInfo)
+        public bool IsMatch(CallInfo<T> callInfo)
         {
             return _callConstraint.IsMatch(callInfo);
         }
 
-        public List<CapturedCall<T>> Calls(ICallConstraint? callConstraint = null)
+        public List<CapturedCall<T>> Calls(ICallConstraint<T>? callConstraint = null)
         {
-            callConstraint ??= TrueCallConstraint.Instance;
+            callConstraint ??= TrueCallConstraint<T>.Instance;
 
             lock (_lockObject)
             {
@@ -55,7 +55,7 @@ namespace DivertR
                 throw new ArgumentNullException(nameof(lambdaExpression));
             }
 
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            var parsedCall = CallExpressionParser<T>.FromExpression(lambdaExpression.Body);
             return Calls(parsedCall.CallConstraint);
         }
         
@@ -66,7 +66,7 @@ namespace DivertR
                 throw new ArgumentNullException(nameof(lambdaExpression));
             }
             
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            var parsedCall = CallExpressionParser<T>.FromExpression(lambdaExpression.Body);
             return Calls(parsedCall.CallConstraint);
         }
     }

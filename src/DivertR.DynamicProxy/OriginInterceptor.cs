@@ -15,7 +15,7 @@ namespace DivertR.DynamicProxy
 
         public void Intercept(IInvocation invocation)
         {
-            var original = _relayState.Original;
+            var original = _relayState.CallInfo.Original;
             
             if (original == null)
             {

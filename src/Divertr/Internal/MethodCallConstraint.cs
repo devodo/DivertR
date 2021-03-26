@@ -3,7 +3,7 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class MethodCallConstraint : ICallConstraint
+    internal class MethodCallConstraint<T> : ICallConstraint<T> where T : class
     {
         private readonly MethodInfo _methodInfo;
         private readonly IMethodConstraint _methodConstraint;
@@ -16,7 +16,7 @@ namespace DivertR.Internal
             _argumentConditions = argumentConditions;
         }
 
-        public bool IsMatch(CallInfo callInfo)
+        public bool IsMatch(CallInfo<T> callInfo)
         {
             if (!_methodConstraint.IsMatch(callInfo.Method))
             {

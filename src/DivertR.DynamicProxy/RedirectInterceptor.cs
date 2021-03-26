@@ -15,7 +15,8 @@ namespace DivertR.DynamicProxy
 
         public void Intercept(IInvocation invocation)
         {
-            var call = new CallInfo(invocation.Method, invocation.Arguments);
+            var lastCall = _relayState.CallInfo;
+            var call = new CallInfo<T>(lastCall.Proxy, lastCall.Original, invocation.Method, invocation.Arguments);
             invocation.ReturnValue = _relayState.CallNext(call);
         }
     }

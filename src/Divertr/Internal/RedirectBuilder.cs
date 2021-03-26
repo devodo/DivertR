@@ -8,9 +8,9 @@ namespace DivertR.Internal
     internal class RedirectBuilder<T> : IRedirectBuilder<T> where T : class
     {
         protected readonly IVia<T> Via;
-        private readonly List<ICallConstraint> _callConstraints = new List<ICallConstraint>();
+        private readonly List<ICallConstraint<T>> _callConstraints = new List<ICallConstraint<T>>();
 
-        public RedirectBuilder(IVia<T> via, ICallConstraint? callConstraint = null)
+        public RedirectBuilder(IVia<T> via, ICallConstraint<T>? callConstraint = null)
         {
             Via = via ?? throw new ArgumentNullException(nameof(via));
 
@@ -20,13 +20,13 @@ namespace DivertR.Internal
             }
         }
         
-        public ICallConstraint BuildCallConstraint()
+        public ICallConstraint<T> BuildCallConstraint()
         {
             return _callConstraints.Count switch
             {
-                0 => TrueCallConstraint.Instance,
+                0 => TrueCallConstraint<T>.Instance,
                 1 => _callConstraints[0],
-                _ => new CompositeCallConstraint(_callConstraints)
+                _ => new CompositeCallConstraint<T>(_callConstraints)
             };
         }
 

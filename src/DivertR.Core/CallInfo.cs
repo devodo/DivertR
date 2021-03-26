@@ -3,19 +3,23 @@ using System.Reflection;
 
 namespace DivertR.Core
 {
-    public class CallInfo
+    public class CallInfo<T> where T : class
     {
-        public CallInfo(MethodInfo method, CallArguments callArguments)
+        public CallInfo(T proxy, T? original, MethodInfo method, CallArguments callArguments)
         {
+            Proxy = proxy;
+            Original = original;
             Method = method;
             CallArguments = callArguments;
         }
         
-        public CallInfo(MethodInfo method, object[] args)
-            : this(method, new CallArguments(args))
+        public CallInfo(T proxy, T? original, MethodInfo method, object[] args)
+            : this(proxy, original, method, new CallArguments(args))
         {
         }
-        
+
+        public T Proxy { get; }
+        public T? Original { get; }
         public MethodInfo Method { get; }
 
         public ReadOnlyCollection<object> Arguments => CallArguments.Arguments;

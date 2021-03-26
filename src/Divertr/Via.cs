@@ -63,7 +63,7 @@ namespace DivertR
             return Redirect().To(target);
         }
 
-        public IRedirectBuilder<T> Redirect(ICallConstraint? callConstraint = null)
+        public IRedirectBuilder<T> Redirect(ICallConstraint<T>? callConstraint = null)
         {
             return new RedirectBuilder<T>(this, callConstraint);
         }
@@ -75,7 +75,7 @@ namespace DivertR
                 throw new ArgumentNullException(nameof(lambdaExpression));
             }
 
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            var parsedCall = CallExpressionParser<T>.FromExpression(lambdaExpression.Body);
             return new FuncRedirectBuilder<T, TReturn>(this, parsedCall);
         }
         
@@ -86,7 +86,7 @@ namespace DivertR
                 throw new ArgumentNullException(nameof(lambdaExpression));
             }
             
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            var parsedCall = CallExpressionParser<T>.FromExpression(lambdaExpression.Body);
             return new ActionRedirectBuilder<T>(this, parsedCall);
         }
         
@@ -100,7 +100,7 @@ namespace DivertR
                 throw new ArgumentException("Only property member expressions are valid input to RedirectSet", nameof(propertyExpression));
             }
 
-            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
+            var parsedCall = CallExpressionParser<T>.FromPropertySetter(propertyExpression, valueExpression.Body);
 
             return new ActionRedirectBuilder<T>(this, parsedCall);
         }
@@ -160,7 +160,7 @@ namespace DivertR
             return this;
         }
 
-        public ICallCapture<T> CaptureCalls(ICallConstraint? callConstraint = null)
+        public ICallCapture<T> CaptureCalls(ICallConstraint<T>? callConstraint = null)
         {
             var callCapture = new CallCaptureRedirect<T>(Relay);
             InsertRedirect(0, callCapture);

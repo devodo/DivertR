@@ -6,9 +6,9 @@ using System.Reflection;
 
 namespace DivertR.Internal
 {
-    public static class CallExpressionParser
+    public static class CallExpressionParser<T> where T : class
     {
-        public static ParsedCall FromExpression(Expression expression)
+        public static ParsedCall<T> FromExpression(Expression expression)
         {
             return expression switch
             {
@@ -18,7 +18,7 @@ namespace DivertR.Internal
             };
         }
         
-        public static ParsedCall FromPropertySetter(MemberExpression propertyExpression, Expression valueExpression)
+        public static ParsedCall<T> FromPropertySetter(MemberExpression propertyExpression, Expression valueExpression)
         {
             if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
             if (valueExpression == null) throw new ArgumentNullException(nameof(valueExpression));
@@ -33,20 +33,20 @@ namespace DivertR.Internal
             var methodConstraint = CreateMethodConstraint(methodInfo);
             var argumentConstraints = CreateArgumentConstraints(parameterInfos, new[] {valueExpression});
 
-            return new ParsedCall(methodInfo, parameterInfos, methodConstraint, argumentConstraints);
+            return new ParsedCall<T>(methodInfo, parameterInfos, methodConstraint, argumentConstraints);
         }
         
-        private static ParsedCall FromMethodCall(MethodCallExpression methodExpression)
+        private static ParsedCall<T> FromMethodCall(MethodCallExpression methodExpression)
         {
             var methodInfo = methodExpression?.Method ?? throw new ArgumentNullException(nameof(methodExpression));
             var parameterInfos = methodInfo.GetParameters();
             var argumentConstraints = CreateArgumentConstraints(parameterInfos, methodExpression.Arguments);
             var methodConstraint = CreateMethodConstraint(methodInfo);
             
-            return new ParsedCall(methodInfo, parameterInfos, methodConstraint, argumentConstraints);
+            return new ParsedCall<T>(methodInfo, parameterInfos, methodConstraint, argumentConstraints);
         }
 
-        private static ParsedCall FromPropertyGetter(MemberExpression propertyExpression)
+        private static ParsedCall<T> FromPropertyGetter(MemberExpression propertyExpression)
         {
             if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
             
@@ -59,7 +59,7 @@ namespace DivertR.Internal
             var parameterInfos = methodInfo.GetParameters();
             var methodConstraint = CreateMethodConstraint(methodInfo);
             
-            return new ParsedCall(methodInfo, parameterInfos, methodConstraint, Array.Empty<IArgumentConstraint>());
+            return new ParsedCall<T>(methodInfo, parameterInfos, methodConstraint, Array.Empty<IArgumentConstraint>());
         }
         
         private static IArgumentConstraint[] CreateArgumentConstraints(ParameterInfo[] parameterInfos, IReadOnlyCollection<Expression> arguments)
