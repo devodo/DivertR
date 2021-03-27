@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using DivertR.Core;
 
 namespace DivertR.Internal
@@ -18,12 +19,59 @@ namespace DivertR.Internal
             return null;
         }
         
-        public void Set<T>(ViaId viaId, ViaState<T> viaState) where T : class
+        public ViaState<T> AddRedirect<T>(ViaId viaId, IRedirect<T> redirect) where T : class
         {
-            _viaStates[viaId] = viaState;
+            ViaState<T> Create()
+            {
+                return new ViaState<T>(ImmutableArray.Create(redirect));
+            }
+
+            ViaState<T> Update(ViaState<T> existing)
+            {
+                var redirects = existing.Redirects.Add(redirect);
+                return new ViaState<T>(redirects);
+            }
+
+            return AddOrUpdate(viaId, Create, Update);
+        }
+        
+        public ViaState<T> InsertRedirect<T>(ViaId viaId, int index, IRedirect<T> redirect) where T : class
+        {
+            ViaState<T> Create()
+            {
+                if (index != 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index), "Index must be 0 if there are no existing redirects");
+                }
+                
+                return new ViaState<T>(ImmutableArray.Create(redirect));
+            }
+
+            ViaState<T> Update(ViaState<T> existing)
+            {
+                if (index < 0 || index > existing.Redirects.Length)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index), "Index must be within the bounds of the existing redirects");
+                }
+
+                var redirects = existing.Redirects.Insert(index, redirect);
+                return new ViaState<T>(redirects);
+            }
+
+            return AddOrUpdate(viaId, Create, Update);
+        }
+        
+        public bool Reset(ViaId viaId)
+        {
+            return _viaStates.TryRemove(viaId, out _);
+        }
+        
+        public void ResetAll()
+        {
+            _viaStates.Clear();
         }
 
-        public ViaState<T> AddOrUpdate<T>(ViaId viaId, Func<ViaState<T>> addFactory, Func<ViaState<T>, ViaState<T>> updateFactory) where T : class
+        private ViaState<T> AddOrUpdate<T>(ViaId viaId, Func<ViaState<T>> addFactory, Func<ViaState<T>, ViaState<T>> updateFactory) where T : class
         {
             object Create(ViaId _)
             {
@@ -36,16 +84,6 @@ namespace DivertR.Internal
             }
 
             return (ViaState<T>) _viaStates.AddOrUpdate(viaId, Create, Update);
-        }
-        
-        public bool Reset(ViaId viaId)
-        {
-            return _viaStates.TryRemove(viaId, out _);
-        }
-        
-        public void ResetAll()
-        {
-            _viaStates.Clear();
         }
     }
 }

@@ -3,15 +3,15 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class RedirectState<T> where T : class
+    internal class RedirectContext<T> where T : class
     {
         private readonly int _index;
 
-        private readonly List<IRedirect<T>> _redirects;
+        private readonly IList<IRedirect<T>> _redirects;
         public CallInfo<T> CallInfo { get; }
         public IRedirect<T> Redirect => _redirects[_index];
 
-        public static RedirectState<T>? Create(List<IRedirect<T>> redirects, CallInfo<T> callInfo)
+        public static RedirectContext<T>? Create(IList<IRedirect<T>> redirects, CallInfo<T> callInfo)
         {
             var index = GetNextIndex(-1, redirects, callInfo);
 
@@ -20,17 +20,17 @@ namespace DivertR.Internal
                 return null;
             }
             
-            return new RedirectState<T>(redirects, index, callInfo);
+            return new RedirectContext<T>(redirects, index, callInfo);
         }
 
-        private RedirectState(List<IRedirect<T>> redirects, int index, CallInfo<T> callInfo)
+        private RedirectContext(IList<IRedirect<T>> redirects, int index, CallInfo<T> callInfo)
         {
             CallInfo = callInfo;
             _redirects = redirects;
             _index = index;
         }
 
-        public RedirectState<T>? MoveNext(CallInfo<T> callInfo)
+        public RedirectContext<T>? MoveNext(CallInfo<T> callInfo)
         {
             var index = GetNextIndex(_index, _redirects, callInfo);
 
@@ -39,10 +39,10 @@ namespace DivertR.Internal
                 return null;
             }
 
-            return new RedirectState<T>(_redirects, index, callInfo);
+            return new RedirectContext<T>(_redirects, index, callInfo);
         }
         
-        private static int GetNextIndex(int index, List<IRedirect<T>> redirects, CallInfo<T> callInfo)
+        private static int GetNextIndex(int index, IList<IRedirect<T>> redirects, CallInfo<T> callInfo)
         {
             var startIndex = index + 1;
 

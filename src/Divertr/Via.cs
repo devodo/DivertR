@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Linq.Expressions;
 using DivertR.Core;
 using DivertR.Core.Internal;
@@ -12,14 +11,14 @@ namespace DivertR
     {
         private readonly ViaStateRepository _viaStateRepository;
         private readonly IProxyFactory _proxyFactory;
-        private readonly RelayState<T> _relayState;
+        private readonly IRelayContext<T> _relayContext;
         private readonly Lazy<IRelay<T>> _relay;
 
-        public Via() : this(ViaId.From<T>(), new ViaStateRepository())
+        public Via() : this(ViaId.From<T>(), new ViaStateRepository(), DispatchProxyFactory.Instance)
         {
         }
         
-        internal Via(ViaId viaId, ViaStateRepository viaStateRepository)
+        internal Via(ViaId viaId, ViaStateRepository viaStateRepository, IProxyFactory proxyFactory)
         {
             if (!typeof(T).IsInterface && !typeof(T).IsClass)
             {
@@ -28,9 +27,9 @@ namespace DivertR
             
             ViaId = viaId;
             _viaStateRepository = viaStateRepository;
-            _proxyFactory = DispatchProxyFactory.Instance;
-            _relayState = new RelayState<T>();
-            _relay = new Lazy<IRelay<T>>(() => new Relay<T>(_relayState, _proxyFactory));
+            _proxyFactory = proxyFactory;
+            _relayContext = new RelayContext<T>();
+            _relay = new Lazy<IRelay<T>>(() => new Relay<T>(_relayContext, _proxyFactory));
         }
 
         public ViaId ViaId { get; }
@@ -40,12 +39,16 @@ namespace DivertR
 
         public T Proxy(T? original = null)
         {
-            ViaState<T>? GetRedirectRoute()
+            IProxyCall<T>? GetProxyCall()
             {
-                return _viaStateRepository.Get<T>(ViaId);
+                var viaState = _viaStateRepository.Get<T>(ViaId);
+
+                return viaState == null 
+                    ? null
+                    : new ViaProxyCall<T>(_relayContext, viaState.Redirects);
             }
 
-            return _proxyFactory.CreateDiverterProxy(original, GetRedirectRoute);
+            return _proxyFactory.CreateProxy(original, GetProxyCall);
         }
 
         public object ProxyObject(object? original = null)
@@ -56,6 +59,27 @@ namespace DivertR
             }
 
             return Proxy(original as T);
+        }
+        
+        public IVia<T> AddRedirect(IRedirect<T> redirect)
+        {
+            _viaStateRepository.AddRedirect(ViaId, redirect);
+
+            return this;
+        }
+
+        public IVia<T> InsertRedirect(int index, IRedirect<T> redirect)
+        {
+            _viaStateRepository.InsertRedirect(ViaId, index, redirect);
+
+            return this;
+        }
+
+        public IVia<T> Reset()
+        {
+            _viaStateRepository.Reset(ViaId);
+
+            return this;
         }
         
         public IVia<T> RedirectTo(T target)
@@ -75,7 +99,7 @@ namespace DivertR
                 throw new ArgumentNullException(nameof(lambdaExpression));
             }
 
-            var parsedCall = CallExpressionParser<T>.FromExpression(lambdaExpression.Body);
+            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
             return new FuncRedirectBuilder<T, TReturn>(this, parsedCall);
         }
         
@@ -86,7 +110,7 @@ namespace DivertR
                 throw new ArgumentNullException(nameof(lambdaExpression));
             }
             
-            var parsedCall = CallExpressionParser<T>.FromExpression(lambdaExpression.Body);
+            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
             return new ActionRedirectBuilder<T>(this, parsedCall);
         }
         
@@ -100,64 +124,9 @@ namespace DivertR
                 throw new ArgumentException("Only property member expressions are valid input to RedirectSet", nameof(propertyExpression));
             }
 
-            var parsedCall = CallExpressionParser<T>.FromPropertySetter(propertyExpression, valueExpression.Body);
+            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
 
             return new ActionRedirectBuilder<T>(this, parsedCall);
-        }
-
-        public IVia<T> AddRedirect(IRedirect<T> redirect)
-        {
-            ViaState<T> Create()
-            {
-                return new ViaState<T>(redirect, _relayState);
-            }
-
-            ViaState<T> Update(ViaState<T> existing)
-            {
-                var redirects = existing.Redirects.ToList();
-                redirects.Add(redirect);
-                return new ViaState<T>(redirects, _relayState);
-            }
-
-            _viaStateRepository.AddOrUpdate(ViaId, Create, Update);
-
-            return this;
-        }
-
-        public IVia<T> InsertRedirect(int index, IRedirect<T> redirect)
-        {
-            ViaState<T> Create()
-            {
-                if (index != 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(index), "Index must be 0 if there are no existing redirects");
-                }
-                
-                return new ViaState<T>(redirect, _relayState);
-            }
-
-            ViaState<T> Update(ViaState<T> existing)
-            {
-                if (index < 0 || index > existing.Redirects.Count)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(index), "Index must be within the bounds of the existing redirects");
-                }
-                
-                var redirects = existing.Redirects.ToList();
-                redirects.Insert(index, redirect);
-                return new ViaState<T>(redirects, _relayState);
-            }
-
-            _viaStateRepository.AddOrUpdate(ViaId, Create, Update);
-
-            return this;
-        }
-
-        public IVia<T> Reset()
-        {
-            _viaStateRepository.Reset(ViaId);
-
-            return this;
         }
 
         public ICallCapture<T> CaptureCalls(ICallConstraint<T>? callConstraint = null)

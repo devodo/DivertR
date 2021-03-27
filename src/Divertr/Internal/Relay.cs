@@ -5,30 +5,30 @@ namespace DivertR.Internal
 {
     internal class Relay<T> : IRelay<T> where T : class
     {
-        private readonly IRelayState<T> _relayState;
+        private readonly IRelayContext<T> _relayContext;
         
         public T Next { get; }
         public T Original { get; }
 
-        public IRedirect<T> Redirect => _relayState.Redirect;
+        public IRedirect<T> Redirect => _relayContext.Redirect;
 
-        public CallInfo<T> CallInfo => _relayState.CallInfo;
+        public CallInfo<T> CallInfo => _relayContext.CallInfo;
 
-        public Relay(IRelayState<T> relayState, IProxyFactory proxyFactory)
+        public Relay(IRelayContext<T> relayContext, IProxyFactory proxyFactory)
         {
-            _relayState = relayState;
-            Next = proxyFactory.CreateRedirectTargetProxy(relayState);
-            Original = proxyFactory.CreateOriginalTargetProxy(relayState);
+            _relayContext = relayContext;
+            Next = proxyFactory.CreateProxy(new RedirectProxyCall<T>(_relayContext));
+            Original = proxyFactory.CreateProxy(new OriginalProxyCall<T>(_relayContext));
         }
 
-        public object? CallNext(CallInfo<T> callInfo)
+        public object? CallNext(CallInfo<T>? callInfo = null)
         {
-            return _relayState.CallNext(callInfo);
+            return _relayContext.CallNext(callInfo ?? CallInfo);
         }
         
-        public object? CallOriginal(CallInfo<T> callInfo)
+        public object? CallOriginal(CallInfo<T>? callInfo = null)
         {
-            return _relayState.CallOriginal(callInfo);
+            return _relayContext.CallOriginal(callInfo ?? CallInfo);
         }
     }
 }

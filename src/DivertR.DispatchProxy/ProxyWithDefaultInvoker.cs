@@ -5,30 +5,31 @@ using DivertR.Core.Internal;
 
 namespace DivertR.DispatchProxy
 {
-    internal class ViaInvoker<T> : IDispatchProxyInvoker where T : class
+    internal class ProxyWithDefaultInvoker<T> : IDispatchProxyInvoker where T : class
     {
         private readonly T _proxy;
         private readonly T? _original;
-        private readonly Func<IViaState<T>?> _getViaState;
-
-        public ViaInvoker(T proxy, T? original, Func<IViaState<T>?> getViaState)
+        private readonly Func<IProxyCall<T>?> _getProxyCall;
+        
+        public ProxyWithDefaultInvoker(T proxy, T? original, Func<IProxyCall<T>?> getProxyCall)
         {
             _proxy = proxy;
             _original = original;
-            _getViaState = getViaState;
+            _getProxyCall = getProxyCall;
         }
 
         public object Invoke(MethodInfo targetMethod, object[] args)
         {
-            var viaState = _getViaState();
+            var proxyCall = _getProxyCall.Invoke();
 
-            if (viaState == null)
+            if (proxyCall == null)
             {
                 return DefaultProceed(targetMethod, args);
             }
             
-            var call = new CallInfo<T>(_proxy, _original, targetMethod, args);
-            return viaState.RelayState.CallBegin(viaState.Redirects, call)!;
+            var callInfo = new CallInfo<T>(_proxy, _original, targetMethod, args);
+
+            return proxyCall.Call(callInfo)!;
         }
         
         private object DefaultProceed(MethodInfo targetMethod, object[] args)

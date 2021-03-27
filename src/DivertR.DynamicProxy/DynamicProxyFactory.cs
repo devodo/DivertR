@@ -10,28 +10,21 @@ namespace DivertR.DynamicProxy
         public static readonly DynamicProxyFactory Instance = new DynamicProxyFactory();
         
         private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
-        
-        public T CreateDiverterProxy<T>(T? original, Func<IViaState<T>?> getViaState) where T : class
+
+        public T CreateProxy<T>(T? original, Func<IProxyCall<T>?> getProxyCall) where T : class
         {
-            var interceptor = new ViaInterceptor<T>(original, getViaState);
+            var interceptor = new ProxyWithDefaultInterceptor<T>(original, getProxyCall);
 
             return CreateProxy(interceptor, original);
         }
-        
-        public T CreateRedirectTargetProxy<T>(IRelayState<T> relayState) where T : class
-        {
-            var interceptor = new RedirectInterceptor<T>(relayState);
-            
-            return CreateProxy<T>(interceptor);
-        }
-        
-        public T CreateOriginalTargetProxy<T>(IRelayState<T> relayState) where T : class
-        {
-            var interceptor = new OriginInterceptor<T>(relayState);
-            
-            return CreateProxy<T>(interceptor);
-        }
 
+        public T CreateProxy<T>(IProxyCall<T> proxyCall) where T : class
+        {
+            var interceptor = new ProxyInterceptor<T>(proxyCall);
+
+            return CreateProxy<T>(interceptor);
+        }
+        
         private T CreateProxy<T>(IInterceptor interceptor, T? target = null) where T : class
         {
             if (typeof(T).IsInterface)
@@ -48,7 +41,7 @@ namespace DivertR.DynamicProxy
                     : _proxyGenerator.CreateClassProxyWithTarget(target, interceptor);
             }
             
-            throw new DiverterException($"Invalid type argument {typeof(T).Name}. Only interface or class types are supported");
+            throw new DiverterException($"Invalid type {typeof(T).Name}. Only interface or class types are supported");
         }
     }
 }

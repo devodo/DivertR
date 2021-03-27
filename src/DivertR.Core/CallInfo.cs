@@ -19,11 +19,13 @@ namespace DivertR.Core
         }
 
         public T Proxy { get; }
+        
         public T? Original { get; }
+        
         public MethodInfo Method { get; }
 
         public ReadOnlyCollection<object> Arguments => CallArguments.Arguments;
 
-        internal CallArguments CallArguments { get; }
+        public CallArguments CallArguments { get; }
     }
 }

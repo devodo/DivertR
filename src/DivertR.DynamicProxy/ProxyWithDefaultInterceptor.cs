@@ -5,29 +5,34 @@ using DivertR.Core.Internal;
 
 namespace DivertR.DynamicProxy
 {
-    internal class ViaInterceptor<T> : IInterceptor where T : class
+    internal class ProxyWithDefaultInterceptor<T> : IInterceptor where T : class
     {
         private readonly T? _original;
-        private readonly Func<IViaState<T>?> _getViaState;
+        private readonly Func<IProxyCall<T>?> _getProxyCall;
+        
+        public ProxyWithDefaultInterceptor(Func<IProxyCall<T>?> getProxyCall)
+            : this(null, getProxyCall)
+        {
+        }
 
-        public ViaInterceptor(T? original, Func<IViaState<T>?> getViaState)
+        public ProxyWithDefaultInterceptor(T? original, Func<IProxyCall<T>?> getProxyCall)
         {
             _original = original;
-            _getViaState = getViaState;
+            _getProxyCall = getProxyCall;
         }
 
         public void Intercept(IInvocation invocation)
         {
-            var viaState = _getViaState();
+            var proxyCall = _getProxyCall();
 
-            if (viaState == null)
+            if (proxyCall == null)
             {
                 DefaultProceed(invocation);
                 return;
             }
             
-            var call = new CallInfo<T>((T) invocation.Proxy, _original, invocation.Method, invocation.Arguments);
-            invocation.ReturnValue = viaState.RelayState.CallBegin(viaState.Redirects, call);
+            var callInfo = new CallInfo<T>((T) invocation.Proxy, _original, invocation.Method, invocation.Arguments);
+            invocation.ReturnValue = proxyCall.Call(callInfo);
         }
 
         private void DefaultProceed(IInvocation invocation)

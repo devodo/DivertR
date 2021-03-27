@@ -55,8 +55,8 @@ namespace DivertR
                 throw new ArgumentNullException(nameof(lambdaExpression));
             }
 
-            var parsedCall = CallExpressionParser<T>.FromExpression(lambdaExpression.Body);
-            return Calls(parsedCall.CallConstraint);
+            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            return Calls(parsedCall.ToCallConstraint<T>());
         }
         
         public List<CapturedCall<T>> Calls(Expression<Action<T>> lambdaExpression)
@@ -66,8 +66,8 @@ namespace DivertR
                 throw new ArgumentNullException(nameof(lambdaExpression));
             }
             
-            var parsedCall = CallExpressionParser<T>.FromExpression(lambdaExpression.Body);
-            return Calls(parsedCall.CallConstraint);
+            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            return Calls(parsedCall.ToCallConstraint<T>());
         }
     }
 }

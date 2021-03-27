@@ -7,39 +7,25 @@ namespace DivertR.DispatchProxy
     internal class DispatchProxyFactory : IProxyFactory
     {
         public static readonly DispatchProxyFactory Instance = new DispatchProxyFactory();
-        
-        public T CreateDiverterProxy<T>(T? original, Func<IViaState<T>?> getViaState) where T : class
-        {
-            if (typeof(T).IsInterface)
-            {
-                return DiverterProxy.Create<T>(proxy => new ViaInvoker<T>(proxy, original, getViaState));
-            }
 
-            throw new DiverterException($"Invalid type argument {typeof(T).Name}. Only interface types are supported");
+        public T CreateProxy<T>(T? original, Func<IProxyCall<T>?> getProxyCall) where T : class
+        {
+            return CreateProxy<T>(proxy => new ProxyWithDefaultInvoker<T>(proxy, original, getProxyCall));
+        }
+
+        public T CreateProxy<T>(IProxyCall<T> proxyCall) where T : class
+        {
+            return CreateProxy<T>(proxy => new ProxyInvoker<T>(proxy, proxyCall));
         }
         
-        public T CreateRedirectTargetProxy<T>(IRelayState<T> relay) where T : class
+        private static T CreateProxy<T>(Func<T, IDispatchProxyInvoker> invokerFactory) where T : class
         {
-            var invoker = new RedirectInvoker<T>(relay);
-            
             if (typeof(T).IsInterface)
             {
-                return DiverterProxy.Create<T>(invoker);
+                return DiverterProxy.Create<T>(invokerFactory);
             }
 
-            throw new DiverterException($"Invalid type argument {typeof(T).Name}. Only interface types are supported");
-        }
-        
-        public T CreateOriginalTargetProxy<T>(IRelayState<T> relayState) where T : class
-        {
-            var invoker = new OriginInvoker<T>(relayState);
-            
-            if (typeof(T).IsInterface)
-            {
-                return DiverterProxy.Create<T>(invoker);
-            }
-
-            throw new DiverterException($"Invalid type argument {typeof(T).Name}. Only interface or class types are supported");
+            throw new DiverterException($"Invalid type {typeof(T).Name}. Only interface types are supported");
         }
     }
 }

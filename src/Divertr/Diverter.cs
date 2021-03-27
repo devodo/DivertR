@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using DivertR.Core;
+using DivertR.DispatchProxy;
 using DivertR.Internal;
 
 namespace DivertR
@@ -14,7 +15,7 @@ namespace DivertR
         public IVia<T> Via<T>(string? name = null) where T : class
         {
             return (IVia<T>) _vias.GetOrAdd(ViaId.From<T>(name),
-                id => new Via<T>(id, _viaStateRepository));
+                id => new Via<T>(id, _viaStateRepository, DispatchProxyFactory.Instance));
         }
         
         public IVia Via(Type type, string? name = null)
@@ -25,7 +26,8 @@ namespace DivertR
                 id =>
                 {
                     var diverterType = typeof(Via<>).MakeGenericType(type);
-                    return (IVia) Activator.CreateInstance(diverterType, activatorFlags, null, new object[] {id, _viaStateRepository}, default);
+                    var constructorParams = new object[] {id, _viaStateRepository, DispatchProxyFactory.Instance};
+                    return (IVia) Activator.CreateInstance(diverterType, activatorFlags, null, constructorParams, default);
                 });
         }
         

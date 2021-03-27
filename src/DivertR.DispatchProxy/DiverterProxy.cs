@@ -15,9 +15,9 @@ namespace DivertR.DispatchProxy
         public static T Create<T>(Func<T, IDispatchProxyInvoker> invokerFactory) where T : class
         {
             object proxy = Create<T, DiverterProxy>()!;
-            ((DiverterProxy)proxy)._invoker = invokerFactory.Invoke((T)proxy);
+            ((DiverterProxy) proxy)._invoker = invokerFactory.Invoke((T) proxy);
 
-            return (T)proxy;
+            return (T) proxy;
         }
 
         protected override object Invoke(MethodInfo targetMethod, object[] args)

@@ -1,24 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using DivertR.Core;
-using DivertR.Core.Internal;
 
 namespace DivertR.Internal
 {
-    internal class ViaState<T> : IViaState<T> where T : class
+    internal class ViaState<T> where T : class
     {
-        public IRelayState<T> RelayState { get; }
-        public List<IRedirect<T>> Redirects { get; }
+        public ImmutableArray<IRedirect<T>> Redirects { get; }
         
-        public ViaState(IRedirect<T> redirect, IRelayState<T> relayState)
-        {
-            Redirects = new List<IRedirect<T>> {redirect};
-            RelayState = relayState;
-        }
-
-        public ViaState(List<IRedirect<T>> redirects, IRelayState<T> relayState)
+        public ViaState(ImmutableArray<IRedirect<T>> redirects)
         {
             Redirects = redirects;
-            RelayState = relayState;
         }
     }
 }

@@ -2,26 +2,24 @@
 using System.Linq;
 using System.Reflection;
 using DivertR.Core;
+using DivertR.Internal;
 
-namespace DivertR.Internal
+namespace DivertR
 {
-    public class ParsedCall<T> where T : class
+    public class ParsedCallExpression
     {
-        private readonly MethodInfo _method;
-        private readonly ParameterInfo[] _parameterInfos;
         private readonly IMethodConstraint _methodConstraint;
         private readonly IArgumentConstraint[] _argumentConstraints;
+        
+        public MethodInfo Method { get; }
+        public ParameterInfo[] ParameterInfos { get; }
 
-        public ICallConstraint<T> CallConstraint { get; }
-
-        internal ParsedCall(MethodInfo method, ParameterInfo[] parameterInfos, IMethodConstraint methodConstraint, IArgumentConstraint[] argumentConstraints)
+        internal ParsedCallExpression(MethodInfo method, ParameterInfo[] parameterInfos, IMethodConstraint methodConstraint, IArgumentConstraint[] argumentConstraints)
         {
-            _method = method;
-            _parameterInfos = parameterInfos;
+            Method = method;
+            ParameterInfos = parameterInfos;
             _methodConstraint = methodConstraint;
             _argumentConstraints = argumentConstraints;
-            
-            CallConstraint = new MethodCallConstraint<T>(_method, _methodConstraint, _argumentConstraints);
         }
 
         public void Validate(Delegate redirectDelegate)
@@ -31,32 +29,39 @@ namespace DivertR.Internal
                 return;
             }
             
-            throw new DiverterException(CreateIncompatibleMessage(redirectDelegate, _method));
+            string DelegateSignatureToString()
+            {
+                var delegateParameters = redirectDelegate.Method.GetParameters();
+                var parameterTypes = delegateParameters.Select(x => x.ParameterType.FullName);
+                return $"{redirectDelegate.Method.ReturnType.FullName} Invoke({string.Join(", ", parameterTypes)})";
+            }
+
+            var errorMessage = $"To() delegate '{DelegateSignatureToString()}' invalid for redirect method '{Method}'";
+            throw new DiverterException(errorMessage);
+        }
+
+        public ICallConstraint<T> ToCallConstraint<T>() where T : class
+        {
+            return new MethodCallConstraint<T>(_methodConstraint, _argumentConstraints);
         }
         
         private bool ParametersValid(Delegate redirectDelegate)
         {
             var delegateParameters = redirectDelegate.Method.GetParameters();
 
-            return DelegateParametersValid(delegateParameters, _parameterInfos);
+            return DelegateParametersValid(delegateParameters, ParameterInfos);
         }
 
         private bool ReturnTypeValid(Delegate redirectDelegate)
         {
             var returnType = redirectDelegate.Method.ReturnType;
 
-            if (ReferenceEquals(returnType, _method.ReturnType))
+            if (ReferenceEquals(returnType, Method.ReturnType))
             {
                 return true;
             }
-
-            if (ReferenceEquals(returnType, typeof(void)) ||
-                ReferenceEquals(_method.ReturnType, typeof(void)))
-            {
-                return false;
-            }
-
-            if (_method.ReturnType.IsAssignableFrom(returnType))
+            
+            if (Method.ReturnType.IsAssignableFrom(returnType))
             {
                 return true;
             }
@@ -90,18 +95,6 @@ namespace DivertR.Internal
             }
 
             return true;
-        }
-        
-        private static string CreateDelegateSignature(Delegate redirectDelegate)
-        {
-            var delegateParameters = redirectDelegate.Method.GetParameters();
-            var parameterTypes = delegateParameters.Select(x => x.ParameterType.FullName);
-            return $"{redirectDelegate.Method.ReturnType.FullName} Invoke({string.Join(", ", parameterTypes)})";
-        }
-
-        private static string CreateIncompatibleMessage(Delegate redirectDelegate, MethodInfo methodInfo)
-        {
-            return $"To() delegate '{CreateDelegateSignature(redirectDelegate)}' invalid for redirect method '{methodInfo}'";
         }
     }
 }
