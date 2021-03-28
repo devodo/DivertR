@@ -1,21 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using DivertR.Core;
-using DivertR.Internal;
 
-namespace DivertR
+namespace DivertR.Internal
 {
-    public class CallCaptureRedirect<T> : IRedirect<T>, ICallCapture<T> where T : class
+    internal class RecordCallRedirect<T> : IRedirect<T>, ICallRecord<T> where T : class
     {
         private readonly IRelay<T> _relay;
         private readonly ICallConstraint<T> _callConstraint;
-        private readonly object _lockObject = new object();
 
-        private readonly List<CapturedCall<T>> _calls = new List<CapturedCall<T>>();
+        private readonly ConcurrentQueue<IRecordedCall<T>> _recordedCalls = new ConcurrentQueue<IRecordedCall<T>>();
 
-        public CallCaptureRedirect(IRelay<T> relay, ICallConstraint<T>? callConstraint = null)
+        public RecordCallRedirect(IRelay<T> relay, ICallConstraint<T>? callConstraint = null)
         {
             _relay = relay ?? throw new ArgumentNullException(nameof(relay));
             _callConstraint = callConstraint ?? TrueCallConstraint<T>.Instance;
@@ -23,12 +22,11 @@ namespace DivertR
         
         public object? Call(CallInfo<T> callInfo)
         {
-            var returnValue = _relay.CallNext(callInfo);
+            var recordedCall = new RecordedCall<T>(callInfo);
+            _recordedCalls.Enqueue(recordedCall);
             
-            lock (_lockObject)
-            {
-                _calls.Add(new CapturedCall<T>(callInfo, returnValue));
-            }
+            var returnValue = _relay.CallNext(callInfo);
+            recordedCall.ReturnValue = returnValue;
 
             return returnValue;
         }
@@ -38,17 +36,14 @@ namespace DivertR
             return _callConstraint.IsMatch(callInfo);
         }
 
-        public List<CapturedCall<T>> Calls(ICallConstraint<T>? callConstraint = null)
+        public ReadOnlyCollection<IRecordedCall<T>> Calls(ICallConstraint<T>? callConstraint = null)
         {
             callConstraint ??= TrueCallConstraint<T>.Instance;
 
-            lock (_lockObject)
-            {
-                return _calls.Where(x => callConstraint.IsMatch(x.CallInfo)).ToList();
-            }
+            return Array.AsReadOnly(_recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo)).ToArray());
         }
         
-        public List<CapturedCall<T>> Calls<TReturn>(Expression<Func<T, TReturn>> lambdaExpression)
+        public ReadOnlyCollection<IRecordedCall<T>> Calls<TReturn>(Expression<Func<T, TReturn>> lambdaExpression)
         {
             if (lambdaExpression?.Body == null)
             {
@@ -59,7 +54,7 @@ namespace DivertR
             return Calls(parsedCall.ToCallConstraint<T>());
         }
         
-        public List<CapturedCall<T>> Calls(Expression<Action<T>> lambdaExpression)
+        public ReadOnlyCollection<IRecordedCall<T>> Calls(Expression<Action<T>> lambdaExpression)
         {
             if (lambdaExpression?.Body == null)
             {

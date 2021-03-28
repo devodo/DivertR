@@ -125,9 +125,9 @@ namespace DivertR
             return new ActionRedirectBuilder<T>(this, parsedCall);
         }
 
-        public ICallCapture<T> CaptureCalls(ICallConstraint<T>? callConstraint = null)
+        public ICallRecord<T> RecordCalls(ICallConstraint<T>? callConstraint = null)
         {
-            var callCapture = new CallCaptureRedirect<T>(Relay);
+            var callCapture = new RecordCallRedirect<T>(Relay);
             InsertRedirect(0, callCapture);
 
             return callCapture;

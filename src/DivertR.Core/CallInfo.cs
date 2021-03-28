@@ -1,31 +1,28 @@
-﻿using System.Collections.ObjectModel;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace DivertR.Core
 {
     public class CallInfo<T> where T : class
     {
-        public CallInfo(T proxy, T? original, MethodInfo method, CallArguments callArguments)
+        public CallInfo(T viaProxy, T? original, MethodInfo method, CallArguments callArguments)
         {
-            Proxy = proxy;
+            ViaProxy = viaProxy;
             Original = original;
             Method = method;
-            CallArguments = callArguments;
+            Arguments = callArguments;
         }
         
-        public CallInfo(T proxy, T? original, MethodInfo method, object[] args)
-            : this(proxy, original, method, new CallArguments(args))
+        public CallInfo(T viaProxy, T? original, MethodInfo method, object[] args)
+            : this(viaProxy, original, method, new CallArguments(args))
         {
         }
 
-        public T Proxy { get; }
+        public T ViaProxy { get; }
         
         public T? Original { get; }
         
         public MethodInfo Method { get; }
 
-        public ReadOnlyCollection<object> Arguments => CallArguments.Arguments;
-
-        public CallArguments CallArguments { get; }
+        public CallArguments Arguments { get; }
     }
 }

@@ -14,7 +14,7 @@ namespace DivertR.Internal
         public object? Call(CallInfo<T> callInfo)
         {
             var lastCall = _relayContext.CallInfo;
-            var updateCallInfo = new CallInfo<T>(lastCall.Proxy, lastCall.Original, callInfo.Method, callInfo.CallArguments);
+            var updateCallInfo = new CallInfo<T>(lastCall.ViaProxy, lastCall.Original, callInfo.Method, callInfo.Arguments);
             
             return _relayContext.CallNext(updateCallInfo);
         }

@@ -16,7 +16,7 @@ namespace DivertR.Core
             if (target == null) throw new ArgumentNullException(nameof(target));
             
             var delegateInternal = callInfo.Method.ToDelegate(typeof(T));
-            return delegateInternal.Invoke(target, callInfo.CallArguments.InternalArgs);
+            return delegateInternal.Invoke(target, callInfo.Arguments.InternalArgs);
         }
     }
 }

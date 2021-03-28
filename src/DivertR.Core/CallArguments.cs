@@ -1,18 +1,29 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections;
+using System.Collections.Generic;
 
 namespace DivertR.Core
 {
-    public class CallArguments
+    public class CallArguments : IReadOnlyList<object>
     {
         public CallArguments(object[] args)
         {
-            Arguments = Array.AsReadOnly(args);
             InternalArgs = args;
         }
-
-        public ReadOnlyCollection<object> Arguments { get; }
-
+        
         internal object[] InternalArgs { get; }
+        
+        public IEnumerator<object> GetEnumerator()
+        {
+            return ((IEnumerable<object?>) InternalArgs).GetEnumerator()!;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public int Count => InternalArgs.Length;
+
+        public object this[int index] => InternalArgs[index];
     }
 }

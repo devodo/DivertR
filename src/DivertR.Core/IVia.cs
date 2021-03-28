@@ -13,16 +13,18 @@ namespace DivertR.Core
     {
         IRelay<T> Relay { get; }
         T Next { get; }
+        
         T Proxy(T? original = null);
-        IVia<T> RedirectTo(T target);
         IVia<T> AddRedirect(IRedirect<T> redirect);
         IVia<T> InsertRedirect(int index, IRedirect<T> redirect);
         IVia<T> Reset();
+        
+        IVia<T> RedirectTo(T target);
         IRedirectBuilder<T> Redirect(ICallConstraint<T>? callConstraint = null);
         IFuncRedirectBuilder<T, TReturn> Redirect<TReturn>(Expression<Func<T, TReturn>> lambdaExpression);
         IActionRedirectBuilder<T> Redirect(Expression<Action<T>> lambdaExpression);
         IActionRedirectBuilder<T> RedirectSet<TProperty>(Expression<Func<T, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression);
 
-        ICallCapture<T> CaptureCalls(ICallConstraint<T>? callConstraint = null);
+        ICallRecord<T> RecordCalls(ICallConstraint<T>? callConstraint = null);
     }
 }
