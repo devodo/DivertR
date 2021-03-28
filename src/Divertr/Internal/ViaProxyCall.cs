@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
 using DivertR.Core;
-using DivertR.Core.Internal;
 
 namespace DivertR.Internal
 {
     internal class ViaProxyCall<T> : IProxyCall<T> where T : class
     {
-        private readonly IRelayContext<T> _relayContext;
+        private readonly RelayContext<T> _relayContext;
         private readonly IList<IRedirect<T>> _redirects;
 
-        public ViaProxyCall(IRelayContext<T> relayContext, IList<IRedirect<T>> redirects)
+        public ViaProxyCall(RelayContext<T> relayContext, IList<IRedirect<T>> redirects)
         {
             _relayContext = relayContext;
             _redirects = redirects;

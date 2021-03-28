@@ -1,4 +1,4 @@
-﻿namespace DivertR.Core.Internal
+﻿namespace DivertR.Core
 {
     public interface IProxyCall<T> where T : class
     {

@@ -1,6 +1,5 @@
 ﻿using System;
 using DivertR.Core;
-using DivertR.Core.Internal;
 
 namespace DivertR.DispatchProxy
 {
@@ -10,22 +9,34 @@ namespace DivertR.DispatchProxy
 
         public T CreateProxy<T>(T? original, Func<IProxyCall<T>?> getProxyCall) where T : class
         {
-            return CreateProxy<T>(proxy => new ProxyWithDefaultInvoker<T>(proxy, original, getProxyCall));
+            Validate<T>();
+
+            IProxyInvoker CreateProxyInvoker(T proxy)
+            {
+                return new ProxyWithDefaultInvoker<T>(proxy, original, getProxyCall);
+            }
+            
+            return DiverterDispatchProxy.Create<T>(CreateProxyInvoker);
         }
 
         public T CreateProxy<T>(IProxyCall<T> proxyCall) where T : class
         {
-            return CreateProxy<T>(proxy => new ProxyInvoker<T>(proxy, proxyCall));
-        }
-        
-        private static T CreateProxy<T>(Func<T, IDispatchProxyInvoker> invokerFactory) where T : class
-        {
-            if (typeof(T).IsInterface)
+            Validate<T>();
+            
+            IProxyInvoker CreateProxyInvoker(T proxy)
             {
-                return DiverterProxy.Create<T>(invokerFactory);
+                return new ProxyInvoker<T>(proxy, proxyCall);
             }
+            
+            return DiverterDispatchProxy.Create<T>(CreateProxyInvoker);
+        }
 
-            throw new DiverterException($"Invalid type {typeof(T).Name}. Only interface types are supported");
+        public void Validate<T>()
+        {
+            if (!typeof(T).IsInterface)
+            {
+                throw new DiverterException($"Invalid type {typeof(T).Name}. Only interface types are supported");
+            }
         }
     }
 }

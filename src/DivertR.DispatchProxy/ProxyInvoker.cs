@@ -1,10 +1,9 @@
 ﻿using System.Reflection;
 using DivertR.Core;
-using DivertR.Core.Internal;
 
 namespace DivertR.DispatchProxy
 {
-    internal class ProxyInvoker<T> : IDispatchProxyInvoker where T : class
+    internal class ProxyInvoker<T> : IProxyInvoker where T : class
     {
         private readonly IProxyCall<T> _proxyCall;
         private readonly T _proxy;

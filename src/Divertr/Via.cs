@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
 using DivertR.Core;
-using DivertR.Core.Internal;
 using DivertR.DispatchProxy;
 using DivertR.Internal;
 
@@ -11,7 +10,7 @@ namespace DivertR
     {
         private readonly ViaStateRepository _viaStateRepository;
         private readonly IProxyFactory _proxyFactory;
-        private readonly IRelayContext<T> _relayContext;
+        private readonly RelayContext<T> _relayContext;
         private readonly Lazy<IRelay<T>> _relay;
 
         public Via() : this(ViaId.From<T>(), new ViaStateRepository(), DispatchProxyFactory.Instance)
@@ -20,11 +19,8 @@ namespace DivertR
         
         internal Via(ViaId viaId, ViaStateRepository viaStateRepository, IProxyFactory proxyFactory)
         {
-            if (!typeof(T).IsInterface && !typeof(T).IsClass)
-            {
-                throw new ArgumentException("Only interface and types are supported", typeof(T).Name);
-            }
-            
+            proxyFactory.Validate<T>();
+
             ViaId = viaId;
             _viaStateRepository = viaStateRepository;
             _proxyFactory = proxyFactory;

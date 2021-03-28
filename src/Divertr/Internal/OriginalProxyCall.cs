@@ -1,13 +1,12 @@
 ﻿using DivertR.Core;
-using DivertR.Core.Internal;
 
 namespace DivertR.Internal
 {
     internal class OriginalProxyCall<T> : IProxyCall<T> where T : class
     {
-        private readonly IRelayContext<T> _relayContext;
+        private readonly RelayContext<T> _relayContext;
 
-        public OriginalProxyCall(IRelayContext<T> relayContext)
+        public OriginalProxyCall(RelayContext<T> relayContext)
         {
             _relayContext = relayContext;
         }

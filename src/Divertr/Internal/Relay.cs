@@ -1,11 +1,10 @@
 ﻿using DivertR.Core;
-using DivertR.Core.Internal;
 
 namespace DivertR.Internal
 {
     internal class Relay<T> : IRelay<T> where T : class
     {
-        private readonly IRelayContext<T> _relayContext;
+        private readonly RelayContext<T> _relayContext;
         
         public T Next { get; }
         public T Original { get; }
@@ -14,7 +13,7 @@ namespace DivertR.Internal
 
         public CallInfo<T> CallInfo => _relayContext.CallInfo;
 
-        public Relay(IRelayContext<T> relayContext, IProxyFactory proxyFactory)
+        public Relay(RelayContext<T> relayContext, IProxyFactory proxyFactory)
         {
             _relayContext = relayContext;
             Next = proxyFactory.CreateProxy(new RedirectProxyCall<T>(_relayContext));

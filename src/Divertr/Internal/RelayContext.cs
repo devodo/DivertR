@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Threading;
 using DivertR.Core;
-using DivertR.Core.Internal;
 
 namespace DivertR.Internal
 {
-    internal class RelayContext<T> : IRelayContext<T> where T : class
+    internal class RelayContext<T> where T : class
     {
         private readonly AsyncLocal<ImmutableStack<RedirectContext<T>>> _redirectStack = new AsyncLocal<ImmutableStack<RedirectContext<T>>>();
         

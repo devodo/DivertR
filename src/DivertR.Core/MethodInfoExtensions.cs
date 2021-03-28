@@ -11,19 +11,10 @@ namespace DivertR.Core
     {
         private static readonly ConcurrentDictionary<MethodId, Func<object, object[], object>> DelegateCache =
             new ConcurrentDictionary<MethodId, Func<object, object[], object>>();
-
-        public static Func<object, CallArguments, object> ToCallDelegate(this MethodInfo methodInfo, Type targetType)
+        
+        public static Func<object, object[], object> ToDelegate<T>(this MethodInfo methodInfo)
         {
-            var delegateInternal = methodInfo.ToDelegate(targetType);
-            return (target, arguments) => delegateInternal.Invoke(target, arguments.InternalArgs);
-        }
-
-        public static object? Invoke<T>(this CallInfo<T> callInfo, T target) where T : class
-        {
-            if (target == null) throw new ArgumentNullException(nameof(target));
-            
-            var delegateInternal = callInfo.Method.ToDelegate(typeof(T));
-            return delegateInternal.Invoke(target, callInfo.CallArguments.InternalArgs);
+            return methodInfo.ToDelegate(typeof(T));
         }
 
         public static Func<object, object[], object> ToDelegate(this MethodInfo methodInfo, Type targetType)
@@ -34,8 +25,8 @@ namespace DivertR.Core
 
         private static Func<object, object[], object> ToDelegateInternal(this MethodInfo methodInfo, Type instanceType)
         {
-            var argsParameter = Expression.Parameter(typeof(object[]), "args");
-            var instanceParameter = Expression.Parameter(typeof(object), "instance");
+            var argsParameter = Expression.Parameter(typeof(object[]), "arguments");
+            var instanceParameter = Expression.Parameter(typeof(object), "target");
 
             ByRefState? byRefState = null;
             var methodParameters = methodInfo.GetParameters();

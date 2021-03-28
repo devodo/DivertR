@@ -1,7 +1,6 @@
 ﻿using System;
 using Castle.DynamicProxy;
 using DivertR.Core;
-using DivertR.Core.Internal;
 
 namespace DivertR.DynamicProxy
 {
@@ -13,6 +12,7 @@ namespace DivertR.DynamicProxy
 
         public T CreateProxy<T>(T? original, Func<IProxyCall<T>?> getProxyCall) where T : class
         {
+            Validate<T>();
             var interceptor = new ProxyWithDefaultInterceptor<T>(original, getProxyCall);
 
             return CreateProxy(interceptor, original);
@@ -20,11 +20,20 @@ namespace DivertR.DynamicProxy
 
         public T CreateProxy<T>(IProxyCall<T> proxyCall) where T : class
         {
+            Validate<T>();
             var interceptor = new ProxyInterceptor<T>(proxyCall);
 
             return CreateProxy<T>(interceptor);
         }
-        
+
+        public void Validate<T>()
+        {
+            if (!(typeof(T).IsInterface || typeof(T).IsClass))
+            {
+                throw new DiverterException($"Invalid type {typeof(T).Name}. Only interface or class types are supported");
+            }
+        }
+
         private T CreateProxy<T>(IInterceptor interceptor, T? target = null) where T : class
         {
             if (typeof(T).IsInterface)
@@ -40,8 +49,8 @@ namespace DivertR.DynamicProxy
                     ? _proxyGenerator.CreateClassProxy<T>(interceptor)
                     : _proxyGenerator.CreateClassProxyWithTarget(target, interceptor);
             }
-            
-            throw new DiverterException($"Invalid type {typeof(T).Name}. Only interface or class types are supported");
+
+            throw new NotImplementedException();
         }
     }
 }

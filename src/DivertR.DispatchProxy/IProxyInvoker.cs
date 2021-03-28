@@ -2,7 +2,7 @@
 
 namespace DivertR.DispatchProxy
 {
-    internal interface IDispatchProxyInvoker
+    internal interface IProxyInvoker
     {
         object Invoke(MethodInfo targetMethod, object[] args);
     }
