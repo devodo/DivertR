@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace DivertR.Internal
 {
-    public static class CallExpressionParser
+    internal static class CallExpressionParser
     {
         public static ParsedCallExpression FromExpression(Expression expression)
         {

@@ -2,11 +2,10 @@
 using System.Linq;
 using System.Reflection;
 using DivertR.Core;
-using DivertR.Internal;
 
-namespace DivertR
+namespace DivertR.Internal
 {
-    public class ParsedCallExpression
+    internal class ParsedCallExpression
     {
         private readonly IMethodConstraint _methodConstraint;
         private readonly IArgumentConstraint[] _argumentConstraints;
