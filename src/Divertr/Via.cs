@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using DivertR.Core;
 using DivertR.DispatchProxy;
@@ -8,21 +9,21 @@ namespace DivertR
 {
     public class Via<T> : IVia<T> where T : class
     {
-        private readonly ViaStateRepository _viaStateRepository;
+        private readonly RedirectRepository _redirectRepository;
         private readonly IProxyFactory _proxyFactory;
         private readonly RelayContext<T> _relayContext;
         private readonly Lazy<IRelay<T>> _relay;
 
-        public Via() : this(ViaId.From<T>(), new ViaStateRepository(), DispatchProxyFactory.Instance)
+        public Via() : this(ViaId.From<T>(), new RedirectRepository(), DispatchProxyFactory.Instance)
         {
         }
         
-        internal Via(ViaId viaId, ViaStateRepository viaStateRepository, IProxyFactory proxyFactory)
+        internal Via(ViaId viaId, RedirectRepository redirectRepository, IProxyFactory proxyFactory)
         {
             proxyFactory.Validate<T>();
 
             ViaId = viaId;
-            _viaStateRepository = viaStateRepository;
+            _redirectRepository = redirectRepository;
             _proxyFactory = proxyFactory;
             _relayContext = new RelayContext<T>();
             _relay = new Lazy<IRelay<T>>(() => new Relay<T>(_relayContext, _proxyFactory));
@@ -37,11 +38,11 @@ namespace DivertR
         {
             IProxyCall<T>? GetProxyCall()
             {
-                var viaState = _viaStateRepository.Get<T>(ViaId);
+                var redirects = _redirectRepository.Get<T>(ViaId);
 
-                return viaState == null 
+                return redirects.IsEmpty
                     ? null
-                    : new ViaProxyCall<T>(_relayContext, viaState.Redirects);
+                    : new ViaProxyCall<T>(_relayContext, redirects);
             }
 
             return _proxyFactory.CreateProxy(original, GetProxyCall);
@@ -56,24 +57,40 @@ namespace DivertR
 
             return Proxy(original as T);
         }
+
+        public IReadOnlyList<IRedirect<T>> Redirects => _redirectRepository.Get<T>(ViaId);
         
         public IVia<T> AddRedirect(IRedirect<T> redirect)
         {
-            _viaStateRepository.AddRedirect(ViaId, redirect);
+            _redirectRepository.AddRedirect(ViaId, redirect);
 
             return this;
         }
 
         public IVia<T> InsertRedirect(int index, IRedirect<T> redirect)
         {
-            _viaStateRepository.InsertRedirect(ViaId, index, redirect);
+            _redirectRepository.InsertRedirect(ViaId, index, redirect);
+
+            return this;
+        }
+
+        public IVia<T> RemoveRedirect(IRedirect<T> redirect)
+        {
+            _redirectRepository.RemoveRedirect(ViaId, redirect);
+
+            return this;
+        }
+
+        public IVia<T> RemoveRedirectAt(int index)
+        {
+            _redirectRepository.RemoveRedirectAt<T>(ViaId, index);
 
             return this;
         }
 
         public IVia<T> Reset()
         {
-            _viaStateRepository.Reset(ViaId);
+            _redirectRepository.Reset(ViaId);
 
             return this;
         }
@@ -90,10 +107,7 @@ namespace DivertR
         
         public IFuncRedirectBuilder<T, TReturn> Redirect<TReturn>(Expression<Func<T, TReturn>> lambdaExpression)
         {
-            if (lambdaExpression?.Body == null)
-            {
-                throw new ArgumentNullException(nameof(lambdaExpression));
-            }
+            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
             return new FuncRedirectBuilder<T, TReturn>(this, parsedCall);
@@ -101,11 +115,8 @@ namespace DivertR
         
         public IActionRedirectBuilder<T> Redirect(Expression<Action<T>> lambdaExpression)
         {
-            if (lambdaExpression?.Body == null)
-            {
-                throw new ArgumentNullException(nameof(lambdaExpression));
-            }
-            
+            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
+
             var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
             return new ActionRedirectBuilder<T>(this, parsedCall);
         }
@@ -127,8 +138,21 @@ namespace DivertR
 
         public ICallRecord<T> RecordCalls(ICallConstraint<T>? callConstraint = null)
         {
-            var callCapture = new RecordCallRedirect<T>(Relay);
-            InsertRedirect(0, callCapture);
+            return InsertRecordCalls(0, callConstraint);
+        }
+
+        public ICallRecord<T> AddRecordCalls(ICallConstraint<T>? callConstraint = null)
+        {
+            var callCapture = new CallRecordRedirect<T>(Relay);
+            AddRedirect(callCapture);
+
+            return callCapture;
+        }
+
+        public ICallRecord<T> InsertRecordCalls(int index, ICallConstraint<T>? callConstraint = null)
+        {
+            var callCapture = new CallRecordRedirect<T>(Relay);
+            InsertRedirect(index, callCapture);
 
             return callCapture;
         }
