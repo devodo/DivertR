@@ -76,35 +76,30 @@ namespace DivertR.Internal
 
         private static IArgumentConstraint CreateArgumentConstraint(ParameterInfo parameterInfo, Expression argument)
         {
-            if (argument is ConstantExpression constantExpression)
+            switch (argument)
             {
-                return new ConstantArgumentConstraint(constantExpression.Value);
-            }
-
-            if (argument is MemberExpression memberExpression)
-            {
-                if (memberExpression.Member.DeclaringType != null &&
-                    memberExpression.Member.DeclaringType.IsGenericType &&
-                    memberExpression.Member.DeclaringType.GetGenericTypeDefinition() == typeof(Is<>) &&
-                    (memberExpression.Member.Name == nameof(Is<object>.Any) ||
-                     memberExpression.Member.Name == nameof(Is<object>.AnyRef) && parameterInfo.ParameterType.IsByRef))
-                {
+                case ConstantExpression constantExpression:
+                    return new ConstantArgumentConstraint(constantExpression.Value);
+                case MemberExpression memberExpression when memberExpression.Member.DeclaringType != null &&
+                                                            memberExpression.Member.DeclaringType.IsGenericType &&
+                                                            memberExpression.Member.DeclaringType.GetGenericTypeDefinition() == typeof(Is<>) &&
+                                                            (memberExpression.Member.Name == nameof(Is<object>.Any) ||
+                                                             memberExpression.Member.Name == nameof(Is<object>.AnyRef) && parameterInfo.ParameterType.IsByRef):
                     return TrueArgumentConstraint.Instance;
+                case MethodCallExpression callExpression when callExpression.Method.DeclaringType != null &&
+                                                              callExpression.Method.DeclaringType.IsGenericType &&
+                                                              callExpression.Method.DeclaringType.GetGenericTypeDefinition() == typeof(Is<>):
+                {
+                    const BindingFlags activatorFlags = BindingFlags.Public | BindingFlags.Instance;
+                    var lambdaType = typeof(LambdaArgumentConstraint<>).MakeGenericType(callExpression.Type);
+                    return (IArgumentConstraint) Activator.CreateInstance(lambdaType, activatorFlags, null, new object[] {callExpression.Arguments[0]}, default);
+                }
+                default:
+                {
+                    var value = Expression.Lambda(argument).Compile().DynamicInvoke();
+                    return new ConstantArgumentConstraint(value);
                 }
             }
-
-            if (argument is MethodCallExpression callExpression &&
-                callExpression.Method.DeclaringType != null &&
-                callExpression.Method.DeclaringType.IsGenericType &&
-                callExpression.Method.DeclaringType.GetGenericTypeDefinition() == typeof(Is<>))
-            {
-                const BindingFlags activatorFlags = BindingFlags.Public | BindingFlags.Instance;
-                var lambdaType = typeof(LambdaArgumentConstraint<>).MakeGenericType(callExpression.Type);
-                return (IArgumentConstraint) Activator.CreateInstance(lambdaType, activatorFlags, null, new object[] {callExpression.Arguments[0]}, default);
-            }
-            
-            var value = Expression.Lambda(argument).Compile().DynamicInvoke();
-            return new ConstantArgumentConstraint(value);
         }
 
         private static IMethodConstraint CreateMethodConstraint(MethodInfo methodInfo)
