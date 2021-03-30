@@ -2,7 +2,7 @@
 
 namespace DivertR.Core
 {
-    public interface IActionRedirectBuilder<T> : IRedirectBuilder<T> where T : class
+    public interface IActionRedirectBuilder<T> : IDelegateRedirectBuilder<T> where T : class
     {
         IVia<T> To(Action redirectDelegate);
         IVia<T> To<T1>(Action<T1> redirectDelegate);

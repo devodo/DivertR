@@ -212,9 +212,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new AsyncFoo("hello foo"));
             var next = _via.Relay.Next;
             _via
-                .InsertRedirect(0, _via.Redirect().BuildRedirect(new AsyncFoo(async () => $"DivertR {await next.MessageAsync} 1")))
-                .InsertRedirect(0, _via.Redirect().BuildRedirect(new AsyncFoo(async () => $"here {await next.MessageAsync} 2")))
-                .InsertRedirect(2, _via.Redirect().BuildRedirect(new AsyncFoo(async () => $"again {await next.MessageAsync} 3")));
+                .InsertRedirect(_via.Redirect().Build(new AsyncFoo(async () => $"DivertR {await next.MessageAsync} 1")))
+                .InsertRedirect(_via.Redirect().Build(new AsyncFoo(async () => $"here {await next.MessageAsync} 2")))
+                .InsertRedirect(_via.Redirect().Build(new AsyncFoo(async () => $"again {await next.MessageAsync} 3")), 10);
 
             // ACT
             var message = await proxy.MessageAsync;

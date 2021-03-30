@@ -2,11 +2,11 @@
 
 namespace DivertR.Core
 {
-    public interface IRedirectBuilder<T> where T : class
+    public interface IDelegateRedirectBuilder<T> where T : class
     {
         ICallConstraint<T> BuildCallConstraint();
-        IRedirect<T> BuildRedirect(T target);
-        IRedirect<T> BuildRedirect(Delegate redirectDelegate);
+        IRedirect<T> Build(T target);
+        IRedirect<T> Build(Delegate redirectDelegate);
         IVia<T> To(T target);
         IVia<T> To(Delegate redirectDelegate);
     }

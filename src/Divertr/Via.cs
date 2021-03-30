@@ -40,7 +40,7 @@ namespace DivertR
             {
                 var redirects = _redirectRepository.Get<T>(ViaId);
 
-                return redirects.IsEmpty
+                return redirects.Length == 0
                     ? null
                     : new ViaProxyCall<T>(_relayContext, redirects);
             }
@@ -60,34 +60,13 @@ namespace DivertR
 
         public IReadOnlyList<IRedirect<T>> Redirects => _redirectRepository.Get<T>(ViaId);
         
-        public IVia<T> AddRedirect(IRedirect<T> redirect)
+        public IVia<T> InsertRedirect(IRedirect<T> redirect, int orderWeight = 0)
         {
-            _redirectRepository.AddRedirect(ViaId, redirect);
+            _redirectRepository.InsertRedirect(ViaId, redirect, orderWeight);
 
             return this;
         }
-
-        public IVia<T> InsertRedirect(int index, IRedirect<T> redirect)
-        {
-            _redirectRepository.InsertRedirect(ViaId, index, redirect);
-
-            return this;
-        }
-
-        public IVia<T> RemoveRedirect(IRedirect<T> redirect)
-        {
-            _redirectRepository.RemoveRedirect(ViaId, redirect);
-
-            return this;
-        }
-
-        public IVia<T> RemoveRedirectAt(int index)
-        {
-            _redirectRepository.RemoveRedirectAt<T>(ViaId, index);
-
-            return this;
-        }
-
+        
         public IVia<T> Reset()
         {
             _redirectRepository.Reset(ViaId);
@@ -100,59 +79,30 @@ namespace DivertR
             return Redirect().To(target);
         }
 
-        public IRedirectBuilder<T> Redirect(ICallConstraint<T>? callConstraint = null)
+        public IDelegateRedirectBuilder<T> Redirect(ICallConstraint<T>? callConstraint = null)
         {
-            return new RedirectBuilder<T>(this, callConstraint);
+            return new DelegateRedirectBuilder<T>(this, callConstraint);
         }
         
         public IFuncRedirectBuilder<T, TReturn> Redirect<TReturn>(Expression<Func<T, TReturn>> lambdaExpression)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
-
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
-            return new FuncRedirectBuilder<T, TReturn>(this, parsedCall);
+            return new RedirectBuilder<T>(this).When(lambdaExpression);
         }
         
         public IActionRedirectBuilder<T> Redirect(Expression<Action<T>> lambdaExpression)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
-
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
-            return new ActionRedirectBuilder<T>(this, parsedCall);
+            return new RedirectBuilder<T>(this).When(lambdaExpression);
         }
         
         public IActionRedirectBuilder<T> RedirectSet<TProperty>(Expression<Func<T, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
-            if (valueExpression?.Body == null) throw new ArgumentNullException(nameof(valueExpression));
-
-            if (!(lambdaExpression.Body is MemberExpression propertyExpression))
-            {
-                throw new ArgumentException("Only property member expressions are valid input to RedirectSet", nameof(propertyExpression));
-            }
-
-            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
-
-            return new ActionRedirectBuilder<T>(this, parsedCall);
+            return new RedirectBuilder<T>(this).WhenSet(lambdaExpression, valueExpression);
         }
 
-        public ICallRecord<T> RecordCalls(ICallConstraint<T>? callConstraint = null)
-        {
-            return InsertRecordCalls(0, callConstraint);
-        }
-
-        public ICallRecord<T> AddRecordCalls(ICallConstraint<T>? callConstraint = null)
+        public ICallRecord<T> RecordCalls(ICallConstraint<T>? callConstraint = null, int orderWeight = int.MinValue)
         {
             var callCapture = new CallRecordRedirect<T>(Relay);
-            AddRedirect(callCapture);
-
-            return callCapture;
-        }
-
-        public ICallRecord<T> InsertRecordCalls(int index, ICallConstraint<T>? callConstraint = null)
-        {
-            var callCapture = new CallRecordRedirect<T>(Relay);
-            InsertRedirect(index, callCapture);
+            InsertRedirect(callCapture, orderWeight);
 
             return callCapture;
         }

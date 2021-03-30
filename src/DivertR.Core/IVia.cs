@@ -16,20 +16,15 @@ namespace DivertR.Core
         
         T Proxy(T? original = null);
 
-        IVia<T> AddRedirect(IRedirect<T> redirect);
-        IVia<T> InsertRedirect(int index, IRedirect<T> redirect);
-        IVia<T> RemoveRedirect(IRedirect<T> redirect);
-        IVia<T> RemoveRedirectAt(int index);
+        IVia<T> InsertRedirect(IRedirect<T> redirect, int orderWeight = 0);
         IVia<T> Reset();
         
         IVia<T> RedirectTo(T target);
-        IRedirectBuilder<T> Redirect(ICallConstraint<T>? callConstraint = null);
+        IDelegateRedirectBuilder<T> Redirect(ICallConstraint<T>? callConstraint = null);
         IFuncRedirectBuilder<T, TReturn> Redirect<TReturn>(Expression<Func<T, TReturn>> lambdaExpression);
         IActionRedirectBuilder<T> Redirect(Expression<Action<T>> lambdaExpression);
         IActionRedirectBuilder<T> RedirectSet<TProperty>(Expression<Func<T, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression);
 
-        ICallRecord<T> RecordCalls(ICallConstraint<T>? callConstraint = null);
-        ICallRecord<T> AddRecordCalls(ICallConstraint<T>? callConstraint = null);
-        ICallRecord<T> InsertRecordCalls(int index, ICallConstraint<T>? callConstraint = null);
+        ICallRecord<T> RecordCalls(ICallConstraint<T>? callConstraint = null, int orderWeight = int.MinValue);
     }
 }

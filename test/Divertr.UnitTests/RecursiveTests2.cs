@@ -80,12 +80,11 @@ namespace DivertR.UnitTests
                 return proxy.GetNumber(i - 1) + proxy.GetNumber(i - 2);
             });
 
-            var times2 = new Number(i => _via.Relay.Original.GetNumber(i) + _via.Relay.Next.GetNumber(i));
-
             _via
-                .RedirectTo(fibonacci)
-                .RedirectTo(times2);
-
+                .Redirect(x => x.GetNumber(Is<int>.Any))
+                .To<int>(i => _via.Relay.Original.GetNumber(i) + _via.Relay.Next.GetNumber(i))
+                .RedirectTo(fibonacci);
+            
             return _via.Proxy(new Number());
         }
 

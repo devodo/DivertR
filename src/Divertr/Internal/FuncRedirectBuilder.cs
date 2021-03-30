@@ -3,101 +3,102 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class FuncRedirectBuilder<T, TReturn> : RedirectBuilder<T>, IFuncRedirectBuilder<T, TReturn> where T : class
+    internal class FuncRedirectBuilder<TTarget, TReturn> : DelegateRedirectBuilder<TTarget>, IFuncRedirectBuilder<TTarget, TReturn> where TTarget : class
     {
         private readonly ParsedCallExpression _parsedCallExpression;
 
-        public FuncRedirectBuilder(IVia<T> via, ParsedCallExpression parsedCallExpression)
-            : base(via, parsedCallExpression.ToCallConstraint<T>())
+        public FuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression)
+            : base(via, parsedCallExpression.ToCallConstraint<TTarget>())
         {
             _parsedCallExpression = parsedCallExpression;
         }
 
-        public override IRedirect<T> BuildRedirect(Delegate redirectDelegate)
+        public override IRedirect<TTarget> Build(Delegate redirectDelegate)
         {
             _parsedCallExpression.Validate(redirectDelegate);
 
-            return base.BuildRedirect(redirectDelegate);
+            return base.Build(redirectDelegate);
         }
 
-        public IVia<T> To(TReturn instance)
+        public IRedirect<TTarget> Build(TReturn instance)
+        {
+            return Build(() => instance);
+        }
+        
+        public IRedirect<TTarget> Build(Func<TReturn> redirectDelegate)
+        {
+            return Build(redirectDelegate, callInfo => redirectDelegate.Invoke());
+        }
+
+        public IVia<TTarget> To(TReturn instance)
         {
             return To(() => instance);
         }
 
-        public IVia<T> To(Func<TReturn> redirectDelegate)
+        public IVia<TTarget> To(Func<TReturn> redirectDelegate)
         {
-            _parsedCallExpression.Validate(redirectDelegate);
-            return AddRedirect(callInfo => redirectDelegate.Invoke());
+            return AddRedirect(redirectDelegate, callInfo => redirectDelegate.Invoke());
         }
 
-        public IVia<T> To<T1>(Func<T1, TReturn> redirectDelegate)
+        public IVia<TTarget> To<T1>(Func<T1, TReturn> redirectDelegate)
         {
-            _parsedCallExpression.Validate(redirectDelegate);
-            return AddRedirect(callInfo => redirectDelegate.Invoke((T1) callInfo.Arguments[0]));
+            return AddRedirect(redirectDelegate, callInfo => redirectDelegate.Invoke((T1) callInfo.Arguments[0]));
         }
 
-        public IVia<T> To<T1, T2>(Func<T1, T2, TReturn> redirectDelegate)
+        public IVia<TTarget> To<T1, T2>(Func<T1, T2, TReturn> redirectDelegate)
         {
-            _parsedCallExpression.Validate(redirectDelegate);
-            
-            return AddRedirect(callInfo =>
+            return AddRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1]));
         }
 
-        public IVia<T> To<T1, T2, T3>(Func<T1, T2, T3, TReturn> redirectDelegate)
+        public IVia<TTarget> To<T1, T2, T3>(Func<T1, T2, T3, TReturn> redirectDelegate)
         {
-            _parsedCallExpression.Validate(redirectDelegate);
-            
-            return AddRedirect(callInfo =>
+            return AddRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2]));
         }
 
-        public IVia<T> To<T1, T2, T3, T4>(Func<T1, T2, T3, T4, TReturn> redirectDelegate)
+        public IVia<TTarget> To<T1, T2, T3, T4>(Func<T1, T2, T3, T4, TReturn> redirectDelegate)
         {
-            _parsedCallExpression.Validate(redirectDelegate);
-            
-            return AddRedirect(callInfo =>
+            return AddRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3]));
         }
 
-        public IVia<T> To<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, TReturn> redirectDelegate)
+        public IVia<TTarget> To<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, TReturn> redirectDelegate)
         {
-            _parsedCallExpression.Validate(redirectDelegate);
-            
-            return AddRedirect(callInfo =>
+            return AddRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4]));
         }
 
-        public IVia<T> To<T1, T2, T3, T4, T5, T6>(Func<T1, T2, T3, T4, T5, T6, TReturn> redirectDelegate)
+        public IVia<TTarget> To<T1, T2, T3, T4, T5, T6>(Func<T1, T2, T3, T4, T5, T6, TReturn> redirectDelegate)
         {
-            _parsedCallExpression.Validate(redirectDelegate);
-
-            return AddRedirect(callInfo =>
+            return AddRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5]));
         }
 
-        public IVia<T> To<T1, T2, T3, T4, T5, T6, T7>(Func<T1, T2, T3, T4, T5, T6, T7, TReturn> redirectDelegate)
+        public IVia<TTarget> To<T1, T2, T3, T4, T5, T6, T7>(Func<T1, T2, T3, T4, T5, T6, T7, TReturn> redirectDelegate)
         {
-            _parsedCallExpression.Validate(redirectDelegate);
-
-            return AddRedirect(callInfo =>
+            return AddRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6]));
         }
 
-        public IVia<T> To<T1, T2, T3, T4, T5, T6, T7, T8>(Func<T1, T2, T3, T4, T5, T6, T7, T8, TReturn> redirectDelegate)
+        public IVia<TTarget> To<T1, T2, T3, T4, T5, T6, T7, T8>(Func<T1, T2, T3, T4, T5, T6, T7, T8, TReturn> redirectDelegate)
         {
-            _parsedCallExpression.Validate(redirectDelegate);
-
-            return AddRedirect(callInfo =>
+            return AddRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6], (T8) callInfo.Arguments[7]));
         }
-
-        private IVia<T> AddRedirect(Func<CallInfo<T>, object?> redirectDelegate)
+        
+        private IRedirect<TTarget> Build(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
         {
-            var redirect = new DelegateRedirect<T>(redirectDelegate, BuildCallConstraint());
+            _parsedCallExpression.Validate(inputDelegate);
+            
+            return new DelegateRedirect<TTarget>(mappedRedirect, BuildCallConstraint());
+        }
 
-            return Via.AddRedirect(redirect);
+        private IVia<TTarget> AddRedirect(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
+        {
+            var redirect = Build(inputDelegate, mappedRedirect);
+
+            return InsertRedirect(redirect);
         }
     }
 }

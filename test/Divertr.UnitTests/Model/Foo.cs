@@ -39,5 +39,10 @@ namespace DivertR.UnitTests.Model
             
             return _messageFactory.Invoke();
         }
+
+        public IFoo GetFoo()
+        {
+            return this;
+        }
     }
 }

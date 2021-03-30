@@ -64,9 +64,9 @@ namespace DivertR.UnitTests
                 await _via.Relay.Original.GetNumber(i) + await _via.Relay.Next.GetNumber(i));
 
             _via
-                .RedirectTo(fibonacci)
-                .RedirectTo(times2);
-
+                .RedirectTo(times2)
+                .RedirectTo(fibonacci);
+            
             return _via.Proxy(new AsyncNumber());
         }
         

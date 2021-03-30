@@ -176,10 +176,10 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new Foo("hello foo"));
             var next = _via.Relay.Next;
             _via
-                .RedirectTo(new Foo(() => $"DivertR {next.Message} 1"))
+                .RedirectTo(new Foo(() => $"again {next.Message} 3"))
                 .RedirectTo(new Foo(() => $"here {next.Message} 2"))
-                .RedirectTo(new Foo(() => $"again {next.Message} 3"));
-
+                .RedirectTo(new Foo(() => $"DivertR {next.Message} 1"));
+            
             // ACT
             var message = proxy.Message;
             
@@ -194,9 +194,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new Foo("hello foo"));
             var next = _via.Relay.Next;
             _via
-                .InsertRedirect(0, _via.Redirect().BuildRedirect(new Foo(() => $"DivertR {next.Message} 1")))
-                .InsertRedirect(0, _via.Redirect().BuildRedirect(new Foo(() => $"here {next.Message} 2")))
-                .InsertRedirect(2, _via.Redirect().BuildRedirect(new Foo(() => $"again {next.Message} 3")));
+                .InsertRedirect(_via.Redirect().Build(new Foo(() => $"DivertR {next.Message} 1")))
+                .InsertRedirect(_via.Redirect().Build(new Foo(() => $"here {next.Message} 2")))
+                .InsertRedirect(_via.Redirect().Build(new Foo(() => $"again {next.Message} 3")), 10);
 
             // ACT
             var message = proxy.Message;
@@ -209,7 +209,7 @@ namespace DivertR.UnitTests
         public void GivenMultipleAddRedirectsWithNextAndOriginalRelays_ShouldChain()
         {
             // ARRANGE
-            const int numRedirects = 100;
+            const int numRedirects = 2;
             var proxy = _via.Proxy(new Foo("foo"));
             var next = _via.Relay.Next;
             var orig = _via.Relay.Original;
@@ -224,7 +224,7 @@ namespace DivertR.UnitTests
             var message = proxy.Message;
             
             // ASSERT
-            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Select(i => $"{i}"));
+            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Select(i => $"{i}").Reverse());
             message.ShouldBe($"foo {join} foo");
         }
         
@@ -250,8 +250,8 @@ namespace DivertR.UnitTests
             });
 
             _via
-                .RedirectTo(recursive)
-                .RedirectTo(new Foo(() => next.Message.Replace(orig.Message, "bar")));
+                .RedirectTo(new Foo(() => next.Message.Replace(orig.Message, "bar")))
+                .RedirectTo(recursive);
 
             // ACT
             var message = proxy.Message;
@@ -261,7 +261,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenMultipleAddRedirectsWithState_ShouldChain()
+        public void GivenMultipleRedirects_ShouldChain()
         {
             // ARRANGE
             var proxy = _via.Proxy(new Foo("foo"));
@@ -273,9 +273,9 @@ namespace DivertR.UnitTests
 
             // ACT
             _via
-                .Redirect(x => x.Message).To(() => WriteMessage(1))
+                .Redirect(x => x.Message).To(() => WriteMessage(3))
                 .Redirect(x => x.Message).To(() => WriteMessage(2))
-                .Redirect(x => x.Message).To(() => WriteMessage(3));
+                .Redirect(x => x.Message).To(() => WriteMessage(1));
 
             // ASSERT
             proxy.Message.ShouldBe("1 2 3 foo 3 2 1");
@@ -556,12 +556,10 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<INumber>();
             
-            via
-                .Redirect(x => x.GenericNumber(Is<string>.Any, Is<int>.Any))
+            via.RedirectTo(new Number(x => x * 2));
+            via.Redirect(x => x.GenericNumber(Is<string>.Any, Is<int>.Any))
                 .To((string s, int i) => via.Relay.Next.GenericNumber(s, i) + " - again");
             
-            via.RedirectTo(new Number(x => x * 2));
-
             // ACT
             var proxy = via.Proxy(new Number());
             var result = proxy.GenericNumber("Hello", 5);
@@ -595,7 +593,8 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var via = new Via<INumber>();
-
+            
+            via.RedirectTo(new Number(x => x * 2));
             via
                 .Redirect(x => x.ArrayNumber(Is<int[]>.Any))
                 .To((int[] inputs) =>
@@ -608,8 +607,6 @@ namespace DivertR.UnitTests
                     }
                 });
             
-            via.RedirectTo(new Number(x => x * 2));
-
             // ACT
             var input = new[] {1, 5};
             var proxy = via.Proxy(new Number());
@@ -685,6 +682,20 @@ namespace DivertR.UnitTests
             
             _via.Redirect(x => x.SetMessage(GetInput()))
                 .To((Wrapper<string> i) => i.Item);
+            
+            // ACT
+            var result = _via.Proxy().SetMessage(GetInput());
+
+            // ASSERT
+            result.ShouldBe("test");
+        }
+        
+        [Fact]
+        public void TestGetFoo()
+        {
+            // ARRANGE
+            _via.Redirect(x => x.GetFoo())
+                .To(new Foo());
             
             // ACT
             var result = _via.Proxy().SetMessage(GetInput());

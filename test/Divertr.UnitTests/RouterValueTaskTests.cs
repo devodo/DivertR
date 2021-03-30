@@ -107,21 +107,46 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public async Task GivenMultipleAddRedirects_ShouldChain()
+        public async Task GivenMultipleRedirects_ShouldChain()
         {
             // ARRANGE
             var proxy = _via.Proxy(new ValueTaskFoo("hello foo"));
             var next = _via.Relay.Next;
             _via
-                .RedirectTo(new ValueTaskFoo(async () => $"DivertR {await next.MessageAsync} 1"))
+                .RedirectTo(new ValueTaskFoo(async () => $"again {await next.MessageAsync} 3"))
                 .RedirectTo(new ValueTaskFoo(async () => $"here {await next.MessageAsync} 2"))
-                .RedirectTo(new ValueTaskFoo(async () => $"again {await next.MessageAsync} 3"));
+                .RedirectTo(new ValueTaskFoo(async () => $"DivertR {await next.MessageAsync} 1"));
 
             // ACT
             var message = await proxy.MessageAsync;
             
             // ASSERT
             message.ShouldBe("DivertR here again hello foo 3 2 1");
+        }
+        
+        [Fact]
+        public async Task GivenMultipleRedirectsWithOrderWeights_ShouldChain()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy(new ValueTaskFoo("foo"));
+            
+            async ValueTask<string> WriteMessage(int num)
+            {
+                return $"{num} {await _via.Relay.Next.MessageAsync} {num}";
+            }
+
+            _via
+                .Redirect(x => x.MessageAsync).BuildRedirect(() => WriteMessage(1));
+                
+                
+                //.Redirect(x => x.MessageAsync).To(() => WriteMessage(2))
+                //.Redirect(x => x.MessageAsync).To(() => WriteMessage(3));
+
+            // ACT
+            var message = await proxy.MessageAsync;
+            
+            // ASSERT
+            message.ShouldBe("1 2 3 foo 3 2 1");
         }
         
         [Fact]
@@ -144,7 +169,7 @@ namespace DivertR.UnitTests
             var message = await proxy.MessageAsync;
             
             // ASSERT
-            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Select(i => $"{i}"));
+            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Select(i => $"{i}")).Reverse();
             message.ShouldBe($"foo {join} foo");
         }
         
@@ -170,38 +195,14 @@ namespace DivertR.UnitTests
             });
 
             _via
-                .RedirectTo(recursive)
                 .RedirectTo(new ValueTaskFoo(async () =>
-                    (await next.MessageAsync).Replace(await orig.MessageAsync, "bar")));
-
+                    (await next.MessageAsync).Replace(await orig.MessageAsync, "bar")))
+                .RedirectTo(recursive);
             // ACT
             var message = await proxy.MessageAsync;
             
             // ASSERT
             message.ShouldBe("[3bar [2bar [1bar bar foo1] foo2] foo3]");
-        }
-        
-        [Fact]
-        public async Task GivenMultipleAddRedirectsWithState_ShouldChain()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new ValueTaskFoo("foo"));
-            
-            async ValueTask<string> WriteMessage(int num)
-            {
-                return $"{num} {await _via.Relay.Next.MessageAsync} {num}";
-            }
-
-            _via
-                .Redirect(x => x.MessageAsync).To(() => WriteMessage(1))
-                .Redirect(x => x.MessageAsync).To(() => WriteMessage(2))
-                .Redirect(x => x.MessageAsync).To(() => WriteMessage(3));
-
-            // ACT
-            var message = await proxy.MessageAsync;
-            
-            // ASSERT
-            message.ShouldBe("1 2 3 foo 3 2 1");
         }
     }
 }

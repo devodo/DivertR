@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace DivertR.UnitTests.Model
 {
@@ -19,7 +20,20 @@ namespace DivertR.UnitTests.Model
         {
             return _numberFactory.Invoke(input);
         }
+        
+        public string GenericNumber<T>(T arg, int input)
+        {
+            return $"{arg} - {_numberFactory.Invoke(input)}";
+        }
 
+        public void ArrayNumber(int[] inputs)
+        {
+            for (var i = 0; i < inputs.Length; i++)
+            {
+                inputs[i] = _numberFactory.Invoke(inputs[i]);
+            }
+        }
+        
         public void RefNumber(ref int input)
         {
             input = _numberFactory(input);
@@ -36,18 +50,17 @@ namespace DivertR.UnitTests.Model
 
             inputs = replacement;
         }
-
-        public string GenericNumber<T>(T arg, int input)
+        
+        public async Task<int> GetNumberAsync(int input)
         {
-            return $"{arg} - {_numberFactory.Invoke(input)}";
+            await Task.Yield();
+            return _numberFactory.Invoke(input);
         }
 
-        public void ArrayNumber(int[] inputs)
+        public async ValueTask<int> GetNumberValueAsync(int input)
         {
-            for (var i = 0; i < inputs.Length; i++)
-            {
-                inputs[i] = _numberFactory.Invoke(inputs[i]);
-            }
+            await Task.Yield();
+            return _numberFactory.Invoke(input);
         }
     }
 }

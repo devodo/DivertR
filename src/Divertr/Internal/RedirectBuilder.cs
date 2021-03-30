@@ -1,23 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq.Expressions;
 using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class RedirectBuilder<T> : IRedirectBuilder<T> where T : class
+    internal class RedirectBuilder<T> where T : class
     {
-        protected readonly IVia<T> Via;
+        private readonly IVia<T> _via;
+        
         private readonly List<ICallConstraint<T>> _callConstraints = new List<ICallConstraint<T>>();
+        private int _orderWeight = 0;
 
-        public RedirectBuilder(IVia<T> via, ICallConstraint<T>? callConstraint = null)
+        public RedirectBuilder(IVia<T> via)
         {
-            Via = via ?? throw new ArgumentNullException(nameof(via));
+            _via = via ?? throw new ArgumentNullException(nameof(via));
+        }
 
-            if (callConstraint != null)
-            {
-                _callConstraints.Add(callConstraint);
-            }
+        RedirectBuilder<T> WithOrderWeight(int orderWeight)
+        {
+            _orderWeight = orderWeight;
+
+            return this;
         }
         
         public ICallConstraint<T> BuildCallConstraint()
@@ -29,31 +33,48 @@ namespace DivertR.Internal
                 _ => new CompositeCallConstraint<T>(_callConstraints)
             };
         }
-
-        public IRedirect<T> BuildRedirect(T target)
+        
+        public IRedirect<T> Build(T target)
         {
             return new TargetRedirect<T>(target, BuildCallConstraint());
         }
         
-        public virtual IRedirect<T> BuildRedirect(Delegate redirectDelegate)
-        {
-            var fastDelegate = redirectDelegate.GetMethodInfo().ToDelegate(redirectDelegate.GetType());
-            return new DelegateRedirect<T>(callInfo => fastDelegate.Invoke(redirectDelegate, callInfo.Arguments.InternalArgs), BuildCallConstraint());
-        }
-
         public IVia<T> To(T target)
         {
-            var redirect = BuildRedirect(target);
-            Via.AddRedirect(redirect);
+            var redirect = Build(target);
             
-            return Via;
+            return _via.InsertRedirect(redirect);
         }
         
-        public IVia<T> To(Delegate redirectDelegate)
+        public IFuncRedirectBuilder<T, TReturn> When<TReturn>(Expression<Func<T, TReturn>> lambdaExpression)
         {
-            var redirect = BuildRedirect(redirectDelegate);
-            
-            return Via.AddRedirect(redirect);
+            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
+
+            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            return new FuncRedirectBuilder<T, TReturn>(_via, parsedCall);
+        }
+        
+        public IActionRedirectBuilder<T> When(Expression<Action<T>> lambdaExpression)
+        {
+            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
+
+            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            return new ActionRedirectBuilder<T>(_via, parsedCall);
+        }
+        
+        public IActionRedirectBuilder<T> WhenSet<TProperty>(Expression<Func<T, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
+        {
+            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
+            if (valueExpression?.Body == null) throw new ArgumentNullException(nameof(valueExpression));
+
+            if (!(lambdaExpression.Body is MemberExpression propertyExpression))
+            {
+                throw new ArgumentException("Only property member expressions are valid input to RedirectSet", nameof(propertyExpression));
+            }
+
+            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
+
+            return new ActionRedirectBuilder<T>(_via, parsedCall);
         }
     }
 }

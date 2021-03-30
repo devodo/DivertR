@@ -3,7 +3,7 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class ActionRedirectBuilder<T> : RedirectBuilder<T>, IActionRedirectBuilder<T> where T : class
+    internal class ActionRedirectBuilder<T> : DelegateRedirectBuilder<T>, IActionRedirectBuilder<T> where T : class
     {
         private readonly ParsedCallExpression _parsedCallExpression;
 
@@ -13,11 +13,11 @@ namespace DivertR.Internal
             _parsedCallExpression = parsedCallExpression;
         }
         
-        public override IRedirect<T> BuildRedirect(Delegate redirectDelegate)
+        public override IRedirect<T> Build(Delegate redirectDelegate)
         {
             _parsedCallExpression.Validate(redirectDelegate);
 
-            return base.BuildRedirect(redirectDelegate);
+            return base.Build(redirectDelegate);
         }
         
         public IVia<T> To(Action redirectDelegate)
@@ -123,7 +123,7 @@ namespace DivertR.Internal
         {
             var redirect = new DelegateRedirect<T>(redirectDelegate, BuildCallConstraint());
 
-            return Via.AddRedirect(redirect);
+            return Via.InsertRedirect(redirect);
         }
     }
 }

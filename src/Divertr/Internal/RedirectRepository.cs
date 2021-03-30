@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using DivertR.Core;
 
 namespace DivertR.Internal
@@ -9,91 +11,28 @@ namespace DivertR.Internal
     {
         private readonly ConcurrentDictionary<ViaId, object> _viaRedirects = new ConcurrentDictionary<ViaId, object>();
 
-        public ImmutableArray<IRedirect<T>> Get<T>(ViaId viaId) where T : class
+        public IRedirect<T>[] Get<T>(ViaId viaId) where T : class
         {
-            if (_viaRedirects.TryGetValue(viaId, out var redirects))
+            return _viaRedirects.TryGetValue(viaId, out var existing) 
+                ? ((RedirectCollection<T>) existing).Redirects
+                : RedirectCollection<T>.Empty.Redirects;
+        }
+
+        public IRedirect<T>[] InsertRedirect<T>(ViaId viaId, IRedirect<T> redirect, int orderWeight = 0) where T : class
+        {
+            RedirectCollection<T> Create()
             {
-                return (ImmutableArray<IRedirect<T>>) redirects;
+                return RedirectCollection<T>.Empty.InsertRedirect(redirect, orderWeight);
             }
 
-            return ImmutableArray<IRedirect<T>>.Empty;
+            RedirectCollection<T> Update(RedirectCollection<T> existing)
+            {
+                return existing.InsertRedirect(redirect, orderWeight);
+            }
+
+            return AddOrUpdate(viaId, Create, Update).Redirects;
         }
         
-        public ImmutableArray<IRedirect<T>> AddRedirect<T>(ViaId viaId, IRedirect<T> redirect) where T : class
-        {
-            ImmutableArray<IRedirect<T>> Create()
-            {
-                return ImmutableArray.Create(redirect);
-            }
-
-            ImmutableArray<IRedirect<T>> Update(ImmutableArray<IRedirect<T>> existing)
-            {
-                return existing.Add(redirect);
-            }
-
-            return AddOrUpdate(viaId, Create, Update);
-        }
-        
-        public ImmutableArray<IRedirect<T>> InsertRedirect<T>(ViaId viaId, int index, IRedirect<T> redirect) where T : class
-        {
-            ImmutableArray<IRedirect<T>> Create()
-            {
-                if (index != 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(index), "Insert index must be 0 as there are no existing redirects");
-                }
-
-                return ImmutableArray<IRedirect<T>>.Empty.Insert(0, redirect);
-            }
-
-            ImmutableArray<IRedirect<T>> Update(ImmutableArray<IRedirect<T>> existing)
-            {
-                if (index < 0 || index > existing.Length)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(index), "Index not within the bounds of the existing redirects");
-                }
-
-                return existing.Insert(index, redirect);
-            }
-
-            return AddOrUpdate(viaId, Create, Update);
-        }
-
-        public ImmutableArray<IRedirect<T>> RemoveRedirect<T>(ViaId viaId, IRedirect<T> redirect) where T : class
-        {
-            ImmutableArray<IRedirect<T>> Create()
-            {
-                return ImmutableArray<IRedirect<T>>.Empty;
-            }
-
-            ImmutableArray<IRedirect<T>> Update(ImmutableArray<IRedirect<T>> existing)
-            {
-                return existing.Remove(redirect);
-            }
-
-            return AddOrUpdate(viaId, Create, Update);
-        }
-
-        public ImmutableArray<IRedirect<T>> RemoveRedirectAt<T>(ViaId viaId, int index) where T : class
-        {
-            ImmutableArray<IRedirect<T>> Create()
-            {
-                throw new ArgumentOutOfRangeException(nameof(index), "No index valid as there are no existing redirects");
-            }
-
-            ImmutableArray<IRedirect<T>> Update(ImmutableArray<IRedirect<T>> existing)
-            {
-                if (index < 0 || index > existing.Length)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(index), "Index not within the bounds of the existing redirects");
-                }
-
-                return existing.RemoveAt(index);
-            }
-
-            return AddOrUpdate(viaId, Create, Update);
-        }
-
         public bool Reset(ViaId viaId)
         {
             return _viaRedirects.TryRemove(viaId, out _);
@@ -104,10 +43,10 @@ namespace DivertR.Internal
             _viaRedirects.Clear();
         }
 
-        private ImmutableArray<IRedirect<T>> AddOrUpdate<T>(
+        private RedirectCollection<T> AddOrUpdate<T>(
             ViaId viaId,
-            Func<ImmutableArray<IRedirect<T>>> addFactory,
-            Func<ImmutableArray<IRedirect<T>>, ImmutableArray<IRedirect<T>>> updateFactory) where T : class
+            Func<RedirectCollection<T>> addFactory,
+            Func<RedirectCollection<T>, RedirectCollection<T>> updateFactory) where T : class
         {
             object Create(ViaId _)
             {
@@ -116,10 +55,73 @@ namespace DivertR.Internal
 
             object Update(ViaId _, object existing)
             {
-                return updateFactory((ImmutableArray<IRedirect<T>>) existing);
+                return updateFactory((RedirectCollection<T>) existing);
             }
 
-            return (ImmutableArray<IRedirect<T>>) _viaRedirects.AddOrUpdate(viaId, Create, Update);
+            return (RedirectCollection<T>) _viaRedirects.AddOrUpdate(viaId, Create, Update);
+        }
+
+        private class RedirectCollection<T> where T : class
+        {
+            private readonly int _insertSequence;
+            private readonly ImmutableStack<RedirectItem<T>> _redirectStack;
+            public IRedirect<T>[] Redirects { get; }
+
+            public static readonly RedirectCollection<T> Empty =
+                new RedirectCollection<T>(0, ImmutableStack<RedirectItem<T>>.Empty);
+
+            private RedirectCollection(int insertSequence, ImmutableStack<RedirectItem<T>> redirectStack)
+            {
+                _insertSequence = insertSequence;
+                _redirectStack = redirectStack;
+                
+                Redirects = _redirectStack
+                    .OrderBy(x => x, RedirectComparer<T>.Instance)
+                    .Select(x => x.Redirect)
+                    .ToArray();
+            }
+
+            public RedirectCollection<T> InsertRedirect(IRedirect<T> redirect, int orderWeight)
+            {
+                var redirectItem = new RedirectItem<T>(redirect, _insertSequence + 1, orderWeight);
+                return new RedirectCollection<T>(redirectItem.InsertSequence, _redirectStack.Push(redirectItem));
+            }
+        }
+        
+        private class RedirectItem<T> where T : class
+        {
+            public IRedirect<T> Redirect { get; }
+            public int InsertSequence { get; }
+            public int OrderWeight { get; }
+
+            public RedirectItem(IRedirect<T> redirect, int insertSequence, int orderWeight)
+            {
+                Redirect = redirect;
+                InsertSequence = insertSequence;
+                OrderWeight = orderWeight;
+            }
+        }
+
+        private class RedirectComparer<T> : IComparer<RedirectItem<T>> where T : class
+        {
+            public static readonly RedirectComparer<T> Instance = new RedirectComparer<T>();
+
+            public int Compare(RedirectItem<T> x, RedirectItem<T> y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return 0;
+                }
+
+                var weightComparison = x.OrderWeight.CompareTo(y.OrderWeight);
+
+                if (weightComparison != 0)
+                {
+                    return weightComparison;
+                }
+
+                return y.InsertSequence.CompareTo(x.InsertSequence);
+            }
         }
     }
 }

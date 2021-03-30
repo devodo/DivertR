@@ -7,5 +7,7 @@
         string GetMessage(string input);
         
         string SetMessage(Wrapper<string> input);
+
+        IFoo GetFoo();
     }
 }
