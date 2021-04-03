@@ -140,5 +140,35 @@ namespace DivertR.WebAppTests
             insertResult.ShouldBe(true);
             response.Content.ShouldBeEquivalentTo(insertedFoo);
         }
+        
+        [Fact]
+        public async Task CanRecordInsertFooRedirectCalls()
+        {
+            // ARRANGE
+            var createFooRequest = new CreateFooRequest
+            {
+                Name = Guid.NewGuid().ToString()
+            };
+            
+            var callsRecord = _fooRepositoryVia.RecordCalls();
+
+            _fooRepositoryVia
+                .Redirect(x => x.TryInsertFoo(Is<Foo>.Any))
+                .To(() => (Task<bool>) _fooRepositoryVia.Relay.CallNext());
+
+            // ACT
+            var response = await _fooClient.InsertFoo(createFooRequest);
+
+            // ASSERT
+            response.StatusCode.ShouldBe(HttpStatusCode.Created);
+            var calls = callsRecord.Calls(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)));
+            calls.Count.ShouldBe(1);
+            var insertResult = await (Task<bool>) calls[0].ReturnValue;
+            var insertedFoo = (Foo) calls[0].CallInfo.Arguments[0];
+            response.Headers.Location.PathAndQuery.ShouldBe($"/Foo/{insertedFoo.Id}");
+            insertedFoo.Name.ShouldBe(createFooRequest.Name);
+            insertResult.ShouldBe(true);
+            response.Content.ShouldBeEquivalentTo(insertedFoo);
+        }
     }
 }

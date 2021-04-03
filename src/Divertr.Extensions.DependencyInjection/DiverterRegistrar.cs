@@ -8,7 +8,6 @@ namespace DivertR.Extensions.DependencyInjection
     public class DiverterRegistrar
     {
         private readonly RegistrationConfiguration _configuration;
-        private readonly EventHandler<IEnumerable<Type>>? _typesDivertedNotifier;
         private readonly Lazy<Dictionary<Type, List<Type>>> _openGenericTypes;
 
         private readonly HashSet<Type> _divertedTypesHash = new HashSet<Type>();
@@ -17,10 +16,9 @@ namespace DivertR.Extensions.DependencyInjection
 
         private int _serviceIndex = 0;
 
-        public DiverterRegistrar(RegistrationConfiguration configuration, EventHandler<IEnumerable<Type>>? typesDivertedNotifier)
+        public DiverterRegistrar(RegistrationConfiguration configuration)
         {
             _configuration = configuration;
-            _typesDivertedNotifier = typesDivertedNotifier;
 
             _openGenericTypes = new Lazy<Dictionary<Type, List<Type>>>(() =>
             {
@@ -63,7 +61,7 @@ namespace DivertR.Extensions.DependencyInjection
 
             RegisterCreateDescriptors();
 
-            _typesDivertedNotifier?.Invoke(this, _divertedTypes);
+            _configuration.RegistrationCallback?.Invoke(_divertedTypes);
         }
 
         private bool TryRegisterInclude(int servicesIndex)

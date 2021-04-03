@@ -23,7 +23,7 @@ namespace DivertR.Extensions.DependencyInjection
         {
             return services.Divert(diverter, builder =>
             {
-                builder.Include(type).WithName(name);
+                builder.Include(type).WithViaName(name);
             });
         }
         
@@ -31,7 +31,7 @@ namespace DivertR.Extensions.DependencyInjection
         {
             var configuration = new RegistrationConfiguration(services, via);
             configuration.IncludeTypes.Add(via.ViaId.Type);
-            new DiverterRegistrar(configuration, null).Register();
+            new DiverterRegistrar(configuration).Register();
 
             return services;
         }

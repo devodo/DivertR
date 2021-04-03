@@ -14,14 +14,16 @@ namespace DivertR.Extensions.DependencyInjection
         public HashSet<Type> IncludeTypes { get; } = new HashSet<Type>();
         public HashSet<Type> ExcludeTypes { get; } = new HashSet<Type>();
         
-        public string? Name { get; set; }
+        public string? ViaName { get; set; }
+
+        public Action<List<Type>> RegistrationCallback { get; set; }
 
         public RegistrationConfiguration(IServiceCollection services, IDiverter diverter)
         {
             Services = services ?? throw new ArgumentNullException(nameof(services));
             if (diverter == null) throw new ArgumentNullException(nameof(diverter));
             
-            GetViaFunc = type => diverter.Via(type, Name);
+            GetViaFunc = type => diverter.Via(type, ViaName);
         }
         
         public RegistrationConfiguration(IServiceCollection services, IVia via)

@@ -13,8 +13,7 @@ namespace DivertR.Extensions.DependencyInjection.Tests
     {
         private readonly IServiceCollection _services = new ServiceCollection();
         private readonly Diverter _diverter = new();
-        private List<Type> _typesDiverted;
-        
+
         [Fact]
         public void ShouldReplaceRegistration()
         {
@@ -74,30 +73,31 @@ namespace DivertR.Extensions.DependencyInjection.Tests
             _diverter.ResetAll();
             list.Count.ShouldBe(0);
         }
-        
+
         [Fact]
         public void GivenOpenGenericShouldRedirect()
         {
             _services.AddTransient(typeof(IList<>), typeof(List<>));
+            List<Type> typesDiverted = null;
             _services.Divert(_diverter, builder =>
             {
                 builder.Include<IList<string>>();
-                builder.WithTypesDivertedHandler(TypesDivertedHandler);
+                builder.WithOnCompleteCallback(types => { typesDiverted = types; });
             });
 
             var provider = _services.BuildServiceProvider();
             var list = provider.GetRequiredService<IList<string>>();
-            
+
             var mock = new Mock<IList<string>>();
             mock.Setup(x => x.Count).Returns(10);
             _diverter.Via<IList<string>>().RedirectTo(mock.Object);
-            
-            _typesDiverted.ShouldBe(new[] { typeof(IList<string>)});
+
+            typesDiverted.ShouldBe(new[] {typeof(IList<string>)});
             list.Count.ShouldBe(10);
             _diverter.ResetAll();
             list.Count.ShouldBe(0);
         }
-        
+
         [Fact]
         public void GivenOpenGenericShouldRedirectRouter()
         {
@@ -125,7 +125,6 @@ namespace DivertR.Extensions.DependencyInjection.Tests
             _services.Divert(_diverter, builder =>
             {
                 builder.Include<IList<string>>();
-                builder.WithTypesDivertedHandler(TypesDivertedHandler);
             });
 
             var provider = _services.BuildServiceProvider();
@@ -138,11 +137,6 @@ namespace DivertR.Extensions.DependencyInjection.Tests
             list.Count.ShouldBe(10);
             _diverter.ResetAll();
             list.Count.ShouldBe(0);
-        }
-
-        private void TypesDivertedHandler(object sender, IEnumerable<Type> typesDiverted)
-        {
-            _typesDiverted = typesDiverted.ToList();
         }
     }
 }

@@ -8,8 +8,7 @@ namespace DivertR.Extensions.DependencyInjection
     public class RegistrationBuilder
     {
         private readonly RegistrationConfiguration _configuration;
-        private event EventHandler<IEnumerable<Type>>? TypesDivertedEvent;
-        
+
         public RegistrationBuilder(IServiceCollection services, IDiverter diverter)
         {
             _configuration = new RegistrationConfiguration(services, diverter);
@@ -147,23 +146,23 @@ namespace DivertR.Extensions.DependencyInjection
             return this;
         }
 
-        public RegistrationBuilder WithName(string? name)
+        public RegistrationBuilder WithViaName(string? viaName)
         {
-            _configuration.Name = name;
+            _configuration.ViaName = viaName;
 
             return this;
         }
         
-        public RegistrationBuilder WithTypesDivertedHandler(EventHandler<IEnumerable<Type>> handler)
+        public RegistrationBuilder WithOnCompleteCallback(Action<List<Type>> registrationCallback)
         {
-            TypesDivertedEvent += handler;
+            _configuration.RegistrationCallback = registrationCallback;
 
             return this;
         }
 
         public DiverterRegistrar Build()
         {
-            return new DiverterRegistrar(_configuration, TypesDivertedEvent);
+            return new DiverterRegistrar(_configuration);
         }
         
         private static IEnumerable<Type> GetRange(IServiceCollection services, Type? startType = null, Type? endType = null, bool startInclusive = true, bool endInclusive = true)
