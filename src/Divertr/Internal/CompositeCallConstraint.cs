@@ -6,18 +6,18 @@ namespace DivertR.Internal
 {
     internal class CompositeCallConstraint<T> : ICallConstraint<T> where T : class
     {
-        private readonly ImmutableQueue<ICallConstraint<T>> _callConstraints;
+        private readonly ImmutableArray<ICallConstraint<T>> _callConstraints;
         
-        public static readonly CompositeCallConstraint<T> Empty = new CompositeCallConstraint<T>(ImmutableQueue<ICallConstraint<T>>.Empty);
+        public static readonly CompositeCallConstraint<T> Empty = new CompositeCallConstraint<T>(ImmutableArray<ICallConstraint<T>>.Empty);
 
-        private CompositeCallConstraint(ImmutableQueue<ICallConstraint<T>> callConstraints)
+        private CompositeCallConstraint(ImmutableArray<ICallConstraint<T>> callConstraints)
         {
             _callConstraints = callConstraints;
         }
 
         public CompositeCallConstraint<T> AddCallConstraint(ICallConstraint<T> callConstraint)
         {
-            return new CompositeCallConstraint<T>(_callConstraints.Enqueue(callConstraint));
+            return new CompositeCallConstraint<T>(_callConstraints.Add(callConstraint));
         }
         
         public bool IsMatch(CallInfo<T> callInfo)

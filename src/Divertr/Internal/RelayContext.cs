@@ -8,10 +8,25 @@ namespace DivertR.Internal
     internal class RelayContext<TTarget> where TTarget : class
     {
         private readonly AsyncLocal<ImmutableStack<RedirectContext<TTarget>>> _redirectStack = new AsyncLocal<ImmutableStack<RedirectContext<TTarget>>>();
+
+        private RedirectContext<TTarget> Current
+        {
+            get
+            {
+                var redirectStack = _redirectStack.Value;
+
+                if (redirectStack == null || redirectStack.IsEmpty)
+                {
+                    throw new DiverterException("Access to this member is only valid within the context of a redirect call");
+                }
+
+                return redirectStack.Peek();
+            }
+        }
         
-        public CallInfo<TTarget> CallInfo => _redirectStack.Value.Peek().CallInfo;
+        public CallInfo<TTarget> CallInfo => Current.CallInfo;
         
-        public IRedirect<TTarget> Redirect => _redirectStack.Value.Peek().Redirect;
+        public IRedirect<TTarget> Redirect => Current.Redirect;
         
         public object? CallBegin(IList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
         {

@@ -16,7 +16,7 @@ namespace DivertR.Extensions.DependencyInjection
         
         public string? ViaName { get; set; }
 
-        public Action<List<Type>> RegistrationCallback { get; set; }
+        public Action<List<Type>>? RegistrationCallback { get; set; }
 
         public RegistrationConfiguration(IServiceCollection services, IDiverter diverter)
         {

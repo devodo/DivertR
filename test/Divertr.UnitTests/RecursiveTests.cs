@@ -1,7 +1,8 @@
-using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DivertR.Core;
+using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -11,7 +12,7 @@ namespace DivertR.UnitTests
     public class RecursiveTests
     {
         private readonly ITestOutputHelper _output;
-        private readonly IVia<IFactorial> _via = new Via<IFactorial>();
+        private readonly IVia<INumber> _via = new Via<INumber>();
 
         public RecursiveTests(ITestOutputHelper output)
         {
@@ -21,104 +22,77 @@ namespace DivertR.UnitTests
         [Fact]
         public void TestRecursiveSync()
         {
-            const int factorialInput = 10;
-
-            IFactorial FactorialFactory(int n)
-            {
-                return _via.Proxy(new Factorial(n, FactorialFactory));
-            }
-            
-            _via.RedirectTo(new FactorialTest(_via.Relay.Next, _output));
-
-            var result = FactorialFactory(factorialInput).Result();
-            result.ShouldBe(GetFactorial(factorialInput));
+            const int input = 20;
+            var proxy = InitTestProxy();
+            var result = proxy.GetNumber(input);
+            var controlResult = Fibonacci(input) * 2;
+            result.ShouldBe(controlResult);
         }
 
         [Fact]
-        public async Task TestRecursiveSyncMultiThreaded()
+        public async Task TestRecursiveSyncBenchmark()
         {
-            const int factorialInput = 30;
+            const int input = 20;
             const int taskCount = 10;
-
-            IFactorial FactorialFactory(int n)
-            {
-                return _via.Proxy(new Factorial(n, FactorialFactory));
-            }
-
-            var tasks = Enumerable.Range(0, taskCount).Select(_ => Task.Run(() =>
-            {
-                _via.RedirectTo(new FactorialTest(_via.Relay.Next, _output));
-
-                return FactorialFactory(factorialInput).Result();
-            })).ToArray();
-
-            var controlResult = GetFactorial(factorialInput);
+            
+            var tasks = Enumerable.Range(0, taskCount).Select(_ => 
+                Task.Run(() => Fibonacci(input))).ToArray();
+            
+            var controlResult = Fibonacci(input);
             foreach (var task in tasks)
             {
                 (await task).ShouldBe(controlResult);
             }
         }
-
-        private static int GetFactorial(int n)
+        
+        [Fact]
+        public async Task TestRecursiveSyncMultiThreaded()
         {
-            if (n <= 0)
+            const int input = 20;
+            const int taskCount = 10;
+            var controlResult = Fibonacci(input) * 2;
+            
+            var proxy = InitTestProxy();
+            
+            var tasks = Enumerable.Range(0, taskCount).Select(_ => 
+                Task.Run(() => proxy.GetNumber(input))).ToArray();
+            
+            foreach (var task in tasks)
             {
-                return 1;
+                (await task).ShouldBe(controlResult);
             }
-
-            return n * GetFactorial(n - 1);
         }
         
-        private class Factorial : IFactorial
+        private INumber InitTestProxy()
         {
-            private readonly Func<int, IFactorial> _factorialFactory;
+            var proxy = _via.Proxy(new Number());
 
-            public Factorial(int number, Func<int, IFactorial> factorialFactory)
+            var fibonacci = new Number(i =>
             {
-                Number = number;
-                _factorialFactory = factorialFactory;
-            }
-
-            public int Number { get; }
-
-            public int Result()
-            {
-                if (Number <= 0)
+                if (i < 2)
                 {
-                    return 1;
+                    return _via.Next.GetNumber(i);
                 }
 
-                return Number * _factorialFactory(Number - 1).Result();
-            }
+                return proxy.GetNumber(i - 1) + proxy.GetNumber(i - 2);
+            });
+
+            _via
+                .Redirect(x => x.GetNumber(Is<int>.Any))
+                .To<int>(i => _via.Relay.Original.GetNumber(i) + _via.Next.GetNumber(i))
+                .RedirectTo(fibonacci);
+            
+            return _via.Proxy(new Number());
         }
 
-        private class FactorialTest : IFactorial
+        private static int Fibonacci(int n)
         {
-            private readonly IFactorial _src;
-            private readonly ITestOutputHelper _output;
-
-            public FactorialTest(IFactorial src, ITestOutputHelper output)
+            if (n < 2)
             {
-                _src = src;
-                _output = output;
+                return n;
             }
 
-            public int Number => _src.Number;
-
-            public int Result()
-            {
-                var result = _src.Result();
-                
-                _output.WriteLine($"{Number} - {result}");
-
-                return result;
-            }
+            return Fibonacci(n - 1) + Fibonacci(n - 2);
         }
-    }
-    
-    public interface IFactorial
-    {
-        public int Number { get; }
-        int Result();
     }
 }

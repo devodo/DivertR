@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Headers;
 using DivertR.Core;
 using DivertR.Extensions.DependencyInjection;
 using DivertR.SampleWebApp;
 using DivertR.SampleWebApp.Services;
-using FakeItEasy;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Logging;
 using Refit;
@@ -30,16 +26,16 @@ namespace DivertR.WebAppTests
                 {
                     services.Divert(_diverter, diverterBuilder =>
                     {
-                        diverterBuilder.IncludeRangeStart<IFooRepository>();
-                        diverterBuilder.ExcludeRangeStart<IFooPublisher>(inclusive: false);
+                        diverterBuilder.IncludeRange<IFooRepository, IFooPublisher>();
                         diverterBuilder.Include<ILoggerFactory>();
+                        // Assert
                         diverterBuilder.WithOnCompleteCallback(types =>
                         {
                             types.ShouldBe(new[]
                             {
                                 typeof(ILoggerFactory),
                                 typeof(IFooRepository),
-                                typeof(IFooPublisher),
+                                typeof(IFooPublisher)
                             });
                         });
                     });

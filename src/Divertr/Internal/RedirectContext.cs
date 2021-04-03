@@ -48,7 +48,7 @@ namespace DivertR.Internal
 
             for (var i = startIndex; i < redirects.Count; i++)
             {
-                if (!redirects[i].IsMatch(callInfo))
+                if (!redirects[i].CallConstraint.IsMatch(callInfo))
                 {
                     continue;
                 }

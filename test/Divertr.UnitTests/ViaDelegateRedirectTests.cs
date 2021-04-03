@@ -39,6 +39,21 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenProxy_WhenCallNextRedirect_ShouldDefaultToOriginal()
+        {
+            // ARRANGE
+            var original = new Foo("foo");
+            var proxy = _via.Proxy(original);
+            _via.Redirect(x => x.Message).To(() => (string) _via.Relay.CallNext());
+
+            // ACT
+            _via.Reset();
+
+            // ASSERT
+            proxy.Message.ShouldBe(original.Message);
+        }
+        
+        [Fact]
         public void GivenProxy_WhenAddRedirectWithRelayToOriginal_ShouldDivert()
         {
             // ARRANGE
@@ -46,7 +61,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
 
             // ACT
-            _via.RedirectTo(new Foo(() => $"hello {_via.Relay.Original.Message}"));
+            _via
+                .Redirect(x => x.Message)
+                .To(() => $"hello {_via.Relay.Original.Message}");
 
             // ASSERT
             proxy.Message.ShouldBe("hello foo");
@@ -60,7 +77,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
             
             // ACT
-            _via.RedirectTo(new Foo(() => $"hello {_via.Relay.Next.Message}"));
+            _via
+                .Redirect(x => x.Message)
+                .To(() => $"hello {_via.Next.Message}");
 
             // ASSERT
             proxy.Message.ShouldBe("hello foo");
@@ -75,11 +94,13 @@ namespace DivertR.UnitTests
             IFoo originalReference = null;
 
             // ACT
-            _via.RedirectTo(new Foo(() =>
-            {
-                originalReference = _via.Relay.CallInfo.Original;
-                return $"hello {originalReference!.Message}";
-            }));
+            _via
+                .Redirect(x => x.Message)
+                .To(() =>
+                {
+                    originalReference = _via.Relay.CallInfo.Original;
+                    return $"hello {originalReference!.Message}";
+                });
 
             // ASSERT
             proxy.Message.ShouldBe("hello foo");
@@ -87,7 +108,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenWhenRedirect_ShouldDivert()
+        public void GivenConstantExpressionRedirect_WhenCallMatches_ShouldDivert()
         {
             // ARRANGE
             var via = new Via<IFoo>();
@@ -104,7 +125,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenExpressionRedirectWithLiteralParam_ShouldDivert()
+        public void GivenConstantExpressionRedirect_WhenCallDoesNotMatch_ShouldDefaultToOriginal()
         {
             // ARRANGE
             var via = new Via<IFoo>();
@@ -114,14 +135,14 @@ namespace DivertR.UnitTests
 
             // ACT
             var proxy = via.Proxy(new Foo("hello foo"));
-            var message = proxy.GetMessage("test");
+            var message = proxy.GetMessage("no match");
 
             // ASSERT
-            message.ShouldBe("hello foo test");
+            message.ShouldBe("hello foo");
         }
 
         [Fact]
-        public void GivenExpressionRedirectWithVariableParam_ShouldDivert()
+        public void GivenVariableExpressionRedirect_WhenCallMatches_ShouldDivert()
         {
             // ARRANGE
             var via = new Via<IFoo>();
@@ -137,9 +158,28 @@ namespace DivertR.UnitTests
             // ASSERT
             message.ShouldBe("hello foo test");
         }
+        
+        [Fact]
+        public void GivenVariableExpressionRedirect_WhenCallDoesNotMatch_ShouldDefaultToOriginal()
+        {
+            // ARRANGE
+            var via = new Via<IFoo>();
+            var input = new Wrapper<string>("test");
+            via
+                .Redirect(x => x.GetMessage(input.Item))
+                .To((string i) => $"{via.Relay.Original.Message} {i}");
+
+            // ACT
+            var proxy = via.Proxy(new Foo("hello foo"));
+            input.Item = "no match";
+            var message = proxy.GetMessage(input.Item);
+
+            // ASSERT
+            message.ShouldBe("hello foo");
+        }
 
         [Fact]
-        public void GivenWhenRedirectWithMatchParam_ShouldDivert()
+        public void GivenMatchExpressionRedirect_WhenCallMatches_ShouldDivert()
         {
             // ARRANGE
             var via = new Via<IFoo>();
@@ -158,7 +198,24 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenWhenRedirectWithAnyParam_ShouldDivert()
+        public void GivenMatchExpressionRedirect_WhenCallDoesNotMatch_ShouldDefaultToOriginal()
+        {
+            // ARRANGE
+            var via = new Via<IFoo>();
+            via
+                .Redirect(x => x.GetMessage(Is<string>.Match(p => p == "test")))
+                .To((string i) => $"{via.Relay.Original.Message} {i}");
+
+            // ACT
+            var proxy = via.Proxy(new Foo("hello foo"));
+            var message = proxy.GetMessage("no match");
+
+            // ASSERT
+            message.ShouldBe("hello foo");
+        }
+        
+        [Fact]
+        public void GivenIsAnyExpressionRedirect_WhenCallMatches_ShouldDivert()
         {
             // ARRANGE
             var via = new Via<IFoo>();
@@ -173,26 +230,9 @@ namespace DivertR.UnitTests
             // ASSERT
             message.ShouldBe("hello foo test");
         }
-        
-        [Fact]
-        public void GivenWhenPropertyRedirect_ShouldDivert()
-        {
-            // ARRANGE
-            var via = new Via<IFoo>();
-            via
-                .Redirect(x => x.Message)
-                .To(() => $"before {via.Relay.Original.Message} after");
 
-            // ACT
-            var proxy = via.Proxy(new Foo("hello foo"));
-            var message = proxy.Message;
-
-            // ASSERT
-            message.ShouldBe("before hello foo after");
-        }
-        
         [Fact]
-        public void GivenSetPropertyRedirect_ShouldDivert()
+        public void GivenSetPropertyRedirect_WhenValueMatches_ShouldDivert()
         {
             // ARRANGE
             _via
@@ -205,6 +245,22 @@ namespace DivertR.UnitTests
 
             // ASSERT
             proxy.Message.ShouldBe("New test set");
+        }
+        
+        [Fact]
+        public void GivenSetPropertyRedirect_WhenValueDoesNotMatch_ShouldDefaultToOriginal()
+        {
+            // ARRANGE
+            _via
+                .RedirectSet(x => x.Message, () => Is<string>.Match(s => s == "test"))
+                .To((string value) => _via.Relay.Original.Message = $"New {value} set");
+
+            // ACT
+            var proxy = _via.Proxy(new Foo("hello foo"));
+            proxy.Message = "no match";
+
+            // ASSERT
+            proxy.Message.ShouldBe("no match");
         }
         
         [Fact]
