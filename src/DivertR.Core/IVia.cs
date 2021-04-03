@@ -20,7 +20,7 @@ namespace DivertR.Core
         IVia<T> Reset();
         
         IVia<T> RedirectTo(T target);
-        IDelegateRedirectBuilder<T> Redirect(ICallConstraint<T>? callConstraint = null);
+        IRedirectBuilder<T> Redirect(ICallConstraint<T>? callConstraint = null);
         IFuncRedirectBuilder<T, TReturn> Redirect<TReturn>(Expression<Func<T, TReturn>> lambdaExpression);
         IActionRedirectBuilder<T> Redirect(Expression<Action<T>> lambdaExpression);
         IActionRedirectBuilder<T> RedirectSet<TProperty>(Expression<Func<T, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression);

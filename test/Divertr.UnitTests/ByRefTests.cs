@@ -68,52 +68,5 @@ namespace DivertR.UnitTests
             // ASSERT
             input.ShouldBe(16);
         }
-        
-        [Fact]
-        public void GivenRefRedirect_ShouldUpdateRefInput2()
-        {
-            // ARRANGE
-            var n = new Number(i =>
-            {
-                _via.Next.RefNumber(ref i);
-
-                i += 10;
-
-                return i;
-            });
-                
-            //_via
-             //   .Redirect(x => x.RefNumber(ref Is<int>.AnyRef))
-              //  .To(n);
-            
-            var viaProxy = _via.Proxy(new Number(i => i * 2));
-            
-
-            // ACT
-            const int epochs = 1000000;
-            int input = 0;
-            var test = new Number(i => i * 2);
-            
-            var clock = Stopwatch.StartNew();
-            for (var i = 0; i < epochs; i++)
-            {
-                input = 3;
-                test.RefNumber(ref input);
-            }
-            
-            _output.WriteLine($"Base: {clock.ElapsedMilliseconds}");
-            clock.Restart();
-            
-            for (var i = 0; i < epochs; i++)
-            {
-                input = 3;
-                viaProxy.RefNumber(ref input);
-            }
-            
-            _output.WriteLine($"Elapsed: {clock.ElapsedMilliseconds}");
-
-            // ASSERT
-            input.ShouldBe(16);
-        }
     }
 }

@@ -194,9 +194,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new AsyncFoo("hello foo"));
             var next = _via.Relay.Next;
             _via
-                .RedirectTo(new AsyncFoo(async () => $"DivertR {await next.MessageAsync} 1"))
+                .RedirectTo(new AsyncFoo(async () => $"again {await next.MessageAsync} 3"))
                 .RedirectTo(new AsyncFoo(async () => $"here {await next.MessageAsync} 2"))
-                .RedirectTo(new AsyncFoo(async () => $"again {await next.MessageAsync} 3"));
+                .RedirectTo(new AsyncFoo(async () => $"DivertR {await next.MessageAsync} 1"));
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -243,7 +243,7 @@ namespace DivertR.UnitTests
             var message = await proxy.MessageAsync;
             
             // ASSERT
-            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Select(i => $"{i}"));
+            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Select(i => $"{i}").Reverse());
             message.ShouldBe($"foo {join} foo");
         }
         
@@ -269,9 +269,9 @@ namespace DivertR.UnitTests
             });
 
             _via
-                .RedirectTo(recursive)
                 .RedirectTo(new AsyncFoo(async () =>
-                    (await next.MessageAsync).Replace(await orig.MessageAsync, "bar")));
+                    (await next.MessageAsync).Replace(await orig.MessageAsync, "bar")))
+                .RedirectTo(recursive);
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -292,9 +292,9 @@ namespace DivertR.UnitTests
             }
 
             _via
-                .Redirect(x => x.MessageAsync).To(() => WriteMessage(1))
-                .Redirect(x => x.MessageAsync).To(() => WriteMessage(2))
-                .Redirect(x => x.MessageAsync).To(() => WriteMessage(3));
+                .Redirect().WithOrderWeight(10).When(x => x.MessageAsync).To(() => WriteMessage(1))
+                .Redirect().WithOrderWeight(20).When(x => x.MessageAsync).To(() => WriteMessage(2))
+                .Redirect().WithOrderWeight(30).When(x => x.MessageAsync).To(() => WriteMessage(3));
 
             // ACT
             var message = await proxy.MessageAsync;

@@ -694,14 +694,15 @@ namespace DivertR.UnitTests
         public void TestGetFoo()
         {
             // ARRANGE
+            IFoo getFoo = new Foo();
             _via.Redirect(x => x.GetFoo())
-                .To(new Foo());
+                .To(getFoo);
             
             // ACT
-            var result = _via.Proxy().SetMessage(GetInput());
+            var result = _via.Proxy().GetFoo();
 
             // ASSERT
-            result.ShouldBe("test");
+            result.ShouldBeSameAs(getFoo);
         }
     }
 }

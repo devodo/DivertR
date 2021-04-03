@@ -136,12 +136,10 @@ namespace DivertR.UnitTests
             }
 
             _via
-                .Redirect(x => x.MessageAsync).BuildRedirect(() => WriteMessage(1));
+                .Redirect().WithOrderWeight(10).When(x => x.MessageAsync).To(() => WriteMessage(1))
+                .Redirect().WithOrderWeight(20).When(x => x.MessageAsync).To(() => WriteMessage(2))
+                .Redirect().WithOrderWeight(30).When(x => x.MessageAsync).To(() => WriteMessage(3));
                 
-                
-                //.Redirect(x => x.MessageAsync).To(() => WriteMessage(2))
-                //.Redirect(x => x.MessageAsync).To(() => WriteMessage(3));
-
             // ACT
             var message = await proxy.MessageAsync;
             
@@ -169,7 +167,7 @@ namespace DivertR.UnitTests
             var message = await proxy.MessageAsync;
             
             // ASSERT
-            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Select(i => $"{i}")).Reverse();
+            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Select(i => $"{i}").Reverse());
             message.ShouldBe($"foo {join} foo");
         }
         

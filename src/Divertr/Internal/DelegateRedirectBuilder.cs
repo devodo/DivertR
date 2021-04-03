@@ -1,63 +1,67 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class DelegateRedirectBuilder<T> : IDelegateRedirectBuilder<T> where T : class
+    internal abstract class DelegateRedirectBuilder<TTarget> : IDelegateRedirectBuilder<TTarget> where TTarget : class
     {
-        protected readonly IVia<T> Via;
-        private readonly List<ICallConstraint<T>> _callConstraints = new List<ICallConstraint<T>>();
+        private readonly IVia<TTarget> _via;
+        protected readonly ParsedCallExpression ParsedCallExpression;
+        private readonly RedirectBuilderOptions<TTarget> _builderOptions;
 
-        public DelegateRedirectBuilder(IVia<T> via, ICallConstraint<T>? callConstraint = null)
+        public DelegateRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, RedirectBuilderOptions<TTarget> builderOptions)
         {
-            Via = via ?? throw new ArgumentNullException(nameof(via));
+            _via = via ?? throw new ArgumentNullException(nameof(via));
+            ParsedCallExpression = parsedCallExpression ?? throw new ArgumentNullException(nameof(parsedCallExpression));
+            _builderOptions = builderOptions ?? throw new ArgumentNullException(nameof(builderOptions));
 
-            if (callConstraint != null)
-            {
-                _callConstraints.Add(callConstraint);
-            }
-        }
-        
-        public ICallConstraint<T> BuildCallConstraint()
-        {
-            return _callConstraints.Count switch
-            {
-                0 => TrueCallConstraint<T>.Instance,
-                1 => _callConstraints[0],
-                _ => new CompositeCallConstraint<T>(_callConstraints)
-            };
-        }
-        
-        public IRedirect<T> Build(T target)
-        {
-            return new TargetRedirect<T>(target, BuildCallConstraint());
+            var expressionConstraint = ParsedCallExpression.ToCallConstraint<TTarget>();
+            CallConstraint = _builderOptions.CallConstraints.Count == 0
+                ? expressionConstraint
+                : new CompositeCallConstraint<TTarget>(_builderOptions.CallConstraints.Append(expressionConstraint));
         }
 
-        public virtual IRedirect<T> Build(Delegate redirectDelegate)
+        public ICallConstraint<TTarget> CallConstraint { get; }
+
+        public IRedirect<TTarget> Build(TTarget target)
+        {
+            return new TargetRedirect<TTarget>(target, CallConstraint);
+        }
+
+        public virtual IRedirect<TTarget> Build(Delegate redirectDelegate)
         {
             var fastDelegate = redirectDelegate.Method.ToDelegate(redirectDelegate.GetType());
-            return new DelegateRedirect<T>(callInfo => fastDelegate.Invoke(redirectDelegate, callInfo.Arguments.InternalArgs), BuildCallConstraint());
+            return new DelegateRedirect<TTarget>(callInfo => fastDelegate.Invoke(redirectDelegate, callInfo.Arguments.InternalArgs), CallConstraint);
             //return new DelegateRedirect<T>(callInfo => redirectDelegate.DynamicInvoke(callInfo.Arguments.InternalArgs), BuildCallConstraint());
         }
 
-        public IVia<T> To(T target)
+        public IVia<TTarget> To(TTarget target)
         {
             var redirect = Build(target);
             
-            return Via.InsertRedirect(redirect);
+            return _via.InsertRedirect(redirect);
         }
         
-        public IVia<T> To(Delegate redirectDelegate)
+        public IVia<TTarget> To(Delegate redirectDelegate)
         {
             var redirect = Build(redirectDelegate);
             
-            return Via.InsertRedirect(redirect);
+            return _via.InsertRedirect(redirect);
+        }
+        
+        protected IRedirect<TTarget> Build(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
+        {
+            ParsedCallExpression.Validate(inputDelegate);
+            
+            return new DelegateRedirect<TTarget>(mappedRedirect, CallConstraint);
         }
 
-        protected IVia<T> InsertRedirect(IRedirect<T> redirect)
+        protected IVia<TTarget> InsertRedirect(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
         {
-            return Via.InsertRedirect(redirect);
+            var redirect = Build(inputDelegate, mappedRedirect);
+
+            return _via.InsertRedirect(redirect, _builderOptions.OrderWeight);
         }
     }
 }

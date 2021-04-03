@@ -79,9 +79,9 @@ namespace DivertR
             return Redirect().To(target);
         }
 
-        public IDelegateRedirectBuilder<T> Redirect(ICallConstraint<T>? callConstraint = null)
+        public IRedirectBuilder<T> Redirect(ICallConstraint<T>? callConstraint = null)
         {
-            return new DelegateRedirectBuilder<T>(this, callConstraint);
+            return new RedirectBuilder<T>(this, callConstraint);
         }
         
         public IFuncRedirectBuilder<T, TReturn> Redirect<TReturn>(Expression<Func<T, TReturn>> lambdaExpression)
