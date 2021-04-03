@@ -7,35 +7,35 @@ namespace DivertR.DispatchProxy
     {
         public static readonly DispatchProxyFactory Instance = new DispatchProxyFactory();
 
-        public T CreateProxy<T>(T? original, Func<IProxyCall<T>?> getProxyCall) where T : class
+        public TTarget CreateProxy<TTarget>(TTarget? original, Func<IProxyCall<TTarget>?> getProxyCall) where TTarget : class
         {
-            Validate<T>();
+            ValidateProxyTarget<TTarget>();
 
-            IProxyInvoker CreateProxyInvoker(T proxy)
+            IProxyInvoker CreateProxyInvoker(TTarget proxy)
             {
-                return new ProxyWithDefaultInvoker<T>(proxy, original, getProxyCall);
+                return new ProxyWithDefaultInvoker<TTarget>(proxy, original, getProxyCall);
             }
             
-            return DiverterDispatchProxy.Create<T>(CreateProxyInvoker);
+            return DiverterDispatchProxy.Create<TTarget>(CreateProxyInvoker);
         }
 
-        public T CreateProxy<T>(IProxyCall<T> proxyCall) where T : class
+        public TTarget CreateProxy<TTarget>(IProxyCall<TTarget> proxyCall) where TTarget : class
         {
-            Validate<T>();
+            ValidateProxyTarget<TTarget>();
             
-            IProxyInvoker CreateProxyInvoker(T proxy)
+            IProxyInvoker CreateProxyInvoker(TTarget proxy)
             {
-                return new ProxyInvoker<T>(proxy, proxyCall);
+                return new ProxyInvoker<TTarget>(proxy, proxyCall);
             }
             
-            return DiverterDispatchProxy.Create<T>(CreateProxyInvoker);
+            return DiverterDispatchProxy.Create<TTarget>(CreateProxyInvoker);
         }
 
-        public void Validate<T>()
+        public void ValidateProxyTarget<TTarget>()
         {
-            if (!typeof(T).IsInterface)
+            if (!typeof(TTarget).IsInterface)
             {
-                throw new DiverterException($"Invalid type {typeof(T).Name}. Only interface types are supported");
+                throw new DiverterException($"Invalid type {typeof(TTarget).Name}. Only interface types are supported");
             }
         }
     }

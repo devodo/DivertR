@@ -10,27 +10,27 @@ namespace DivertR.DynamicProxy
         
         private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
 
-        public T CreateProxy<T>(T? original, Func<IProxyCall<T>?> getProxyCall) where T : class
+        public TTarget CreateProxy<TTarget>(TTarget? original, Func<IProxyCall<TTarget>?> getProxyCall) where TTarget : class
         {
-            Validate<T>();
-            var interceptor = new ProxyWithDefaultInterceptor<T>(original, getProxyCall);
+            ValidateProxyTarget<TTarget>();
+            var interceptor = new ProxyWithDefaultInterceptor<TTarget>(original, getProxyCall);
 
             return CreateProxy(interceptor, original);
         }
 
-        public T CreateProxy<T>(IProxyCall<T> proxyCall) where T : class
+        public TTarget CreateProxy<TTarget>(IProxyCall<TTarget> proxyCall) where TTarget : class
         {
-            Validate<T>();
-            var interceptor = new ProxyInterceptor<T>(proxyCall);
+            ValidateProxyTarget<TTarget>();
+            var interceptor = new ProxyInterceptor<TTarget>(proxyCall);
 
-            return CreateProxy<T>(interceptor);
+            return CreateProxy<TTarget>(interceptor);
         }
 
-        public void Validate<T>()
+        public void ValidateProxyTarget<TTarget>()
         {
-            if (!(typeof(T).IsInterface || typeof(T).IsClass))
+            if (!(typeof(TTarget).IsInterface || typeof(TTarget).IsClass))
             {
-                throw new DiverterException($"Invalid type {typeof(T).Name}. Only interface or class types are supported");
+                throw new DiverterException($"Invalid type {typeof(TTarget).Name}. Only interface or class types are supported");
             }
         }
 

@@ -3,15 +3,15 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class RedirectContext<T> where T : class
+    internal class RedirectContext<TTarget> where TTarget : class
     {
         private readonly int _index;
 
-        private readonly IList<IRedirect<T>> _redirects;
-        public CallInfo<T> CallInfo { get; }
-        public IRedirect<T> Redirect => _redirects[_index];
+        private readonly IList<IRedirect<TTarget>> _redirects;
+        public CallInfo<TTarget> CallInfo { get; }
+        public IRedirect<TTarget> Redirect => _redirects[_index];
 
-        public static RedirectContext<T>? Create(IList<IRedirect<T>> redirects, CallInfo<T> callInfo)
+        public static RedirectContext<TTarget>? Create(IList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
         {
             var index = GetNextIndex(-1, redirects, callInfo);
 
@@ -20,17 +20,17 @@ namespace DivertR.Internal
                 return null;
             }
             
-            return new RedirectContext<T>(redirects, index, callInfo);
+            return new RedirectContext<TTarget>(redirects, index, callInfo);
         }
 
-        private RedirectContext(IList<IRedirect<T>> redirects, int index, CallInfo<T> callInfo)
+        private RedirectContext(IList<IRedirect<TTarget>> redirects, int index, CallInfo<TTarget> callInfo)
         {
             CallInfo = callInfo;
             _redirects = redirects;
             _index = index;
         }
 
-        public RedirectContext<T>? MoveNext(CallInfo<T> callInfo)
+        public RedirectContext<TTarget>? MoveNext(CallInfo<TTarget> callInfo)
         {
             var index = GetNextIndex(_index, _redirects, callInfo);
 
@@ -39,10 +39,10 @@ namespace DivertR.Internal
                 return null;
             }
 
-            return new RedirectContext<T>(_redirects, index, callInfo);
+            return new RedirectContext<TTarget>(_redirects, index, callInfo);
         }
         
-        private static int GetNextIndex(int index, IList<IRedirect<T>> redirects, CallInfo<T> callInfo)
+        private static int GetNextIndex(int index, IList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
         {
             var startIndex = index + 1;
 

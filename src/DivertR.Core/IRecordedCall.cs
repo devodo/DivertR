@@ -1,8 +1,8 @@
 ﻿namespace DivertR.Core
 {
-    public interface IRecordedCall<T> where T : class
+    public interface IRecordedCall<TTarget> where TTarget : class
     {
-        CallInfo<T> CallInfo { get; }
+        CallInfo<TTarget> CallInfo { get; }
         object? ReturnValue { get; set; }
     }
 }

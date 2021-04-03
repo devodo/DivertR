@@ -3,18 +3,18 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class ViaProxyCall<T> : IProxyCall<T> where T : class
+    internal class ViaProxyCall<TTarget> : IProxyCall<TTarget> where TTarget : class
     {
-        private readonly RelayContext<T> _relayContext;
-        private readonly IList<IRedirect<T>> _redirects;
+        private readonly RelayContext<TTarget> _relayContext;
+        private readonly IList<IRedirect<TTarget>> _redirects;
 
-        public ViaProxyCall(RelayContext<T> relayContext, IList<IRedirect<T>> redirects)
+        public ViaProxyCall(RelayContext<TTarget> relayContext, IList<IRedirect<TTarget>> redirects)
         {
             _relayContext = relayContext;
             _redirects = redirects;
         }
         
-        public object? Call(CallInfo<T> callInfo)
+        public object? Call(CallInfo<TTarget> callInfo)
         {
             return _relayContext.CallBegin(_redirects, callInfo);
         }

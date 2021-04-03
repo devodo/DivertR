@@ -7,17 +7,17 @@ namespace DivertR.DispatchProxy
     {
         private IProxyInvoker _invoker = null!;
 
-        public static T Create<T>(IProxyInvoker invoker) where T : class
+        public static TTarget Create<TTarget>(IProxyInvoker invoker) where TTarget : class
         {
-            return Create<T>(proxy => invoker);
+            return Create<TTarget>(proxy => invoker);
         }
 
-        public static T Create<T>(Func<T, IProxyInvoker> invokerFactory) where T : class
+        public static TTarget Create<TTarget>(Func<TTarget, IProxyInvoker> invokerFactory) where TTarget : class
         {
-            object proxy = Create<T, DiverterDispatchProxy>()!;
-            ((DiverterDispatchProxy) proxy)._invoker = invokerFactory.Invoke((T) proxy);
+            object proxy = Create<TTarget, DiverterDispatchProxy>()!;
+            ((DiverterDispatchProxy) proxy)._invoker = invokerFactory.Invoke((TTarget) proxy);
 
-            return (T) proxy;
+            return (TTarget) proxy;
         }
 
         protected override object Invoke(MethodInfo targetMethod, object[] args)

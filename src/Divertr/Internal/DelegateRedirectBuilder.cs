@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using DivertR.Core;
 
 namespace DivertR.Internal
@@ -7,22 +6,17 @@ namespace DivertR.Internal
     internal abstract class DelegateRedirectBuilder<TTarget> : IDelegateRedirectBuilder<TTarget> where TTarget : class
     {
         private readonly IVia<TTarget> _via;
+        protected CompositeCallConstraint<TTarget> CompositeCallConstraint;
         protected readonly ParsedCallExpression ParsedCallExpression;
-        private readonly RedirectBuilderOptions<TTarget> _builderOptions;
 
-        public DelegateRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, RedirectBuilderOptions<TTarget> builderOptions)
+        public DelegateRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression)
         {
             _via = via ?? throw new ArgumentNullException(nameof(via));
             ParsedCallExpression = parsedCallExpression ?? throw new ArgumentNullException(nameof(parsedCallExpression));
-            _builderOptions = builderOptions ?? throw new ArgumentNullException(nameof(builderOptions));
-
-            var expressionConstraint = ParsedCallExpression.ToCallConstraint<TTarget>();
-            CallConstraint = _builderOptions.CallConstraints.Count == 0
-                ? expressionConstraint
-                : new CompositeCallConstraint<TTarget>(_builderOptions.CallConstraints.Append(expressionConstraint));
+            CompositeCallConstraint = CompositeCallConstraint<TTarget>.Empty.AddCallConstraint(ParsedCallExpression.ToCallConstraint<TTarget>());
         }
 
-        public ICallConstraint<TTarget> CallConstraint { get; }
+        public ICallConstraint<TTarget> CallConstraint => CompositeCallConstraint;
 
         public IRedirect<TTarget> Build(TTarget target)
         {
@@ -61,7 +55,7 @@ namespace DivertR.Internal
         {
             var redirect = Build(inputDelegate, mappedRedirect);
 
-            return _via.InsertRedirect(redirect, _builderOptions.OrderWeight);
+            return _via.InsertRedirect(redirect);
         }
     }
 }

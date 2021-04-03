@@ -15,9 +15,9 @@ namespace DivertR.Extensions.DependencyInjection
             _configuration = new RegistrationConfiguration(services, diverter);
         }
 
-        public RegistrationBuilder Include<T>() where T : class
+        public RegistrationBuilder Include<TTarget>() where TTarget : class
         {
-            return Include(typeof(T));
+            return Include(typeof(TTarget));
         }
         
         public RegistrationBuilder Include(Type type)
@@ -61,12 +61,12 @@ namespace DivertR.Extensions.DependencyInjection
             return IncludeRange(typeof(TStartType), typeof(TEndType), startInclusive, endInclusive);
         }
         
-        public RegistrationBuilder IncludeFrom<TStartType>(bool inclusive = true)
+        public RegistrationBuilder IncludeRangeStart<TStartType>(bool inclusive = true)
         {
             return IncludeRange(typeof(TStartType), endType: null, inclusive);
         }
         
-        public RegistrationBuilder IncludeUntil<TEndTypeType>(bool inclusive = true)
+        public RegistrationBuilder IncludeRangeEnd<TEndTypeType>(bool inclusive = true)
         {
             return IncludeRange(startType: null, typeof(TEndTypeType), inclusive);
         }
@@ -81,9 +81,9 @@ namespace DivertR.Extensions.DependencyInjection
             return this;
         }
         
-        public RegistrationBuilder Exclude<T>() where T : class
+        public RegistrationBuilder Exclude<TTarget>() where TTarget : class
         {
-            return Exclude(typeof(T));
+            return Exclude(typeof(TTarget));
         }
         
         public RegistrationBuilder Exclude(Type type)
@@ -127,12 +127,12 @@ namespace DivertR.Extensions.DependencyInjection
             return ExcludeRange(typeof(TStartType), typeof(TEndType), inclusive, endInclusive);
         }
         
-        public RegistrationBuilder ExcludeFrom<TStartType>(bool inclusive = true)
+        public RegistrationBuilder ExcludeRangeStart<TStartType>(bool inclusive = true)
         {
             return ExcludeRange(typeof(TStartType), endType: null, inclusive);
         }
         
-        public RegistrationBuilder ExcludeUntil<TEndType>(bool inclusive = true)
+        public RegistrationBuilder ExcludeRangeEnd<TEndType>(bool inclusive = true)
         {
             return ExcludeRange(startType: null, typeof(TEndType), inclusive);
         }

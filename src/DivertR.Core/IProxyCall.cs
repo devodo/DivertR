@@ -1,7 +1,7 @@
 ﻿namespace DivertR.Core
 {
-    public interface IProxyCall<T> where T : class
+    public interface IProxyCall<TTarget> where TTarget : class
     {
-        object? Call(CallInfo<T> callInfo);
+        object? Call(CallInfo<TTarget> callInfo);
     }
 }

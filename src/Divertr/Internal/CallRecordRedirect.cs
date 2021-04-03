@@ -7,22 +7,22 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class CallRecordRedirect<T> : IRedirect<T>, ICallRecord<T> where T : class
+    internal class CallRecordRedirect<TTarget> : IRedirect<TTarget>, ICallRecord<TTarget> where TTarget : class
     {
-        private readonly IRelay<T> _relay;
-        private readonly ICallConstraint<T> _callConstraint;
+        private readonly IRelay<TTarget> _relay;
+        private readonly ICallConstraint<TTarget> _callConstraint;
 
-        private readonly ConcurrentQueue<IRecordedCall<T>> _recordedCalls = new ConcurrentQueue<IRecordedCall<T>>();
+        private readonly ConcurrentQueue<IRecordedCall<TTarget>> _recordedCalls = new ConcurrentQueue<IRecordedCall<TTarget>>();
 
-        public CallRecordRedirect(IRelay<T> relay, ICallConstraint<T>? callConstraint = null)
+        public CallRecordRedirect(IRelay<TTarget> relay, ICallConstraint<TTarget>? callConstraint = null)
         {
             _relay = relay ?? throw new ArgumentNullException(nameof(relay));
-            _callConstraint = callConstraint ?? TrueCallConstraint<T>.Instance;
+            _callConstraint = callConstraint ?? TrueCallConstraint<TTarget>.Instance;
         }
         
-        public object? Call(CallInfo<T> callInfo)
+        public object? Call(CallInfo<TTarget> callInfo)
         {
-            var recordedCall = new RecordedCall<T>(callInfo);
+            var recordedCall = new RecordedCall<TTarget>(callInfo);
             _recordedCalls.Enqueue(recordedCall);
             
             var returnValue = _relay.CallNext(callInfo);
@@ -31,37 +31,37 @@ namespace DivertR.Internal
             return returnValue;
         }
         
-        public bool IsMatch(CallInfo<T> callInfo)
+        public bool IsMatch(CallInfo<TTarget> callInfo)
         {
             return _callConstraint.IsMatch(callInfo);
         }
 
-        public IReadOnlyList<IRecordedCall<T>> Calls(ICallConstraint<T>? callConstraint = null)
+        public IReadOnlyList<IRecordedCall<TTarget>> Calls(ICallConstraint<TTarget>? callConstraint = null)
         {
-            callConstraint ??= TrueCallConstraint<T>.Instance;
+            callConstraint ??= TrueCallConstraint<TTarget>.Instance;
 
             return Array.AsReadOnly(_recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo)).ToArray());
         }
         
-        public IReadOnlyList<IRecordedCall<T>> Calls<TReturn>(Expression<Func<T, TReturn>> lambdaExpression)
+        public IReadOnlyList<IRecordedCall<TTarget>> Calls<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
         {
             if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
 
-            return Calls(parsedCall.ToCallConstraint<T>());
+            return Calls(parsedCall.ToCallConstraint<TTarget>());
         }
         
-        public IReadOnlyList<IRecordedCall<T>> Calls(Expression<Action<T>> lambdaExpression)
+        public IReadOnlyList<IRecordedCall<TTarget>> Calls(Expression<Action<TTarget>> lambdaExpression)
         {
             if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
 
-            return Calls(parsedCall.ToCallConstraint<T>());
+            return Calls(parsedCall.ToCallConstraint<TTarget>());
         }
 
-        public IReadOnlyList<IRecordedCall<T>> CallsSet<TProperty>(Expression<Func<T, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
+        public IReadOnlyList<IRecordedCall<TTarget>> CallsSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
         {
             if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
             if (valueExpression?.Body == null) throw new ArgumentNullException(nameof(valueExpression));
@@ -72,7 +72,7 @@ namespace DivertR.Internal
             }
 
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
-            return Calls(parsedCall.ToCallConstraint<T>());
+            return Calls(parsedCall.ToCallConstraint<TTarget>());
         }
     }
 }

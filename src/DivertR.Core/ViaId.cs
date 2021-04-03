@@ -44,9 +44,9 @@ namespace DivertR.Core
             return new ViaId(type, name);
         }
 
-        public static ViaId From<T>(string? name = null)
+        public static ViaId From<TTarget>(string? name = null)
         {
-            return new ViaId(typeof(T), name);
+            return new ViaId(typeof(TTarget), name);
         }
     }
 }

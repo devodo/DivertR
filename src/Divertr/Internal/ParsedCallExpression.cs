@@ -39,9 +39,9 @@ namespace DivertR.Internal
             throw new DiverterException(errorMessage);
         }
 
-        public ICallConstraint<T> ToCallConstraint<T>() where T : class
+        public ICallConstraint<TTarget> ToCallConstraint<TTarget>() where TTarget : class
         {
-            return new MethodCallConstraint<T>(_methodConstraint, _argumentConstraints);
+            return new MethodCallConstraint<TTarget>(_methodConstraint, _argumentConstraints);
         }
         
         private bool ParametersValid(Delegate redirectDelegate)

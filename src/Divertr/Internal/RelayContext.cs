@@ -5,15 +5,15 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class RelayContext<T> where T : class
+    internal class RelayContext<TTarget> where TTarget : class
     {
-        private readonly AsyncLocal<ImmutableStack<RedirectContext<T>>> _redirectStack = new AsyncLocal<ImmutableStack<RedirectContext<T>>>();
+        private readonly AsyncLocal<ImmutableStack<RedirectContext<TTarget>>> _redirectStack = new AsyncLocal<ImmutableStack<RedirectContext<TTarget>>>();
         
-        public CallInfo<T> CallInfo => _redirectStack.Value.Peek().CallInfo;
+        public CallInfo<TTarget> CallInfo => _redirectStack.Value.Peek().CallInfo;
         
-        public IRedirect<T> Redirect => _redirectStack.Value.Peek().Redirect;
+        public IRedirect<TTarget> Redirect => _redirectStack.Value.Peek().Redirect;
         
-        public object? CallBegin(IList<IRedirect<T>> redirects, CallInfo<T> callInfo)
+        public object? CallBegin(IList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
         {
             var redirect = BeginNewCall(redirects, callInfo);
 
@@ -32,7 +32,7 @@ namespace DivertR.Internal
             }
         }
 
-        public object? CallOriginal(CallInfo<T> callInfo)
+        public object? CallOriginal(CallInfo<TTarget> callInfo)
         {
             if (callInfo.Original == null)
             {
@@ -42,7 +42,7 @@ namespace DivertR.Internal
             return callInfo.Invoke(callInfo.Original);
         }
 
-        public object? CallNext(CallInfo<T> callInfo)
+        public object? CallNext(CallInfo<TTarget> callInfo)
         {
             var redirect = BeginNextRedirect(callInfo);
             
@@ -61,22 +61,22 @@ namespace DivertR.Internal
             }
         }
         
-        private IRedirect<T>? BeginNewCall(IList<IRedirect<T>> redirects, CallInfo<T> callInfo)
+        private IRedirect<TTarget>? BeginNewCall(IList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
         {
-            var redirectContext = RedirectContext<T>.Create(redirects, callInfo);
+            var redirectContext = RedirectContext<TTarget>.Create(redirects, callInfo);
 
             if (redirectContext == null)
             {
                 return null;
             }
             
-            var redirectStack = _redirectStack.Value ?? ImmutableStack<RedirectContext<T>>.Empty;
+            var redirectStack = _redirectStack.Value ?? ImmutableStack<RedirectContext<TTarget>>.Empty;
             _redirectStack.Value = redirectStack.Push(redirectContext);
             
             return redirectContext.Redirect;
         }
 
-        private void EndCall(CallInfo<T> callInfo)
+        private void EndCall(CallInfo<TTarget> callInfo)
         {
             _redirectStack.Value = _redirectStack.Value.Pop(out var redirectContext);
 
@@ -86,7 +86,7 @@ namespace DivertR.Internal
             }
         }
 
-        private IRedirect<T>? BeginNextRedirect(CallInfo<T> callInfo)
+        private IRedirect<TTarget>? BeginNextRedirect(CallInfo<TTarget> callInfo)
         {
             var redirectStack = _redirectStack.Value;
             var redirectContext = redirectStack.Peek().MoveNext(callInfo);
@@ -101,7 +101,7 @@ namespace DivertR.Internal
             return redirectContext.Redirect;
         }
 
-        private void EndRedirect(CallInfo<T> invocation)
+        private void EndRedirect(CallInfo<TTarget> invocation)
         {
             _redirectStack.Value = _redirectStack.Value.Pop(out var redirectContext);
             

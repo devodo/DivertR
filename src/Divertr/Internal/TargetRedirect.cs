@@ -2,18 +2,18 @@
 
 namespace DivertR.Internal
 {
-    internal class TargetRedirect<T> : IRedirect<T> where T : class
+    internal class TargetRedirect<TTarget> : IRedirect<TTarget> where TTarget : class
     {
-        private readonly T _target;
-        private readonly ICallConstraint<T> _callConstraint;
+        private readonly TTarget _target;
+        private readonly ICallConstraint<TTarget> _callConstraint;
 
-        public TargetRedirect(T target, ICallConstraint<T>? callConstraint = null)
+        public TargetRedirect(TTarget target, ICallConstraint<TTarget>? callConstraint = null)
         {
             _target = target;
-            _callConstraint = callConstraint ?? TrueCallConstraint<T>.Instance;
+            _callConstraint = callConstraint ?? TrueCallConstraint<TTarget>.Instance;
         }
 
-        public object? Call(CallInfo<T> callInfo)
+        public object? Call(CallInfo<TTarget> callInfo)
         {
             if (_target == null)
             {
@@ -23,7 +23,7 @@ namespace DivertR.Internal
             return callInfo.Invoke(_target);
         }
 
-        public bool IsMatch(CallInfo<T> callInfo)
+        public bool IsMatch(CallInfo<TTarget> callInfo)
         {
             return _callConstraint.IsMatch(callInfo);
         }

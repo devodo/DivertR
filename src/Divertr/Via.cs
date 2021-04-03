@@ -7,42 +7,42 @@ using DivertR.Internal;
 
 namespace DivertR
 {
-    public class Via<T> : IVia<T> where T : class
+    public class Via<TTarget> : IVia<TTarget> where TTarget : class
     {
         private readonly RedirectRepository _redirectRepository;
         private readonly IProxyFactory _proxyFactory;
-        private readonly RelayContext<T> _relayContext;
-        private readonly Lazy<IRelay<T>> _relay;
+        private readonly RelayContext<TTarget> _relayContext;
+        private readonly Lazy<IRelay<TTarget>> _relay;
 
-        public Via() : this(ViaId.From<T>(), new RedirectRepository(), DispatchProxyFactory.Instance)
+        public Via() : this(ViaId.From<TTarget>(), new RedirectRepository(), DispatchProxyFactory.Instance)
         {
         }
         
         internal Via(ViaId viaId, RedirectRepository redirectRepository, IProxyFactory proxyFactory)
         {
-            proxyFactory.Validate<T>();
+            proxyFactory.ValidateProxyTarget<TTarget>();
 
             ViaId = viaId;
             _redirectRepository = redirectRepository;
             _proxyFactory = proxyFactory;
-            _relayContext = new RelayContext<T>();
-            _relay = new Lazy<IRelay<T>>(() => new Relay<T>(_relayContext, _proxyFactory));
+            _relayContext = new RelayContext<TTarget>();
+            _relay = new Lazy<IRelay<TTarget>>(() => new Relay<TTarget>(_relayContext, _proxyFactory));
         }
 
         public ViaId ViaId { get; }
 
-        public IRelay<T> Relay => _relay.Value;
-        public T Next => Relay.Next;
+        public IRelay<TTarget> Relay => _relay.Value;
+        public TTarget Next => Relay.Next;
 
-        public T Proxy(T? original = null)
+        public TTarget Proxy(TTarget? original = null)
         {
-            IProxyCall<T>? GetProxyCall()
+            IProxyCall<TTarget>? GetProxyCall()
             {
-                var redirects = _redirectRepository.Get<T>(ViaId);
+                var redirects = _redirectRepository.Get<TTarget>(ViaId);
 
                 return redirects.Length == 0
                     ? null
-                    : new ViaProxyCall<T>(_relayContext, redirects);
+                    : new ViaProxyCall<TTarget>(_relayContext, redirects);
             }
 
             return _proxyFactory.CreateProxy(original, GetProxyCall);
@@ -50,58 +50,74 @@ namespace DivertR
 
         public object ProxyObject(object? original = null)
         {
-            if (original != null && !(original is T))
+            if (original != null && !(original is TTarget))
             {
-                throw new ArgumentException($"Not assignable to {typeof(T).Name}", nameof(original));
+                throw new ArgumentException($"Not assignable to {typeof(TTarget).Name}", nameof(original));
             }
 
-            return Proxy(original as T);
+            return Proxy(original as TTarget);
         }
 
-        public IReadOnlyList<IRedirect<T>> Redirects => _redirectRepository.Get<T>(ViaId);
+        public IReadOnlyList<IRedirect<TTarget>> Redirects => _redirectRepository.Get<TTarget>(ViaId);
         
-        public IVia<T> InsertRedirect(IRedirect<T> redirect, int orderWeight = 0)
+        public IVia<TTarget> InsertRedirect(IRedirect<TTarget> redirect, int orderWeight = 0)
         {
             _redirectRepository.InsertRedirect(ViaId, redirect, orderWeight);
 
             return this;
         }
         
-        public IVia<T> Reset()
+        public IVia<TTarget> Reset()
         {
             _redirectRepository.Reset(ViaId);
 
             return this;
         }
         
-        public IVia<T> RedirectTo(T target)
+        public IVia<TTarget> RedirectTo(TTarget target)
         {
             return Redirect().To(target);
         }
 
-        public IRedirectBuilder<T> Redirect(ICallConstraint<T>? callConstraint = null)
+        public IRedirectBuilder<TTarget> Redirect(ICallConstraint<TTarget>? callConstraint = null)
         {
-            return new RedirectBuilder<T>(this, callConstraint);
+            return new RedirectBuilder<TTarget>(this, callConstraint);
         }
         
-        public IFuncRedirectBuilder<T, TReturn> Redirect<TReturn>(Expression<Func<T, TReturn>> lambdaExpression)
+        public IFuncRedirectBuilder<TTarget, TReturn> Redirect<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
         {
-            return new RedirectBuilder<T>(this).When(lambdaExpression);
+            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
+
+            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            return new FuncRedirectBuilder<TTarget, TReturn>(this, parsedCall);
         }
         
-        public IActionRedirectBuilder<T> Redirect(Expression<Action<T>> lambdaExpression)
+        public IActionRedirectBuilder<TTarget> Redirect(Expression<Action<TTarget>> lambdaExpression)
         {
-            return new RedirectBuilder<T>(this).When(lambdaExpression);
+            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
+
+            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            return new ActionRedirectBuilder<TTarget>(this, parsedCall);
         }
         
-        public IActionRedirectBuilder<T> RedirectSet<TProperty>(Expression<Func<T, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
+        public IActionRedirectBuilder<TTarget> RedirectSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
         {
-            return new RedirectBuilder<T>(this).WhenSet(lambdaExpression, valueExpression);
+            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
+            if (valueExpression?.Body == null) throw new ArgumentNullException(nameof(valueExpression));
+
+            if (!(lambdaExpression.Body is MemberExpression propertyExpression))
+            {
+                throw new ArgumentException("Only property member expressions are valid input to RedirectSet", nameof(propertyExpression));
+            }
+
+            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
+
+            return new ActionRedirectBuilder<TTarget>(this, parsedCall);
         }
 
-        public ICallRecord<T> RecordCalls(ICallConstraint<T>? callConstraint = null, int orderWeight = int.MinValue)
+        public ICallRecord<TTarget> RecordCalls(ICallConstraint<TTarget>? callConstraint = null, int orderWeight = int.MinValue)
         {
-            var callCapture = new CallRecordRedirect<T>(Relay);
+            var callCapture = new CallRecordRedirect<TTarget>(Relay);
             InsertRedirect(callCapture, orderWeight);
 
             return callCapture;

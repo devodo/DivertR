@@ -4,7 +4,7 @@ namespace DivertR.Core
 {
     public interface IDiverter
     {
-        IVia<T> Via<T>(string? name = null) where T : class;
+        IVia<TTarget> Via<TTarget>(string? name = null) where TTarget : class;
         IVia Via(Type type, string? name = null);
         IDiverter ResetAll();
     }

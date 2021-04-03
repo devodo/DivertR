@@ -273,9 +273,9 @@ namespace DivertR.UnitTests
 
             // ACT
             _via
-                .Redirect(x => x.Message).To(() => WriteMessage(3))
-                .Redirect(x => x.Message).To(() => WriteMessage(2))
-                .Redirect(x => x.Message).To(() => WriteMessage(1));
+                .InsertRedirect(_via.Redirect(x => x.Message).Build(() => WriteMessage(1)), 10)
+                .InsertRedirect(_via.Redirect(x => x.Message).Build(() => WriteMessage(2)), 20)
+                .InsertRedirect(_via.Redirect(x => x.Message).Build(() => WriteMessage(3)), 30);
 
             // ASSERT
             proxy.Message.ShouldBe("1 2 3 foo 3 2 1");

@@ -4,18 +4,18 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class LambdaArgumentConstraint<T> : IArgumentConstraint
+    internal class LambdaArgumentConstraint<TTarget> : IArgumentConstraint
     {
-        private readonly Func<T, bool> _matchFunc;
+        private readonly Func<TTarget, bool> _matchFunc;
 
         public LambdaArgumentConstraint(LambdaExpression lambdaExpression)
         {
-            _matchFunc = (Func<T, bool>) lambdaExpression.Compile();
+            _matchFunc = (Func<TTarget, bool>) lambdaExpression.Compile();
         }
 
         public bool IsMatch(object? argument)
         {
-            return _matchFunc((T) argument!);
+            return _matchFunc((TTarget) argument!);
         }
     }
 }

@@ -138,7 +138,7 @@ namespace DivertR.Extensions.DependencyInjection
                         
                 var implementationType = descriptor.ImplementationType.MakeGenericType(genericType.GetGenericArguments());
                         
-                var router = _configuration.GetRouterFunc(genericType);
+                var router = _configuration.GetViaFunc(genericType);
 
                 object ProxyFactory(IServiceProvider provider)
                 {
@@ -154,7 +154,7 @@ namespace DivertR.Extensions.DependencyInjection
 
         private void InjectDiverter(int servicesIndex, ServiceDescriptor descriptor)
         {
-            var router = _configuration.GetRouterFunc.Invoke(descriptor.ServiceType);
+            var router = _configuration.GetViaFunc.Invoke(descriptor.ServiceType);
 
             object ProxyFactory(IServiceProvider provider)
             {

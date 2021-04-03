@@ -2,9 +2,9 @@
 
 namespace DivertR.Core
 {
-    public class CallInfo<T> where T : class
+    public class CallInfo<TTarget> where TTarget : class
     {
-        public CallInfo(T viaProxy, T? original, MethodInfo method, CallArguments callArguments)
+        public CallInfo(TTarget viaProxy, TTarget? original, MethodInfo method, CallArguments callArguments)
         {
             ViaProxy = viaProxy;
             Original = original;
@@ -12,14 +12,14 @@ namespace DivertR.Core
             Arguments = callArguments;
         }
         
-        public CallInfo(T viaProxy, T? original, MethodInfo method, object[] args)
+        public CallInfo(TTarget viaProxy, TTarget? original, MethodInfo method, object[] args)
             : this(viaProxy, original, method, new CallArguments(args))
         {
         }
 
-        public T ViaProxy { get; }
+        public TTarget ViaProxy { get; }
         
-        public T? Original { get; }
+        public TTarget? Original { get; }
         
         public MethodInfo Method { get; }
 

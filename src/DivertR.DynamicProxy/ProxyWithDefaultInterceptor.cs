@@ -4,17 +4,17 @@ using DivertR.Core;
 
 namespace DivertR.DynamicProxy
 {
-    internal class ProxyWithDefaultInterceptor<T> : IInterceptor where T : class
+    internal class ProxyWithDefaultInterceptor<TTarget> : IInterceptor where TTarget : class
     {
-        private readonly T? _original;
-        private readonly Func<IProxyCall<T>?> _getProxyCall;
+        private readonly TTarget? _original;
+        private readonly Func<IProxyCall<TTarget>?> _getProxyCall;
         
-        public ProxyWithDefaultInterceptor(Func<IProxyCall<T>?> getProxyCall)
+        public ProxyWithDefaultInterceptor(Func<IProxyCall<TTarget>?> getProxyCall)
             : this(null, getProxyCall)
         {
         }
 
-        public ProxyWithDefaultInterceptor(T? original, Func<IProxyCall<T>?> getProxyCall)
+        public ProxyWithDefaultInterceptor(TTarget? original, Func<IProxyCall<TTarget>?> getProxyCall)
         {
             _original = original;
             _getProxyCall = getProxyCall;
@@ -30,7 +30,7 @@ namespace DivertR.DynamicProxy
                 return;
             }
             
-            var callInfo = new CallInfo<T>((T) invocation.Proxy, _original, invocation.Method, invocation.Arguments);
+            var callInfo = new CallInfo<TTarget>((TTarget) invocation.Proxy, _original, invocation.Method, invocation.Arguments);
             invocation.ReturnValue = proxyCall.Call(callInfo);
         }
 

@@ -4,13 +4,13 @@ using DivertR.Core;
 
 namespace DivertR.DispatchProxy
 {
-    internal class ProxyWithDefaultInvoker<T> : IProxyInvoker where T : class
+    internal class ProxyWithDefaultInvoker<TTarget> : IProxyInvoker where TTarget : class
     {
-        private readonly T _proxy;
-        private readonly T? _original;
-        private readonly Func<IProxyCall<T>?> _getProxyCall;
+        private readonly TTarget _proxy;
+        private readonly TTarget? _original;
+        private readonly Func<IProxyCall<TTarget>?> _getProxyCall;
         
-        public ProxyWithDefaultInvoker(T proxy, T? original, Func<IProxyCall<T>?> getProxyCall)
+        public ProxyWithDefaultInvoker(TTarget proxy, TTarget? original, Func<IProxyCall<TTarget>?> getProxyCall)
         {
             _proxy = proxy;
             _original = original;
@@ -26,7 +26,7 @@ namespace DivertR.DispatchProxy
                 return DefaultProceed(targetMethod, args);
             }
             
-            var callInfo = new CallInfo<T>(_proxy, _original, targetMethod, args);
+            var callInfo = new CallInfo<TTarget>(_proxy, _original, targetMethod, args);
 
             return proxyCall.Call(callInfo)!;
         }
@@ -38,7 +38,7 @@ namespace DivertR.DispatchProxy
                 throw new DiverterException("The original instance reference is null");
             }
 
-            return targetMethod.ToDelegate<T>().Invoke(_original, args);
+            return targetMethod.ToDelegate<TTarget>().Invoke(_original, args);
         }
     }
 }

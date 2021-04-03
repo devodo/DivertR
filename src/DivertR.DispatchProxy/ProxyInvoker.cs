@@ -3,12 +3,12 @@ using DivertR.Core;
 
 namespace DivertR.DispatchProxy
 {
-    internal class ProxyInvoker<T> : IProxyInvoker where T : class
+    internal class ProxyInvoker<TTarget> : IProxyInvoker where TTarget : class
     {
-        private readonly IProxyCall<T> _proxyCall;
-        private readonly T _proxy;
+        private readonly IProxyCall<TTarget> _proxyCall;
+        private readonly TTarget _proxy;
 
-        public ProxyInvoker(T proxy, IProxyCall<T> proxyCall)
+        public ProxyInvoker(TTarget proxy, IProxyCall<TTarget> proxyCall)
         {
             _proxy = proxy;
             _proxyCall = proxyCall;
@@ -16,7 +16,7 @@ namespace DivertR.DispatchProxy
         
         public object Invoke(MethodInfo targetMethod, object[] args)
         {
-            var callInfo = new CallInfo<T>(_proxy, null, targetMethod, args);
+            var callInfo = new CallInfo<TTarget>(_proxy, null, targetMethod, args);
 
             return _proxyCall.Call(callInfo)!;
         }

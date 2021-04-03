@@ -9,22 +9,22 @@ namespace DivertR.Core
         object ProxyObject(object? original = null);
     }
     
-    public interface IVia<T> : IVia where T : class
+    public interface IVia<TTarget> : IVia where TTarget : class
     {
-        IRelay<T> Relay { get; }
-        T Next { get; }
+        IRelay<TTarget> Relay { get; }
+        TTarget Next { get; }
         
-        T Proxy(T? original = null);
+        TTarget Proxy(TTarget? original = null);
 
-        IVia<T> InsertRedirect(IRedirect<T> redirect, int orderWeight = 0);
-        IVia<T> Reset();
+        IVia<TTarget> InsertRedirect(IRedirect<TTarget> redirect, int orderWeight = 0);
+        IVia<TTarget> Reset();
         
-        IVia<T> RedirectTo(T target);
-        IRedirectBuilder<T> Redirect(ICallConstraint<T>? callConstraint = null);
-        IFuncRedirectBuilder<T, TReturn> Redirect<TReturn>(Expression<Func<T, TReturn>> lambdaExpression);
-        IActionRedirectBuilder<T> Redirect(Expression<Action<T>> lambdaExpression);
-        IActionRedirectBuilder<T> RedirectSet<TProperty>(Expression<Func<T, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression);
+        IVia<TTarget> RedirectTo(TTarget target);
+        IRedirectBuilder<TTarget> Redirect(ICallConstraint<TTarget>? callConstraint = null);
+        IFuncRedirectBuilder<TTarget, TReturn> Redirect<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression);
+        IActionRedirectBuilder<TTarget> Redirect(Expression<Action<TTarget>> lambdaExpression);
+        IActionRedirectBuilder<TTarget> RedirectSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression);
 
-        ICallRecord<T> RecordCalls(ICallConstraint<T>? callConstraint = null, int orderWeight = int.MinValue);
+        ICallRecord<TTarget> RecordCalls(ICallConstraint<TTarget>? callConstraint = null, int orderWeight = int.MinValue);
     }
 }

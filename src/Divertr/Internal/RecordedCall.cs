@@ -2,13 +2,13 @@
 
 namespace DivertR.Internal
 {
-    internal class RecordedCall<T> : IRecordedCall<T> where T : class
+    internal class RecordedCall<TTarget> : IRecordedCall<TTarget> where TTarget : class
     {
-        public CallInfo<T> CallInfo { get; }
+        public CallInfo<TTarget> CallInfo { get; }
 
         public object? ReturnValue { get; set; }
 
-        public RecordedCall(CallInfo<T> callInfo)
+        public RecordedCall(CallInfo<TTarget> callInfo)
         {
             CallInfo = callInfo;
         }

@@ -30,8 +30,8 @@ namespace DivertR.WebAppTests
                 {
                     services.Divert(Diverter, diverterBuilder =>
                     {
-                        diverterBuilder.IncludeFrom<IFooRepository>();
-                        diverterBuilder.ExcludeFrom<IFooPublisher>(inclusive: false);
+                        diverterBuilder.IncludeRangeStart<IFooRepository>();
+                        diverterBuilder.ExcludeRangeStart<IFooPublisher>(inclusive: false);
                         diverterBuilder.Include<ILoggerFactory>();
                         diverterBuilder.WithTypesDivertedHandler(TypeRegisteredHandler);
                     });

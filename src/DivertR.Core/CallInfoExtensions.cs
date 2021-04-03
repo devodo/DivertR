@@ -11,11 +11,11 @@ namespace DivertR.Core
             return (target, arguments) => delegateInternal.Invoke(target, arguments.InternalArgs);
         }
         
-        public static object? Invoke<T>(this CallInfo<T> callInfo, T target) where T : class
+        public static object? Invoke<TTarget>(this CallInfo<TTarget> callInfo, TTarget target) where TTarget : class
         {
             if (target == null) throw new ArgumentNullException(nameof(target));
             
-            var delegateInternal = callInfo.Method.ToDelegate(typeof(T));
+            var delegateInternal = callInfo.Method.ToDelegate(typeof(TTarget));
             return delegateInternal.Invoke(target, callInfo.Arguments.InternalArgs);
         }
     }

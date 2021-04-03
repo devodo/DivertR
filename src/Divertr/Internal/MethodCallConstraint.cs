@@ -1,9 +1,8 @@
-﻿using System.Reflection;
-using DivertR.Core;
+﻿using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class MethodCallConstraint<T> : ICallConstraint<T> where T : class
+    internal class MethodCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class
     {
         private readonly IMethodConstraint _methodConstraint;
         private readonly IArgumentConstraint[] _argumentConditions;
@@ -14,7 +13,7 @@ namespace DivertR.Internal
             _argumentConditions = argumentConditions;
         }
 
-        public bool IsMatch(CallInfo<T> callInfo)
+        public bool IsMatch(CallInfo<TTarget> callInfo)
         {
             if (!_methodConstraint.IsMatch(callInfo.Method))
             {

@@ -11,11 +11,11 @@ namespace DivertR.Internal
     {
         private readonly ConcurrentDictionary<ViaId, object> _viaRedirects = new ConcurrentDictionary<ViaId, object>();
 
-        public IRedirect<T>[] Get<T>(ViaId viaId) where T : class
+        public IRedirect<TTarget>[] Get<TTarget>(ViaId viaId) where TTarget : class
         {
             return _viaRedirects.TryGetValue(viaId, out var existing) 
-                ? ((RedirectCollection<T>) existing).Redirects
-                : RedirectCollection<T>.Empty.Redirects;
+                ? ((RedirectCollection<TTarget>) existing).Redirects
+                : RedirectCollection<TTarget>.Empty.Redirects;
         }
 
         public IRedirect<T>[] InsertRedirect<T>(ViaId viaId, IRedirect<T> redirect, int orderWeight = 0) where T : class

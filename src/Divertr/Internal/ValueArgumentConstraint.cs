@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Reflection;
-using DivertR.Core;
 
 namespace DivertR.Internal
 {

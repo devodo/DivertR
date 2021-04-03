@@ -2,19 +2,19 @@
 
 namespace DivertR.Internal
 {
-    internal class RedirectProxyCall<T> : IProxyCall<T> where T : class
+    internal class RedirectProxyCall<TTarget> : IProxyCall<TTarget> where TTarget : class
     {
-        private readonly RelayContext<T> _relayContext;
+        private readonly RelayContext<TTarget> _relayContext;
 
-        public RedirectProxyCall(RelayContext<T> relayContext)
+        public RedirectProxyCall(RelayContext<TTarget> relayContext)
         {
             _relayContext = relayContext;
         }
         
-        public object? Call(CallInfo<T> callInfo)
+        public object? Call(CallInfo<TTarget> callInfo)
         {
             var lastCall = _relayContext.CallInfo;
-            var updateCallInfo = new CallInfo<T>(lastCall.ViaProxy, lastCall.Original, callInfo.Method, callInfo.Arguments);
+            var updateCallInfo = new CallInfo<TTarget>(lastCall.ViaProxy, lastCall.Original, callInfo.Method, callInfo.Arguments);
             
             return _relayContext.CallNext(updateCallInfo);
         }
