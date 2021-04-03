@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Threading;
 using DivertR.UnitTests.Model;
 using Moq;
 using Shouldly;
@@ -7,342 +5,85 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class ViaTests
+    public class ViaDelegateRedirectTests
     {
         private readonly Via<IFoo> _via = new();
-        
+
         [Fact]
-        public void GivenProxy_ShouldDefaultToOriginal()
-        {
-            // ARRANGE
-            var original = new Foo("hello foo");
-            var proxy = _via.Proxy(original);
-            
-            // ACT
-            var message = proxy.Message;
-            
-            // ASSERT
-            message.ShouldBe(original.Message);
-        }
-        
-        [Fact]
-        public void GivenRedirect_ShouldDivert()
+        public void GivenProxy_WhenAddRedirect_ShouldDivert()
         {
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
-            var foo = new Foo("hi DivertR");
-            _via.Redirect().To(foo);
-
+            var redirectMessage = "hi DivertR";
+            
             // ACT
-            var message = proxy.Message;
+            _via.Redirect(x => x.Message).To(redirectMessage);
 
             // ASSERT
-            message.ShouldBe(foo.Message);
+            proxy.Message.ShouldBe(redirectMessage);
         }
         
         [Fact]
-        public void GivenReset_ShouldDefaultToOriginal()
+        public void GivenProxyWithRedirect_WhenReset_ShouldDefaultToOriginal()
         {
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.RedirectTo(new Foo("diverted"));
+            _via.Redirect(x => x.Message).To("test");
+
+            // ACT
             _via.Reset();
 
-            // ACT
-            var message = proxy.Message;
-
             // ASSERT
-            message.ShouldBe(original.Message);
+            proxy.Message.ShouldBe(original.Message);
         }
         
         [Fact]
-        public void GivenRedirectWithOriginalReference_ShouldRelay()
+        public void GivenProxy_WhenAddRedirectWithRelayToOriginal_ShouldDivert()
         {
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
+
+            // ACT
             _via.RedirectTo(new Foo(() => $"hello {_via.Relay.Original.Message}"));
 
-            // ACT
-            var message = proxy.Message;
-
             // ASSERT
-            message.ShouldBe("hello foo");
+            proxy.Message.ShouldBe("hello foo");
         }
         
         [Fact]
-        public void GivenRedirectWithNextReference_ShouldRelay()
+        public void GivenProxy_WhenAddRedirectWithRelayToNext_ShouldDivert()
         {
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
+            
+            // ACT
             _via.RedirectTo(new Foo(() => $"hello {_via.Relay.Next.Message}"));
 
-            // ACT
-            var message = proxy.Message;
-
             // ASSERT
-            message.ShouldBe("hello foo");
+            proxy.Message.ShouldBe("hello foo");
         }
         
         [Fact]
-        public void GivenRedirectWithOriginalInstanceReference_ShouldRelay()
+        public void GivenProxy_WhenAddRedirectWithRelayToOriginalInstance_ShouldDivert()
         {
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             IFoo originalReference = null;
+
+            // ACT
             _via.RedirectTo(new Foo(() =>
             {
                 originalReference = _via.Relay.CallInfo.Original;
                 return $"hello {originalReference!.Message}";
             }));
 
-            // ACT
-            var message = proxy.Message;
-
             // ASSERT
-            message.ShouldBe("hello foo");
+            proxy.Message.ShouldBe("hello foo");
             originalReference.ShouldBeSameAs(original);
-        }
-        
-        [Fact]
-        public void GivenMultipleProxiesWithOriginalRelay_ShouldDivert()
-        {
-            // ARRANGE
-            var proxies = Enumerable.Range(0, 10)
-                .Select(i => _via.Proxy(new Foo($"foo{i}")))
-                .ToList();
-            
-            _via.RedirectTo(new Foo( () => $"diverted {_via.Relay.Original.Message}"));
-
-            // ACT
-            var messages = proxies.Select(p => p.Message).ToList();
-
-            // ASSERT
-            for (var i = 0; i < messages.Count; i++)
-            {
-                messages[i].ShouldBe($"diverted foo{i}");
-            }
-        }
-        
-        [Fact]
-        public void GivenMultipleProxiesWithNextRelay_ShouldDivert()
-        {
-            // ARRANGE
-            var proxies = Enumerable.Range(0, 10)
-                .Select(i => _via.Proxy(new Foo($"foo{i}")))
-                .ToList();
-
-            _via
-                .RedirectTo(new Foo( () => $"diverted {_via.Relay.Next.Message}"));
-
-            // ACT
-            var messages = proxies.Select(p => p.Message).ToList();
-
-            // ASSERT
-            for (var i = 0; i < messages.Count; i++)
-            {
-                messages[i].ShouldBe($"diverted foo{i}");
-            }
-        }
-        
-        [Fact]
-        public void GivenMockedRedirect_ShouldDivert()
-        {
-            // ARRANGE
-            var original = new Foo("hello");
-            var proxy = _via.Proxy(original);
-            
-            var mock = new Mock<IFoo>();
-            mock
-                .Setup(x => x.Message)
-                .Returns(() => $"{_via.Relay.Original.Message} world");
-
-            _via.RedirectTo(mock.Object);
-
-            // ACT
-            var message = proxy.Message;
-
-            // ASSERT
-            message.ShouldBe("hello world");
-        }
-
-        [Fact]
-        public void GivenMultipleAddRedirects_ShouldChain()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("hello foo"));
-            var next = _via.Relay.Next;
-            _via
-                .RedirectTo(new Foo(() => $"again {next.Message} 3"))
-                .RedirectTo(new Foo(() => $"here {next.Message} 2"))
-                .RedirectTo(new Foo(() => $"DivertR {next.Message} 1"));
-            
-            // ACT
-            var message = proxy.Message;
-            
-            // ASSERT
-            message.ShouldBe("DivertR here again hello foo 3 2 1");
-        }
-        
-        [Fact]
-        public void GivenMultipleInsertRedirects_ShouldChain()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("hello foo"));
-            var next = _via.Relay.Next;
-            _via
-                .InsertRedirect(_via.Redirect().Build(new Foo(() => $"DivertR {next.Message} 1")))
-                .InsertRedirect(_via.Redirect().Build(new Foo(() => $"here {next.Message} 2")))
-                .InsertRedirect(_via.Redirect().Build(new Foo(() => $"again {next.Message} 3")), 10);
-
-            // ACT
-            var message = proxy.Message;
-            
-            // ASSERT
-            message.ShouldBe("here DivertR again hello foo 3 1 2");
-        }
-        
-        [Fact]
-        public void GivenMultipleAddRedirectsWithNextAndOriginalRelays_ShouldChain()
-        {
-            // ARRANGE
-            const int numRedirects = 2;
-            var proxy = _via.Proxy(new Foo("foo"));
-            var next = _via.Relay.Next;
-            var orig = _via.Relay.Original;
-
-            for (var i = 0; i < numRedirects; i++)
-            {
-                var counter = i;
-                _via.RedirectTo(new Foo(() => $"{orig.Message} {counter} {next.Message}"));
-            }
-
-            // ACT
-            var message = proxy.Message;
-            
-            // ASSERT
-            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Select(i => $"{i}").Reverse());
-            message.ShouldBe($"foo {join} foo");
-        }
-        
-        [Fact]
-        public void GivenMultipleAddRedirectsWithRecursiveProxy_ShouldDivert()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("foo"));
-            var next = _via.Relay.Next;
-            var orig = _via.Relay.Original;
-            var count = 4;
-
-            var recursive = new Foo(() =>
-            {
-                var decrement = Interlocked.Decrement(ref count);
-
-                if (decrement > 0)
-                {
-                    return $"[{decrement}{next.Message} {proxy.Message} {orig.Message}{decrement}]";
-                }
-
-                return next.Message;
-            });
-
-            _via
-                .RedirectTo(new Foo(() => next.Message.Replace(orig.Message, "bar")))
-                .RedirectTo(recursive);
-
-            // ACT
-            var message = proxy.Message;
-            
-            // ASSERT
-            message.ShouldBe("[3bar [2bar [1bar bar foo1] foo2] foo3]");
-        }
-        
-        [Fact]
-        public void GivenMultipleRedirects_ShouldChain()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("foo"));
-            
-            string WriteMessage(int num)
-            {
-                return $"{num} {_via.Relay.Next.Message} {num}";
-            }
-
-            // ACT
-            _via
-                .InsertRedirect(_via.Redirect(x => x.Message).Build(() => WriteMessage(1)), 10)
-                .InsertRedirect(_via.Redirect(x => x.Message).Build(() => WriteMessage(2)), 20)
-                .InsertRedirect(_via.Redirect(x => x.Message).Build(() => WriteMessage(3)), 30);
-
-            // ASSERT
-            proxy.Message.ShouldBe("1 2 3 foo 3 2 1");
-        }
-        
-        [Fact]
-        public void GivenResetBetweenAddRedirects_ShouldOnlyRedirectAfterReset()
-        {
-            // ARRANGE
-            var original = new Foo("hello foo");
-            var proxy = _via.Proxy(original);
-
-            // ACT
-            _via.RedirectTo(new Foo(() => $"{_via.Relay.Next.Message} me"));
-            _via.Reset();
-            _via.RedirectTo(new Foo(() => $"{_via.Relay.Next.Message} again"));
-
-            // ASSERT
-            proxy.Message.ShouldBe("hello foo again");
-        }
-        
-        [Fact]
-        public void GivenMultipleRedirects_WhenReset_ShouldDefaultToOriginal()
-        {
-            // ARRANGE
-            var original = new Foo("hello foo");
-            var proxy = _via.Proxy(original);
-
-            // ACT
-            _via.RedirectTo(new Foo(() => $"{_via.Relay.Next.Message} me"));
-            _via.RedirectTo(new Foo(() => $"{_via.Relay.Next.Message} again"));
-            _via.Reset();
-
-
-            // ASSERT
-            proxy.Message.ShouldBe(original.Message);
-        }
-        
-        [Fact(Skip = "Class support removed")]
-        public void GivenClassProxy_ShouldDefaultToOriginal()
-        {
-            // ARRANGE
-            var original = new Foo("hello foo");
-            var via = new Via<Foo>();
-            var proxy = via.Proxy(original);
-            
-            // ACT
-            var message = proxy.Message;
-            
-            // ASSERT
-            message.ShouldBe(original.Message);
-        }
-        
-        [Fact(Skip = "Class support removed")]
-        public void GivenClassProxy_ShouldDivert()
-        {
-            // ARRANGE
-            var via = new Via<Foo>();
-            var proxy = via.Proxy(new Foo("hello foo"));
-            var foo = new Foo("hi DivertR");
-            via.RedirectTo(foo);
-
-            // ACT
-            var message = proxy.Message;
-
-            // ASSERT
-            message.ShouldBe(foo.Message);
         }
         
         [Fact]

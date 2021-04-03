@@ -11,6 +11,7 @@ namespace DivertR.UnitTests.Model
         {
             _messageFactory = messageFactory;
         }
+
         public AsyncFoo(string message) : this(async () =>
         {
             await Task.Yield();
