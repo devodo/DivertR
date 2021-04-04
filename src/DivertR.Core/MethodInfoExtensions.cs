@@ -22,8 +22,20 @@ namespace DivertR.Core
             var methodId = new MethodId(targetType, methodInfo);
             return DelegateCache.GetOrAdd(methodId, mId => mId.MethodInfo.ToDelegateInternal(mId.TargetType));
         }
+        
+        public static Func<object[], object> ToDelegate(this Delegate targetDelegate)
+        {
+            var methodInfo = targetDelegate.Method;
+            var targetType = targetDelegate.GetType();
+            var methodId = new MethodId(targetType, methodInfo);
+            
+            var fastDelegate =
+                DelegateCache.GetOrAdd(methodId, mId => mId.MethodInfo.ToDelegateInternal(mId.TargetType, isDelegate: true));
 
-        private static Func<object, object[], object> ToDelegateInternal(this MethodInfo methodInfo, Type instanceType)
+            return args => fastDelegate.Invoke(targetDelegate, args);
+        }
+
+        private static Func<object, object[], object> ToDelegateInternal(this MethodInfo methodInfo, Type instanceType, bool isDelegate = false)
         {
             var argsParameter = Expression.Parameter(typeof(object[]), "arguments");
             var instanceParameter = Expression.Parameter(typeof(object), "target");
@@ -66,18 +78,12 @@ namespace DivertR.Core
                     byRefState.PostCall.Add(Expression.Assign(arrayAccessExpr, Expression.Convert(variable, typeof(object))));
                 }
             }
-
+            
             var instanceExpr = Expression.Convert(instanceParameter, instanceType);
 
-            Expression callExpr;
-            if (typeof(Delegate).IsAssignableFrom(instanceType))
-            {
-                callExpr = Expression.Invoke(instanceExpr, parameterExpressions);
-            }
-            else
-            {
-                callExpr = Expression.Call(instanceExpr, methodInfo, parameterExpressions);
-            }
+            Expression callExpr = !isDelegate
+                ? Expression.Call(instanceExpr, methodInfo, parameterExpressions)
+                : (Expression) Expression.Invoke(instanceExpr, parameterExpressions);
 
             Expression callCastExpr;
             if (methodInfo.ReturnType != typeof(void))

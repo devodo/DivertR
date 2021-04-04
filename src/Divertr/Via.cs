@@ -33,6 +33,8 @@ namespace DivertR
 
         public IRelay<TTarget> Relay => _relay.Value;
         public TTarget Next => Relay.Next;
+        
+        public IReadOnlyList<IRedirect<TTarget>> Redirects => _redirectRepository.Get<TTarget>(ViaId);
 
         public TTarget Proxy(TTarget? original = null)
         {
@@ -58,8 +60,6 @@ namespace DivertR
             return Proxy(original as TTarget);
         }
 
-        public IReadOnlyList<IRedirect<TTarget>> Redirects => _redirectRepository.Get<TTarget>(ViaId);
-        
         public IVia<TTarget> InsertRedirect(IRedirect<TTarget> redirect, int orderWeight = 0)
         {
             _redirectRepository.InsertRedirect(ViaId, redirect, orderWeight);

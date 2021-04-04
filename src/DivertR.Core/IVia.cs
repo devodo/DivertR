@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace DivertR.Core
@@ -13,7 +14,8 @@ namespace DivertR.Core
     {
         IRelay<TTarget> Relay { get; }
         TTarget Next { get; }
-        
+        IReadOnlyList<IRedirect<TTarget>> Redirects { get; }
+
         TTarget Proxy(TTarget? original = null);
 
         IVia<TTarget> InsertRedirect(IRedirect<TTarget> redirect, int orderWeight = 0);
