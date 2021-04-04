@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
 
     <IsPackable>false</IsPackable>
 
@@ -10,6 +9,8 @@
     <AssemblyName>DivertR.UnitTests</AssemblyName>
 
     <RootNamespace>DivertR.UnitTests</RootNamespace>
+
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
