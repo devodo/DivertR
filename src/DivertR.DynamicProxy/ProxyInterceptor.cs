@@ -3,7 +3,7 @@ using DivertR.Core;
 
 namespace DivertR.DynamicProxy
 {
-    internal class ProxyInterceptor<TTarget> : IInterceptor where TTarget : class
+    public class ProxyInterceptor<TTarget> : IInterceptor where TTarget : class
     {
         private readonly IProxyCall<TTarget> _proxyCall;
 

@@ -3,7 +3,7 @@ using DivertR.Core;
 
 namespace DivertR.DispatchProxy
 {
-    internal class ProxyInvoker<TTarget> : IProxyInvoker where TTarget : class
+    public class ProxyInvoker<TTarget> : IProxyInvoker where TTarget : class
     {
         private readonly IProxyCall<TTarget> _proxyCall;
         private readonly TTarget _proxy;

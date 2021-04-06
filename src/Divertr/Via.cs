@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using DivertR.Core;
 using DivertR.DispatchProxy;
 using DivertR.Internal;
+using DivertR.Setup;
 
 namespace DivertR
 {
@@ -14,17 +15,18 @@ namespace DivertR
         private readonly RelayContext<TTarget> _relayContext;
         private readonly Lazy<IRelay<TTarget>> _relay;
 
-        public Via() : this(ViaId.From<TTarget>(), new RedirectRepository(), DispatchProxyFactory.Instance)
+        public Via(IDiverterSettings? diverterSettings = null) : this(ViaId.From<TTarget>(), new RedirectRepository(), diverterSettings ?? DiverterSettings.Default)
         {
         }
         
-        internal Via(ViaId viaId, RedirectRepository redirectRepository, IProxyFactory proxyFactory)
+        internal Via(ViaId viaId, RedirectRepository redirectRepository, IDiverterSettings diverterSettings)
         {
-            proxyFactory.ValidateProxyTarget<TTarget>();
+            _proxyFactory = diverterSettings.ProxyFactory;
+            _proxyFactory.ValidateProxyTarget<TTarget>();
 
             ViaId = viaId;
             _redirectRepository = redirectRepository;
-            _proxyFactory = proxyFactory;
+            
             _relayContext = new RelayContext<TTarget>();
             _relay = new Lazy<IRelay<TTarget>>(() => new Relay<TTarget>(_relayContext, _proxyFactory));
         }

@@ -4,7 +4,7 @@ using DivertR.Core;
 
 namespace DivertR.DynamicProxy
 {
-    internal class DynamicProxyFactory : IProxyFactory
+    public class DynamicProxyFactory : IProxyFactory
     {
         public static readonly DynamicProxyFactory Instance = new DynamicProxyFactory();
         

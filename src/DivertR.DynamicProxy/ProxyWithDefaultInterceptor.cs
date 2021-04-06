@@ -4,7 +4,7 @@ using DivertR.Core;
 
 namespace DivertR.DynamicProxy
 {
-    internal class ProxyWithDefaultInterceptor<TTarget> : IInterceptor where TTarget : class
+    public class ProxyWithDefaultInterceptor<TTarget> : IInterceptor where TTarget : class
     {
         private readonly TTarget? _original;
         private readonly Func<IProxyCall<TTarget>?> _getProxyCall;

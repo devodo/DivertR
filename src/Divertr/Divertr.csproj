@@ -21,8 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DivertR.Core\DivertR.Core.csproj" />
-    <ProjectReference Include="..\DivertR.DispatchProxy\DivertR.DispatchProxy.csproj" />
-    <ProjectReference Include="..\DivertR.DynamicProxy\DivertR.DynamicProxy.csproj" />
+    <ProjectReference Include="..\DivertR.Setup\DivertR.Setup.csproj" />
   </ItemGroup>
 
 </Project>

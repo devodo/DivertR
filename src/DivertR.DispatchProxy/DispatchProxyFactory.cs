@@ -3,10 +3,8 @@ using DivertR.Core;
 
 namespace DivertR.DispatchProxy
 {
-    internal class DispatchProxyFactory : IProxyFactory
+    public class DispatchProxyFactory : IProxyFactory
     {
-        public static readonly DispatchProxyFactory Instance = new DispatchProxyFactory();
-
         public TTarget CreateProxy<TTarget>(TTarget? original, Func<IProxyCall<TTarget>?> getProxyCall) where TTarget : class
         {
             ValidateProxyTarget<TTarget>();

@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace DivertR.DispatchProxy
 {
-    internal class DiverterDispatchProxy : System.Reflection.DispatchProxy 
+    public class DiverterDispatchProxy : System.Reflection.DispatchProxy 
     {
         private IProxyInvoker _invoker = null!;
 
