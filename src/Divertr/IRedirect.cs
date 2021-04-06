@@ -1,4 +1,6 @@
-﻿namespace DivertR.Core
+﻿using DivertR.Core;
+
+namespace DivertR
 {
     public interface IRedirect<TTarget> where TTarget : class
     {

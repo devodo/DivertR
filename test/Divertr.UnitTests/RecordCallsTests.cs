@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using DivertR.Core;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;

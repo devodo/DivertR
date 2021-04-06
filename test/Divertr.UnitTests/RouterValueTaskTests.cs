@@ -2,7 +2,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DivertR.UnitTests.Model;
-using Moq;
 using Shouldly;
 using Xunit;
 

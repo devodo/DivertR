@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Reflection;
-using DivertR.Core;
-using DivertR.DispatchProxy;
 using DivertR.Internal;
 using DivertR.Setup;
 

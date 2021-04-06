@@ -1,6 +1,5 @@
 ﻿using System.Net.Http;
 using System.Net.Http.Headers;
-using DivertR.Core;
 using DivertR.Extensions.DependencyInjection;
 using DivertR.SampleWebApp;
 using DivertR.SampleWebApp.Services;

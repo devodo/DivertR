@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq.Expressions;
-using DivertR.Core;
 
 namespace DivertR.Internal
 {

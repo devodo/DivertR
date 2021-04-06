@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace DivertR.Core
+namespace DivertR
 {
     public interface IVia
     {

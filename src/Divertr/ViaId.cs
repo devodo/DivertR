@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DivertR.Core
+namespace DivertR
 {
     public readonly struct ViaId : IEquatable<ViaId>
     {

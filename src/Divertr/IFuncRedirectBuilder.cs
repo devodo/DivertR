@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DivertR.Core
+namespace DivertR
 {
     public interface IFuncRedirectBuilder<TTarget, TReturn> : IDelegateRedirectBuilder<TTarget> where TTarget : class
     {

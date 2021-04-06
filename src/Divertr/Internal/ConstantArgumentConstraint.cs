@@ -1,6 +1,4 @@
-﻿using DivertR.Core;
-
-namespace DivertR.Internal
+﻿namespace DivertR.Internal
 {
     internal class ConstantArgumentConstraint : IArgumentConstraint
     {

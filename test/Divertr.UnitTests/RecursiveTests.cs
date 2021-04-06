@@ -1,7 +1,7 @@
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using DivertR.Core;
+using DivertR.DynamicProxy;
+using DivertR.Setup;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;

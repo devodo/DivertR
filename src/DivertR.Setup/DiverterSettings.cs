@@ -8,7 +8,7 @@ namespace DivertR.Setup
     {
         private readonly ConcurrentDictionary<string, object> _settings = new ConcurrentDictionary<string, object>();
 
-        public static readonly IDiverterSettings Default = new DiverterSettings();
+        public static readonly DiverterSettings Default = new DiverterSettings();
 
         public DiverterSettings()
         {

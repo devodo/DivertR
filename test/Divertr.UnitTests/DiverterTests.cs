@@ -1,4 +1,3 @@
-using DivertR.Core;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;

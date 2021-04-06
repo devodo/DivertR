@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using DivertR.Core;
-using DivertR.DispatchProxy;
 using DivertR.Internal;
 using DivertR.Setup;
 
