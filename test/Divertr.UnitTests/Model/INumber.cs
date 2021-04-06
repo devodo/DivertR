@@ -9,6 +9,7 @@ namespace DivertR.UnitTests.Model
         void ArrayNumber(int[] inputs);
         void RefArrayNumber(ref int[] inputs);
         void RefNumber(ref int input);
+        void OutNumber(out int output);
         
         Task<int> GetNumberAsync(int input);
         ValueTask<int> GetNumberValueAsync(int input);

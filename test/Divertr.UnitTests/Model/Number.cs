@@ -38,6 +38,11 @@ namespace DivertR.UnitTests.Model
         {
             input = _numberFactory(input);
         }
+
+        public void OutNumber(out int output)
+        {
+            output = _numberFactory(3);
+        }
         
         public void RefArrayNumber(ref int[] inputs)
         {

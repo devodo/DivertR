@@ -12,7 +12,7 @@ namespace DivertR.UnitTests
 
         private delegate void RefCall(ref int input);
 
-        private delegate void OutCall(out int input);
+        private delegate void OutCall(out int output);
 
         private delegate int InCall(in int input);
         
@@ -42,30 +42,34 @@ namespace DivertR.UnitTests
             
 
             // ACT
-            const int epochs = 1000000;
-            int input = 0;
-            var test = new Number(i => i * 2);
-            
-            var clock = Stopwatch.StartNew();
-            for (var i = 0; i < epochs; i++)
-            {
-                input = 3;
-                test.RefNumber(ref input);
-            }
-            
-            _output.WriteLine($"Base: {clock.ElapsedMilliseconds}");
-            clock.Restart();
-            
-            for (var i = 0; i < epochs; i++)
-            {
-                input = 3;
-                viaProxy.RefNumber(ref input);
-            }
-            
-            _output.WriteLine($"Elapsed: {clock.ElapsedMilliseconds}");
+            int input = 3;
+            viaProxy.RefNumber(ref input);
 
             // ASSERT
             input.ShouldBe(16);
+        }
+        
+        [Fact]
+        public void GivenOutRedirect_ShouldUpdateOutInput()
+        {
+            // ARRANGE
+            _via
+                .Redirect(x => x.OutNumber(out Is<int>.AnyRef))
+                .To(new OutCall((out int o) =>
+                {
+                    _via.Next.OutNumber(out o);
+
+                    o += 10;
+                }));
+            
+            var viaProxy = _via.Proxy(new Number());
+            
+
+            // ACT
+            viaProxy.OutNumber(out var output);
+
+            // ASSERT
+            output.ShouldBe(13);
         }
         
         [Fact]
