@@ -35,10 +35,10 @@ namespace DivertR.Core
             return args => fastDelegate.Invoke(targetDelegate, args);
         }
 
-        private static Func<object, object[], object> ToDelegateInternal(this MethodInfo methodInfo, Type instanceType, bool isDelegate = false)
+        private static Func<object, object[], object> ToDelegateInternal(this MethodInfo methodInfo, Type targetType, bool isDelegate = false)
         {
             var argsParameter = Expression.Parameter(typeof(object[]), "arguments");
-            var instanceParameter = Expression.Parameter(typeof(object), "target");
+            var targetParameter = Expression.Parameter(typeof(object), "target");
 
             ByRefState? byRefState = null;
             var methodParameters = methodInfo.GetParameters();
@@ -65,7 +65,10 @@ namespace DivertR.Core
                     var elementType = methodParameters[i].ParameterType.GetElementType()!;
                     var variable = Expression.Variable(elementType!);
                     byRefState.Variables.Add(variable);
-                    byRefState.PreCall.Add(Expression.Assign(variable, Expression.Convert(arrayAccessExpr, elementType)));
+                    var nullCheckExpr = Expression.NotEqual(arrayAccessExpr, Expression.Constant(null, typeof(object)));
+                    var assignExpr = Expression.Assign(variable, Expression.Convert(arrayAccessExpr, elementType));
+                    var assignConditionExpr = Expression.IfThen(nullCheckExpr, assignExpr);
+                    byRefState.PreCall.Add(assignConditionExpr);
 
                     parameterExpressions[i] = variable;
 
@@ -79,11 +82,11 @@ namespace DivertR.Core
                 }
             }
             
-            var instanceExpr = Expression.Convert(instanceParameter, instanceType);
+            var targetExpr = Expression.Convert(targetParameter, targetType);
 
             Expression callExpr = !isDelegate
-                ? Expression.Call(instanceExpr, methodInfo, parameterExpressions)
-                : (Expression) Expression.Invoke(instanceExpr, parameterExpressions);
+                ? Expression.Call(targetExpr, methodInfo, parameterExpressions)
+                : (Expression) Expression.Invoke(targetExpr, parameterExpressions);
 
             Expression callCastExpr;
             if (methodInfo.ReturnType != typeof(void))
@@ -115,7 +118,7 @@ namespace DivertR.Core
                 lambdaBodyExpr = Expression.Block(byRefState.Variables, blockExpressions);
             }
 
-            var lambdaExpr = Expression.Lambda(lambdaBodyExpr, instanceParameter, argsParameter);
+            var lambdaExpr = Expression.Lambda(lambdaBodyExpr, targetParameter, argsParameter);
 
             return (Func<object, object[], object>) lambdaExpr.Compile();
         }
