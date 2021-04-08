@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace DivertR.UnitTests.Model
@@ -39,11 +40,11 @@ namespace DivertR.UnitTests.Model
             input = _numberFactory(input);
         }
 
-        public void OutNumber(out int output)
+        public void OutNumber(int input, out int output)
         {
-            output = _numberFactory(3);
+            output = _numberFactory(input);
         }
-        
+
         public void RefArrayNumber(ref int[] inputs)
         {
             var replacement = new int[inputs.Length];

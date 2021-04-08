@@ -1,27 +1,30 @@
-﻿using System.Diagnostics;
+﻿using DivertR.DynamicProxy;
+using DivertR.Setup;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace DivertR.UnitTests
 {
+    public class ByRefTestsDynamicProxy : ByRefTests
+    {
+        static ByRefTestsDynamicProxy()
+        {
+            DiverterSettings.Default.ProxyFactory = new DynamicProxyFactory();
+        }
+    }
+    
     public class ByRefTests
     {
-        private readonly ITestOutputHelper _output;
-
         private delegate void RefCall(ref int input);
 
-        private delegate void OutCall(out int output);
+        private delegate void OutCall(int input, out int output);
 
-        private delegate int InCall(in int input);
-        
         private readonly Via<INumber> _via = new();
         private readonly ICallRecord<INumber> _callRecord;
 
-        public ByRefTests(ITestOutputHelper output)
+        public ByRefTests()
         {
-            _output = output;
             _callRecord = _via.RecordCalls();
         }
         
@@ -54,10 +57,10 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .Redirect(x => x.OutNumber(out Is<int>.AnyRef))
-                .To(new OutCall((out int o) =>
+                .Redirect(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
+                .To(new OutCall((int i, out int o) =>
                 {
-                    _via.Next.OutNumber(out o);
+                    _via.Next.OutNumber(i, out o);
 
                     o += 10;
                 }));
@@ -66,12 +69,12 @@ namespace DivertR.UnitTests
             
 
             // ACT
-            viaProxy.OutNumber(out var output);
+            viaProxy.OutNumber(3, out var output);
 
             // ASSERT
             output.ShouldBe(13);
         }
-        
+
         [Fact]
         public void GivenRefInputRedirect_ShouldDivert()
         {
