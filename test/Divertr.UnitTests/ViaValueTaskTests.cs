@@ -7,7 +7,7 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class RouterValueTaskTests
+    public class ViaValueTaskTests
     {
         private readonly Via<IValueTaskFoo> _via = new();
 

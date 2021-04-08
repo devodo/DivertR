@@ -1,4 +1,5 @@
-﻿using DivertR.DynamicProxy;
+﻿using System.Linq;
+using DivertR.DynamicProxy;
 using DivertR.Setup;
 using DivertR.UnitTests.Model;
 using Shouldly;
@@ -8,7 +9,7 @@ namespace DivertR.UnitTests
 {
     public class ByRefTestsDynamicProxy : ByRefTests
     {
-        private static readonly DiverterSettings DiverterSettings = new DiverterSettings
+        private static readonly DiverterSettings DiverterSettings = new()
         {
             ProxyFactory = new DynamicProxyFactory()
         };
@@ -22,7 +23,9 @@ namespace DivertR.UnitTests
     public class ByRefTests
     {
         private delegate void RefCall(ref int input);
-
+        
+        private delegate void RefArrayCall(ref int[] input);
+        
         private delegate void OutCall(int input, out int output);
 
         private readonly Via<INumber> _via;
@@ -39,7 +42,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRefRedirect_ShouldUpdateRefInput()
+        public void GivenRefParameterRedirect_ShouldUpdateRefInput()
         {
             // ARRANGE
             _via
@@ -53,7 +56,6 @@ namespace DivertR.UnitTests
             
             var viaProxy = _via.Proxy(new Number(i => i * 2));
             
-
             // ACT
             int input = 3;
             viaProxy.RefNumber(ref input);
@@ -63,7 +65,23 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenOutRedirect_ShouldUpdateOutInput()
+        public void GivenRefParameterTargetRedirect_ShouldDivert()
+        {
+            // ARRANGE
+            var test = new Number(x => x * 2);
+            _via.RedirectTo(test);
+
+            // ACT
+            int input = 5;
+            var proxy = _via.Proxy(new Number());
+            proxy.RefNumber(ref input);
+
+            // ASSERT
+            input.ShouldBe(test.GetNumber(5));
+        }
+        
+        [Fact]
+        public void GivenOutParameterRedirect_ShouldUpdateOutParameter()
         {
             // ARRANGE
             _via
@@ -76,7 +94,6 @@ namespace DivertR.UnitTests
                 }));
             
             var viaProxy = _via.Proxy(new Number());
-            
 
             // ACT
             viaProxy.OutNumber(3, out var output);
@@ -84,44 +101,88 @@ namespace DivertR.UnitTests
             // ASSERT
             output.ShouldBe(13);
         }
-
+        
         [Fact]
-        public void GivenRefInputRedirect_ShouldDivert()
+        public void GivenOutParameterTargetRedirect_ShouldUpdateOutParameter()
         {
             // ARRANGE
-            var via = new Via<INumber>();
             var test = new Number(x => x * 2);
-            via
-                .Redirect()
-                .To(test);
-
+            _via.RedirectTo(test);
+            
+            var viaProxy = _via.Proxy(new Number());
+            
             // ACT
-            int input = 5;
-            var proxy = via.Proxy(new Number());
-            proxy.RefNumber(ref input);
+            viaProxy.OutNumber(3, out var output);
 
             // ASSERT
-            input.ShouldBe(test.GetNumber(5));
+            output.ShouldBe(6);
         }
         
         [Fact]
-        public void GivenRefArrayInputRedirect_ShouldDivert()
+        public void GivenOutParameterRedirect_ShouldLogCallArguments()
         {
             // ARRANGE
-            var via = new Via<INumber>();
-            var test = new Number(x => x * 2);
-            via
-                .Redirect()
-                .To(test);
+            _via
+                .Redirect(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
+                .To(new OutCall((int i, out int o) =>
+                {
+                    _via.Next.OutNumber(i, out o);
+
+                    o += 10;
+                }));
+            
+            var viaProxy = _via.Proxy(new Number());
 
             // ACT
-            int[] inputOriginal = {5};
+            viaProxy.OutNumber(3, out var output);
+
+            // ASSERT
+            output.ShouldBe(13);
+            _callRecord.Calls().Count.ShouldBe(1);
+            _callRecord.Calls()[0].CallInfo.Arguments[0].ShouldBe(3);
+        }
+
+        [Fact]
+        public void GivenRefArrayParameterTargetRedirect_ShouldDivert()
+        {
+            // ARRANGE
+            var test = new Number(x => x * 2);
+            _via.RedirectTo(test);
+
+            // ACT
+            int[] inputOriginal = {5, 8};
             var input = inputOriginal;
-            var proxy = via.Proxy(new Number());
+            var proxy = _via.Proxy(new Number());
             proxy.RefArrayNumber(ref input);
 
             // ASSERT
-            input[0].ShouldBe(test.GetNumber(5));
+            input.ShouldBe(inputOriginal.Select(x => x * 2));
+        }
+        
+        [Fact]
+        public void GivenRefArrayParameterDelegateRedirect_ShouldDivert()
+        {
+            // ARRANGE
+            _via
+                .Redirect(x => x.RefArrayNumber(ref Is<int[]>.AnyRef))
+                .To(new RefArrayCall((ref int[] inRef) =>
+                {
+                    _via.Next.RefArrayNumber(ref inRef);
+
+                    for (var i = 0; i < inRef.Length; i++)
+                    {
+                        inRef[i] += 10;
+                    }
+                }));
+
+            // ACT
+            int[] inputOriginal = {5, 8};
+            var input = inputOriginal;
+            var proxy = _via.Proxy(new Number());
+            proxy.RefArrayNumber(ref input);
+
+            // ASSERT
+            input.ShouldBe(inputOriginal.Select(x => x + 10));
         }
 
         [Fact]
@@ -153,10 +214,7 @@ namespace DivertR.UnitTests
             var via = new Via<INumber>();
             via
                 .Redirect(x => x.RefNumber(ref Is<int>.AnyRef))
-                .To(new RefCall((ref int i2) =>
-                {
-                    i2 = 50;
-                }));
+                .To(new RefCall((ref int refIn) => { }));
 
             // ACT
             var input = 5;
@@ -164,7 +222,7 @@ namespace DivertR.UnitTests
             proxy.RefNumber(ref input);
 
             // ASSERT
-            input.ShouldBe(50);
+            input.ShouldBe(5);
         }
     }
 }

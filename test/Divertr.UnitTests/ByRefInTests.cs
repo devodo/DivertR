@@ -8,14 +8,14 @@ namespace DivertR.UnitTests
 {
     public class ByRefInTests
     {
-        private static readonly DiverterSettings DiverterSettings = new DiverterSettings
+        private static readonly DiverterSettings DiverterSettings = new()
         {
             ProxyFactory = new DynamicProxyFactory()
         };
         
         private delegate int InCall(in int input);
 
-        private readonly Via<INumberIn> _via = new Via<INumberIn>(DiverterSettings);
+        private readonly Via<INumberIn> _via = new(DiverterSettings);
         private readonly ICallRecord<INumberIn> _callRecord;
 
         public ByRefInTests()
