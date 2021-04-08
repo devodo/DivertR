@@ -1,4 +1,6 @@
-﻿using DivertR.UnitTests.Model;
+﻿using DivertR.DynamicProxy;
+using DivertR.Setup;
+using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
 
@@ -6,13 +8,24 @@ namespace DivertR.UnitTests
 {
     public class ViaClassTests
     {
-        [Fact(Skip = "Class support removed")]
+        private static readonly DiverterSettings DiverterSettings = new DiverterSettings
+        {
+            ProxyFactory = new DynamicProxyFactory()
+        };
+
+        private Via<Foo> _via;
+
+        public ViaClassTests()
+        {
+            _via = new Via<Foo>(DiverterSettings);
+        }
+        
+        [Fact]
         public void GivenClassProxy_ShouldDefaultToOriginal()
         {
             // ARRANGE
             var original = new Foo("hello foo");
-            var via = new Via<Foo>();
-            var proxy = via.Proxy(original);
+            var proxy = _via.Proxy(original);
             
             // ACT
             var message = proxy.Message;
@@ -21,20 +34,31 @@ namespace DivertR.UnitTests
             message.ShouldBe(original.Message);
         }
         
-        [Fact(Skip = "Class support removed")]
-        public void GivenClassProxy_ShouldDivert()
+        [Fact]
+        public void GivenClassProxy_WhenTargetRedirect_ShouldDivert()
         {
             // ARRANGE
-            var via = new Via<Foo>();
-            var proxy = via.Proxy(new Foo("hello foo"));
+            var proxy = _via.Proxy(new Foo("hello foo"));
             var foo = new Foo("hi DivertR");
-            via.RedirectTo(foo);
 
             // ACT
-            var message = proxy.Message;
+            _via.RedirectTo(foo);
 
             // ASSERT
-            message.ShouldBe(foo.Message);
+            proxy.Message.ShouldBe(foo.Message);
+        }
+        
+        [Fact]
+        public void GivenClassProxy_WhenDelegateRedirect_ShouldDivert()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy(new Foo("hello foo"));
+
+            // ACT
+            _via.Redirect(x => x.Message).To(() => _via.Next.Message + " bar");
+
+            // ASSERT
+            proxy.Message.ShouldBe("hello foo bar");
         }
     }
 }

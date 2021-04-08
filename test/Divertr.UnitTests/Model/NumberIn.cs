@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using DivertR.UnitTests.Model;
-
-namespace DivertR.UnitTests
+﻿namespace DivertR.UnitTests.Model
 {
     public class NumberIn : INumberIn
     {

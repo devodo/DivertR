@@ -8,9 +8,14 @@ namespace DivertR.UnitTests
 {
     public class ByRefTestsDynamicProxy : ByRefTests
     {
-        static ByRefTestsDynamicProxy()
+        private static readonly DiverterSettings DiverterSettings = new DiverterSettings
         {
-            DiverterSettings.Default.ProxyFactory = new DynamicProxyFactory();
+            ProxyFactory = new DynamicProxyFactory()
+        };
+
+        public ByRefTestsDynamicProxy()
+            : base(new Via<INumber>(DiverterSettings))
+        {
         }
     }
     
@@ -20,11 +25,16 @@ namespace DivertR.UnitTests
 
         private delegate void OutCall(int input, out int output);
 
-        private readonly Via<INumber> _via = new();
+        private readonly Via<INumber> _via;
         private readonly ICallRecord<INumber> _callRecord;
 
-        public ByRefTests()
+        public ByRefTests() : this(new Via<INumber>())
         {
+        }
+
+        protected ByRefTests(Via<INumber> via)
+        {
+            _via = via;
             _callRecord = _via.RecordCalls();
         }
         
