@@ -208,13 +208,13 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public void GivenRefDelegateWithAnyParam_ShouldDivert()
+        public void GivenRefParameter_WhenParameterlessDelegateRedirect_ShouldDivert()
         {
             // ARRANGE
             var via = new Via<INumber>();
             via
                 .Redirect(x => x.RefNumber(ref Is<int>.AnyRef))
-                .To(new RefCall((ref int refIn) => { }));
+                .To(() => { });
 
             // ACT
             var input = 5;

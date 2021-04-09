@@ -16,13 +16,7 @@ namespace DivertR.UnitTests
         private delegate int InCall(in int input);
 
         private readonly Via<INumberIn> _via = new(DiverterSettings);
-        private readonly ICallRecord<INumberIn> _callRecord;
 
-        public ByRefInTests()
-        {
-            _callRecord = _via.RecordCalls();
-        }
-        
         [Fact]
         public void GivenInRedirect_ShouldDivert()
         {
