@@ -2,12 +2,12 @@
 
 The .NET Dependency Injection Diverter
 
-DivertR is a tool that facilitates an integrated, top-down approach to testing by making it easy to hotswap
-test code in and out of a working system.
+DivertR is a tool that facilitates an integrated, *sociable* approach to testing by making it easy to hotswap
+test code in and out at the dependency injection layer.
 
 With DivertR you can modify your dependency injection services at runtime by replacing them with configurable proxies.
-These can redirect calls to test doubles, such as substitute instances or delegates, and then optionally relay back to the original dependencies. 
-Update and reset proxies, on the fly, while the process is running.
+These can redirect calls to test doubles, such as substitute instances or delegates, and then optionally relay back to the
+original services. Update and reset redirect configurations, on the fly, while the process is running.
 
 ![DivertR Via](./docs/assets/images/DivertR_Via.svg)
 
@@ -39,7 +39,7 @@ services.AddTransient<IFoo, Foo>();
 ```
 
 ### Hello DivertR
-DivertR is installed into the `IServiceCollection` by extending the existing `IFoo` registration with a provided extension method:
+DivertR is installed into the `IServiceCollection` by transforming the existing `IFoo` registration into a DivertR proxy using a provided extension method:
 
 ```csharp
 var diverter = new Diverter();
@@ -56,7 +56,7 @@ Console.WriteLine(foo.GetMessage("Hello")); // "Hello original"
 ```
 
 ### Redirect
-At this stage the behaviour of the resolved `IFoo` instance is unchanged, however it can be modified using 
+At this stage the behaviour of the resolved `IFoo` instances is unchanged. However, it can be modified using 
 a DivertR entity called a `Via` to register a *redirect*:
 
 ```csharp
@@ -69,23 +69,39 @@ Console.WriteLine(foo.GetMessage("Hello")); // "Hello DivertR"
 ```
 
 The `Via` intercepts calls to the resolved `IFoo` instances.
-By default calls are simply forwarded to the original dependency registration, in this case instances of the `Foo` class.
+By default calls are simply forwarded to the original registration, in this case instances of the `Foo` class.
 However, after adding the redirect any calls that match the lambda expression (1) are redirected to the delegate (2).
+
+Note the redirect is applied to all existing and future resolved `IFoo` instances:
+
+```csharp
+IFoo foo2 = provider.GetService<IFoo>();
+Console.WriteLine(foo2.GetMessage("Foo2")); // "Foo2 DivertR"
+```
 
 ### Reset
 
-To reset registrations back to their original behaviour simply discard all `Via` redirects with the following call:
+To reset resolved instances back to their original behaviour simply discard all redirects on the `Via` with the following call:
+
+```csharp
+fooVia.Reset();
+  
+Console.WriteLine(foo.GetMessage("Hello")); // "Hello original"
+Console.WriteLine(foo2.GetMessage("Foo2")); // "Foo2 original"
+```
+
+So far we have only been working with a single `Via` instance, i.e. `IVia<IFoo>` bound to the `IFoo` registration type.
+However, testing a system would typically require configuring multiple `Vias` of different types.
+These can all be reset at once by calling: 
 
 ```csharp
 diverter.ResetAll();
-  
-Console.WriteLine(foo.GetMessage("Hello")); // "Hello original"
 ```
 
 ### Relay
 
-The `Via` also lets you *relay* calls back to the original registration from the body of the redirect.
-This feature allows you to inject test code and modifications around the original flow of execution:
+The `Via` also lets you *relay* back to the original registration
+by providing the `Relay.Next` property that can be called from the body of the redirect:
 
 ```csharp
 IFoo next = fooVia.Relay.Next;
@@ -108,8 +124,8 @@ fooVia
 Console.WriteLine(foo.GetMessage("Hello")); // "Redirected: Hello original"
 ```
 
-> The `Relay.Next` property is a special proxy interface that relays the call but its members can only be accessed
-> within the context of a `Via` intercepted call. Access outside this context will result in a `DiverterException` being thrown.
+> The `Relay.Next` property is a proxy that the `Via` connects to the current intercepted call.
+> Its members can only be accessed within this context otherwise a `DiverterException` is thrown.
 
 ### Retarget
 
@@ -130,25 +146,26 @@ fooVia
 Console.WriteLine(foo.GetMessage("Hello")); // Mocked: Redirected: Hello original
 ```
 
-Note the Mock also calls the `Relay.Next` property. However, this time it relays to the delegate redirect
-from before instead of the original. This is because adding a redirect does not replace existing redirects, rather
-they get combined onto a stack that the `Relay.Next` property traverses as explained further next.
+Note the Mock also calls the `Relay.Next` property. However, it does not relay to the original registration as before.
+Instead it goes to the delegate redirect that was previously added.
+This is because adding a new redirect does not replace the existing ones. Instead they are pushed onto a stack
+that the `Relay.Next` property traverses...
 
 ### Redirect chain
 
 ![Redirect Stack](./docs/assets/images/Redirect_Stack.svg)
 
-When redirects are added they are pushed onto a stack. Then when the `Via` intercepts a call
-it traverses down the stack and passes the call to the first redirect that matches.
-The redirect then executes the call and can optionally continue the call down the stack by calling the `Relay.Next` property. This will again traverse the stack
+When redirects are added they are pushed onto a stack. When the `Via` intercepts a call
+it traverses down the stack, passing the call to the first redirect that matches.
+The redirect then executes the call and can optionally continue back down the stack by calling the `Relay.Next` property. This will again traverse the stack
 until the next matching redirect is found. When there are no more matching redirects the 
 original instance is called.
-> In summary, the redirect stack forms a chain of responsibility pipeline that is
+> In summary, the redirects are stacked forming a chain of responsibility pipeline that is
 > traversed with the `Relay.Next` property.
 
 ### Original relay
 
-A `Via` also provides the `Relay.Original` property that proxies directly to the original instance,
+The `Via` also provides the `Relay.Original` property that relays directly to the original instance,
 skipping over any remaining redirects.
 
 ```csharp

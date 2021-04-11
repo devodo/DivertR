@@ -40,7 +40,7 @@ namespace DivertR.Core
             var argsParameter = Expression.Parameter(typeof(object[]), "arguments");
             var targetParameter = Expression.Parameter(typeof(object), "target");
 
-            ByRefState? byRefState = null;
+            ByRefState? byRefState = null; // only used if one or more parameters is ByRef
             var methodParameters = methodInfo.GetParameters();
 
             var parameterExpressions = new Expression[methodParameters.Length];
@@ -61,10 +61,12 @@ namespace DivertR.Core
                         argsParameter,
                         indexExpr
                     );
-
+                    // It's not possible to cast ref parameters so we need to use a variable
                     var elementType = methodParameters[i].ParameterType.GetElementType()!;
                     var variable = Expression.Variable(elementType!);
                     byRefState.Variables.Add(variable);
+                    
+                    // Assign the ref parameter to the variable (only if it is initialised i.e. not null)
                     var nullCheckExpr = Expression.NotEqual(arrayAccessExpr, Expression.Constant(null, typeof(object)));
                     var assignExpr = Expression.Assign(variable, Expression.Convert(arrayAccessExpr, elementType));
                     var assignConditionExpr = Expression.IfThen(nullCheckExpr, assignExpr);
@@ -77,7 +79,7 @@ namespace DivertR.Core
                         continue;
                     }
 
-                    // assign ref and out params after method call
+                    // Assign the variable value back to ref and out params after method call
                     byRefState.PostCall.Add(Expression.Assign(arrayAccessExpr, Expression.Convert(variable, typeof(object))));
                 }
             }
