@@ -1,6 +1,6 @@
 ﻿using DivertR.Core;
 
-namespace DivertR.Internal
+namespace DivertR.Redirects
 {
     internal class RecordedCall<TTarget> : IRecordedCall<TTarget> where TTarget : class
     {

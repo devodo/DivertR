@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using DivertR.Redirects;
 using DivertR.SampleWebApp.Model;
 using DivertR.SampleWebApp.Services;
 using FakeItEasy;

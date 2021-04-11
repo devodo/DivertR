@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DivertR.Extensions.DependencyInjection
+namespace DivertR.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using DivertR.Redirects;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;

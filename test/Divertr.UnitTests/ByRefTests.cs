@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using DivertR.DynamicProxy;
+using DivertR.Redirects;
 using DivertR.Setup;
 using DivertR.UnitTests.Model;
 using Shouldly;

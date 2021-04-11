@@ -15,9 +15,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.SampleWebApp", "tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.WebAppTests", "test\DivertR.WebAppTests\DivertR.WebAppTests.csproj", "{C411DA96-5AB1-48BC-B238-7610F0701429}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.Extensions.DependencyInjection", "src\DivertR.Extensions.DependencyInjection\DivertR.Extensions.DependencyInjection.csproj", "{A47ED4A4-43C0-4BD3-9035-3D853205B72F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.DependencyInjection", "src\DivertR.DependencyInjection\DivertR.DependencyInjection.csproj", "{A47ED4A4-43C0-4BD3-9035-3D853205B72F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.Extensions.DependencyInjection.Tests", "test\DivertR.Extensions.DependencyInjection.Tests\DivertR.Extensions.DependencyInjection.Tests.csproj", "{0CDF6317-C9EE-48B7-A349-0D3335EBD86F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.DependencyInjection.Tests", "test\DivertR.DependencyInjection.Tests\DivertR.DependencyInjection.Tests.csproj", "{0CDF6317-C9EE-48B7-A349-0D3335EBD86F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.DispatchProxy", "src\DivertR.DispatchProxy\DivertR.DispatchProxy.csproj", "{0F3E9BEE-116F-4218-B95D-0CA242074FFF}"
 EndProject
@@ -28,6 +28,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.Setup", "src\DivertR.Setup\DivertR.Setup.csproj", "{749B3522-C4DF-4006-93A4-7DDE462C8B37}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.DemoApp", "test\DivertR.DemoApp\DivertR.DemoApp.csproj", "{667B3290-975E-44D5-8181-5E188A0CC0D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivertR.Redirects", "src\DivertR.Redirects\DivertR.Redirects.csproj", "{65793D22-F922-4971-BEBE-EC3FE85105C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,6 +81,10 @@ Global
 		{667B3290-975E-44D5-8181-5E188A0CC0D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{667B3290-975E-44D5-8181-5E188A0CC0D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{667B3290-975E-44D5-8181-5E188A0CC0D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65793D22-F922-4971-BEBE-EC3FE85105C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65793D22-F922-4971-BEBE-EC3FE85105C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65793D22-F922-4971-BEBE-EC3FE85105C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65793D22-F922-4971-BEBE-EC3FE85105C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,6 +101,7 @@ Global
 		{3A18FCF0-13BF-4AD3-89DC-8752AA55180E} = {74CF87C6-EDB4-4B31-B5B0-CA25463AE0DE}
 		{749B3522-C4DF-4006-93A4-7DDE462C8B37} = {74CF87C6-EDB4-4B31-B5B0-CA25463AE0DE}
 		{667B3290-975E-44D5-8181-5E188A0CC0D5} = {9275A4A9-A215-4894-83C6-128024B08122}
+		{65793D22-F922-4971-BEBE-EC3FE85105C8} = {74CF87C6-EDB4-4B31-B5B0-CA25463AE0DE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2239E171-F669-4DBD-882A-E8720EF6C493}

@@ -200,7 +200,7 @@ namespace DivertR.UnitTests
             _via
                 .InsertRedirect(_via.Redirect().Build(new Foo(() => $"DivertR {next.Message} 1")))
                 .InsertRedirect(_via.Redirect().Build(new Foo(() => $"here {next.Message} 2")))
-                .InsertRedirect(_via.Redirect().Build(new Foo(() => $"again {next.Message} 3")), 10);
+                .InsertRedirect(_via.Redirect().Build(new Foo(() => $"again {next.Message} 3")), -10);
             
             // ASSERT
             proxy.Message.ShouldBe("here DivertR again hello foo 3 1 2");
@@ -270,9 +270,9 @@ namespace DivertR.UnitTests
 
             // ACT
             _via
-                .InsertRedirect(_via.Redirect(x => x.Message).Build(() => WriteMessage(1)), 10)
+                .InsertRedirect(_via.Redirect(x => x.Message).Build(() => WriteMessage(1)), 30)
                 .InsertRedirect(_via.Redirect(x => x.Message).Build(() => WriteMessage(2)), 20)
-                .InsertRedirect(_via.Redirect(x => x.Message).Build(() => WriteMessage(3)), 30);
+                .InsertRedirect(_via.Redirect(x => x.Message).Build(() => WriteMessage(3)), 10);
 
             // ASSERT
             proxy.Message.ShouldBe("1 2 3 foo 3 2 1");

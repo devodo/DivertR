@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using DivertR.Extensions.DependencyInjection.Tests.Model;
+using DivertR.DependencyInjection.Tests.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Shouldly;
 using Xunit;
 
-namespace DivertR.Extensions.DependencyInjection.Tests
+namespace DivertR.DependencyInjection.Tests
 {
     public class ServiceCollectionTests
     {

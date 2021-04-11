@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DivertR.Extensions.DependencyInjection
+namespace DivertR.DependencyInjection
 {
     public class RegistrationConfiguration
     {

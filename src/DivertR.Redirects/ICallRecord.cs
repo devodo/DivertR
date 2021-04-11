@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace DivertR
+namespace DivertR.Redirects
 {
     public interface ICallRecord<TTarget> where TTarget : class
     {

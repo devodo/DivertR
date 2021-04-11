@@ -115,13 +115,5 @@ namespace DivertR
 
             return new ActionRedirectBuilder<TTarget>(this, parsedCall);
         }
-
-        public ICallRecord<TTarget> RecordCalls(ICallConstraint<TTarget>? callConstraint = null, int orderWeight = int.MinValue)
-        {
-            var callCapture = new CallRecordRedirect<TTarget>(Relay);
-            InsertRedirect(callCapture, orderWeight);
-
-            return callCapture;
-        }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using DivertR.Core;
 
-namespace DivertR.Internal
+namespace DivertR
 {
-    internal class TrueCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class
+    public class TrueCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class
     {
         public static readonly TrueCallConstraint<TTarget> Instance = new TrueCallConstraint<TTarget>();
         

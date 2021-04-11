@@ -3,8 +3,6 @@
     <PropertyGroup>
         <LangVersion>8</LangVersion>
         <Nullable>enable</Nullable>
-        <AssemblyName>DivertR.Extensions.DependencyInjection</AssemblyName>
-        <RootNamespace>DivertR.Extensions.DependencyInjection</RootNamespace>
         <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     </PropertyGroup>
 

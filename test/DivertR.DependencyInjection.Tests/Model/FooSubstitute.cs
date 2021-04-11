@@ -1,4 +1,4 @@
-﻿namespace DivertR.Extensions.DependencyInjection.Tests.Model
+﻿namespace DivertR.DependencyInjection.Tests.Model
 {
     public class FooSubstitute : IFoo
     {

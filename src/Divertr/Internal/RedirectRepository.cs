@@ -75,7 +75,7 @@ namespace DivertR.Internal
                 _redirectStack = redirectStack;
                 
                 Redirects = _redirectStack
-                    .OrderBy(x => x, RedirectComparer<T>.Instance)
+                    .OrderByDescending(x => x, RedirectComparer<T>.Instance)
                     .Select(x => x.Redirect)
                     .ToArray();
             }
@@ -119,7 +119,7 @@ namespace DivertR.Internal
                     return weightComparison;
                 }
 
-                return y.InsertSequence.CompareTo(x.InsertSequence);
+                return x.InsertSequence.CompareTo(y.InsertSequence);
             }
         }
     }

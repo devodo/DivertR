@@ -26,7 +26,5 @@ namespace DivertR
         IFuncRedirectBuilder<TTarget, TReturn> Redirect<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression);
         IActionRedirectBuilder<TTarget> Redirect(Expression<Action<TTarget>> lambdaExpression);
         IActionRedirectBuilder<TTarget> RedirectSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression);
-
-        ICallRecord<TTarget> RecordCalls(ICallConstraint<TTarget>? callConstraint = null, int orderWeight = int.MinValue);
     }
 }

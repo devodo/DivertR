@@ -1,6 +1,6 @@
 ﻿using DivertR.Core;
 
-namespace DivertR
+namespace DivertR.Redirects
 {
     public interface IRecordedCall<TTarget> where TTarget : class
     {

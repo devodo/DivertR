@@ -5,17 +5,19 @@ using System.Linq;
 using System.Linq.Expressions;
 using DivertR.Core;
 
-namespace DivertR.Internal
+namespace DivertR.Redirects
 {
     internal class CallRecordRedirect<TTarget> : IRedirect<TTarget>, ICallRecord<TTarget> where TTarget : class
     {
+        private readonly IVia<TTarget> _via;
         private readonly IRelay<TTarget> _relay;
 
         private readonly ConcurrentQueue<IRecordedCall<TTarget>> _recordedCalls = new ConcurrentQueue<IRecordedCall<TTarget>>();
 
-        public CallRecordRedirect(IRelay<TTarget> relay, ICallConstraint<TTarget>? callConstraint = null)
+        public CallRecordRedirect(IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
         {
-            _relay = relay ?? throw new ArgumentNullException(nameof(relay));
+            _via = via ?? throw new ArgumentNullException(nameof(via));
+            _relay = _via.Relay;
             CallConstraint = callConstraint ?? TrueCallConstraint<TTarget>.Instance;
         }
 
@@ -41,34 +43,17 @@ namespace DivertR.Internal
         
         public IReadOnlyList<IRecordedCall<TTarget>> Calls<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
-
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
-
-            return Calls(parsedCall.ToCallConstraint<TTarget>());
+            return Calls(_via.Redirect(lambdaExpression).CallConstraint);
         }
         
         public IReadOnlyList<IRecordedCall<TTarget>> Calls(Expression<Action<TTarget>> lambdaExpression)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
-
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
-
-            return Calls(parsedCall.ToCallConstraint<TTarget>());
+            return Calls(_via.Redirect(lambdaExpression).CallConstraint);
         }
 
         public IReadOnlyList<IRecordedCall<TTarget>> CallsSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
-            if (valueExpression?.Body == null) throw new ArgumentNullException(nameof(valueExpression));
-
-            if (!(lambdaExpression.Body is MemberExpression propertyExpression))
-            {
-                throw new ArgumentException("Only property member expressions are valid input to CallsSet", nameof(propertyExpression));
-            }
-
-            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
-            return Calls(parsedCall.ToCallConstraint<TTarget>());
+            return Calls(_via.RedirectSet(lambdaExpression, valueExpression).CallConstraint);
         }
     }
 }

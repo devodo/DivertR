@@ -1,5 +1,5 @@
 ﻿using System;
-using DivertR.Extensions.DependencyInjection;
+using DivertR.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
