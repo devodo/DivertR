@@ -136,12 +136,12 @@ namespace DivertR.DependencyInjection
                         
                 var implementationType = descriptor.ImplementationType.MakeGenericType(genericType.GetGenericArguments());
                         
-                var router = _configuration.GetViaFunc(genericType);
+                var via = _configuration.GetViaFunc(genericType);
 
                 object ProxyFactory(IServiceProvider provider)
                 {
                     var instance = ActivatorUtilities.GetServiceOrCreateInstance(provider, implementationType);
-                    return router.ProxyObject(instance);
+                    return via.ProxyObject(instance);
                 }
                         
                 _createDescriptors.Add(ServiceDescriptor.Describe(genericType, ProxyFactory, descriptor.Lifetime));
@@ -152,12 +152,12 @@ namespace DivertR.DependencyInjection
 
         private void InjectDiverter(int servicesIndex, ServiceDescriptor descriptor)
         {
-            var router = _configuration.GetViaFunc.Invoke(descriptor.ServiceType);
+            var via = _configuration.GetViaFunc.Invoke(descriptor.ServiceType);
 
             object ProxyFactory(IServiceProvider provider)
             {
                 var instance = GetInstance(provider, descriptor);
-                return router.ProxyObject(instance);
+                return via.ProxyObject(instance);
             }
                 
             _configuration.Services[servicesIndex] = ServiceDescriptor.Describe(descriptor.ServiceType, ProxyFactory, descriptor.Lifetime);

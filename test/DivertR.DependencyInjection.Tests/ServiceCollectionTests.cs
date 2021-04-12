@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using DivertR.DependencyInjection.Tests.Model;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Shouldly;
 using Xunit;
 
@@ -18,13 +18,10 @@ namespace DivertR.DependencyInjection.Tests
         {
             _services.AddSingleton<IFoo>(new Foo {Message = "Original"});
             _services.Divert<IFoo>(_diverter);
-
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
-            var mock = new Mock<IFoo>();
-            mock.Setup(x => x.Message).Returns("Diverted");
-            _diverter.Via<IFoo>().RedirectTo(mock.Object);
+            _diverter.Via<IFoo>().Redirect(x => x.Message).To("Diverted");
             
             foo.Message.ShouldBe("Diverted");
         }
@@ -32,26 +29,41 @@ namespace DivertR.DependencyInjection.Tests
         [Fact]
         public void ShouldReplaceMultipleRegistrations()
         {
-            var router = _diverter.Via<IFoo>();
-            _services.AddTransient<IFoo>(_ => new Foo {Message = "Original"});
-            _services.Divert(router);
-
+            var fooRegistrations = Enumerable.Range(0, 10)
+                .Select((x, i) => new Foo {Message = $"Foo{i}"}).ToList();
+            fooRegistrations.ForEach(foo => _services.AddSingleton<IFoo>(foo));
+            _services.Divert<IFoo>(_diverter);
             var provider = _services.BuildServiceProvider();
-            var foo = provider.GetRequiredService<IFoo>();
+
+            _diverter.Via<IFoo>()
+                .Redirect(x => x.Message)
+                .To(() => "Diverted: " + _diverter.Via<IFoo>().Next.Message);
             
-            var mock = new Mock<IFoo>();
-            mock.Setup(x => x.Message).Returns("Diverted");
-            router.RedirectTo(mock.Object);
+            var fooInstances = provider.GetServices<IFoo>().ToList();
             
-            var foo2 = provider.GetRequiredService<IFoo>();
+            fooInstances.Select(x => x.Message).ShouldBe(fooRegistrations.Select(foo => "Diverted: " + foo.Message));
+        }
+        
+        [Fact]
+        public void GivenResolvedInstancesBeforeAndAfterRegisteringRedirect_ShouldRedirect()
+        {
+            var via = _diverter.Via<IFoo>();
             
-            foo.Message.ShouldBe("Diverted");
-            foo2.Message.ShouldBe("Diverted");
+            _services.AddTransient<IFoo>(_ => new Foo {Message = "Original"});
+            _services.Divert(via);
+            var provider = _services.BuildServiceProvider();
+            
+            var fooBefore = provider.GetRequiredService<IFoo>();
+            via.Redirect(x => x.Message).To("Diverted");
+            var fooAfter = provider.GetRequiredService<IFoo>();
+            
+            fooBefore.Message.ShouldBe("Diverted");
+            fooAfter.Message.ShouldBe("Diverted");
             
             _diverter.ResetAll();
             
-            foo.Message.ShouldBe("Original");
-            foo2.Message.ShouldBe("Original");
+            fooBefore.Message.ShouldBe("Original");
+            fooAfter.Message.ShouldBe("Original");
         }
         
         [Fact]
@@ -64,9 +76,7 @@ namespace DivertR.DependencyInjection.Tests
             var provider = _services.BuildServiceProvider();
             var list = provider.GetRequiredService<IList<string>>();
             
-            var mock = new Mock<IList<string>>();
-            mock.Setup(x => x.Count).Returns(10);
-            _diverter.Via<IList<string>>().RedirectTo(mock.Object);
+            _diverter.Via<IList<string>>().Redirect(x => x.Count).To(10);
             
             list.Count.ShouldBe(10);
             _diverter.ResetAll();
@@ -86,10 +96,8 @@ namespace DivertR.DependencyInjection.Tests
 
             var provider = _services.BuildServiceProvider();
             var list = provider.GetRequiredService<IList<string>>();
-
-            var mock = new Mock<IList<string>>();
-            mock.Setup(x => x.Count).Returns(10);
-            _diverter.Via<IList<string>>().RedirectTo(mock.Object);
+            
+            _diverter.Via<IList<string>>().Redirect(x => x.Count).To(10);
 
             typesDiverted.ShouldBe(new[] {typeof(IList<string>)});
             list.Count.ShouldBe(10);
@@ -98,18 +106,16 @@ namespace DivertR.DependencyInjection.Tests
         }
 
         [Fact]
-        public void GivenOpenGenericShouldRedirectRouter()
+        public void GivenOpenGeneric_ShouldRedirect()
         {
-            var router = _diverter.Via<IList<string>>();
+            var via = _diverter.Via<IList<string>>();
             _services.AddTransient(typeof(IList<>), typeof(List<>));
-            _services.Divert(router);
+            _services.Divert(via);
 
             var provider = _services.BuildServiceProvider();
             var list = provider.GetRequiredService<IList<string>>();
             
-            var mock = new Mock<IList<string>>();
-            mock.Setup(x => x.Count).Returns(10);
-            router.RedirectTo(mock.Object);
+            via.Redirect(x => x.Count).To(10);
             
             list.Count.ShouldBe(10);
             _diverter.ResetAll();
@@ -129,9 +135,7 @@ namespace DivertR.DependencyInjection.Tests
             var provider = _services.BuildServiceProvider();
             var list = provider.GetRequiredService<IList<string>>();
             
-            var mock = new Mock<IList<string>>();
-            mock.Setup(x => x.Count).Returns(10);
-            _diverter.Via<IList<string>>().RedirectTo(mock.Object);
+            _diverter.Via<IList<string>>().Redirect(x => x.Count).To(10);
             
             list.Count.ShouldBe(10);
             _diverter.ResetAll();
