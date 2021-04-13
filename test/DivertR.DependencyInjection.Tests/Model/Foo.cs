@@ -2,7 +2,10 @@
 {
     public class Foo : IFoo
     {
-        public Foo() {}
+        public Foo()
+        {
+        }
+
         public Foo(string message)
         {
             Message = message;

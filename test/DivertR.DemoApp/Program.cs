@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using DivertR.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -8,6 +9,7 @@ namespace DivertR.DemoApp
     public interface IFoo
     {
         string GetMessage(string input);
+        Task<string> GetMessageAsync(string input);
     }
 
     public class Foo : IFoo
@@ -16,11 +18,17 @@ namespace DivertR.DemoApp
         {
             return $"{input} original";
         }
+        
+        public async Task<string> GetMessageAsync(string input)
+        {
+            await Task.Yield();
+            return $"{input} async";
+        }
     }
     
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             IServiceCollection services = new ServiceCollection();
             services.AddTransient<IFoo, Foo>();
@@ -40,9 +48,13 @@ namespace DivertR.DemoApp
   
             Console.WriteLine(foo.GetMessage("Hello")); // "Hello DivertR"
             
-            diverter.ResetAll();
+            IFoo foo2 = provider.GetRequiredService<IFoo>();
+            Console.WriteLine(foo2.GetMessage("Foo2")); // "Foo2 DivertR"
+
+            fooVia.Reset();
   
             Console.WriteLine(foo.GetMessage("Hello")); // "Hello original"
+            Console.WriteLine(foo2.GetMessage("Foo2")); // "Foo2 original"
             
             IFoo next = fooVia.Relay.Next;
             fooVia
@@ -53,12 +65,12 @@ namespace DivertR.DemoApp
                     // ...
 
                     // call original instance
-                    var original = next.GetMessage(input);
+                    var message = next.GetMessage(input);
     
                     // run test code after
                     // ...
     
-                    return $"Redirected: {original}";
+                    return $"Redirected: {message}";
                 });
   
             Console.WriteLine(foo.GetMessage("Hello")); // "Redirected: Hello original"
@@ -80,6 +92,13 @@ namespace DivertR.DemoApp
                 .To((string input) => $"Skipped: {original.GetMessage(input)}");
   
             Console.WriteLine(foo.GetMessage("Hello")); // "Skipped: Hello original"
+
+            fooVia
+                .Reset()
+                .Redirect(x => x.GetMessageAsync(Is<string>.Any))
+                .To(async (string input) => $"Redirected: {await next.GetMessageAsync(input)}");
+            
+            Console.WriteLine(await foo.GetMessageAsync("Hello")); // "Redirected: Hello async"
         }
     }
 }

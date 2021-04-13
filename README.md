@@ -7,7 +7,7 @@ test code in and out at the dependency injection layer.
 
 With DivertR you can modify your dependency injection services at runtime by replacing them with configurable proxies.
 These can redirect calls to test doubles, such as substitute instances or delegates, and then optionally relay back to the
-original services. Update and reset redirect configurations, on the fly, while the process is running.
+original services. Update and reset configurations, on the fly, while the process is running.
 
 ![DivertR Via](./docs/assets/images/DivertR_Via.svg)
 
@@ -39,7 +39,7 @@ services.AddTransient<IFoo, Foo>();
 ```
 
 ### Hello DivertR
-DivertR is installed into the `IServiceCollection` by transforming the existing `IFoo` registration into a DivertR proxy using a provided extension method:
+DivertR is installed into the `IServiceCollection` by decorating the existing `IFoo` registration using a provided extension method:
 
 ```csharp
 var diverter = new Diverter();
@@ -57,7 +57,7 @@ Console.WriteLine(foo.GetMessage("Hello")); // "Hello original"
 
 ### Redirect
 At this stage the behaviour of the resolved `IFoo` instances is unchanged. However, it can be modified using 
-a DivertR entity called a `Via` to register a *redirect*:
+a DivertR entity called a `Via` to configure a *redirect*:
 
 ```csharp
 IVia<IFoo> fooVia = diverter.Via<IFoo>();
@@ -72,7 +72,7 @@ The `Via` intercepts calls to the resolved `IFoo` instances.
 By default calls are simply forwarded to the original registration, in this case instances of the `Foo` class.
 However, after adding the redirect any calls that match the lambda expression (1) are redirected to the delegate (2).
 
-Note the redirect is applied to all existing and future resolved `IFoo` instances:
+The redirect is applied to all existing and future resolved `IFoo` instances:
 
 ```csharp
 IFoo foo2 = provider.GetService<IFoo>();
@@ -91,7 +91,7 @@ Console.WriteLine(foo2.GetMessage("Foo2")); // "Foo2 original"
 ```
 
 So far we have only been working with a single `Via` instance, i.e. `IVia<IFoo>` bound to the `IFoo` registration type.
-However, testing a system would typically require configuring multiple `Vias` of different types.
+However, testing a system would typically require using multiple `Vias` for different types.
 These can all be reset at once by calling: 
 
 ```csharp
@@ -113,12 +113,12 @@ fooVia
         // ...
 
         // call original instance
-        var original = next.GetMessage(input);
+        var message = next.GetMessage(input);
     
         // run test code after
         // ...
     
-        return $"Redirected: {original}";
+        return $"Redirected: {message}";
     });
   
 Console.WriteLine(foo.GetMessage("Hello")); // "Redirected: Hello original"
@@ -131,7 +131,7 @@ Console.WriteLine(foo.GetMessage("Hello")); // "Redirected: Hello original"
 
 As well as redirecting to delegates you can also redirect to substitute targets. A valid 
 substitute is anything that implements the target interface (in this case `IFoo`).
-This includes Mock objects, for example:
+This includes, for example, Mock objects:
 
 ```csharp
 var mock = new Mock<IFoo>();
@@ -156,10 +156,9 @@ that the `Relay.Next` property traverses...
 ![Redirect Stack](./docs/assets/images/Redirect_Stack.svg)
 
 When redirects are added they are pushed onto a stack. When the `Via` intercepts a call
-it traverses down the stack, passing the call to the first redirect that matches.
-The redirect then executes the call and can optionally continue back down the stack by calling the `Relay.Next` property. This will again traverse the stack
-until the next matching redirect is found. When there are no more matching redirects the 
-original instance is called.
+it traverses down the stack, starting from the last redirect added. The call is passed to the first eligible redirect (e.g. its lambda expression constraint matches).
+The redirect is then responsible for executing the call and can optionally continue back down the stack by calling the `Relay.Next` property. This will again traverse the stack
+until the next matching redirect is found. When there are no more redirects the original instance is called.
 > In summary, the redirects are stacked forming a chain of responsibility pipeline that is
 > traversed with the `Relay.Next` property.
 
@@ -179,3 +178,38 @@ Console.WriteLine(foo.GetMessage("Hello")); // "Skipped: Hello original"
 
 > Similar to the `Relay.Next` property, `Relay.Original` is a proxy interface that relays to the original instance
 > but its members can only be accessed within the context of a `Via` intercepted call.
+
+### Class support
+
+By default DivertR can only be used to redirect interfaces. `Via` and `Relay` proxies are generated using `System.Reflection.DispatchProxy`
+that only supports interfaces.
+
+It is possible to configure a different proxy factory, e.g. Castle Dynamic Proxy, that does support classes.
+This is discouraged and is prone to unintuitive behaviour as only virtual or abstract class members can be intercepted and relayed.
+
+### Async support
+
+Task and ValueTask async calls are supported, e.g. if `IFoo` is extended to include an async method:
+
+```csharp
+public interface IFoo
+{
+    Task<string> GetMessageAsync(string input);
+}
+
+public class Foo : IFoo
+{
+    public async Task<string> GetMessageAsync(string input)
+    {
+        await Task.Yield();
+        return $"{input} async";
+    }
+}
+
+fooVia
+    .Reset() // Discard all previous redirects
+    .Redirect(x => x.GetMessageAsync(Is<string>.Any))
+    .To(async (string input) => $"Redirected: {await next.GetMessageAsync(input)}");
+
+Console.WriteLine(await foo.GetMessageAsync("Hello")); // "Redirected: Hello async"
+```

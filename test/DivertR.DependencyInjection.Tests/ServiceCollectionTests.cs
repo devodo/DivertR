@@ -30,7 +30,7 @@ namespace DivertR.DependencyInjection.Tests
         public void ShouldReplaceMultipleRegistrations()
         {
             var fooRegistrations = Enumerable.Range(0, 10)
-                .Select((x, i) => new Foo {Message = $"Foo{i}"}).ToList();
+                .Select((_, i) => new Foo {Message = $"Foo{i}"}).ToList();
             fooRegistrations.ForEach(foo => _services.AddSingleton<IFoo>(foo));
             _services.Divert<IFoo>(_diverter);
             var provider = _services.BuildServiceProvider();
