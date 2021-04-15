@@ -10,11 +10,11 @@ namespace DivertR.UnitTests
     public class RecordCallsTests
     {
         private readonly Via<IFoo> _via = new();
-        private readonly ICallRecord<IFoo> _callRecord;
+        private readonly ICallsRecord<IFoo> _callsRecord;
 
         public RecordCallsTests()
         {
-            _callRecord = _via.RecordCalls();
+            _callsRecord = _via.Record();
         }
         
         [Fact]
@@ -33,11 +33,11 @@ namespace DivertR.UnitTests
             var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
 
             // ACT
-            var calls = _callRecord.Calls();
+            var calls = _callsRecord.All;
 
             // ASSERT
             calls.Select(x => (string) x.CallInfo.Arguments[0]).ShouldBe(inputs);
-            calls.Select(x => (string) x.ReturnValue).ShouldBe(outputs);
+            calls.Select(x => (string) x.ReturnObject).ShouldBe(outputs);
         }
         
         [Fact]
@@ -56,7 +56,7 @@ namespace DivertR.UnitTests
             var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
 
             // ACT
-            var calls = _callRecord.Calls(x => x.Echo(inputs[0]));
+            var calls = _callsRecord.Matching(x => x.Echo(inputs[0]));
 
             // ASSERT
             calls.Count.ShouldBe(1);

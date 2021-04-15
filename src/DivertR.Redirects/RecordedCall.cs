@@ -2,15 +2,38 @@
 
 namespace DivertR.Redirects
 {
-    internal class RecordedCall<TTarget> : IRecordedCall<TTarget> where TTarget : class
+    public class RecordedCall<TTarget> where TTarget : class
     {
+        internal readonly CallReturn CallReturn;
         public CallInfo<TTarget> CallInfo { get; }
 
-        public object? ReturnValue { get; set; }
+        public object? ReturnObject => CallReturn.ReturnedObject;
+        public bool CallReturned => CallReturn.IsSet;
 
-        public RecordedCall(CallInfo<TTarget> callInfo)
+        internal RecordedCall(CallInfo<TTarget> callInfo, CallReturn callReturn)
         {
+            CallReturn = callReturn;
             CallInfo = callInfo;
+        }
+    }
+
+    public class RecordedCall<TTarget, TReturn> : RecordedCall<TTarget> where TTarget : class
+    {
+        internal RecordedCall(CallInfo<TTarget> callInfo, CallReturn callReturn) : base(callInfo, callReturn)
+        {
+        }
+
+        public TReturn ReturnValue
+        {
+            get
+            {
+                if (ReturnObject == null)
+                {
+                    return default!;
+                }
+                
+                return (TReturn) ReturnObject;
+            }
         }
     }
 }

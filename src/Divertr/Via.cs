@@ -35,7 +35,7 @@ namespace DivertR
         public IRelay<TTarget> Relay => _relay.Value;
         public TTarget Next => Relay.Next;
         
-        public IReadOnlyList<IRedirect<TTarget>> Redirects => _redirectRepository.Get<TTarget>(ViaId);
+        public IReadOnlyList<IRedirect<TTarget>> ConfiguredRedirects => _redirectRepository.Get<TTarget>(ViaId);
 
         public TTarget Proxy(TTarget? original = null)
         {

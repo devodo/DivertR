@@ -14,7 +14,7 @@ namespace DivertR
     {
         IRelay<TTarget> Relay { get; }
         TTarget Next { get; }
-        IReadOnlyList<IRedirect<TTarget>> Redirects { get; }
+        IReadOnlyList<IRedirect<TTarget>> ConfiguredRedirects { get; }
 
         TTarget Proxy(TTarget? original = null);
 
