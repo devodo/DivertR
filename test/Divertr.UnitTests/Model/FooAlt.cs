@@ -1,30 +1,36 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace DivertR.UnitTests.Model
 {
-    public class Foo : IFoo
+    public class FooAlt : IFoo
     {
-        private string _message;
+        private Func<string> _messageFactory;
         
-        public Foo() : this("original")
+        public FooAlt() : this("alternate")
         {
         }
 
-        public Foo(string message)
+        public FooAlt(string message)
         {
-            _message = message;
+            _messageFactory = () => message;
+        }
+        
+        public FooAlt(Func<string> messageFactory)
+        {
+            _messageFactory = messageFactory;
         }
 
         public virtual string Message
         {
-            get => _message;
-            set => _message = value;
+            get => _messageFactory.Invoke();
+            set => _messageFactory = () => value;
         }
 
         public async Task<string> GetMessageAsync()
         {
             await Task.Yield();
-            return _message;
+            return _messageFactory.Invoke();
         }
 
         public string Echo(string input)
@@ -51,9 +57,9 @@ namespace DivertR.UnitTests.Model
 
         public string SetMessage(Wrapper<string> input)
         {
-            _message = input.Item;
+            _messageFactory = () => input.Item;
 
-            return _message;
+            return _messageFactory.Invoke();
         }
 
         public IFoo GetFoo()

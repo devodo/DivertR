@@ -75,7 +75,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
 
             // ACT
-            _via.RedirectTo(new Foo(() => $"hello {_via.Relay.Original.Message}"));
+            _via.RedirectTo(new FooAlt(() => $"hello {_via.Relay.Original.Message}"));
 
             // ASSERT
             proxy.Message.ShouldBe("hello foo");
@@ -89,7 +89,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
             
             // ACT
-            _via.RedirectTo(new Foo(() => $"hello {_via.Relay.Next.Message}"));
+            _via.RedirectTo(new FooAlt(() => $"hello {_via.Relay.Next.Message}"));
 
             // ASSERT
             proxy.Message.ShouldBe("hello foo");
@@ -104,7 +104,7 @@ namespace DivertR.UnitTests
             IFoo originalReference = null;
 
             // ACT
-            _via.RedirectTo(new Foo(() =>
+            _via.RedirectTo(new FooAlt(() =>
             {
                 originalReference = _via.Relay.CallInfo.Original;
                 return $"hello {originalReference!.Message}";
@@ -124,7 +124,7 @@ namespace DivertR.UnitTests
                 .ToList();
             
             // ACT
-            _via.RedirectTo(new Foo(() => $"diverted {_via.Relay.Original.Message}"));
+            _via.RedirectTo(new FooAlt(() => $"diverted {_via.Relay.Original.Message}"));
 
             // ASSERT
             for (var i = 0; i < proxies.Count; i++)
@@ -142,7 +142,7 @@ namespace DivertR.UnitTests
                 .ToList();
 
             // ACT
-            _via.RedirectTo(new Foo(() => $"diverted {_via.Next.Message}"));
+            _via.RedirectTo(new FooAlt(() => $"diverted {_via.Next.Message}"));
 
             // ASSERT
             for (var i = 0; i < proxies.Count; i++)
@@ -181,9 +181,9 @@ namespace DivertR.UnitTests
             
             // ACT
             _via
-                .RedirectTo(new Foo(() => $"again {next.Message} 3"))
-                .RedirectTo(new Foo(() => $"here {next.Message} 2"))
-                .RedirectTo(new Foo(() => $"DivertR {next.Message} 1"));
+                .RedirectTo(new FooAlt(() => $"again {next.Message} 3"))
+                .RedirectTo(new FooAlt(() => $"here {next.Message} 2"))
+                .RedirectTo(new FooAlt(() => $"DivertR {next.Message} 1"));
             
             // ASSERT
             proxy.Message.ShouldBe("DivertR here again hello foo 3 2 1");
@@ -198,9 +198,9 @@ namespace DivertR.UnitTests
 
             // ACT
             _via
-                .InsertRedirect(_via.Redirect().Build(new Foo(() => $"DivertR {next.Message} 1")))
-                .InsertRedirect(_via.Redirect().Build(new Foo(() => $"here {next.Message} 2")))
-                .InsertRedirect(_via.Redirect().Build(new Foo(() => $"again {next.Message} 3")), -10);
+                .InsertRedirect(_via.Redirect().Build(new FooAlt(() => $"DivertR {next.Message} 1")))
+                .InsertRedirect(_via.Redirect().Build(new FooAlt(() => $"here {next.Message} 2")))
+                .InsertRedirect(_via.Redirect().Build(new FooAlt(() => $"again {next.Message} 3")), -10);
             
             // ASSERT
             proxy.Message.ShouldBe("here DivertR again hello foo 3 1 2");
@@ -219,7 +219,7 @@ namespace DivertR.UnitTests
             for (var i = 0; i < numRedirects; i++)
             {
                 var counter = i;
-                _via.RedirectTo(new Foo(() => $"{orig.Message} {counter} {next.Message}"));
+                _via.RedirectTo(new FooAlt(() => $"{orig.Message} {counter} {next.Message}"));
             }
             
             // ASSERT
@@ -236,7 +236,7 @@ namespace DivertR.UnitTests
             var orig = _via.Relay.Original;
             var count = 4;
 
-            var recursive = new Foo(() =>
+            var recursive = new FooAlt(() =>
             {
                 var decrement = Interlocked.Decrement(ref count);
 
@@ -250,7 +250,7 @@ namespace DivertR.UnitTests
             
             // ACT
             _via
-                .RedirectTo(new Foo(() => next.Message.Replace(orig.Message, "bar")))
+                .RedirectTo(new FooAlt(() => next.Message.Replace(orig.Message, "bar")))
                 .RedirectTo(recursive);
             
             // ASSERT
@@ -286,9 +286,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
 
             // ACT
-            _via.RedirectTo(new Foo(() => $"{_via.Relay.Next.Message} me"));
+            _via.RedirectTo(new FooAlt(() => $"{_via.Relay.Next.Message} me"));
             _via.Reset();
-            _via.RedirectTo(new Foo(() => $"{_via.Relay.Next.Message} again"));
+            _via.RedirectTo(new FooAlt(() => $"{_via.Relay.Next.Message} again"));
 
             // ASSERT
             proxy.Message.ShouldBe("hello foo again");
@@ -302,8 +302,8 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
 
             // ACT
-            _via.RedirectTo(new Foo(() => $"{_via.Relay.Next.Message} me"));
-            _via.RedirectTo(new Foo(() => $"{_via.Relay.Next.Message} again"));
+            _via.RedirectTo(new FooAlt(() => $"{_via.Relay.Next.Message} me"));
+            _via.RedirectTo(new FooAlt(() => $"{_via.Relay.Next.Message} again"));
             _via.Reset();
 
 

@@ -26,11 +26,11 @@ namespace DivertR.UnitTests
                 .ToList();
             
             _via
-                .Redirect(x => x.GetMessage(Is<string>.Any))
+                .Redirect(x => x.Echo(Is<string>.Any))
                 .To(() => Guid.NewGuid().ToString());
 
             var fooProxy = _via.Proxy();
-            var outputs = inputs.Select(x => fooProxy.GetMessage(x)).ToList();
+            var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
 
             // ACT
             var calls = _callRecord.Calls();
@@ -49,14 +49,14 @@ namespace DivertR.UnitTests
                 .ToList();
             
             _via
-                .Redirect(x => x.GetMessage(Is<string>.Any))
+                .Redirect(x => x.Echo(Is<string>.Any))
                 .To(() => Guid.NewGuid().ToString());
 
             var fooProxy = _via.Proxy();
-            var outputs = inputs.Select(x => fooProxy.GetMessage(x)).ToList();
+            var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
 
             // ACT
-            var calls = _callRecord.Calls(x => x.GetMessage(inputs[0]));
+            var calls = _callRecord.Calls(x => x.Echo(inputs[0]));
 
             // ASSERT
             calls.Count.ShouldBe(1);

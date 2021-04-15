@@ -16,7 +16,7 @@ namespace DivertR.UnitTests
             var via = _diverter.Via<IFoo>().Proxy(original);
 
             // ACT
-            _diverter.Via<IFoo>().RedirectTo(new Foo(() => $"{_diverter.Via<IFoo>().Relay.Next.Message} diverted"));
+            _diverter.Via<IFoo>().RedirectTo(new FooAlt(() => $"{_diverter.Via<IFoo>().Relay.Next.Message} diverted"));
             
             // ASSERT
             via.Message.ShouldBe(original.Message + " diverted");
@@ -30,8 +30,8 @@ namespace DivertR.UnitTests
             var via = _diverter.Via<IFoo>();
             var subject = via.Proxy(original);
             
-            via.RedirectTo(new Foo(() => $"{via.Relay.Next} me"));
-            via.RedirectTo(new Foo(() => $"{via.Relay.Next} again"));
+            via.RedirectTo(new FooAlt(() => $"{via.Relay.Next} me"));
+            via.RedirectTo(new FooAlt(() => $"{via.Relay.Next} again"));
 
             // ACT
             _diverter.ResetAll();

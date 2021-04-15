@@ -113,12 +113,12 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<IFoo>();
             via
-                .Redirect(x => x.GetMessage("test"))
+                .Redirect(x => x.Echo("test"))
                 .To((string input) => $"{via.Relay.Original.Message} {input}");
 
             // ACT
             var proxy = via.Proxy(new Foo("hello foo"));
-            var message = proxy.GetMessage("test");
+            var message = proxy.Echo("test");
 
             // ASSERT
             message.ShouldBe("hello foo test");
@@ -130,15 +130,15 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<IFoo>();
             via
-                .Redirect(x => x.GetMessage("test"))
+                .Redirect(x => x.Echo("test"))
                 .To((string input) => $"{via.Relay.Original.Message} {input}");
 
             // ACT
-            var proxy = via.Proxy(new Foo("hello foo"));
-            var message = proxy.GetMessage("no match");
+            var proxy = via.Proxy(new Foo());
+            var message = proxy.Echo("no match");
 
             // ASSERT
-            message.ShouldBe("hello foo");
+            message.ShouldBe("no match");
         }
 
         [Fact]
@@ -148,12 +148,12 @@ namespace DivertR.UnitTests
             var via = new Via<IFoo>();
             var match = "test";
             via
-                .Redirect(x => x.GetMessage(match))
+                .Redirect(x => x.Echo(match))
                 .To((string input) => $"{via.Relay.Original.Message} {input}");
 
             // ACT
             var proxy = via.Proxy(new Foo("hello foo"));
-            var message = proxy.GetMessage(match);
+            var message = proxy.Echo(match);
 
             // ASSERT
             message.ShouldBe("hello foo test");
@@ -166,16 +166,16 @@ namespace DivertR.UnitTests
             var via = new Via<IFoo>();
             var input = new Wrapper<string>("test");
             via
-                .Redirect(x => x.GetMessage(input.Item))
+                .Redirect(x => x.Echo(input.Item))
                 .To((string i) => $"{via.Relay.Original.Message} {i}");
 
             // ACT
-            var proxy = via.Proxy(new Foo("hello foo"));
+            var proxy = via.Proxy(new Foo());
             input.Item = "no match";
-            var message = proxy.GetMessage(input.Item);
+            var message = proxy.Echo(input.Item);
 
             // ASSERT
-            message.ShouldBe("hello foo");
+            message.ShouldBe("no match");
         }
 
         [Fact]
@@ -185,13 +185,13 @@ namespace DivertR.UnitTests
             var via = new Via<IFoo>();
             var input = new Wrapper<string>("test");
             via
-                .Redirect(x => x.GetMessage(Is<string>.Match(p => p == input.Item)))
+                .Redirect(x => x.Echo(Is<string>.Match(p => p == input.Item)))
                 .To((string i) => $"{via.Relay.Original.Message} {i}");
 
             // ACT
             input.Item = "other";
             var proxy = via.Proxy(new Foo("hello foo"));
-            var message = proxy.GetMessage(input.Item);
+            var message = proxy.Echo(input.Item);
 
             // ASSERT
             message.ShouldBe("hello foo other");
@@ -203,15 +203,15 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<IFoo>();
             via
-                .Redirect(x => x.GetMessage(Is<string>.Match(p => p == "test")))
+                .Redirect(x => x.Echo(Is<string>.Match(p => p == "test")))
                 .To((string i) => $"{via.Relay.Original.Message} {i}");
 
             // ACT
-            var proxy = via.Proxy(new Foo("hello foo"));
-            var message = proxy.GetMessage("no match");
+            var proxy = via.Proxy(new Foo());
+            var message = proxy.Echo("no match");
 
             // ASSERT
-            message.ShouldBe("hello foo");
+            message.ShouldBe("no match");
         }
         
         [Fact]
@@ -220,12 +220,12 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<IFoo>();
             via
-                .Redirect(x => x.GetMessage(Is<string>.Any))
+                .Redirect(x => x.Echo(Is<string>.Any))
                 .To((string input) => $"{via.Relay.Original.Message} {input}");
 
             // ACT
             var proxy = via.Proxy(new Foo("hello foo"));
-            var message = proxy.GetMessage("test");
+            var message = proxy.Echo("test");
 
             // ASSERT
             message.ShouldBe("hello foo test");
@@ -376,21 +376,15 @@ namespace DivertR.UnitTests
         public void TestProperty()
         {
             // ARRANGE
-            var mock = new Mock<IFoo>();
-
             var input = new Wrapper<string>("test");
-            
-            mock
-                .Setup(x => x.SetMessage(input))
-                .Returns((Wrapper<string> i) => i.Item);
-            
-            _via.Redirect(x => x.GetMessage(input.Item))
+
+            _via.Redirect(x => x.Echo(input.Item))
                 .To((string i) => i);
             
             // ACT
             input.Item = "test";
             
-            var result = _via.Proxy().GetMessage(input.Item);
+            var result = _via.Proxy().Echo(input.Item);
 
             // ASSERT
             result.ShouldBe("test");
@@ -405,12 +399,6 @@ namespace DivertR.UnitTests
         public void TestMethod()
         {
             // ARRANGE
-            var mock = new Mock<IFoo>();
-            
-            mock
-                .Setup(x => x.SetMessage(GetInput()))
-                .Returns((Wrapper<string> i) => i.Item);
-            
             _via.Redirect(x => x.SetMessage(GetInput()))
                 .To((Wrapper<string> i) => i.Item);
             
