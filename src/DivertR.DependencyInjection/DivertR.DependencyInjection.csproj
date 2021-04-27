@@ -11,6 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\DivertR.Core\DivertR.Core.csproj" />
       <ProjectReference Include="..\DivertR\DivertR.csproj" />
     </ItemGroup>
 

@@ -10,13 +10,14 @@ namespace DivertR.DemoApp
     {
         string GetMessage(string input);
         Task<string> GetMessageAsync(string input);
+        public string Name { get; set; }
     }
 
     public class Foo : IFoo
     {
         public string GetMessage(string input)
         {
-            return $"{input} original";
+            return $"{input} {Name}";
         }
         
         public async Task<string> GetMessageAsync(string input)
@@ -24,6 +25,8 @@ namespace DivertR.DemoApp
             await Task.Yield();
             return $"{input} async";
         }
+
+        public string Name { get; set; } = "original";
     }
     
     class Program
