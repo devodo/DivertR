@@ -1,19 +1,38 @@
-﻿namespace DivertR.Redirects
-{
-    internal class CallReturn
-    {
-        public bool IsSet { get; private set; }
+﻿using System;
 
-        private object? _returnedObject;
+namespace DivertR.Redirects
+{
+    internal class CallReturn : ICallReturn
+    {
+        public object? Value { get; }
         
-        public object? ReturnedObject
+        public Exception? Exception { get; }
+        
+        protected CallReturn(object? returnValue, Exception? exception)
         {
-            get => _returnedObject;
-            set
+            Value = returnValue;
+            Exception = exception;
+        }
+    }
+    
+    internal class CallReturn<TReturn> : CallReturn, ICallReturn<TReturn>
+    {
+        public new TReturn Value
+        {
+            get
             {
-                IsSet = true;
-                _returnedObject = value;
+                if (base.Value == null)
+                {
+                    return default!;
+                }
+
+                return (TReturn) base.Value;
             }
+        }
+
+        public CallReturn(TReturn returnValue, Exception? exception)
+            : base(returnValue, exception)
+        {
         }
     }
 }

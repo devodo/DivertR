@@ -66,8 +66,8 @@ namespace DivertR.WebAppTests
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
             response.Content.ShouldBeNull();
-            callsRecord.All.Count.ShouldBe(1);
-            callsRecord.Matching(x => x.GetFoo(foo.Id)).Count.ShouldBe(1);
+            callsRecord.Count.ShouldBe(1);
+            callsRecord.When(x => x.GetFoo(foo.Id)).Count.ShouldBe(1);
         }
 
         [Fact]
@@ -96,7 +96,7 @@ namespace DivertR.WebAppTests
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
-            response.Headers.Location.PathAndQuery.ShouldBe($"/Foo/{insertedFoo.Id}");
+            response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{insertedFoo.Id}");
             insertedFoo.Name.ShouldBe(createFooRequest.Name);
             insertResult.ShouldBe(true);
             response.Content.ShouldBeEquivalentTo(insertedFoo);
@@ -119,13 +119,13 @@ namespace DivertR.WebAppTests
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
             
-            fooRepoCalls.All.Count.ShouldBe(1);
-            var call = fooRepoCalls.Matching(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name))).Single();
+            fooRepoCalls.Count.ShouldBe(1);
+            var call = fooRepoCalls.When(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name))).Single();
             var insertedFoo = (Foo) call.CallInfo.Arguments[0];
             
-            response.Headers.Location.PathAndQuery.ShouldBe($"/Foo/{insertedFoo.Id}");
+            response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{insertedFoo.Id}");
             insertedFoo.Name.ShouldBe(createFooRequest.Name);
-            (await call.ReturnValue).ShouldBe(true);
+            (await call.Returned!.Value).ShouldBe(true);
             response.Content.ShouldBeEquivalentTo(insertedFoo);
         }
     }

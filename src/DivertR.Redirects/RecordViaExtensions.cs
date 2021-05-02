@@ -2,13 +2,13 @@
 {
     public static class RecordViaExtensions
     {
-        public static ICallsRecord<TTarget> Record<TTarget>(this IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
+        public static ICallRecord<TTarget> Record<TTarget>(this IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
             where TTarget : class
         {
-            var recordRedirect = new CallsRecordRedirect<TTarget>(via);
-            via.InsertRedirect(recordRedirect, int.MaxValue);
+            var recorderRedirect = new CallRecorderRedirect<TTarget>(via);
+            via.InsertRedirect(recorderRedirect, int.MaxValue);
 
-            return recordRedirect;
+            return recorderRedirect;
         }
     }
 }

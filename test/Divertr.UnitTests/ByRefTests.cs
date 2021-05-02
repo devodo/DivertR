@@ -30,7 +30,7 @@ namespace DivertR.UnitTests
         private delegate void OutCall(int input, out int output);
 
         private readonly Via<INumber> _via;
-        private readonly ICallsRecord<INumber> _callsRecord;
+        private readonly ICallRecord<INumber> _callRecord;
 
         public ByRefTests() : this(new Via<INumber>())
         {
@@ -39,7 +39,7 @@ namespace DivertR.UnitTests
         protected ByRefTests(Via<INumber> via)
         {
             _via = via;
-            _callsRecord = _via.Record();
+            _callRecord = _via.Record();
         }
         
         [Fact]
@@ -139,8 +139,8 @@ namespace DivertR.UnitTests
 
             // ASSERT
             output.ShouldBe(13);
-            _callsRecord.All.Count.ShouldBe(1);
-            _callsRecord.All[0].CallInfo.Arguments[0].ShouldBe(3);
+            _callRecord.Count.ShouldBe(1);
+            _callRecord.First().CallInfo.Arguments[0].ShouldBe(3);
         }
 
         [Fact]

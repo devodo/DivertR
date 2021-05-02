@@ -89,16 +89,16 @@ namespace DivertR.Internal
                 case MethodCallExpression callExpression when callExpression.Method.DeclaringType != null &&
                                                               callExpression.Method.DeclaringType.IsGenericType &&
                                                               callExpression.Method.DeclaringType.GetGenericTypeDefinition() == typeof(Is<>):
-                {
-                    const BindingFlags activatorFlags = BindingFlags.Public | BindingFlags.Instance;
-                    var lambdaType = typeof(LambdaArgumentConstraint<>).MakeGenericType(callExpression.Type);
-                    return (IArgumentConstraint) Activator.CreateInstance(lambdaType, activatorFlags, null, new object[] {callExpression.Arguments[0]}, default);
-                }
+                    {
+                        const BindingFlags ActivatorFlags = BindingFlags.Public | BindingFlags.Instance;
+                        var lambdaType = typeof(LambdaArgumentConstraint<>).MakeGenericType(callExpression.Type);
+                        return (IArgumentConstraint) Activator.CreateInstance(lambdaType, ActivatorFlags, null, new object[] {callExpression.Arguments[0]}, default);
+                    }
                 default:
-                {
-                    var value = Expression.Lambda(argument).Compile().DynamicInvoke();
-                    return new ConstantArgumentConstraint(value);
-                }
+                    {
+                        var value = Expression.Lambda(argument).Compile().DynamicInvoke();
+                        return new ConstantArgumentConstraint(value);
+                    }
             }
         }
 

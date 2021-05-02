@@ -3,40 +3,33 @@ using System.Threading.Tasks;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace DivertR.UnitTests
 {
     public class RecursiveTests
     {
-        private readonly ITestOutputHelper _output;
         private readonly IVia<INumber> _via = new Via<INumber>();
-
-        public RecursiveTests(ITestOutputHelper output)
-        {
-            _output = output;
-        }
 
         [Fact]
         public void TestRecursiveSync()
         {
-            const int input = 20;
+            const int Input = 20;
             var proxy = InitTestProxy();
-            var result = proxy.GetNumber(input);
-            var controlResult = Fibonacci(input) * 2;
+            var result = proxy.GetNumber(Input);
+            var controlResult = Fibonacci(Input) * 2;
             result.ShouldBe(controlResult);
         }
 
         [Fact]
         public async Task TestRecursiveSyncBenchmark()
         {
-            const int input = 20;
-            const int taskCount = 10;
+            const int Input = 20;
+            const int TaskCount = 10;
             
-            var tasks = Enumerable.Range(0, taskCount).Select(_ => 
-                Task.Run(() => Fibonacci(input))).ToArray();
+            var tasks = Enumerable.Range(0, TaskCount).Select(_ => 
+                Task.Run(() => Fibonacci(Input))).ToArray();
             
-            var controlResult = Fibonacci(input);
+            var controlResult = Fibonacci(Input);
             foreach (var task in tasks)
             {
                 (await task).ShouldBe(controlResult);
@@ -46,14 +39,14 @@ namespace DivertR.UnitTests
         [Fact]
         public async Task TestRecursiveSyncMultiThreaded()
         {
-            const int input = 20;
-            const int taskCount = 10;
-            var controlResult = Fibonacci(input) * 2;
+            const int Input = 20;
+            const int TaskCount = 10;
+            var controlResult = Fibonacci(Input) * 2;
             
             var proxy = InitTestProxy();
             
-            var tasks = Enumerable.Range(0, taskCount).Select(_ => 
-                Task.Run(() => proxy.GetNumber(input))).ToArray();
+            var tasks = Enumerable.Range(0, TaskCount).Select(_ => 
+                Task.Run(() => proxy.GetNumber(Input))).ToArray();
             
             foreach (var task in tasks)
             {

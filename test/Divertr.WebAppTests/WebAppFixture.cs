@@ -32,9 +32,7 @@ namespace DivertR.WebAppTests
                         {
                             types.ShouldBe(new[]
                             {
-                                typeof(ILoggerFactory),
-                                typeof(IFooRepository),
-                                typeof(IFooPublisher)
+                                typeof(ILoggerFactory), typeof(IFooRepository), typeof(IFooPublisher)
                             });
                         });
                     });

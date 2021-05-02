@@ -14,7 +14,7 @@ namespace DivertR.DependencyInjection
         private readonly List<Type> _divertedTypes = new List<Type>();
         private readonly List<ServiceDescriptor> _createDescriptors = new List<ServiceDescriptor>();
 
-        private int _serviceIndex = 0;
+        private int _serviceIndex;
 
         public DiverterRegistrar(RegistrationConfiguration configuration)
         {

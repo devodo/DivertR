@@ -25,14 +25,14 @@ namespace DivertR
         
         public IVia Via(Type type, string? name = null)
         {
-            const BindingFlags activatorFlags = BindingFlags.NonPublic | BindingFlags.Instance;
+            const BindingFlags ActivatorFlags = BindingFlags.NonPublic | BindingFlags.Instance;
 
             return _vias.GetOrAdd(ViaId.From(type, name),
                 id =>
                 {
                     var diverterType = typeof(Via<>).MakeGenericType(type);
                     var constructorParams = new object[] {id, _redirectRepository, _diverterSettings};
-                    return (IVia) Activator.CreateInstance(diverterType, activatorFlags, null, constructorParams, default);
+                    return (IVia) Activator.CreateInstance(diverterType, ActivatorFlags, null, constructorParams, default);
                 });
         }
         
