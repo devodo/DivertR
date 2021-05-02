@@ -190,6 +190,23 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenProxy_WhenMultipleInsert_ShouldChain()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy(new Foo("hello foo"));
+            var next = _via.Relay.Next;
+
+            // ACT
+            _via
+                .Redirect().To(new FooAlt(() => $"DivertR {next.Message} 1"))
+                .Redirect().To(new FooAlt(() => $"here {next.Message} 2"))
+                .Redirect().WithOrderWeight(-10).To(new FooAlt(() => $"again {next.Message} 3"));
+
+            // ASSERT
+            proxy.Message.ShouldBe("here DivertR again hello foo 3 1 2");
+        }
+        
+        [Fact]
         public void GivenProxy_WhenMultipleInsertRedirects_ShouldChain()
         {
             // ARRANGE

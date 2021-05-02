@@ -6,6 +6,7 @@ namespace DivertR.Internal
     {
         private readonly IVia<TTarget> _via;
         private CompositeCallConstraint<TTarget> _callConstraint = CompositeCallConstraint<TTarget>.Empty;
+        private int _orderWeight = 0;
 
         public RedirectBuilder(IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
         {
@@ -24,6 +25,13 @@ namespace DivertR.Internal
             return this;
         }
 
+        public IRedirectBuilder<TTarget> WithOrderWeight(int orderWeight)
+        {
+            _orderWeight = orderWeight;
+
+            return this;
+        }
+
         public ICallConstraint<TTarget> CallConstraint => _callConstraint;
 
         public IRedirect<TTarget> Build(TTarget target)
@@ -35,7 +43,7 @@ namespace DivertR.Internal
         {
             var redirect = Build(target);
             
-            return _via.InsertRedirect(redirect);
+            return _via.InsertRedirect(redirect, _orderWeight);
         }
     }
 }

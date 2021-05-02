@@ -423,5 +423,21 @@ namespace DivertR.UnitTests
             // ASSERT
             result.ShouldBeSameAs(getFoo);
         }
+        
+        [Fact]
+        public void GivenMultipleRedirectsWithOrderWeights_ShouldChain()
+        {
+            // ARRANGE
+            _via
+                .Redirect(x => x.Message).WithOrderWeight(30).To(() => $"1 {_via.Next.Message} 1")
+                .Redirect(x => x.Message).WithOrderWeight(20).To(() => $"2 {_via.Next.Message} 2")
+                .Redirect(x => x.Message).WithOrderWeight(10).To(() => $"3 {_via.Next.Message} 3");
+            
+            // ACT
+            var result = _via.Proxy(new Foo("hello")).Message;
+
+            // ASSERT
+            result.ShouldBe("1 2 3 hello 3 2 1");
+        }
     }
 }

@@ -6,14 +6,16 @@ namespace DivertR.Internal
     internal abstract class DelegateRedirectBuilder<TTarget> : IDelegateRedirectBuilder<TTarget> where TTarget : class
     {
         private readonly IVia<TTarget> _via;
+        private readonly ParsedCallExpression _parsedCallExpression;
+        
         protected CompositeCallConstraint<TTarget> CompositeCallConstraint;
-        protected readonly ParsedCallExpression ParsedCallExpression;
+        protected int OrderWeight = 0;
 
-        public DelegateRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression)
+        protected DelegateRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression)
         {
             _via = via ?? throw new ArgumentNullException(nameof(via));
-            ParsedCallExpression = parsedCallExpression ?? throw new ArgumentNullException(nameof(parsedCallExpression));
-            CompositeCallConstraint = CompositeCallConstraint<TTarget>.Empty.AddCallConstraint(ParsedCallExpression.ToCallConstraint<TTarget>());
+            _parsedCallExpression = parsedCallExpression ?? throw new ArgumentNullException(nameof(parsedCallExpression));
+            CompositeCallConstraint = CompositeCallConstraint<TTarget>.Empty.AddCallConstraint(_parsedCallExpression.ToCallConstraint<TTarget>());
         }
 
         public ICallConstraint<TTarget> CallConstraint => CompositeCallConstraint;
@@ -23,9 +25,11 @@ namespace DivertR.Internal
             return new TargetRedirect<TTarget>(target, CallConstraint);
         }
 
-        public virtual IRedirect<TTarget> Build(Delegate redirectDelegate)
+        public IRedirect<TTarget> Build(Delegate redirectDelegate)
         {
+            _parsedCallExpression.Validate(redirectDelegate);
             var fastDelegate = redirectDelegate.ToDelegate();
+            
             return new DelegateRedirect<TTarget>(callInfo => fastDelegate.Invoke(callInfo.Arguments.InternalArgs), CallConstraint);
         }
 
@@ -45,7 +49,7 @@ namespace DivertR.Internal
         
         protected IRedirect<TTarget> Build(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
         {
-            ParsedCallExpression.Validate(inputDelegate);
+            _parsedCallExpression.Validate(inputDelegate);
             
             return new DelegateRedirect<TTarget>(mappedRedirect, CallConstraint);
         }
@@ -54,7 +58,7 @@ namespace DivertR.Internal
         {
             var redirect = Build(inputDelegate, mappedRedirect);
 
-            return _via.InsertRedirect(redirect);
+            return _via.InsertRedirect(redirect, OrderWeight);
         }
     }
 }

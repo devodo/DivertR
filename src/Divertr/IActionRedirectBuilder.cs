@@ -5,6 +5,7 @@ namespace DivertR
     public interface IActionRedirectBuilder<TTarget> : IDelegateRedirectBuilder<TTarget> where TTarget : class
     {
         IActionRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
+        IActionRedirectBuilder<TTarget> WithOrderWeight(int orderWeight);
         
         IRedirect<TTarget> Build(Action redirectDelegate);
         IRedirect<TTarget> Build<T1>(Action<T1> redirectDelegate);

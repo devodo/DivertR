@@ -15,12 +15,12 @@ namespace DivertR.Internal
 
             return this;
         }
-        
-        public override IRedirect<TTarget> Build(Delegate redirectDelegate)
-        {
-            ParsedCallExpression.Validate(redirectDelegate);
 
-            return base.Build(redirectDelegate);
+        public IActionRedirectBuilder<TTarget> WithOrderWeight(int orderWeight)
+        {
+            OrderWeight = orderWeight;
+
+            return this;
         }
 
         public IRedirect<TTarget> Build(Action redirectDelegate)

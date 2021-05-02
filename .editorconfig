@@ -1,15 +1,18 @@
-# Rules in this file were initially inferred by Visual Studio IntelliCode from the C:\dev\experiment\Divertr codebase based on best match to current usage at 20/04/2021
+# Rules in this file were initially inferred by Visual Studio IntelliCode
 # You can modify the rules from these initially generated values to suit your own policies
 # You can learn more about editorconfig here: https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
 [*.csproj]
 indent_style = space
-ident_size = 2
+indent_size = 2
+tab_width = 2
 
 [*.cs]
 #Core editorconfig formatting - indentation
 
 #use soft tabs (spaces) for indentation
 indent_style = space
+indent_size = 4
+tab_width = 4
 
 #Formatting - indentation options
 
@@ -127,7 +130,7 @@ dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggest
 #Style - Modifier preferences
 
 #when this rule is set to a list of modifiers, prefer the specified ordering.
-csharp_preferred_modifier_order = public,private,internal,protected,readonly,async,static,override:suggestion
+csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
 
 #Style - Pattern matching
 
