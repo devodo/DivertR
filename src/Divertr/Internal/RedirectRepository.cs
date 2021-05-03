@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -19,17 +18,20 @@ namespace DivertR.Internal
 
         public IRedirect<TTarget>[] InsertRedirect<TTarget>(ViaId viaId, IRedirect<TTarget> redirect, int orderWeight = 0) where TTarget : class
         {
-            RedirectCollection<TTarget> Create()
+            RedirectCollection<TTarget> Create(ViaId _)
             {
                 return RedirectCollection<TTarget>.Empty.InsertRedirect(redirect, orderWeight);
             }
 
-            RedirectCollection<TTarget> Update(RedirectCollection<TTarget> existing)
+            RedirectCollection<TTarget> Update(ViaId _, object existing)
             {
-                return existing.InsertRedirect(redirect, orderWeight);
+                var redirectCollection = (RedirectCollection<TTarget>) existing;
+                return redirectCollection.InsertRedirect(redirect, orderWeight);
             }
+            
+            var result = (RedirectCollection<TTarget>) _viaRedirects.AddOrUpdate(viaId, Create, Update);
 
-            return AddOrUpdate(viaId, Create, Update).Redirects;
+            return result.Redirects;
         }
         
         public bool Reset(ViaId viaId)
@@ -40,24 +42,6 @@ namespace DivertR.Internal
         public void ResetAll()
         {
             _viaRedirects.Clear();
-        }
-
-        private RedirectCollection<TTarget> AddOrUpdate<TTarget>(
-            ViaId viaId,
-            Func<RedirectCollection<TTarget>> addFactory,
-            Func<RedirectCollection<TTarget>, RedirectCollection<TTarget>> updateFactory) where TTarget : class
-        {
-            object Create(ViaId _)
-            {
-                return addFactory.Invoke();
-            }
-
-            object Update(ViaId _, object existing)
-            {
-                return updateFactory((RedirectCollection<TTarget>) existing);
-            }
-
-            return (RedirectCollection<TTarget>) _viaRedirects.AddOrUpdate(viaId, Create, Update);
         }
 
         private class RedirectCollection<TTarget> where TTarget : class
