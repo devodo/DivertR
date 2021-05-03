@@ -9,16 +9,23 @@ namespace DivertR.Internal
         {
         }
         
-        public IActionRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint)
+        public new IActionRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint)
         {
-            CompositeCallConstraint = CompositeCallConstraint.AddCallConstraint(callConstraint);
+            base.AddConstraint(callConstraint);
 
             return this;
         }
 
-        public IActionRedirectBuilder<TTarget> WithOrderWeight(int orderWeight)
+        public new IActionRedirectBuilder<TTarget> WithOrderWeight(int orderWeight)
         {
-            OrderWeight = orderWeight;
+            base.WithOrderWeight(orderWeight);
+
+            return this;
+        }
+        
+        public new IActionRedirectBuilder<TTarget> AddRedirectDecorator(Func<IRedirect<TTarget>, IRedirect<TTarget>> decorator)
+        {
+            base.AddRedirectDecorator(decorator);
 
             return this;
         }

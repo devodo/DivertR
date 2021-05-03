@@ -6,6 +6,7 @@ namespace DivertR
     {
         IActionRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
         IActionRedirectBuilder<TTarget> WithOrderWeight(int orderWeight);
+        IActionRedirectBuilder<TTarget> AddRedirectDecorator(Func<IRedirect<TTarget>, IRedirect<TTarget>> decorator);
         
         IRedirect<TTarget> Build(Action redirectDelegate);
         IRedirect<TTarget> Build<T1>(Action<T1> redirectDelegate);
