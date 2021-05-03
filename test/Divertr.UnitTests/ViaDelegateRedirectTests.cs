@@ -1,3 +1,5 @@
+using System.Linq;
+using DivertR.Redirects;
 using DivertR.UnitTests.Model;
 using Moq;
 using Shouldly;
@@ -438,6 +440,67 @@ namespace DivertR.UnitTests
 
             // ASSERT
             result.ShouldBe("1 2 3 hello 3 2 1");
+        }
+        
+        [Fact]
+        public void GivenRecursConfiguration_ShouldRedirectNumberOfTimes()
+        {
+            // ARRANGE
+            const int Count = 5;
+            var proxy = _via
+                .Redirect(x => x.Message).To("hello")
+                .Redirect(x => x.Message).Recurs(1).To(() => $"{_via.Next.Message} first")
+                .Redirect(x => x.Message).Recurs(Count + 1).To(() => $"{_via.Next.Message} diverted")
+                .Proxy();
+
+            // ACT
+            var results = Enumerable.Range(0, Count + 2).Select(x => proxy.Message).ToList();
+
+            // ASSERT
+            results.First().ShouldBe("hello first diverted");
+            results.Last().ShouldBe("hello");
+            results.Skip(1).Take(Count).ShouldAllBe(x => x == "hello diverted");
+        }
+        
+        [Fact]
+        public void GivenSkipConfiguration_ShouldRedirectAfterNumberOfTimes()
+        {
+            // ARRANGE
+            const int Count = 5;
+            var proxy = _via
+                .Redirect(x => x.Message).To("hello")
+                .Redirect(x => x.Message).Skip(1).To(() => $"{_via.Next.Message} after")
+                .Redirect(x => x.Message).Skip(Count).To(() => $"{_via.Next.Message} diverted")
+                .Proxy();
+
+            // ACT
+            var results = Enumerable.Range(0, Count + 1).Select(x => proxy.Message).ToList();
+
+            // ASSERT
+            results.First().ShouldBe("hello");
+            results.Last().ShouldBe("hello after diverted");
+            results.Skip(1).Take(Count - 1).ShouldAllBe(x => x == "hello after");
+        }
+        
+        [Fact]
+        public void GivenSkipAndRecursConfiguration_ShouldRedirectAfterAndNumberOfTimes()
+        {
+            // ARRANGE
+            const int Count = 5;
+            var proxy = _via
+                .Redirect(x => x.Message).To("hello")
+                .Redirect(x => x.Message).Recurs(1).Skip(1).To(() => $"{_via.Next.Message} after")
+                .Redirect(x => x.Message).Skip(Count).To(() => $"{_via.Next.Message} diverted")
+                .Proxy();
+
+            // ACT
+            var results = Enumerable.Range(0, Count + 1).Select(x => proxy.Message).ToList();
+
+            // ASSERT
+            results.First().ShouldBe("hello");
+            results.Skip(1).First().ShouldBe("hello after");
+            results.Skip(2).Take(Count - 2).ShouldAllBe(x => x == "hello");
+            results.Last().ShouldBe("hello diverted");
         }
     }
 }

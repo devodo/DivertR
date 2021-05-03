@@ -17,14 +17,14 @@ namespace DivertR.Internal
                 : RedirectCollection<TTarget>.Empty.Redirects;
         }
 
-        public IRedirect<T>[] InsertRedirect<T>(ViaId viaId, IRedirect<T> redirect, int orderWeight = 0) where T : class
+        public IRedirect<TTarget>[] InsertRedirect<TTarget>(ViaId viaId, IRedirect<TTarget> redirect, int orderWeight = 0) where TTarget : class
         {
-            RedirectCollection<T> Create()
+            RedirectCollection<TTarget> Create()
             {
-                return RedirectCollection<T>.Empty.InsertRedirect(redirect, orderWeight);
+                return RedirectCollection<TTarget>.Empty.InsertRedirect(redirect, orderWeight);
             }
 
-            RedirectCollection<T> Update(RedirectCollection<T> existing)
+            RedirectCollection<TTarget> Update(RedirectCollection<TTarget> existing)
             {
                 return existing.InsertRedirect(redirect, orderWeight);
             }
@@ -42,10 +42,10 @@ namespace DivertR.Internal
             _viaRedirects.Clear();
         }
 
-        private RedirectCollection<T> AddOrUpdate<T>(
+        private RedirectCollection<TTarget> AddOrUpdate<TTarget>(
             ViaId viaId,
-            Func<RedirectCollection<T>> addFactory,
-            Func<RedirectCollection<T>, RedirectCollection<T>> updateFactory) where T : class
+            Func<RedirectCollection<TTarget>> addFactory,
+            Func<RedirectCollection<TTarget>, RedirectCollection<TTarget>> updateFactory) where TTarget : class
         {
             object Create(ViaId _)
             {
@@ -54,46 +54,46 @@ namespace DivertR.Internal
 
             object Update(ViaId _, object existing)
             {
-                return updateFactory((RedirectCollection<T>) existing);
+                return updateFactory((RedirectCollection<TTarget>) existing);
             }
 
-            return (RedirectCollection<T>) _viaRedirects.AddOrUpdate(viaId, Create, Update);
+            return (RedirectCollection<TTarget>) _viaRedirects.AddOrUpdate(viaId, Create, Update);
         }
 
-        private class RedirectCollection<T> where T : class
+        private class RedirectCollection<TTarget> where TTarget : class
         {
             private readonly int _insertSequence;
-            private readonly ImmutableStack<RedirectItem<T>> _redirectStack;
-            public IRedirect<T>[] Redirects { get; }
+            private readonly ImmutableStack<RedirectItem<TTarget>> _redirectStack;
+            public IRedirect<TTarget>[] Redirects { get; }
 
-            public static readonly RedirectCollection<T> Empty =
-                new RedirectCollection<T>(0, ImmutableStack<RedirectItem<T>>.Empty);
+            public static readonly RedirectCollection<TTarget> Empty =
+                new RedirectCollection<TTarget>(0, ImmutableStack<RedirectItem<TTarget>>.Empty);
 
-            private RedirectCollection(int insertSequence, ImmutableStack<RedirectItem<T>> redirectStack)
+            private RedirectCollection(int insertSequence, ImmutableStack<RedirectItem<TTarget>> redirectStack)
             {
                 _insertSequence = insertSequence;
                 _redirectStack = redirectStack;
                 
                 Redirects = _redirectStack
-                    .OrderByDescending(x => x, RedirectComparer<T>.Instance)
+                    .OrderByDescending(x => x, RedirectComparer<TTarget>.Instance)
                     .Select(x => x.Redirect)
                     .ToArray();
             }
 
-            public RedirectCollection<T> InsertRedirect(IRedirect<T> redirect, int orderWeight)
+            public RedirectCollection<TTarget> InsertRedirect(IRedirect<TTarget> redirect, int orderWeight)
             {
-                var redirectItem = new RedirectItem<T>(redirect, _insertSequence + 1, orderWeight);
-                return new RedirectCollection<T>(redirectItem.InsertSequence, _redirectStack.Push(redirectItem));
+                var redirectItem = new RedirectItem<TTarget>(redirect, _insertSequence + 1, orderWeight);
+                return new RedirectCollection<TTarget>(redirectItem.InsertSequence, _redirectStack.Push(redirectItem));
             }
         }
         
-        private class RedirectItem<T> where T : class
+        private class RedirectItem<TTarget> where TTarget : class
         {
-            public IRedirect<T> Redirect { get; }
+            public IRedirect<TTarget> Redirect { get; }
             public int InsertSequence { get; }
             public int OrderWeight { get; }
 
-            public RedirectItem(IRedirect<T> redirect, int insertSequence, int orderWeight)
+            public RedirectItem(IRedirect<TTarget> redirect, int insertSequence, int orderWeight)
             {
                 Redirect = redirect;
                 InsertSequence = insertSequence;
@@ -101,11 +101,11 @@ namespace DivertR.Internal
             }
         }
 
-        private class RedirectComparer<T> : IComparer<RedirectItem<T>> where T : class
+        private class RedirectComparer<TTarget> : IComparer<RedirectItem<TTarget>> where TTarget : class
         {
-            public static readonly RedirectComparer<T> Instance = new RedirectComparer<T>();
+            public static readonly RedirectComparer<TTarget> Instance = new RedirectComparer<TTarget>();
 
-            public int Compare(RedirectItem<T> x, RedirectItem<T> y)
+            public int Compare(RedirectItem<TTarget> x, RedirectItem<TTarget> y)
             {
                 if (ReferenceEquals(x, y))
                 {

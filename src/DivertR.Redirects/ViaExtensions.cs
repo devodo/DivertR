@@ -1,6 +1,6 @@
 ﻿namespace DivertR.Redirects
 {
-    public static class RecordViaExtensions
+    public static class ViaExtensions
     {
         public static ICallRecord<TTarget> Record<TTarget>(this IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
             where TTarget : class

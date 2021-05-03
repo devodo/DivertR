@@ -6,7 +6,10 @@ namespace DivertR.Internal
     internal class RedirectBuilder<TTarget> : IRedirectBuilder<TTarget> where TTarget : class
     {
         private readonly IVia<TTarget> _via;
-        private readonly List<Func<IRedirect<TTarget>, IRedirect<TTarget>>> _redirectDecorators = new List<Func<IRedirect<TTarget>, IRedirect<TTarget>>>();
+
+        private readonly List<Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>>> _redirectDecorators =
+            new List<Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>>>();
+        
         private CompositeCallConstraint<TTarget> _callConstraint = CompositeCallConstraint<TTarget>.Empty;
 
         public RedirectBuilder(IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
@@ -26,7 +29,7 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IRedirectBuilder<TTarget> AddRedirectDecorator(Func<IRedirect<TTarget>, IRedirect<TTarget>> decorator)
+        public IRedirectBuilder<TTarget> AddRedirectDecorator(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> decorator)
         {
             _redirectDecorators.Add(decorator);
 
@@ -58,7 +61,7 @@ namespace DivertR.Internal
         {
             foreach (var decorator in _redirectDecorators)
             {
-                redirect = decorator.Invoke(redirect);
+                redirect = decorator.Invoke(_via, redirect);
             }
 
             return redirect;

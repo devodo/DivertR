@@ -6,7 +6,7 @@ namespace DivertR
     {
         ICallConstraint<TTarget> CallConstraint { get; }
         IRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
-        IRedirectBuilder<TTarget> AddRedirectDecorator(Func<IRedirect<TTarget>, IRedirect<TTarget>> decorator);
+        IRedirectBuilder<TTarget> AddRedirectDecorator(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> decorator);
         IRedirect<TTarget> Build(TTarget target);
         IVia<TTarget> To(TTarget target, int orderWeight = 0);
     }

@@ -13,9 +13,9 @@ namespace DivertR.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection Divert<T>(this IServiceCollection services, IDiverter diverter, string? name = null) where T : class
+        public static IServiceCollection Divert<TTarget>(this IServiceCollection services, IDiverter diverter, string? name = null) where TTarget : class
         {
-            return services.Divert(diverter, typeof(T), name);
+            return services.Divert(diverter, typeof(TTarget), name);
         }
         
         public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, Type type, string? name = null)
