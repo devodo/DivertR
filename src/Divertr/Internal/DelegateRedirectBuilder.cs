@@ -22,11 +22,11 @@ namespace DivertR.Internal
             return Decorate(redirect);
         }
 
-        public IVia<TTarget> To(Delegate redirectDelegate)
+        public IVia<TTarget> To(Delegate redirectDelegate, int orderWeight = 0)
         {
             var redirect = Build(redirectDelegate);
             
-            return InsertRedirect(redirect);
+            return InsertRedirect(redirect, orderWeight);
         }
         
         protected IRedirect<TTarget> Build(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
@@ -37,11 +37,11 @@ namespace DivertR.Internal
             return Decorate(redirect);
         }
 
-        protected IVia<TTarget> InsertRedirect(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
+        protected IVia<TTarget> InsertRedirect(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect, int orderWeight)
         {
             var redirect = Build(inputDelegate, mappedRedirect);
 
-            return InsertRedirect(redirect);
+            return InsertRedirect(redirect, orderWeight);
         }
     }
 }

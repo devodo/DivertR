@@ -200,7 +200,7 @@ namespace DivertR.UnitTests
             _via
                 .Redirect().To(new FooAlt(() => $"DivertR {next.Message} 1"))
                 .Redirect().To(new FooAlt(() => $"here {next.Message} 2"))
-                .Redirect().WithOrderWeight(-10).To(new FooAlt(() => $"again {next.Message} 3"));
+                .Redirect().To(new FooAlt(() => $"again {next.Message} 3"), -10);
 
             // ASSERT
             proxy.Message.ShouldBe("here DivertR again hello foo 3 1 2");

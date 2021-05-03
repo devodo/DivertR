@@ -429,9 +429,9 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .Redirect(x => x.Message).WithOrderWeight(30).To(() => $"1 {_via.Next.Message} 1")
-                .Redirect(x => x.Message).WithOrderWeight(20).To(() => $"2 {_via.Next.Message} 2")
-                .Redirect(x => x.Message).WithOrderWeight(10).To(() => $"3 {_via.Next.Message} 3");
+                .Redirect(x => x.Message).To(() => $"1 {_via.Next.Message} 1", 30)
+                .Redirect(x => x.Message).To(() => $"2 {_via.Next.Message} 2", 20)
+                .Redirect(x => x.Message).To(() => $"3 {_via.Next.Message} 3", 10);
             
             // ACT
             var result = _via.Proxy(new Foo("hello")).Message;
