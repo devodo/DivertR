@@ -5,12 +5,10 @@ namespace DivertR.Internal
 {
     internal class GenericMethodConstraint : IMethodConstraint
     {
-        private readonly MethodInfo _methodInfo;
         private readonly Type[] _genericTypes;
 
-        public GenericMethodConstraint(MethodInfo methodInfo, Type[] genericTypes)
+        public GenericMethodConstraint(Type[] genericTypes)
         {
-            _methodInfo = methodInfo;
             _genericTypes = genericTypes;
         }
         

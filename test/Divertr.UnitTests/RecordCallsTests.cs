@@ -23,7 +23,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var inputs = Enumerable
-                .Range(0, 20).Select(x => Guid.NewGuid().ToString())
+                .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
                 .ToList();
             
             _via
@@ -46,7 +46,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var inputs = Enumerable
-                .Range(0, 20).Select((i, x) => $"{i}")
+                .Range(0, 20).Select((i, _) => $"{i}")
                 .ToList();
             
             _via

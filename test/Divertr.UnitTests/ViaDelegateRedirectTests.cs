@@ -454,7 +454,7 @@ namespace DivertR.UnitTests
                 .Proxy();
 
             // ACT
-            var results = Enumerable.Range(0, Count + 2).Select(x => proxy.Message).ToList();
+            var results = Enumerable.Range(0, Count + 2).Select(_ => proxy.Message).ToList();
 
             // ASSERT
             results.First().ShouldBe("hello first diverted");
@@ -474,7 +474,7 @@ namespace DivertR.UnitTests
                 .Proxy();
 
             // ACT
-            var results = Enumerable.Range(0, Count + 1).Select(x => proxy.Message).ToList();
+            var results = Enumerable.Range(0, Count + 1).Select(_ => proxy.Message).ToList();
 
             // ASSERT
             results.First().ShouldBe("hello");
@@ -494,7 +494,7 @@ namespace DivertR.UnitTests
                 .Proxy();
 
             // ACT
-            var results = Enumerable.Range(0, Count + 1).Select(x => proxy.Message).ToList();
+            var results = Enumerable.Range(0, Count + 1).Select(_ => proxy.Message).ToList();
 
             // ASSERT
             results.First().ShouldBe("hello");

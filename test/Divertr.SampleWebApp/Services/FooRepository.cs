@@ -23,7 +23,7 @@ namespace DivertR.SampleWebApp.Services
         {
             return FooStore.TryGetValue(id, out var foo) 
                 ? Task.FromResult(foo)
-                : Task.FromResult((Foo)null);
+                : Task.FromResult((Foo) null);
         }
 
         public async Task<bool> TryInsertFoo(Foo foo)

@@ -3,19 +3,12 @@ using System.Threading.Tasks;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace DivertR.UnitTests
 {
     public class RecursiveAsyncTests
     {
-        private readonly ITestOutputHelper _output;
         private readonly IVia<IAsyncNumber> _via = new Via<IAsyncNumber>();
-
-        public RecursiveAsyncTests(ITestOutputHelper output)
-        {
-            _output = output;
-        }
 
         [Fact]
         public async Task TestRecursiveAsync()

@@ -11,7 +11,8 @@ namespace DivertR.UnitTests.Model
         {
             _messageFactory = messageFactory;
         }
-        public ValueTaskFoo(string message) : this( () => new ValueTask<string>(message))
+
+        public ValueTaskFoo(string message) : this(() => new ValueTask<string>(message))
         {
         }
 

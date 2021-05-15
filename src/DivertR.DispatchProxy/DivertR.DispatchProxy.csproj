@@ -1,17 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <LangVersion>8</LangVersion>
-        <Nullable>enable</Nullable>
-        <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-    </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>8</LangVersion>
+    <Nullable>enable</Nullable>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+  </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\DivertR.Core\DivertR.Core.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DivertR.Core\DivertR.Core.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="System.Reflection.DispatchProxy" Version="4.5.0" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Reflection.DispatchProxy" Version="4.5.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+  </ItemGroup>
 
 </Project>

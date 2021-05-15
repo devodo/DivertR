@@ -111,7 +111,7 @@ namespace DivertR.Internal
 
             var genericArguments = methodInfo.GetGenericArguments();
 
-            return new GenericMethodConstraint(methodInfo, genericArguments);
+            return new GenericMethodConstraint(genericArguments);
         }
     }
 }

@@ -194,9 +194,9 @@ namespace DivertR.UnitTests
             int input = 5;
             via
                 .Redirect(x => x.RefNumber(ref input))
-                .To(new RefCall((ref int i2) =>
+                .To(new RefCall((ref int i) =>
                 {
-                    i2 = 50;
+                    i = 50;
                 }));
 
             // ACT
