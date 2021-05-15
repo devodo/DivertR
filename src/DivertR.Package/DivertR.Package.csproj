@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Title>DivertR</Title>
     <Authors>David Naylor</Authors>
-    <Description>The Dependency Injection Diverter</Description>
+    <Description>.NET Dependency Injection Diversion</Description>
     <Copyright>MIT Copyright (c) David Naylor</Copyright>
     <PackageProjectUrl>https://github.com/devodo/DivertR</PackageProjectUrl>
     <PackageTags>test testing divert diverter diversion redirect intercept substitute proxy di dependency injection spy relay via</PackageTags>

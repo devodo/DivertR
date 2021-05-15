@@ -1,6 +1,6 @@
 # DivertR
 
-The .NET Dependency Injection Diverter
+.NET Dependency Injection Diversion
 
 DivertR is a tool that facilitates an integrated, *sociable* approach to testing by making it easy to hotswap
 test code in and out at the dependency injection layer.
