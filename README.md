@@ -2,7 +2,7 @@
 
 .NET Dependency Injection Diversion
 
-DivertR is a tool that facilitates an integrated, *sociable* approach to testing by making it easy to hotswap
+DivertR is a tool that facilitates an integrated approach to testing by making it easy to hotswap
 test code in and out at the dependency injection layer.
 
 With DivertR you can modify your dependency injection services at runtime by replacing them with configurable proxies.
@@ -19,14 +19,17 @@ Given an `IFoo` interface and a `Foo` implementation:
 ```csharp
 public interface IFoo
 {
-    string GetMessage(string input);
+    public string Name { get; set; }
+    string Echo(string input);
 }
 
 public class Foo : IFoo
 {
-    public string GetMessage(string input)
+    public string Name { get; set; } = "original";
+    
+    public string Echo(string input)
     {
-        return $"{input} original";
+        return $"{Name}: {input}";
     }
 }
 ```
@@ -51,8 +54,9 @@ The `IServiceCollection` can now be used as usual to build the service provider 
 ```csharp
 IServiceProvider provider = services.BuildServiceProvider();
 IFoo foo = provider.GetService<IFoo>();
+foo.Name = "Foo1"
 
-Console.WriteLine(foo.GetMessage("Hello")); // "Hello original"
+Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello"
 ```
 
 ### Redirect
@@ -62,10 +66,10 @@ a DivertR entity called a `Via` to configure a *redirect*:
 ```csharp
 IVia<IFoo> fooVia = diverter.Via<IFoo>();
 fooVia
-    .Redirect(x => x.GetMessage(Is<string>.Any)) // (1)
+    .Redirect(x => x.Echo(Is<string>.Any)) // (1)
     .To((string input) => $"{input} DivertR");   // (2)
   
-Console.WriteLine(foo.GetMessage("Hello")); // "Hello DivertR"
+Console.WriteLine(foo.Echo("Hello")); // "Hello DivertR"
 ```
 
 The `Via` intercepts calls to the resolved `IFoo` instances.
@@ -76,7 +80,9 @@ The redirect is applied to all existing and future resolved `IFoo` instances:
 
 ```csharp
 IFoo foo2 = provider.GetService<IFoo>();
-Console.WriteLine(foo2.GetMessage("Foo2")); // "Foo2 DivertR"
+foo2.Name = "Foo2";
+
+Console.WriteLine(foo2.Echo("Hello")); // "Hello DivertR"
 ```
 
 ### Reset
@@ -86,8 +92,8 @@ To reset resolved instances back to their original behaviour simply discard all 
 ```csharp
 fooVia.Reset();
   
-Console.WriteLine(foo.GetMessage("Hello")); // "Hello original"
-Console.WriteLine(foo2.GetMessage("Foo2")); // "Foo2 original"
+Console.WriteLine(foo.Echo("Hello"));  // "Foo1: Hello"
+Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello"
 ```
 
 So far we have only been working with a single `Via` instance, i.e. `IVia<IFoo>` bound to the `IFoo` registration type.
@@ -106,22 +112,23 @@ by providing the `Relay.Next` property that can be called from the body of the r
 ```csharp
 IFoo next = fooVia.Relay.Next;
 fooVia
-    .Redirect(x => x.GetMessage(Is<string>.Any))
+    .Redirect(x => x.Echo(Is<string>.Any))
     .To((string input) =>
     {
         // run test code before
         // ...
 
         // call original instance
-        var message = next.GetMessage(input);
+        var message = next.Echo(input);
     
         // run test code after
         // ...
     
-        return $"Redirected: {message}";
+        return $"{message} - Redirected";
     });
   
-Console.WriteLine(foo.GetMessage("Hello")); // "Redirected: Hello original"
+Console.WriteLine(foo.Echo("Hello"));  // "Foo1: Hello  - Redirected"
+Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello  - Redirected"
 ```
 
 > The `Relay.Next` property is a proxy that the `Via` connects to the current intercepted call.
@@ -136,14 +143,15 @@ This includes, for example, Mock objects:
 ```csharp
 var mock = new Mock<IFoo>();
 mock
-    .Setup(x => x.GetMessage(It.IsAny<string>()))
-    .Returns((string input) => $"Mocked: {next.GetMessage(input)}");
+    .Setup(x => x.Echo(It.IsAny<string>()))
+    .Returns((string input) => $"{next.Echo(input)} - Mocked");
 
 fooVia
     .Redirect() // No parameter defaults to match all calls
     .To(mock.Object);
 
-Console.WriteLine(foo.GetMessage("Hello")); // Mocked: Redirected: Hello original
+Console.WriteLine(foo.Echo("Hello"));  // "Foo1: Hello - Redirected - Mocked"
+Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Redirected - Mocked"
 ```
 
 Note the Mock also calls the `Relay.Next` property. However, it does not relay to the original registration as before.
@@ -170,10 +178,11 @@ skipping over any remaining redirects.
 ```csharp
 IFoo original = fooVia.Relay.Original;
 fooVia
-    .Redirect(x => x.GetMessage(Is<string>.Any))
-    .To((string input) => $"Skipped: {original.GetMessage(input)}");
+    .Redirect(x => x.Echo(Is<string>.Any))
+    .To((string input) => $"{original.Echo(input)} - Skipped");
   
-Console.WriteLine(foo.GetMessage("Hello")); // "Skipped: Hello original"
+Console.WriteLine(foo.Echo("Hello"));  // "Foo1: Hello - Skipped"
+Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Skipped"
 ```
 
 > Similar to the `Relay.Next` property, `Relay.Original` is a proxy interface that relays to the original instance
@@ -194,22 +203,24 @@ Task and ValueTask async calls are supported, e.g. if `IFoo` is extended to incl
 ```csharp
 public interface IFoo
 {
-    Task<string> GetMessageAsync(string input);
+    Task<string> EchoAsync(string input);
 }
 
 public class Foo : IFoo
 {
-    public async Task<string> GetMessageAsync(string input)
+    public async Task<string> EchoAsync(string input)
     {
         await Task.Yield();
-        return $"{input} async";
+        return $"{Name}: {input}";
     }
 }
 
-fooVia
-    .Reset() // Discard all previous redirects
-    .Redirect(x => x.GetMessageAsync(Is<string>.Any))
-    .To(async (string input) => $"Redirected: {await next.GetMessageAsync(input)}");
+diverter.ResetAll(); // Discard all previous redirects
 
-Console.WriteLine(await foo.GetMessageAsync("Hello")); // "Redirected: Hello async"
+fooVia
+    .Redirect(x => x.EchoAsync(Is<string>.Any))
+    .To(async (string input) => $"{await next.EchoAsync(input)} - Async");
+
+Console.WriteLine(await foo.EchoAsync("Hello"));  // "Foo1: Hello - Async"
+Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello - Async"
 ```
