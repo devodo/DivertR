@@ -28,10 +28,10 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
             
             // ACT
-            var message = proxy.Message;
+            var message = proxy.Name;
             
             // ASSERT
-            message.ShouldBe(original.Message);
+            message.ShouldBe(original.Name);
         }
         
         [Fact]
@@ -45,7 +45,7 @@ namespace DivertR.UnitTests
             _via.RedirectTo(foo);
 
             // ASSERT
-            proxy.Message.ShouldBe(foo.Message);
+            proxy.Name.ShouldBe(foo.Name);
         }
         
         [Fact]
@@ -55,10 +55,10 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new Foo("hello foo"));
 
             // ACT
-            _via.Redirect(x => x.Message).To(() => _via.Next.Message + " bar");
+            _via.Redirect(x => x.Name).To(() => _via.Next.Name + " bar");
 
             // ASSERT
-            proxy.Message.ShouldBe("hello foo bar");
+            proxy.Name.ShouldBe("hello foo bar");
         }
     }
 }

@@ -18,7 +18,7 @@ namespace DivertR.UnitTests
         private readonly Via<INumberIn> _via = new(DiverterSettings);
 
         [Fact]
-        public void GivenInRedirect_ShouldDivert()
+        public void GivenInRedirect_ShouldRedirect()
         {
             // ARRANGE
             _via
@@ -36,7 +36,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenInRedirect_WhenParamValueMatches_ShouldDivert()
+        public void GivenInRedirect_WhenParamValueMatches_ShouldRedirect()
         {
             // ARRANGE
             const int input = 3;

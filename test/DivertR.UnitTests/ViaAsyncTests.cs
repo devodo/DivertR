@@ -16,29 +16,29 @@ namespace DivertR.UnitTests
         public async Task GivenProxy_ShouldDefaultToOriginal()
         {
             // ARRANGE
-            var original = new Foo("hello foo");
+            var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             
             // ACT
-            var message = await proxy.GetMessageAsync();
+            var name = await proxy.GetNameAsync();
             
             // ASSERT
-            message.ShouldBe(original.Message);
+            name.ShouldBe(original.Name);
         }
         
         [Fact]
         public async Task GivenRedirect_ShouldDivert()
         {
             // ARRANGE
-            var proxy = _via.Proxy(new Foo("hello foo"));
-            var foo = new Foo("hi DivertR");
+            var proxy = _via.Proxy(new Foo("foo"));
+            var foo = new Foo("DivertR");
             _via.RedirectTo(foo);
 
             // ACT
-            var message = await proxy.GetMessageAsync();
+            var name = await proxy.GetNameAsync();
 
             // ASSERT
-            message.ShouldBe(foo.Message);
+            name.ShouldBe(foo.Name);
         }
 
         [Fact]
@@ -48,14 +48,14 @@ namespace DivertR.UnitTests
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             _via
-                .Redirect(x => x.GetMessageAsync())
-                .To(async () => $"hello {await _via.Relay.Original.GetMessageAsync()}");
+                .Redirect(x => x.GetNameAsync())
+                .To(async () => $"Diverted {await _via.Relay.Original.GetNameAsync()}");
 
             // ACT
-            var message = await proxy.GetMessageAsync();
+            var name = await proxy.GetNameAsync();
 
             // ASSERT
-            message.ShouldBe("hello foo");
+            name.ShouldBe("Diverted foo");
         }
         
         [Fact]
@@ -65,14 +65,14 @@ namespace DivertR.UnitTests
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             _via
-                .Redirect(x => x.GetMessageAsync())
-                .To(async () => $"hello {await _via.Relay.Next.GetMessageAsync()}");
+                .Redirect(x => x.GetNameAsync())
+                .To(async () => $"Diverted {await _via.Relay.Next.GetNameAsync()}");
 
             // ACT
-            var message = await proxy.GetMessageAsync();
+            var name = await proxy.GetNameAsync();
 
             // ASSERT
-            message.ShouldBe("hello foo");
+            name.ShouldBe("Diverted foo");
         }
         
         [Fact]
@@ -83,18 +83,18 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
             IFoo originalReference = null;
             _via
-                .Redirect(x => x.GetMessageAsync())
+                .Redirect(x => x.GetNameAsync())
                 .To(async () =>
                 {
                     originalReference = _via.Relay.CallInfo.Original;
-                    return $"hello {await originalReference!.GetMessageAsync()}";
+                    return $"hello {await originalReference!.GetNameAsync()}";
                 });
 
             // ACT
-            var message = await proxy.GetMessageAsync();
+            var name = await proxy.GetNameAsync();
 
             // ASSERT
-            message.ShouldBe("hello foo");
+            name.ShouldBe("hello foo");
             originalReference.ShouldBeSameAs(original);
         }
         
@@ -107,17 +107,17 @@ namespace DivertR.UnitTests
                 .ToList();
 
             _via
-                .Redirect(x => x.GetMessageAsync())
-                .To(async () => $"diverted {await _via.Relay.Original.GetMessageAsync()}");
+                .Redirect(x => x.GetNameAsync())
+                .To(async () => $"diverted {await _via.Relay.Original.GetNameAsync()}");
 
             // ACT
-            var messages = proxies.Select(p => p.GetMessageAsync()).ToList();
+            var names = proxies.Select(p => p.GetNameAsync()).ToList();
 
             // ASSERT
-            for (var i = 0; i < messages.Count; i++)
+            for (var i = 0; i < names.Count; i++)
             {
-                var message = await messages[i];
-                message.ShouldBe($"diverted foo{i}");
+                var name = await names[i];
+                name.ShouldBe($"diverted foo{i}");
             }
         }
         
@@ -130,17 +130,17 @@ namespace DivertR.UnitTests
                 .ToList();
 
             _via
-                .Redirect(x => x.GetMessageAsync())
-                .To(async () => $"diverted {await _via.Relay.Next.GetMessageAsync()}");
+                .Redirect(x => x.GetNameAsync())
+                .To(async () => $"diverted {await _via.Relay.Next.GetNameAsync()}");
 
             // ACT
-            var messages = proxies.Select(p => p.GetMessageAsync()).ToList();
+            var names = proxies.Select(p => p.GetNameAsync()).ToList();
 
             // ASSERT
-            for (var i = 0; i < messages.Count; i++)
+            for (var i = 0; i < names.Count; i++)
             {
-                var message = await messages[i];
-                message.ShouldBe($"diverted foo{i}");
+                var name = await names[i];
+                name.ShouldBe($"diverted foo{i}");
             }
         }
         
@@ -153,16 +153,16 @@ namespace DivertR.UnitTests
             
             var mock = new Mock<IFoo>();
             mock
-                .Setup(x => x.GetMessageAsync())
-                .Returns(async () => $"{await _via.Relay.Original.GetMessageAsync()} world");
+                .Setup(x => x.GetNameAsync())
+                .Returns(async () => $"{await _via.Relay.Original.GetNameAsync()} world");
 
             _via.RedirectTo(mock.Object);
 
             // ACT
-            var message = await proxy.GetMessageAsync();
+            var name = await proxy.GetNameAsync();
 
             // ASSERT
-            message.ShouldBe("hello world");
+            name.ShouldBe("hello world");
         }
 
         [Fact]
@@ -171,15 +171,15 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
             var next = _via.Relay.Next;
-            _via.Redirect(x => x.GetMessageAsync()).To(async () => $"again {await next.GetMessageAsync()} 3")
-                .Redirect(x => x.GetMessageAsync()).To(async () => $"here {await next.GetMessageAsync()} 2")
-                .Redirect(x => x.GetMessageAsync()).To(async () => $"DivertR {await next.GetMessageAsync()} 1");
+            _via.Redirect(x => x.GetNameAsync()).To(async () => $"again {await next.GetNameAsync()} 3")
+                .Redirect(x => x.GetNameAsync()).To(async () => $"here {await next.GetNameAsync()} 2")
+                .Redirect(x => x.GetNameAsync()).To(async () => $"DivertR {await next.GetNameAsync()} 1");
 
             // ACT
-            var message = await proxy.GetMessageAsync();
+            var name = await proxy.GetNameAsync();
             
             // ASSERT
-            message.ShouldBe("DivertR here again hello foo 3 2 1");
+            name.ShouldBe("DivertR here again hello foo 3 2 1");
         }
 
         [Fact]
@@ -194,16 +194,16 @@ namespace DivertR.UnitTests
             for (var i = 0; i < numRedirects; i++)
             {
                 var counter = i;
-                _via.Redirect(x => x.GetMessageAsync())
-                    .To(async () => $"{await orig.GetMessageAsync()} {counter} {await next.GetMessageAsync()}");
+                _via.Redirect(x => x.GetNameAsync())
+                    .To(async () => $"{await orig.GetNameAsync()} {counter} {await next.GetNameAsync()}");
             }
 
             // ACT
-            var message = await proxy.GetMessageAsync();
+            var name = await proxy.GetNameAsync();
             
             // ASSERT
             var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Select(i => $"{i}").Reverse());
-            message.ShouldBe($"foo {join} foo");
+            name.ShouldBe($"foo {join} foo");
         }
         
         [Fact]
@@ -221,23 +221,23 @@ namespace DivertR.UnitTests
 
                 if (decrement > 0)
                 {
-                    return $"[{decrement}{await next.GetMessageAsync()} {await proxy.GetMessageAsync()} {await orig.GetMessageAsync()}{decrement}]";
+                    return $"[{decrement}{await next.GetNameAsync()} {await proxy.GetNameAsync()} {await orig.GetNameAsync()}{decrement}]";
                 }
 
-                return await next.GetMessageAsync();
+                return await next.GetNameAsync();
             }
 
             _via
-                .Redirect(x => x.GetMessageAsync())
+                .Redirect(x => x.GetNameAsync())
                 .To(async () =>
-                    (await next.GetMessageAsync()).Replace(await orig.GetMessageAsync(), "bar"))
-                .Redirect(x => x.GetMessageAsync()).To(Recursive);
+                    (await next.GetNameAsync()).Replace(await orig.GetNameAsync(), "bar"))
+                .Redirect(x => x.GetNameAsync()).To(Recursive);
 
             // ACT
-            var message = await proxy.GetMessageAsync();
+            var name = await proxy.GetNameAsync();
             
             // ASSERT
-            message.ShouldBe("[3bar [2bar [1bar bar foo1] foo2] foo3]");
+            name.ShouldBe("[3bar [2bar [1bar bar foo1] foo2] foo3]");
         }
         
         [Fact]
@@ -248,19 +248,19 @@ namespace DivertR.UnitTests
 
             async Task<string> WriteMessage(int num)
             {
-                return $"{num} {await _via.Relay.Next.GetMessageAsync()} {num}";
+                return $"{num} {await _via.Relay.Next.GetNameAsync()} {num}";
             }
 
             _via
-                .InsertRedirect(_via.Redirect(x => x.GetMessageAsync()).Build(() => WriteMessage(1)), 30)
-                .InsertRedirect(_via.Redirect(x => x.GetMessageAsync()).Build(() => WriteMessage(2)), 20)
-                .InsertRedirect(_via.Redirect(x => x.GetMessageAsync()).Build(() => WriteMessage(3)), 10);
+                .InsertRedirect(_via.Redirect(x => x.GetNameAsync()).Build(() => WriteMessage(1)), 30)
+                .InsertRedirect(_via.Redirect(x => x.GetNameAsync()).Build(() => WriteMessage(2)), 20)
+                .InsertRedirect(_via.Redirect(x => x.GetNameAsync()).Build(() => WriteMessage(3)), 10);
 
             // ACT
-            var message = await proxy.GetMessageAsync();
+            var name = await proxy.GetNameAsync();
             
             // ASSERT
-            message.ShouldBe("1 2 3 foo 3 2 1");
+            name.ShouldBe("1 2 3 foo 3 2 1");
         }
     }
 }

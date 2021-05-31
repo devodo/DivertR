@@ -8,22 +8,22 @@ namespace DivertR.DemoApp
 {
     public interface IFoo
     {
-        string GetMessage(string input);
-        Task<string> GetMessageAsync(string input);
+        string Echo(string input);
+        Task<string> EchoAsync(string input);
         public string Name { get; set; }
     }
 
     public class Foo : IFoo
     {
-        public string GetMessage(string input)
+        public string Echo(string input)
         {
-            return $"{input} {Name}";
+            return $"{Name}: {input}";
         }
         
-        public async Task<string> GetMessageAsync(string input)
+        public async Task<string> EchoAsync(string input)
         {
             await Task.Yield();
-            return $"{input} async";
+            return $"{Name}: {input}";
         }
 
         public string Name { get; set; } = "original";
@@ -41,67 +41,81 @@ namespace DivertR.DemoApp
             
             IServiceProvider provider = services.BuildServiceProvider();
             IFoo foo = provider.GetRequiredService<IFoo>();
+            foo.Name = "Foo1";
 
-            Console.WriteLine(foo.GetMessage("Hello")); // "Hello original"
+            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello"
             
             IVia<IFoo> fooVia = diverter.Via<IFoo>();
             fooVia
-                .Redirect(x => x.GetMessage(Is<string>.Any))
+                .Redirect(x => x.Echo(Is<string>.Any))
                 .To((string input) => $"{input} DivertR");
   
-            Console.WriteLine(foo.GetMessage("Hello")); // "Hello DivertR"
+            Console.WriteLine(foo.Echo("Hello")); // "Hello DivertR"
             
             IFoo foo2 = provider.GetRequiredService<IFoo>();
-            Console.WriteLine(foo2.GetMessage("Foo2")); // "Foo2 DivertR"
+            foo2.Name = "Foo2";
+            Console.WriteLine(foo2.Echo("Hello")); // "Hello DivertR"
 
             fooVia.Reset();
   
-            Console.WriteLine(foo.GetMessage("Hello")); // "Hello original"
-            Console.WriteLine(foo2.GetMessage("Foo2")); // "Foo2 original"
+            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello"
+            Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello"
             
             IFoo next = fooVia.Relay.Next;
             fooVia
-                .Redirect(x => x.GetMessage(Is<string>.Any))
+                .Redirect(x => x.Echo(Is<string>.Any))
                 .To((string input) =>
                 {
                     // run test code before
                     // ...
 
                     // call original instance
-                    var message = next.GetMessage(input);
+                    var message = next.Echo(input);
     
                     // run test code after
                     // ...
     
-                    return $"Redirected: {message}";
+                    return $"{message} - Redirected";
                 });
   
-            Console.WriteLine(foo.GetMessage("Hello")); // "Redirected: Hello original"
+            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Redirected"
+            Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Redirected"
             
             var mock = new Mock<IFoo>();
             mock
-                .Setup(x => x.GetMessage(It.IsAny<string>()))
-                .Returns((string input) => $"Mocked: {next.GetMessage(input)}");
+                .Setup(x => x.Echo(It.IsAny<string>()))
+                .Returns((string input) => $"{next.Echo(input)} - Mocked");
 
             fooVia
                 .Redirect() // Default matches all calls
                 .To(mock.Object);
     
-            Console.WriteLine(foo.GetMessage("Hello")); // Mocked: Redirected: Hello original
+            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Redirected - Mocked"
+            Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Redirected - Mocked"
+            
+            fooVia
+                .Reset()
+                .RedirectTo(mock.Object);
+            
+            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Mocked"
+            Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Mocked"
             
             IFoo original = fooVia.Relay.Original;
             fooVia
-                .Redirect(x => x.GetMessage(Is<string>.Any))
-                .To((string input) => $"Skipped: {original.GetMessage(input)}");
+                .Redirect(x => x.Echo(Is<string>.Any))
+                .To((string input) => $"{original.Echo(input)} - Skipped");
   
-            Console.WriteLine(foo.GetMessage("Hello")); // "Skipped: Hello original"
+            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Skipped"
+            Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Skipped"
+
+            diverter.ResetAll();
 
             fooVia
-                .Reset()
-                .Redirect(x => x.GetMessageAsync(Is<string>.Any))
-                .To(async (string input) => $"Redirected: {await next.GetMessageAsync(input)}");
+                .Redirect(x => x.EchoAsync(Is<string>.Any))
+                .To(async (string input) => $"{await next.EchoAsync(input)} - Async");
             
-            Console.WriteLine(await foo.GetMessageAsync("Hello")); // "Redirected: Hello async"
+            Console.WriteLine(await foo.EchoAsync("Hello")); // "Foo1: Hello - Async"
+            Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello - Async"
         }
     }
 }

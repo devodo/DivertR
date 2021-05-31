@@ -21,13 +21,13 @@ namespace DivertR.UnitTests.Model
             _messageFactory = messageFactory;
         }
 
-        public virtual string Message
+        public virtual string Name
         {
             get => _messageFactory.Invoke();
             set => _messageFactory = () => value;
         }
 
-        public async Task<string> GetMessageAsync()
+        public async Task<string> GetNameAsync()
         {
             await Task.Yield();
             return _messageFactory.Invoke();
@@ -38,9 +38,9 @@ namespace DivertR.UnitTests.Model
             return input;
         }
 
-        public T EchoGeneric<T>(T input)
+        public string EchoGeneric<T>(T input)
         {
-            return input;
+            return $"{input}";
         }
 
         public async Task<string> EchoAsync(string input)
@@ -55,7 +55,7 @@ namespace DivertR.UnitTests.Model
             return input;
         }
 
-        public string SetMessage(Wrapper<string> input)
+        public string SetName(Wrapper<string> input)
         {
             _messageFactory = () => input.Item;
 

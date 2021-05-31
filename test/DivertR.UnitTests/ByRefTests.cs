@@ -66,7 +66,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRefParameterTargetRedirect_ShouldDivert()
+        public void GivenRefParameterTargetRedirect_ShouldRedirect()
         {
             // ARRANGE
             var test = new Number(x => x * 2);
@@ -144,7 +144,7 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public void GivenRefArrayParameterTargetRedirect_ShouldDivert()
+        public void GivenRefArrayParameterTargetRedirect_ShouldRedirect()
         {
             // ARRANGE
             var test = new Number(x => x * 2);
@@ -187,7 +187,7 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public void GivenRefDelegate_ShouldDivert()
+        public void GivenRefDelegate_ShouldRedirect()
         {
             // ARRANGE
             var via = new Via<INumber>();
@@ -209,7 +209,7 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public void GivenRefParameter_WhenParameterlessDelegateRedirect_ShouldDivert()
+        public void GivenRefParameter_WhenParameterlessDelegateRedirect_ShouldRedirect()
         {
             // ARRANGE
             var via = new Via<INumber>();
