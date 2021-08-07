@@ -198,7 +198,7 @@ This is discouraged and is prone to unintuitive behaviour as only virtual or abs
 
 ### Async support
 
-Task and ValueTask async calls are supported, e.g. if `IFoo` is extended to include an async method:
+Task and ValueTask async calls are fully supported, e.g. if `IFoo` is extended to include an async method:
 
 ```csharp
 public interface IFoo
