@@ -2,10 +2,10 @@
 {
     public static class ViaExtensions
     {
-        public static ICallRecord<TTarget> Record<TTarget>(this IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
+        public static ICallStream<TTarget> Record<TTarget>(this IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
             where TTarget : class
         {
-            var recorderRedirect = new CallRecorderRedirect<TTarget>(via);
+            var recorderRedirect = new RecordRedirect<TTarget>(via);
             via.InsertRedirect(recorderRedirect, int.MaxValue);
 
             return recorderRedirect;

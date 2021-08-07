@@ -22,7 +22,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .Redirect(x => x.GetNumber(in Is<int>.AnyRef))
+                .When(x => x.GetNumber(in Is<int>.AnyRef))
                 .To(new InCall((in int i) => _via.Next.GetNumber(i) + 10));
             
             var viaProxy = _via.Proxy(new NumberIn());
@@ -42,7 +42,7 @@ namespace DivertR.UnitTests
             const int input = 3;
             int inParam = input;
             _via
-                .Redirect(x => x.GetNumber(in inParam))
+                .When(x => x.GetNumber(in inParam))
                 .To(new InCall((in int i) => _via.Next.GetNumber(i) + 10));
             
             var viaProxy = _via.Proxy(new NumberIn());
@@ -61,7 +61,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             int inParam = 4;
             _via
-                .Redirect(x => x.GetNumber(in inParam))
+                .When(x => x.GetNumber(in inParam))
                 .To(new InCall((in int i) => _via.Next.GetNumber(i) + 10));
             
             var viaProxy = _via.Proxy(new NumberIn());

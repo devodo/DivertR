@@ -80,58 +80,58 @@ namespace DivertR.Internal
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6], (T8) callInfo.Arguments[7]));
         }
 
-        public IVia<TTarget> To(TReturn instance, int orderWeight = 0)
+        public IVia<TTarget> Redirect(TReturn instance, int orderWeight = 0)
         {
-            return To(() => instance, orderWeight);
+            return Redirect(() => instance, orderWeight);
         }
 
-        public IVia<TTarget> To(Func<TReturn> redirectDelegate, int orderWeight = 0)
+        public IVia<TTarget> Redirect(Func<TReturn> redirectDelegate, int orderWeight = 0)
         {
             return InsertRedirect(redirectDelegate, callInfo => redirectDelegate.Invoke(), orderWeight);
         }
 
-        public IVia<TTarget> To<T1>(Func<T1, TReturn> redirectDelegate, int orderWeight = 0)
+        public IVia<TTarget> Redirect<T1>(Func<T1, TReturn> redirectDelegate, int orderWeight = 0)
         {
             return InsertRedirect(redirectDelegate, callInfo => redirectDelegate.Invoke((T1) callInfo.Arguments[0]), orderWeight);
         }
 
-        public IVia<TTarget> To<T1, T2>(Func<T1, T2, TReturn> redirectDelegate, int orderWeight = 0)
+        public IVia<TTarget> Redirect<T1, T2>(Func<T1, T2, TReturn> redirectDelegate, int orderWeight = 0)
         {
             return InsertRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1]), orderWeight);
         }
 
-        public IVia<TTarget> To<T1, T2, T3>(Func<T1, T2, T3, TReturn> redirectDelegate, int orderWeight = 0)
+        public IVia<TTarget> Redirect<T1, T2, T3>(Func<T1, T2, T3, TReturn> redirectDelegate, int orderWeight = 0)
         {
             return InsertRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2]), orderWeight);
         }
 
-        public IVia<TTarget> To<T1, T2, T3, T4>(Func<T1, T2, T3, T4, TReturn> redirectDelegate, int orderWeight = 0)
+        public IVia<TTarget> Redirect<T1, T2, T3, T4>(Func<T1, T2, T3, T4, TReturn> redirectDelegate, int orderWeight = 0)
         {
             return InsertRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3]), orderWeight);
         }
 
-        public IVia<TTarget> To<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, TReturn> redirectDelegate, int orderWeight = 0)
+        public IVia<TTarget> Redirect<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, TReturn> redirectDelegate, int orderWeight = 0)
         {
             return InsertRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4]), orderWeight);
         }
 
-        public IVia<TTarget> To<T1, T2, T3, T4, T5, T6>(Func<T1, T2, T3, T4, T5, T6, TReturn> redirectDelegate, int orderWeight = 0)
+        public IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6>(Func<T1, T2, T3, T4, T5, T6, TReturn> redirectDelegate, int orderWeight = 0)
         {
             return InsertRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5]), orderWeight);
         }
 
-        public IVia<TTarget> To<T1, T2, T3, T4, T5, T6, T7>(Func<T1, T2, T3, T4, T5, T6, T7, TReturn> redirectDelegate, int orderWeight = 0)
+        public IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6, T7>(Func<T1, T2, T3, T4, T5, T6, T7, TReturn> redirectDelegate, int orderWeight = 0)
         {
             return InsertRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6]), orderWeight);
         }
 
-        public IVia<TTarget> To<T1, T2, T3, T4, T5, T6, T7, T8>(Func<T1, T2, T3, T4, T5, T6, T7, T8, TReturn> redirectDelegate, int orderWeight = 0)
+        public IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6, T7, T8>(Func<T1, T2, T3, T4, T5, T6, T7, T8, TReturn> redirectDelegate, int orderWeight = 0)
         {
             return InsertRedirect(redirectDelegate, callInfo =>
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6], (T8) callInfo.Arguments[7]), orderWeight);

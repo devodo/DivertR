@@ -30,7 +30,7 @@ namespace DivertR.UnitTests
         private delegate void OutCall(int input, out int output);
 
         private readonly Via<INumber> _via;
-        private readonly ICallRecord<INumber> _callRecord;
+        private readonly ICallStream<INumber> _callStream;
 
         public ByRefTests() : this(new Via<INumber>())
         {
@@ -39,7 +39,7 @@ namespace DivertR.UnitTests
         protected ByRefTests(Via<INumber> via)
         {
             _via = via;
-            _callRecord = _via.Record();
+            _callStream = _via.Record();
         }
         
         [Fact]
@@ -47,7 +47,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .Redirect(x => x.RefNumber(ref Is<int>.AnyRef))
+                .When(x => x.RefNumber(ref Is<int>.AnyRef))
                 .To(new RefCall((ref int i) =>
                 {
                     _via.Next.RefNumber(ref i);
@@ -70,7 +70,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var test = new Number(x => x * 2);
-            _via.RedirectTo(test);
+            _via.Redirect(test);
 
             // ACT
             int input = 5;
@@ -86,7 +86,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .Redirect(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
+                .When(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
                 .To(new OutCall((int i, out int o) =>
                 {
                     _via.Next.OutNumber(i, out o);
@@ -108,7 +108,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var test = new Number(x => x * 2);
-            _via.RedirectTo(test);
+            _via.Redirect(test);
             
             var viaProxy = _via.Proxy(new Number());
             
@@ -124,7 +124,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .Redirect(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
+                .When(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
                 .To(new OutCall((int i, out int o) =>
                 {
                     _via.Next.OutNumber(i, out o);
@@ -139,8 +139,8 @@ namespace DivertR.UnitTests
 
             // ASSERT
             output.ShouldBe(13);
-            _callRecord.Count.ShouldBe(1);
-            _callRecord.First().CallInfo.Arguments[0].ShouldBe(3);
+            _callStream.Count.ShouldBe(1);
+            _callStream.First().CallInfo.Arguments[0].ShouldBe(3);
         }
 
         [Fact]
@@ -148,7 +148,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var test = new Number(x => x * 2);
-            _via.RedirectTo(test);
+            _via.Redirect(test);
 
             // ACT
             int[] inputOriginal = {5, 8};
@@ -165,7 +165,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .Redirect(x => x.RefArrayNumber(ref Is<int[]>.AnyRef))
+                .When(x => x.RefArrayNumber(ref Is<int[]>.AnyRef))
                 .To(new RefArrayCall((ref int[] inRef) =>
                 {
                     _via.Next.RefArrayNumber(ref inRef);
@@ -193,7 +193,7 @@ namespace DivertR.UnitTests
             var via = new Via<INumber>();
             int input = 5;
             via
-                .Redirect(x => x.RefNumber(ref input))
+                .When(x => x.RefNumber(ref input))
                 .To(new RefCall((ref int i) =>
                 {
                     i = 50;
@@ -214,8 +214,8 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<INumber>();
             via
-                .Redirect(x => x.RefNumber(ref Is<int>.AnyRef))
-                .To(() => { });
+                .When(x => x.RefNumber(ref Is<int>.AnyRef))
+                .Redirect(() => { });
 
             // ACT
             var input = 5;

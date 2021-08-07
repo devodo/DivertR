@@ -42,7 +42,7 @@ namespace DivertR.UnitTests
             var foo = new Foo("hi DivertR");
 
             // ACT
-            _via.RedirectTo(foo);
+            _via.Redirect(foo);
 
             // ASSERT
             proxy.Name.ShouldBe(foo.Name);
@@ -55,7 +55,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new Foo("hello foo"));
 
             // ACT
-            _via.Redirect(x => x.Name).To(() => _via.Next.Name + " bar");
+            _via.When(x => x.Name).Redirect(() => _via.Next.Name + " bar");
 
             // ASSERT
             proxy.Name.ShouldBe("hello foo bar");

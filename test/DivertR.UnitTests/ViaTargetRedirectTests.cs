@@ -31,7 +31,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
             var foo = new Foo("hi DivertR");
-            _via.Redirect().To(foo);
+            _via.When().Redirect(foo);
             
             // ACT
             var name = proxy.Name;
@@ -46,7 +46,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
             var foo = new Foo("hi DivertR");
-            _via.RedirectTo(foo);
+            _via.Redirect(foo);
             
             // ACT
             var name = proxy.Name;
@@ -61,7 +61,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.RedirectTo(new Foo("diverted"));
+            _via.Redirect(new Foo("diverted"));
 
             // ACT
             _via.Reset();
@@ -76,7 +76,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.RedirectTo(new FooAlt(() => $"hello {_via.Relay.Original.Name}"));
+            _via.Redirect(new FooAlt(() => $"hello {_via.Relay.Original.Name}"));
 
             // ACT
             var name = proxy.Name;
@@ -91,7 +91,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.RedirectTo(new FooAlt(() => $"hello {_via.Relay.Next.Name}"));
+            _via.Redirect(new FooAlt(() => $"hello {_via.Relay.Next.Name}"));
             
             // ACT
             var name = proxy.Name;
@@ -107,7 +107,7 @@ namespace DivertR.UnitTests
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             IFoo originalReference = null;
-            _via.RedirectTo(new FooAlt(() =>
+            _via.Redirect(new FooAlt(() =>
             {
                 originalReference = _via.Relay.CallInfo.Original;
                 return $"hello {originalReference!.Name}";
@@ -129,7 +129,7 @@ namespace DivertR.UnitTests
                 .Select(i => _via.Proxy(new Foo($"foo{i}")))
                 .ToList();
             
-            _via.RedirectTo(new FooAlt(() => $"diverted {_via.Relay.Original.Name}"));
+            _via.Redirect(new FooAlt(() => $"diverted {_via.Relay.Original.Name}"));
             
             // ACT
             var names = proxies.Select(x => x.Name).ToList();
@@ -149,7 +149,7 @@ namespace DivertR.UnitTests
                 .Select(i => _via.Proxy(new Foo($"foo{i}")))
                 .ToList();
             
-            _via.RedirectTo(new FooAlt(() => $"diverted {_via.Next.Name}"));
+            _via.Redirect(new FooAlt(() => $"diverted {_via.Next.Name}"));
 
             // ACT
             var names = proxies.Select(x => x.Name).ToList();
@@ -173,7 +173,7 @@ namespace DivertR.UnitTests
                 .Setup(x => x.Name)
                 .Returns(() => $"{_via.Relay.Original.Name} world");
 
-            _via.RedirectTo(mock.Object);
+            _via.Redirect(mock.Object);
 
             // ACT
             var name = proxy.Name;
@@ -190,9 +190,9 @@ namespace DivertR.UnitTests
             var next = _via.Relay.Next;
             
             _via
-                .RedirectTo(new FooAlt(() => $"again {next.Name} 3"))
-                .RedirectTo(new FooAlt(() => $"here {next.Name} 2"))
-                .RedirectTo(new FooAlt(() => $"DivertR {next.Name} 1"));
+                .Redirect(new FooAlt(() => $"again {next.Name} 3"))
+                .Redirect(new FooAlt(() => $"here {next.Name} 2"))
+                .Redirect(new FooAlt(() => $"DivertR {next.Name} 1"));
             
             // ACT
             var name = proxy.Name;
@@ -208,9 +208,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new Foo("hello foo"));
             var next = _via.Relay.Next;
             _via
-                .Redirect().To(new FooAlt(() => $"DivertR {next.Name} 1"))
-                .Redirect().To(new FooAlt(() => $"here {next.Name} 2"))
-                .Redirect().To(new FooAlt(() => $"again {next.Name} 3"), -10);
+                .When().Redirect(new FooAlt(() => $"DivertR {next.Name} 1"))
+                .When().Redirect(new FooAlt(() => $"here {next.Name} 2"))
+                .When().Redirect(new FooAlt(() => $"again {next.Name} 3"), -10);
 
             // ACT
             var name = proxy.Name;
@@ -227,9 +227,9 @@ namespace DivertR.UnitTests
             var next = _via.Relay.Next;
             
             _via
-                .InsertRedirect(_via.Redirect().Build(new FooAlt(() => $"DivertR {next.Name} 1")))
-                .InsertRedirect(_via.Redirect().Build(new FooAlt(() => $"here {next.Name} 2")))
-                .InsertRedirect(_via.Redirect().Build(new FooAlt(() => $"again {next.Name} 3")), -10);
+                .InsertRedirect(_via.When().Build(new FooAlt(() => $"DivertR {next.Name} 1")))
+                .InsertRedirect(_via.When().Build(new FooAlt(() => $"here {next.Name} 2")))
+                .InsertRedirect(_via.When().Build(new FooAlt(() => $"again {next.Name} 3")), -10);
 
             // ACT
             var name = proxy.Name;
@@ -250,7 +250,7 @@ namespace DivertR.UnitTests
             for (var i = 0; i < NumRedirects; i++)
             {
                 var counter = i;
-                _via.RedirectTo(new FooAlt(() => $"{orig.Name} {counter} {next.Name}"));
+                _via.Redirect(new FooAlt(() => $"{orig.Name} {counter} {next.Name}"));
             }
             
             // ACT
@@ -283,8 +283,8 @@ namespace DivertR.UnitTests
             });
             
             _via
-                .RedirectTo(new FooAlt(() => next.Name.Replace(orig.Name, "bar")))
-                .RedirectTo(recursive);
+                .Redirect(new FooAlt(() => next.Name.Replace(orig.Name, "bar")))
+                .Redirect(recursive);
             
             // ACT
             var name = proxy.Name;
@@ -305,9 +305,9 @@ namespace DivertR.UnitTests
             }
             
             _via
-                .InsertRedirect(_via.Redirect(x => x.Name).Build(() => WriteMessage(1)), 30)
-                .InsertRedirect(_via.Redirect(x => x.Name).Build(() => WriteMessage(2)), 20)
-                .InsertRedirect(_via.Redirect(x => x.Name).Build(() => WriteMessage(3)), 10);
+                .InsertRedirect(_via.When(x => x.Name).Build(() => WriteMessage(1)), 30)
+                .InsertRedirect(_via.When(x => x.Name).Build(() => WriteMessage(2)), 20)
+                .InsertRedirect(_via.When(x => x.Name).Build(() => WriteMessage(3)), 10);
 
             // ACT
             var name = proxy.Name;
@@ -324,9 +324,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
 
             // ACT
-            _via.RedirectTo(new FooAlt(() => $"{_via.Relay.Next.Name} me"));
+            _via.Redirect(new FooAlt(() => $"{_via.Relay.Next.Name} me"));
             _via.Reset();
-            _via.RedirectTo(new FooAlt(() => $"{_via.Relay.Next.Name} again"));
+            _via.Redirect(new FooAlt(() => $"{_via.Relay.Next.Name} again"));
 
             // ASSERT
             proxy.Name.ShouldBe("hello foo again");
@@ -340,8 +340,8 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
 
             // ACT
-            _via.RedirectTo(new FooAlt(() => $"{_via.Relay.Next.Name} me"));
-            _via.RedirectTo(new FooAlt(() => $"{_via.Relay.Next.Name} again"));
+            _via.Redirect(new FooAlt(() => $"{_via.Relay.Next.Name} me"));
+            _via.Redirect(new FooAlt(() => $"{_via.Relay.Next.Name} again"));
             _via.Reset();
 
             // ASSERT

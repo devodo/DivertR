@@ -9,7 +9,7 @@ using DivertR.Core;
 
 namespace DivertR.Redirects
 {
-    public class CallRecorderRedirect<TTarget> : IRedirect<TTarget>, ICallRecord<TTarget> where TTarget : class
+    public class RecordRedirect<TTarget> : IRedirect<TTarget>, ICallStream<TTarget> where TTarget : class
     {
         private static readonly ConcurrentDictionary<Type, RecordedCallFactory<TTarget>> CallFactories = new ConcurrentDictionary<Type, RecordedCallFactory<TTarget>>();
         
@@ -18,7 +18,7 @@ namespace DivertR.Redirects
 
         private readonly ConcurrentQueue<RecordedCall<TTarget>> _recordedCalls = new ConcurrentQueue<RecordedCall<TTarget>>();
 
-        public CallRecorderRedirect(IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
+        public RecordRedirect(IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
         {
             _via = via ?? throw new ArgumentNullException(nameof(via));
             _relay = _via.Relay;
@@ -69,25 +69,25 @@ namespace DivertR.Redirects
             return Array.AsReadOnly(_recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo)).ToArray());
         }
         
-        public IReadOnlyList<IRecordedCall<TTarget, TReturn>> When<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
+        public IFuncCallStream<TTarget, TReturn> When<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
         {
-            var callConstraint = _via.Redirect(lambdaExpression).CallConstraint;
+            var callConstraint = _via.When(lambdaExpression).CallConstraint;
             var calls = _recordedCalls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
                 .Cast<RecordedCall<TTarget, TReturn>>()
                 .ToArray();
 
-            return Array.AsReadOnly(calls);
+            return new FuncCallStream<TTarget, TReturn>(calls);
         }
 
         public IReadOnlyList<IRecordedCall<TTarget>> When(Expression<Action<TTarget>> lambdaExpression)
         {
-            return When(_via.Redirect(lambdaExpression).CallConstraint);
+            return When(_via.When(lambdaExpression).CallConstraint);
         }
 
         public IReadOnlyList<IRecordedCall<TTarget>> WhenSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
         {
-            return When(_via.RedirectSet(lambdaExpression, valueExpression).CallConstraint);
+            return When(_via.WhenSet(lambdaExpression, valueExpression).CallConstraint);
         }
         
         public int Count => _recordedCalls.Count;

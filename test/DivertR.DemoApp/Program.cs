@@ -47,8 +47,8 @@ namespace DivertR.DemoApp
             
             IVia<IFoo> fooVia = diverter.Via<IFoo>();
             fooVia
-                .Redirect(x => x.Echo(Is<string>.Any))
-                .To((string input) => $"{input} DivertR");
+                .When(x => x.Echo(Is<string>.Any))
+                .Redirect((string input) => $"{input} DivertR");
   
             Console.WriteLine(foo.Echo("Hello")); // "Hello DivertR"
             
@@ -63,8 +63,8 @@ namespace DivertR.DemoApp
             
             IFoo next = fooVia.Relay.Next;
             fooVia
-                .Redirect(x => x.Echo(Is<string>.Any))
-                .To((string input) =>
+                .When(x => x.Echo(Is<string>.Any))
+                .Redirect((string input) =>
                 {
                     // run test code before
                     // ...
@@ -87,23 +87,23 @@ namespace DivertR.DemoApp
                 .Returns((string input) => $"{next.Echo(input)} - Mocked");
 
             fooVia
-                .Redirect() // Default matches all calls
-                .To(mock.Object);
+                .When() // Default matches all calls
+                .Redirect(mock.Object);
     
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Redirected - Mocked"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Redirected - Mocked"
             
             fooVia
                 .Reset()
-                .RedirectTo(mock.Object);
+                .Redirect(mock.Object);
             
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Mocked"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Mocked"
             
             IFoo original = fooVia.Relay.Original;
             fooVia
-                .Redirect(x => x.Echo(Is<string>.Any))
-                .To((string input) => $"{original.Echo(input)} - Skipped");
+                .When(x => x.Echo(Is<string>.Any))
+                .Redirect((string input) => $"{original.Echo(input)} - Skipped");
   
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Skipped"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Skipped"
@@ -111,8 +111,8 @@ namespace DivertR.DemoApp
             diverter.ResetAll();
 
             fooVia
-                .Redirect(x => x.EchoAsync(Is<string>.Any))
-                .To(async (string input) => $"{await next.EchoAsync(input)} - Async");
+                .When(x => x.EchoAsync(Is<string>.Any))
+                .Redirect(async (string input) => $"{await next.EchoAsync(input)} - Async");
             
             Console.WriteLine(await foo.EchoAsync("Hello")); // "Foo1: Hello - Async"
             Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello - Async"

@@ -16,9 +16,9 @@ namespace DivertR.UnitTests
             // ARRANGE
             const int Count = 5;
             var proxy = _via
-                .Redirect(x => x.Name).To("hello")
-                .Redirect(x => x.Name).Repeat(1).To(() => $"{_via.Next.Name} first")
-                .Redirect(x => x.Name).Repeat(Count + 1).To(() => $"{_via.Next.Name} diverted")
+                .When(x => x.Name).Redirect("hello")
+                .When(x => x.Name).Repeat(1).Redirect(() => $"{_via.Next.Name} first")
+                .When(x => x.Name).Repeat(Count + 1).Redirect(() => $"{_via.Next.Name} diverted")
                 .Proxy();
 
             // ACT
@@ -36,9 +36,9 @@ namespace DivertR.UnitTests
             // ARRANGE
             const int Count = 5;
             var proxy = _via
-                .Redirect(x => x.Name).To("hello")
-                .Redirect(x => x.Name).Skip(1).To(() => $"{_via.Next.Name} after")
-                .Redirect(x => x.Name).Skip(Count).To(() => $"{_via.Next.Name} diverted")
+                .When(x => x.Name).Redirect("hello")
+                .When(x => x.Name).Skip(1).Redirect(() => $"{_via.Next.Name} after")
+                .When(x => x.Name).Skip(Count).Redirect(() => $"{_via.Next.Name} diverted")
                 .Proxy();
 
             // ACT
@@ -56,9 +56,9 @@ namespace DivertR.UnitTests
             // ARRANGE
             const int Count = 5;
             var proxy = _via
-                .Redirect(x => x.Name).To("hello")
-                .Redirect(x => x.Name).Repeat(1).Skip(1).To(() => $"{_via.Next.Name} after")
-                .Redirect(x => x.Name).Skip(Count).To(() => $"{_via.Next.Name} diverted")
+                .When(x => x.Name).Redirect("hello")
+                .When(x => x.Name).Repeat(1).Skip(1).Redirect(() => $"{_via.Next.Name} after")
+                .When(x => x.Name).Skip(Count).Redirect(() => $"{_via.Next.Name} diverted")
                 .Proxy();
 
             // ACT

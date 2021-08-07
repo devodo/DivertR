@@ -55,8 +55,8 @@ namespace DivertR.WebAppTests
         public void InitLogging(ITestOutputHelper output)
         {
             _diverter.Via<ILoggerFactory>()
-                .Redirect(x => x.CreateLogger(Is<string>.Any))
-                .To((string name) =>
+                .When(x => x.CreateLogger(Is<string>.Any))
+                .Redirect((string name) =>
                 {
                     if (name.StartsWith("Microsoft"))
                     {

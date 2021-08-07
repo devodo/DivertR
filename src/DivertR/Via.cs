@@ -75,17 +75,17 @@ namespace DivertR
             return this;
         }
         
-        public IVia<TTarget> RedirectTo(TTarget target)
+        public IVia<TTarget> Redirect(TTarget target)
         {
-            return Redirect().To(target);
+            return When().Redirect(target);
         }
 
-        public IRedirectBuilder<TTarget> Redirect(ICallConstraint<TTarget>? callConstraint = null)
+        public IRedirectBuilder<TTarget> When(ICallConstraint<TTarget>? callConstraint = null)
         {
             return new RedirectBuilder<TTarget>(this, callConstraint);
         }
         
-        public IFuncRedirectBuilder<TTarget, TReturn> Redirect<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
+        public IFuncRedirectBuilder<TTarget, TReturn> When<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
         {
             if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
@@ -93,7 +93,7 @@ namespace DivertR
             return new FuncRedirectBuilder<TTarget, TReturn>(this, parsedCall);
         }
         
-        public IActionRedirectBuilder<TTarget> Redirect(Expression<Action<TTarget>> lambdaExpression)
+        public IActionRedirectBuilder<TTarget> When(Expression<Action<TTarget>> lambdaExpression)
         {
             if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
@@ -101,7 +101,7 @@ namespace DivertR
             return new ActionRedirectBuilder<TTarget>(this, parsedCall);
         }
         
-        public IActionRedirectBuilder<TTarget> RedirectSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
+        public IActionRedirectBuilder<TTarget> WhenSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
         {
             if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
             if (valueExpression?.Body == null) throw new ArgumentNullException(nameof(valueExpression));

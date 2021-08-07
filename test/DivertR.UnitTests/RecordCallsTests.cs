@@ -11,11 +11,11 @@ namespace DivertR.UnitTests
     public class RecordCallsTests
     {
         private readonly Via<IFoo> _via = new();
-        private readonly ICallRecord<IFoo> _callRecord;
+        private readonly ICallStream<IFoo> _callStream;
 
         public RecordCallsTests()
         {
-            _callRecord = _via.Record();
+            _callStream = _via.Record();
         }
         
         [Fact]
@@ -27,8 +27,8 @@ namespace DivertR.UnitTests
                 .ToList();
             
             _via
-                .Redirect(x => x.Echo(Is<string>.Any))
-                .To(() => Guid.NewGuid().ToString());
+                .When(x => x.Echo(Is<string>.Any))
+                .Redirect(() => Guid.NewGuid().ToString());
 
             var fooProxy = _via.Proxy();
             
@@ -37,8 +37,8 @@ namespace DivertR.UnitTests
             var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
 
             // ASSERT
-            _callRecord.Select(x => (string) x.CallInfo.Arguments[0]).ShouldBe(inputs);
-            _callRecord.Select(x => (string) x.Returned?.Value).ShouldBe(outputs);
+            _callStream.Select(x => (string) x.CallInfo.Arguments[0]).ShouldBe(inputs);
+            _callStream.Select(x => (string) x.Returned?.Value).ShouldBe(outputs);
         }
         
         [Fact]
@@ -50,21 +50,25 @@ namespace DivertR.UnitTests
                 .ToList();
             
             _via
-                .Redirect(x => x.Echo(Is<string>.Any))
-                .To(() => Guid.NewGuid().ToString());
+                .When(x => x.Echo(Is<string>.Any))
+                .Redirect(() => Guid.NewGuid().ToString());
 
             var fooProxy = _via.Proxy();
             var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
 
             // ACT
-            var calls = _callRecord.When(x => x.Echo(inputs[0]));
+            var calls = _callStream.When(x => x.Echo(inputs[0]));
 
             // ASSERT
             calls.Count.ShouldBe(1);
-            calls[0].CallInfo.Arguments.Count.ShouldBe(1);
-            calls[0].CallInfo.Arguments[0].ShouldBe(inputs[0]);
-            calls[0].Returned?.Value.ShouldBe(outputs[0]);
-            calls[0].CallInfo.ViaProxy.ShouldBeSameAs(fooProxy);
+            calls.Single().CallInfo.Arguments.Count.ShouldBe(1);
+            calls.Single().CallInfo.ViaProxy.ShouldBeSameAs(fooProxy);
+            
+            calls.Verify<string>((input, callReturn) =>
+            {
+                input.ShouldBe(inputs[0]);
+                callReturn.Value.ShouldBe(outputs[0]);
+            });
         }
         
         [Fact]
@@ -72,8 +76,8 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .Redirect(x => x.Echo(Is<string>.Any))
-                .To(() => throw new Exception("test"));
+                .When(x => x.Echo(Is<string>.Any))
+                .Redirect(() => throw new Exception("test"));
 
             // ACT
             Exception caughtException = null;
@@ -87,7 +91,7 @@ namespace DivertR.UnitTests
             }
 
             // ASSERT
-            var call = _callRecord.When(x => x.Echo("test")).Single();
+            var call = _callStream.When(x => x.Echo("test")).Single();
             caughtException.ShouldNotBeNull();
             call.Returned!.Exception.ShouldBeSameAs(caughtException);
         }
@@ -97,8 +101,8 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .Redirect(x => x.EchoAsync(Is<string>.Any))
-                .To(async () =>
+                .When(x => x.EchoAsync(Is<string>.Any))
+                .Redirect(async () =>
                 {
                     await Task.Yield();
                     throw new Exception("test");
@@ -116,7 +120,7 @@ namespace DivertR.UnitTests
             }
 
             // ASSERT
-            var call = _callRecord.When(x => x.EchoAsync("test")).Single();
+            var call = _callStream.When(x => x.EchoAsync("test")).Single();
             caughtException.ShouldNotBeNull();
             call.Returned!.Exception.ShouldBeNull();
             

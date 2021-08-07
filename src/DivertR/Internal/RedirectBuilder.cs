@@ -45,7 +45,7 @@ namespace DivertR.Internal
             return Decorate(redirect);
         }
         
-        public IVia<TTarget> To(TTarget target, int orderWeight = 0)
+        public IVia<TTarget> Redirect(TTarget target, int orderWeight = 0)
         {
             var redirect = Build(target);
             

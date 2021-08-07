@@ -69,9 +69,9 @@ namespace DivertR.UnitTests
             });
 
             _via
-                .Redirect(x => x.GetNumber(Is<int>.Any))
-                .To<int>(i => _via.Relay.Original.GetNumber(i) + _via.Next.GetNumber(i))
-                .RedirectTo(fibonacci);
+                .When(x => x.GetNumber(Is<int>.Any))
+                .Redirect<int>(i => _via.Relay.Original.GetNumber(i) + _via.Next.GetNumber(i))
+                .Redirect(fibonacci);
             
             return _via.Proxy(new Number());
         }

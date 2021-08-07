@@ -21,10 +21,10 @@ namespace DivertR
         IVia<TTarget> InsertRedirect(IRedirect<TTarget> redirect, int orderWeight = 0);
         IVia<TTarget> Reset();
         
-        IVia<TTarget> RedirectTo(TTarget target);
-        IRedirectBuilder<TTarget> Redirect(ICallConstraint<TTarget>? callConstraint = null);
-        IFuncRedirectBuilder<TTarget, TReturn> Redirect<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression);
-        IActionRedirectBuilder<TTarget> Redirect(Expression<Action<TTarget>> lambdaExpression);
-        IActionRedirectBuilder<TTarget> RedirectSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression);
+        IVia<TTarget> Redirect(TTarget target);
+        IRedirectBuilder<TTarget> When(ICallConstraint<TTarget>? callConstraint = null);
+        IFuncRedirectBuilder<TTarget, TReturn> When<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression);
+        IActionRedirectBuilder<TTarget> When(Expression<Action<TTarget>> lambdaExpression);
+        IActionRedirectBuilder<TTarget> WhenSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression);
     }
 }

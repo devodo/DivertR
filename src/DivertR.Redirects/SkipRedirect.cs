@@ -29,7 +29,7 @@ namespace DivertR.Redirects
         {
             var count = Interlocked.Increment(ref _callCount);
 
-            if (count == long.MinValue) // overflow
+            if (count == long.MinValue) // overflow case
             {
                 count = Interlocked.Exchange(ref _callCount, (long) _skipCount + 1);
             }

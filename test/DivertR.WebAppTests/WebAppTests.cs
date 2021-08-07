@@ -34,8 +34,8 @@ namespace DivertR.WebAppTests
             };
 
             _fooRepositoryVia
-                .Redirect(x => x.GetFoo(foo.Id))
-                .To(Task.FromResult(foo));
+                .When(x => x.GetFoo(foo.Id))
+                .Redirect(Task.FromResult(foo));
             
             // ACT
             var response = await _fooClient.GetFoo(foo.Id);
@@ -55,10 +55,10 @@ namespace DivertR.WebAppTests
                 Name = Guid.NewGuid().ToString()
             };
             
-            var callsRecord = _fooRepositoryVia.Record();
+            var fooRepoCalls = _fooRepositoryVia.Record();
             _fooRepositoryVia
-                .Redirect(x => x.GetFoo(Is<Guid>.Any))
-                .To(Task.FromResult<Foo>(null));
+                .When(x => x.GetFoo(Is<Guid>.Any))
+                .Redirect(Task.FromResult<Foo>(null));
             
             // ACT
             var response = await _fooClient.GetFoo(foo.Id);
@@ -66,8 +66,8 @@ namespace DivertR.WebAppTests
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
             response.Content.ShouldBeNull();
-            callsRecord.Count.ShouldBe(1);
-            callsRecord.When(x => x.GetFoo(foo.Id)).Count.ShouldBe(1);
+            fooRepoCalls.Count.ShouldBe(1);
+            fooRepoCalls.When(x => x.GetFoo(foo.Id)).Count.ShouldBe(1);
         }
 
         [Fact]
@@ -83,8 +83,8 @@ namespace DivertR.WebAppTests
             bool? insertResult = null;
 
             _fooRepositoryVia
-                .Redirect(x => x.TryInsertFoo(Is<Foo>.Any))
-                .To(async (Foo foo) =>
+                .When(x => x.TryInsertFoo(Is<Foo>.Any))
+                .Redirect(async (Foo foo) =>
                 {
                     insertedFoo = foo;
                     insertResult = await _fooRepositoryVia.Next.TryInsertFoo(foo);
@@ -120,13 +120,45 @@ namespace DivertR.WebAppTests
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
             
             fooRepoCalls.Count.ShouldBe(1);
-            var call = fooRepoCalls.When(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name))).Single();
-            var insertedFoo = (Foo) call.CallInfo.Arguments[0];
+            fooRepoCalls
+                .When(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
+                .Verify<Foo>(async (foo, callReturn) =>
+                {
+                    response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{foo.Id}");
+                    foo.Name.ShouldBe(createFooRequest.Name);
+                    (await callReturn.Value).ShouldBe(true);
+                })
+                .Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public async Task CanRecordFooRepositoryExceptionCalls()
+        {
+            // ARRANGE
+            var createFooRequest = new CreateFooRequest
+            {
+                Name = Guid.NewGuid().ToString()
+            };
             
-            response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{insertedFoo.Id}");
-            insertedFoo.Name.ShouldBe(createFooRequest.Name);
-            (await call.Returned!.Value).ShouldBe(true);
-            response.Content.ShouldBeEquivalentTo(insertedFoo);
+            var fooRepoCalls = _fooRepositoryVia.Record();
+            _fooRepositoryVia
+                .When(x => x.TryInsertFoo(Is<Foo>.Any))
+                .Redirect(() => throw new Exception("test"));
+
+            // ACT
+            var response = await _fooClient.InsertFoo(createFooRequest);
+
+            // ASSERT
+            response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+            
+            fooRepoCalls.Count.ShouldBe(1);
+            fooRepoCalls
+                .When(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
+                .Verify<Foo>(async (_, callReturn) =>
+                {
+                    callReturn.Exception.ShouldBeOfType<Exception>();
+                })
+                .Count.ShouldBe(1);
         }
     }
 }
