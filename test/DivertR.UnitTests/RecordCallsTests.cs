@@ -27,7 +27,7 @@ namespace DivertR.UnitTests
                 .ToList();
             
             _via
-                .When(x => x.Echo(Is<string>.Any))
+                .To(x => x.Echo(Is<string>.Any))
                 .Redirect(() => Guid.NewGuid().ToString());
 
             var fooProxy = _via.Proxy();
@@ -50,21 +50,21 @@ namespace DivertR.UnitTests
                 .ToList();
             
             _via
-                .When(x => x.Echo(Is<string>.Any))
+                .To(x => x.Echo(Is<string>.Any))
                 .Redirect(() => Guid.NewGuid().ToString());
 
             var fooProxy = _via.Proxy();
             var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
 
             // ACT
-            var calls = _callStream.When(x => x.Echo(inputs[0]));
+            var calls = _callStream.To(x => x.Echo(inputs[0]));
 
             // ASSERT
             calls.Count.ShouldBe(1);
             calls.Single().CallInfo.Arguments.Count.ShouldBe(1);
             calls.Single().CallInfo.ViaProxy.ShouldBeSameAs(fooProxy);
             
-            calls.Verify<string>((input, callReturn) =>
+            calls.Visit<string>((input, callReturn) =>
             {
                 input.ShouldBe(inputs[0]);
                 callReturn.Value.ShouldBe(outputs[0]);
@@ -76,7 +76,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .When(x => x.Echo(Is<string>.Any))
+                .To(x => x.Echo(Is<string>.Any))
                 .Redirect(() => throw new Exception("test"));
 
             // ACT
@@ -91,7 +91,7 @@ namespace DivertR.UnitTests
             }
 
             // ASSERT
-            var call = _callStream.When(x => x.Echo("test")).Single();
+            var call = _callStream.To(x => x.Echo("test")).Single();
             caughtException.ShouldNotBeNull();
             call.Returned!.Exception.ShouldBeSameAs(caughtException);
         }
@@ -101,7 +101,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .When(x => x.EchoAsync(Is<string>.Any))
+                .To(x => x.EchoAsync(Is<string>.Any))
                 .Redirect(async () =>
                 {
                     await Task.Yield();
@@ -120,7 +120,7 @@ namespace DivertR.UnitTests
             }
 
             // ASSERT
-            var call = _callStream.When(x => x.EchoAsync("test")).Single();
+            var call = _callStream.To(x => x.EchoAsync("test")).Single();
             caughtException.ShouldNotBeNull();
             call.Returned!.Exception.ShouldBeNull();
             

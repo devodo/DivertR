@@ -21,7 +21,7 @@ namespace DivertR.DependencyInjection.Tests
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
-            _diverter.Via<IFoo>().When(x => x.Message).Redirect("Diverted");
+            _diverter.Via<IFoo>().To(x => x.Message).Redirect("Diverted");
             
             foo.Message.ShouldBe("Diverted");
         }
@@ -36,7 +36,7 @@ namespace DivertR.DependencyInjection.Tests
             var provider = _services.BuildServiceProvider();
 
             _diverter.Via<IFoo>()
-                .When(x => x.Message)
+                .To(x => x.Message)
                 .Redirect(() => "Diverted: " + _diverter.Via<IFoo>().Next.Message);
             
             var fooInstances = provider.GetServices<IFoo>().ToList();
@@ -54,7 +54,7 @@ namespace DivertR.DependencyInjection.Tests
             var provider = _services.BuildServiceProvider();
             
             var fooBefore = provider.GetRequiredService<IFoo>();
-            via.When(x => x.Message).Redirect("Diverted");
+            via.To(x => x.Message).Redirect("Diverted");
             var fooAfter = provider.GetRequiredService<IFoo>();
             
             fooBefore.Message.ShouldBe("Diverted");
@@ -76,7 +76,7 @@ namespace DivertR.DependencyInjection.Tests
             var provider = _services.BuildServiceProvider();
             var list = provider.GetRequiredService<IList<string>>();
             
-            _diverter.Via<IList<string>>().When(x => x.Count).Redirect(10);
+            _diverter.Via<IList<string>>().To(x => x.Count).Redirect(10);
             
             list.Count.ShouldBe(10);
             _diverter.ResetAll();
@@ -97,7 +97,7 @@ namespace DivertR.DependencyInjection.Tests
             var provider = _services.BuildServiceProvider();
             var list = provider.GetRequiredService<IList<string>>();
             
-            _diverter.Via<IList<string>>().When(x => x.Count).Redirect(10);
+            _diverter.Via<IList<string>>().To(x => x.Count).Redirect(10);
 
             typesDiverted.ShouldBe(new[] {typeof(IList<string>)});
             list.Count.ShouldBe(10);
@@ -115,7 +115,7 @@ namespace DivertR.DependencyInjection.Tests
             var provider = _services.BuildServiceProvider();
             var list = provider.GetRequiredService<IList<string>>();
             
-            via.When(x => x.Count).Redirect(10);
+            via.To(x => x.Count).Redirect(10);
             
             list.Count.ShouldBe(10);
             _diverter.ResetAll();
@@ -135,7 +135,7 @@ namespace DivertR.DependencyInjection.Tests
             var provider = _services.BuildServiceProvider();
             var list = provider.GetRequiredService<IList<string>>();
             
-            _diverter.Via<IList<string>>().When(x => x.Count).Redirect(10);
+            _diverter.Via<IList<string>>().To(x => x.Count).Redirect(10);
             
             list.Count.ShouldBe(10);
             _diverter.ResetAll();

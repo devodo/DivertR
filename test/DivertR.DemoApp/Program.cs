@@ -47,7 +47,7 @@ namespace DivertR.DemoApp
             
             IVia<IFoo> fooVia = diverter.Via<IFoo>();
             fooVia
-                .When(x => x.Echo(Is<string>.Any))
+                .To(x => x.Echo(Is<string>.Any))
                 .Redirect((string input) => $"{input} DivertR");
   
             Console.WriteLine(foo.Echo("Hello")); // "Hello DivertR"
@@ -63,7 +63,7 @@ namespace DivertR.DemoApp
             
             IFoo next = fooVia.Relay.Next;
             fooVia
-                .When(x => x.Echo(Is<string>.Any))
+                .To(x => x.Echo(Is<string>.Any))
                 .Redirect((string input) =>
                 {
                     // run test code before
@@ -87,7 +87,7 @@ namespace DivertR.DemoApp
                 .Returns((string input) => $"{next.Echo(input)} - Mocked");
 
             fooVia
-                .When() // Default matches all calls
+                .To() // Default matches all calls
                 .Redirect(mock.Object);
     
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Redirected - Mocked"
@@ -102,7 +102,7 @@ namespace DivertR.DemoApp
             
             IFoo original = fooVia.Relay.Original;
             fooVia
-                .When(x => x.Echo(Is<string>.Any))
+                .To(x => x.Echo(Is<string>.Any))
                 .Redirect((string input) => $"{original.Echo(input)} - Skipped");
   
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Skipped"
@@ -111,7 +111,7 @@ namespace DivertR.DemoApp
             diverter.ResetAll();
 
             fooVia
-                .When(x => x.EchoAsync(Is<string>.Any))
+                .To(x => x.EchoAsync(Is<string>.Any))
                 .Redirect(async (string input) => $"{await next.EchoAsync(input)} - Async");
             
             Console.WriteLine(await foo.EchoAsync("Hello")); // "Foo1: Hello - Async"

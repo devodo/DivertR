@@ -13,7 +13,7 @@ namespace DivertR.Redirects
             _recordedCalls = recordedCalls;
         }
 
-        public IFuncCallStream<TTarget, TReturn> Verify<T1>(Action<T1, ICallReturn<TReturn>?> verifyDelegate)
+        public IFuncCallStream<TTarget, TReturn> Visit<T1>(Action<T1, ICallReturn<TReturn>?> verifyDelegate)
         {
             foreach (var recordedCall in _recordedCalls)
             {

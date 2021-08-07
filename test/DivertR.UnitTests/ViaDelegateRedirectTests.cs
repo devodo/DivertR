@@ -14,7 +14,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
             var redirectMessage = "hi DivertR";
-            _via.When(x => x.Name).Redirect(redirectMessage);
+            _via.To(x => x.Name).Redirect(redirectMessage);
             
             // ACT
             var name = proxy.Name;
@@ -29,7 +29,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.When(x => x.Name).Redirect("test");
+            _via.To(x => x.Name).Redirect("test");
 
             // ACT
             _via.Reset();
@@ -44,7 +44,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.When(x => x.Name).Redirect(() => (string) _via.Relay.CallNext());
+            _via.To(x => x.Name).Redirect(() => (string) _via.Relay.CallNext());
 
             // ACT
             var name = proxy.Name;
@@ -60,7 +60,7 @@ namespace DivertR.UnitTests
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             _via
-                .When(x => x.Name)
+                .To(x => x.Name)
                 .Redirect(() => $"hello {_via.Relay.Original.Name}");
 
             // ACT
@@ -77,7 +77,7 @@ namespace DivertR.UnitTests
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             _via
-                .When(x => x.Name)
+                .To(x => x.Name)
                 .Redirect(() => $"hello {_via.Next.Name}");
             
             // ACT
@@ -95,7 +95,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
             IFoo originalReference = null;
             _via
-                .When(x => x.Name)
+                .To(x => x.Name)
                 .Redirect(() =>
                 {
                     originalReference = _via.Relay.CallInfo.Original;
@@ -116,7 +116,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<IFoo>();
             via
-                .When(x => x.Echo("test"))
+                .To(x => x.Echo("test"))
                 .Redirect((string input) => $"{via.Relay.Original.Name} {input}");
 
             // ACT
@@ -133,7 +133,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<IFoo>();
             via
-                .When(x => x.Echo("test"))
+                .To(x => x.Echo("test"))
                 .Redirect((string input) => $"{via.Relay.Original.Name} {input}");
 
             // ACT
@@ -151,7 +151,7 @@ namespace DivertR.UnitTests
             var via = new Via<IFoo>();
             var match = "test";
             via
-                .When(x => x.Echo(match))
+                .To(x => x.Echo(match))
                 .Redirect((string input) => $"{via.Relay.Original.Name} {input}");
 
             // ACT
@@ -169,7 +169,7 @@ namespace DivertR.UnitTests
             var via = new Via<IFoo>();
             var input = new Wrapper<string>("test");
             via
-                .When(x => x.Echo(input.Item))
+                .To(x => x.Echo(input.Item))
                 .Redirect((string i) => $"{via.Relay.Original.Name} {i}");
 
             // ACT
@@ -188,7 +188,7 @@ namespace DivertR.UnitTests
             var via = new Via<IFoo>();
             var input = new Wrapper<string>("test");
             via
-                .When(x => x.Echo(Is<string>.Match(p => p == input.Item)))
+                .To(x => x.Echo(Is<string>.Match(p => p == input.Item)))
                 .Redirect((string i) => $"{via.Relay.Original.Name} {i}");
 
             // ACT
@@ -206,7 +206,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<IFoo>();
             via
-                .When(x => x.Echo(Is<string>.Match(p => p == "test")))
+                .To(x => x.Echo(Is<string>.Match(p => p == "test")))
                 .Redirect((string i) => $"{via.Relay.Original.Name} {i}");
 
             // ACT
@@ -223,7 +223,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<IFoo>();
             via
-                .When(x => x.Echo(Is<string>.Any))
+                .To(x => x.Echo(Is<string>.Any))
                 .Redirect((string input) => $"{via.Relay.Original.Name} {input}");
 
             // ACT
@@ -240,7 +240,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var input = new Wrapper<string>("Hello");
 
-            _via.When(x => x.Echo(input.Item))
+            _via.To(x => x.Echo(input.Item))
                 .Redirect((string i) => $"{i} - {_via.Next.Name}");
             
             // ACT
@@ -259,7 +259,7 @@ namespace DivertR.UnitTests
         public void GivenExpressionMethodBodyRedirect_WhenCallMatches_ShouldRedirect()
         {
             // ARRANGE
-            _via.When(x => x.Echo(GetMethodValue()))
+            _via.To(x => x.Echo(GetMethodValue()))
                 .Redirect<string>(i => "matched");
             
             // ACT
@@ -274,7 +274,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .WhenSet(x => x.Name, () => Is<string>.Any)
+                .ToSet(x => x.Name, () => Is<string>.Any)
                 .Redirect((string value) => _via.Relay.Original.Name = $"New {value} set");
 
             // ACT
@@ -290,7 +290,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .WhenSet(x => x.Name, () => Is<string>.Match(s => s == "test"))
+                .ToSet(x => x.Name, () => Is<string>.Match(s => s == "test"))
                 .Redirect((string value) => _via.Relay.Original.Name = $"New {value} set");
 
             // ACT
@@ -306,7 +306,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .When(x => x.EchoGeneric(Is<string>.Any))
+                .To(x => x.EchoGeneric(Is<string>.Any))
                 .Redirect((string i) => $"{i} - {_via.Relay.Next.Name}");
 
             // ACT
@@ -322,7 +322,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .When(x => x.EchoGeneric(Is<string>.Any))
+                .To(x => x.EchoGeneric(Is<string>.Any))
                 .Redirect((string i) => $"{i} - {_via.Relay.Next.Name}");
             
             // ACT
@@ -338,7 +338,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .When(x => x.EchoGeneric(Is<int>.Any))
+                .To(x => x.EchoGeneric(Is<int>.Any))
                 .Redirect((int i) => $"{i} - {_via.Relay.Next.Name}");
             
             // ACT
@@ -357,7 +357,7 @@ namespace DivertR.UnitTests
             
             via.Redirect(new Number(x => x * 2));
             via
-                .When(x => x.ArrayNumber(Is<int[]>.Any))
+                .To(x => x.ArrayNumber(Is<int[]>.Any))
                 .Redirect((int[] inputs) =>
                 {
                     via.Relay.Next.ArrayNumber(inputs);
@@ -383,7 +383,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             IFoo getFoo = new Foo();
-            _via.When(x => x.GetFoo())
+            _via.To(x => x.GetFoo())
                 .Redirect(getFoo);
             
             // ACT
@@ -398,9 +398,9 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .When(x => x.Name).Redirect(() => $"1 {_via.Next.Name} 1", 30)
-                .When(x => x.Name).Redirect(() => $"2 {_via.Next.Name} 2", 20)
-                .When(x => x.Name).Redirect(() => $"3 {_via.Next.Name} 3", 10);
+                .To(x => x.Name).Redirect(() => $"1 {_via.Next.Name} 1", 30)
+                .To(x => x.Name).Redirect(() => $"2 {_via.Next.Name} 2", 20)
+                .To(x => x.Name).Redirect(() => $"3 {_via.Next.Name} 3", 10);
             
             // ACT
             var result = _via.Proxy(new Foo("hello")).Name;

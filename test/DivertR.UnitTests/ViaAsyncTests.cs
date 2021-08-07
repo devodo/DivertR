@@ -48,7 +48,7 @@ namespace DivertR.UnitTests
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             _via
-                .When(x => x.GetNameAsync())
+                .To(x => x.GetNameAsync())
                 .Redirect(async () => $"Diverted {await _via.Relay.Original.GetNameAsync()}");
 
             // ACT
@@ -65,7 +65,7 @@ namespace DivertR.UnitTests
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             _via
-                .When(x => x.GetNameAsync())
+                .To(x => x.GetNameAsync())
                 .Redirect(async () => $"Diverted {await _via.Relay.Next.GetNameAsync()}");
 
             // ACT
@@ -83,7 +83,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
             IFoo originalReference = null;
             _via
-                .When(x => x.GetNameAsync())
+                .To(x => x.GetNameAsync())
                 .Redirect(async () =>
                 {
                     originalReference = _via.Relay.CallInfo.Original;
@@ -107,7 +107,7 @@ namespace DivertR.UnitTests
                 .ToList();
 
             _via
-                .When(x => x.GetNameAsync())
+                .To(x => x.GetNameAsync())
                 .Redirect(async () => $"diverted {await _via.Relay.Original.GetNameAsync()}");
 
             // ACT
@@ -130,7 +130,7 @@ namespace DivertR.UnitTests
                 .ToList();
 
             _via
-                .When(x => x.GetNameAsync())
+                .To(x => x.GetNameAsync())
                 .Redirect(async () => $"diverted {await _via.Relay.Next.GetNameAsync()}");
 
             // ACT
@@ -171,9 +171,9 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
             var next = _via.Relay.Next;
-            _via.When(x => x.GetNameAsync()).Redirect(async () => $"again {await next.GetNameAsync()} 3")
-                .When(x => x.GetNameAsync()).Redirect(async () => $"here {await next.GetNameAsync()} 2")
-                .When(x => x.GetNameAsync()).Redirect(async () => $"DivertR {await next.GetNameAsync()} 1");
+            _via.To(x => x.GetNameAsync()).Redirect(async () => $"again {await next.GetNameAsync()} 3")
+                .To(x => x.GetNameAsync()).Redirect(async () => $"here {await next.GetNameAsync()} 2")
+                .To(x => x.GetNameAsync()).Redirect(async () => $"DivertR {await next.GetNameAsync()} 1");
 
             // ACT
             var name = await proxy.GetNameAsync();
@@ -194,7 +194,7 @@ namespace DivertR.UnitTests
             for (var i = 0; i < numRedirects; i++)
             {
                 var counter = i;
-                _via.When(x => x.GetNameAsync())
+                _via.To(x => x.GetNameAsync())
                     .Redirect(async () => $"{await orig.GetNameAsync()} {counter} {await next.GetNameAsync()}");
             }
 
@@ -228,10 +228,10 @@ namespace DivertR.UnitTests
             }
 
             _via
-                .When(x => x.GetNameAsync())
+                .To(x => x.GetNameAsync())
                 .Redirect(async () =>
                     (await next.GetNameAsync()).Replace(await orig.GetNameAsync(), "bar"))
-                .When(x => x.GetNameAsync()).Redirect(Recursive);
+                .To(x => x.GetNameAsync()).Redirect(Recursive);
 
             // ACT
             var name = await proxy.GetNameAsync();
@@ -252,9 +252,9 @@ namespace DivertR.UnitTests
             }
 
             _via
-                .InsertRedirect(_via.When(x => x.GetNameAsync()).Build(() => WriteMessage(1)), 30)
-                .InsertRedirect(_via.When(x => x.GetNameAsync()).Build(() => WriteMessage(2)), 20)
-                .InsertRedirect(_via.When(x => x.GetNameAsync()).Build(() => WriteMessage(3)), 10);
+                .InsertRedirect(_via.To(x => x.GetNameAsync()).Build(() => WriteMessage(1)), 30)
+                .InsertRedirect(_via.To(x => x.GetNameAsync()).Build(() => WriteMessage(2)), 20)
+                .InsertRedirect(_via.To(x => x.GetNameAsync()).Build(() => WriteMessage(3)), 10);
 
             // ACT
             var name = await proxy.GetNameAsync();

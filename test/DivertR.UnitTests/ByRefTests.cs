@@ -47,7 +47,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .When(x => x.RefNumber(ref Is<int>.AnyRef))
+                .To(x => x.RefNumber(ref Is<int>.AnyRef))
                 .To(new RefCall((ref int i) =>
                 {
                     _via.Next.RefNumber(ref i);
@@ -86,7 +86,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .When(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
+                .To(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
                 .To(new OutCall((int i, out int o) =>
                 {
                     _via.Next.OutNumber(i, out o);
@@ -124,7 +124,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .When(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
+                .To(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
                 .To(new OutCall((int i, out int o) =>
                 {
                     _via.Next.OutNumber(i, out o);
@@ -165,7 +165,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .When(x => x.RefArrayNumber(ref Is<int[]>.AnyRef))
+                .To(x => x.RefArrayNumber(ref Is<int[]>.AnyRef))
                 .To(new RefArrayCall((ref int[] inRef) =>
                 {
                     _via.Next.RefArrayNumber(ref inRef);
@@ -193,7 +193,7 @@ namespace DivertR.UnitTests
             var via = new Via<INumber>();
             int input = 5;
             via
-                .When(x => x.RefNumber(ref input))
+                .To(x => x.RefNumber(ref input))
                 .To(new RefCall((ref int i) =>
                 {
                     i = 50;
@@ -214,7 +214,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<INumber>();
             via
-                .When(x => x.RefNumber(ref Is<int>.AnyRef))
+                .To(x => x.RefNumber(ref Is<int>.AnyRef))
                 .Redirect(() => { });
 
             // ACT

@@ -55,7 +55,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new Foo("hello foo"));
 
             // ACT
-            _via.When(x => x.Name).Redirect(() => _via.Next.Name + " bar");
+            _via.To(x => x.Name).Redirect(() => _via.Next.Name + " bar");
 
             // ASSERT
             proxy.Name.ShouldBe("hello foo bar");

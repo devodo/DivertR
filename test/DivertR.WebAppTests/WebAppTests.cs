@@ -34,7 +34,7 @@ namespace DivertR.WebAppTests
             };
 
             _fooRepositoryVia
-                .When(x => x.GetFoo(foo.Id))
+                .To(x => x.GetFoo(foo.Id))
                 .Redirect(Task.FromResult(foo));
             
             // ACT
@@ -57,7 +57,7 @@ namespace DivertR.WebAppTests
             
             var fooRepoCalls = _fooRepositoryVia.Record();
             _fooRepositoryVia
-                .When(x => x.GetFoo(Is<Guid>.Any))
+                .To(x => x.GetFoo(Is<Guid>.Any))
                 .Redirect(Task.FromResult<Foo>(null));
             
             // ACT
@@ -67,7 +67,7 @@ namespace DivertR.WebAppTests
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
             response.Content.ShouldBeNull();
             fooRepoCalls.Count.ShouldBe(1);
-            fooRepoCalls.When(x => x.GetFoo(foo.Id)).Count.ShouldBe(1);
+            fooRepoCalls.To(x => x.GetFoo(foo.Id)).Count.ShouldBe(1);
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace DivertR.WebAppTests
             bool? insertResult = null;
 
             _fooRepositoryVia
-                .When(x => x.TryInsertFoo(Is<Foo>.Any))
+                .To(x => x.TryInsertFoo(Is<Foo>.Any))
                 .Redirect(async (Foo foo) =>
                 {
                     insertedFoo = foo;
@@ -121,8 +121,8 @@ namespace DivertR.WebAppTests
             
             fooRepoCalls.Count.ShouldBe(1);
             fooRepoCalls
-                .When(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
-                .Verify<Foo>(async (foo, callReturn) =>
+                .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
+                .Visit<Foo>(async (foo, callReturn) =>
                 {
                     response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{foo.Id}");
                     foo.Name.ShouldBe(createFooRequest.Name);
@@ -142,7 +142,7 @@ namespace DivertR.WebAppTests
             
             var fooRepoCalls = _fooRepositoryVia.Record();
             _fooRepositoryVia
-                .When(x => x.TryInsertFoo(Is<Foo>.Any))
+                .To(x => x.TryInsertFoo(Is<Foo>.Any))
                 .Redirect(() => throw new Exception("test"));
 
             // ACT
@@ -153,8 +153,8 @@ namespace DivertR.WebAppTests
             
             fooRepoCalls.Count.ShouldBe(1);
             fooRepoCalls
-                .When(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
-                .Verify<Foo>(async (_, callReturn) =>
+                .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
+                .Visit<Foo>(async (_, callReturn) =>
                 {
                     callReturn.Exception.ShouldBeOfType<Exception>();
                 })

@@ -62,16 +62,16 @@ namespace DivertR.Redirects
             return returnValue;
         }
 
-        public IReadOnlyList<IRecordedCall<TTarget>> When(ICallConstraint<TTarget>? callConstraint = null)
+        public IReadOnlyList<IRecordedCall<TTarget>> To(ICallConstraint<TTarget>? callConstraint = null)
         {
             callConstraint ??= TrueCallConstraint<TTarget>.Instance;
             
             return Array.AsReadOnly(_recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo)).ToArray());
         }
         
-        public IFuncCallStream<TTarget, TReturn> When<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
+        public IFuncCallStream<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
         {
-            var callConstraint = _via.When(lambdaExpression).CallConstraint;
+            var callConstraint = _via.To(lambdaExpression).CallConstraint;
             var calls = _recordedCalls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
                 .Cast<RecordedCall<TTarget, TReturn>>()
@@ -80,14 +80,14 @@ namespace DivertR.Redirects
             return new FuncCallStream<TTarget, TReturn>(calls);
         }
 
-        public IReadOnlyList<IRecordedCall<TTarget>> When(Expression<Action<TTarget>> lambdaExpression)
+        public IReadOnlyList<IRecordedCall<TTarget>> To(Expression<Action<TTarget>> lambdaExpression)
         {
-            return When(_via.When(lambdaExpression).CallConstraint);
+            return To(_via.To(lambdaExpression).CallConstraint);
         }
 
-        public IReadOnlyList<IRecordedCall<TTarget>> WhenSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
+        public IReadOnlyList<IRecordedCall<TTarget>> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
         {
-            return When(_via.WhenSet(lambdaExpression, valueExpression).CallConstraint);
+            return To(_via.ToSet(lambdaExpression, valueExpression).CallConstraint);
         }
         
         public int Count => _recordedCalls.Count;

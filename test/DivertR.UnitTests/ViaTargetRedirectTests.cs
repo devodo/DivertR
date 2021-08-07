@@ -31,7 +31,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
             var foo = new Foo("hi DivertR");
-            _via.When().Redirect(foo);
+            _via.To().Redirect(foo);
             
             // ACT
             var name = proxy.Name;
@@ -208,9 +208,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new Foo("hello foo"));
             var next = _via.Relay.Next;
             _via
-                .When().Redirect(new FooAlt(() => $"DivertR {next.Name} 1"))
-                .When().Redirect(new FooAlt(() => $"here {next.Name} 2"))
-                .When().Redirect(new FooAlt(() => $"again {next.Name} 3"), -10);
+                .To().Redirect(new FooAlt(() => $"DivertR {next.Name} 1"))
+                .To().Redirect(new FooAlt(() => $"here {next.Name} 2"))
+                .To().Redirect(new FooAlt(() => $"again {next.Name} 3"), -10);
 
             // ACT
             var name = proxy.Name;
@@ -227,9 +227,9 @@ namespace DivertR.UnitTests
             var next = _via.Relay.Next;
             
             _via
-                .InsertRedirect(_via.When().Build(new FooAlt(() => $"DivertR {next.Name} 1")))
-                .InsertRedirect(_via.When().Build(new FooAlt(() => $"here {next.Name} 2")))
-                .InsertRedirect(_via.When().Build(new FooAlt(() => $"again {next.Name} 3")), -10);
+                .InsertRedirect(_via.To().Build(new FooAlt(() => $"DivertR {next.Name} 1")))
+                .InsertRedirect(_via.To().Build(new FooAlt(() => $"here {next.Name} 2")))
+                .InsertRedirect(_via.To().Build(new FooAlt(() => $"again {next.Name} 3")), -10);
 
             // ACT
             var name = proxy.Name;
@@ -305,9 +305,9 @@ namespace DivertR.UnitTests
             }
             
             _via
-                .InsertRedirect(_via.When(x => x.Name).Build(() => WriteMessage(1)), 30)
-                .InsertRedirect(_via.When(x => x.Name).Build(() => WriteMessage(2)), 20)
-                .InsertRedirect(_via.When(x => x.Name).Build(() => WriteMessage(3)), 10);
+                .InsertRedirect(_via.To(x => x.Name).Build(() => WriteMessage(1)), 30)
+                .InsertRedirect(_via.To(x => x.Name).Build(() => WriteMessage(2)), 20)
+                .InsertRedirect(_via.To(x => x.Name).Build(() => WriteMessage(3)), 10);
 
             // ACT
             var name = proxy.Name;
