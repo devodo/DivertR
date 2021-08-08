@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DivertR.Redirects
 {
@@ -13,16 +15,31 @@ namespace DivertR.Redirects
             _recordedCalls = recordedCalls;
         }
 
-        public IFuncCallStream<TTarget, TReturn> Visit<T1>(Action<T1, ICallReturn<TReturn>?> verifyDelegate)
+        public IReadOnlyList<IRecordedCall<TTarget, TReturn, T1>> Visit<T1>(Action<IRecordedCall<TTarget, TReturn, T1>>? visitor = null)
+        {
+            var castCalls = _recordedCalls.Cast<IRecordedCall<TTarget, TReturn, T1>>().ToArray();
+            
+            if (visitor != null)
+            {
+                foreach (var recordedCall in castCalls)
+                {
+                    visitor.Invoke(recordedCall);
+                }
+            }
+            
+            return castCalls;
+        }
+
+        public async Task<IFuncCallStream<TTarget, TReturn>> Visit<T1>(Func<IRecordedCall<TTarget, TReturn, T1>, Task> visitor)
         {
             foreach (var recordedCall in _recordedCalls)
             {
-                verifyDelegate.Invoke((T1) recordedCall.CallInfo.Arguments[0], recordedCall.Returned);
+                await visitor.Invoke((IRecordedCall<TTarget, TReturn, T1>) recordedCall);
             }
             
             return this;
         }
-        
+
         public IEnumerator<IRecordedCall<TTarget, TReturn>> GetEnumerator()
         {
             return ((IEnumerable<IRecordedCall<TTarget, TReturn>>) _recordedCalls).GetEnumerator();
@@ -34,5 +51,7 @@ namespace DivertR.Redirects
         }
 
         public int Count => _recordedCalls.Length;
+
+        public IRecordedCall<TTarget, TReturn> this[int index] => _recordedCalls[index];
     }
 }

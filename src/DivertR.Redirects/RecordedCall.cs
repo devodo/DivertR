@@ -58,4 +58,13 @@ namespace DivertR.Redirects
             base.Returned = new CallReturn<TReturn>(default!, exception);
         }
     }
+
+    internal class RecordedCall<TTarget, TReturn, T1> : RecordedCall<TTarget, TReturn>, IRecordedCall<TTarget, TReturn, T1> where TTarget : class
+    {
+        internal RecordedCall(CallInfo<TTarget> callInfo) : base(callInfo)
+        {
+        }
+
+        public T1 Arg1 => (T1) CallInfo.Arguments[0];
+    }
 }

@@ -7,7 +7,7 @@ namespace DivertR.Internal
     {
         private readonly IVia<TTarget> _via;
 
-        private readonly List<Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>>> _redirectDecorators =
+        private readonly List<Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>>> _postBuildActions =
             new List<Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>>>();
         
         private CompositeCallConstraint<TTarget> _callConstraint = CompositeCallConstraint<TTarget>.Empty;
@@ -29,9 +29,9 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IRedirectBuilder<TTarget> AddRedirectDecorator(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> decorator)
+        public IRedirectBuilder<TTarget> AddPostBuildAction(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> postBuild)
         {
-            _redirectDecorators.Add(decorator);
+            _postBuildActions.Add(postBuild);
 
             return this;
         }
@@ -42,7 +42,7 @@ namespace DivertR.Internal
         {
             var redirect = new TargetRedirect<TTarget>(target, _callConstraint);
 
-            return Decorate(redirect);
+            return ApplyPostBuildActions(redirect);
         }
         
         public IVia<TTarget> Redirect(TTarget target, int orderWeight = 0)
@@ -57,11 +57,11 @@ namespace DivertR.Internal
             return _via.InsertRedirect(redirect, orderWeight);
         }
         
-        protected IRedirect<TTarget> Decorate(IRedirect<TTarget> redirect)
+        protected IRedirect<TTarget> ApplyPostBuildActions(IRedirect<TTarget> redirect)
         {
-            foreach (var decorator in _redirectDecorators)
+            foreach (var postBuild in _postBuildActions)
             {
-                redirect = decorator.Invoke(_via, redirect);
+                redirect = postBuild.Invoke(_via, redirect);
             }
 
             return redirect;

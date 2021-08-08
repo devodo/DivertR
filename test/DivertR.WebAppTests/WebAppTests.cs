@@ -122,13 +122,22 @@ namespace DivertR.WebAppTests
             fooRepoCalls.Count.ShouldBe(1);
             fooRepoCalls
                 .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
-                .Visit<Foo>(async (foo, callReturn) =>
+                .Visit<Foo>(call =>
                 {
-                    response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{foo.Id}");
-                    foo.Name.ShouldBe(createFooRequest.Name);
-                    (await callReturn.Value).ShouldBe(true);
-                })
-                .Count.ShouldBe(1);
+                    response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{call.Arg1.Id}");
+                    call.Arg1.Name.ShouldBe(createFooRequest.Name);
+                    call.Returned!.Value.Result.ShouldBe(true);
+                }).Count.ShouldBe(1);
+            
+            fooRepoCalls
+                .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
+                .Visit<Foo>()
+                .ToList().ForEach(call =>
+                {
+                    response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{call.Arg1.Id}");
+                    call.Arg1.Name.ShouldBe(createFooRequest.Name);
+                    call.Returned!.Value.Result.ShouldBe(true);
+                });
         }
         
         [Fact]
@@ -154,9 +163,9 @@ namespace DivertR.WebAppTests
             fooRepoCalls.Count.ShouldBe(1);
             fooRepoCalls
                 .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
-                .Visit<Foo>(async (_, callReturn) =>
+                .Visit<Foo>(call =>
                 {
-                    callReturn.Exception.ShouldBeOfType<Exception>();
+                    call.Returned!.Exception.ShouldBeOfType<Exception>();
                 })
                 .Count.ShouldBe(1);
         }

@@ -4,23 +4,23 @@ using DivertR.Core;
 
 namespace DivertR.Redirects
 {
-    public class RecursRedirect<TTarget> : IRedirect<TTarget> where TTarget : class
+    public class RepeatRedirect<TTarget> : IRedirect<TTarget> where TTarget : class
     {
         private readonly IVia<TTarget> _via;
         private readonly IRedirect<TTarget> _innerRedirect;
-        private readonly int _recurCount;
+        private readonly int _repeatCount;
         private long _callCount;
 
-        public RecursRedirect(IVia<TTarget> via, IRedirect<TTarget> innerRedirect, int recurCount)
+        public RepeatRedirect(IVia<TTarget> via, IRedirect<TTarget> innerRedirect, int repeatCount)
         {
-            if (recurCount < 0)
+            if (repeatCount < 0)
             {
-                throw new ArgumentException("Must be greater than or equal to zero", nameof(recurCount));
+                throw new ArgumentException("Must be greater than or equal to zero", nameof(repeatCount));
             }
             
             _via = via;
             _innerRedirect = innerRedirect;
-            _recurCount = recurCount;
+            _repeatCount = repeatCount;
         }
 
         public ICallConstraint<TTarget> CallConstraint => _innerRedirect.CallConstraint;
@@ -31,10 +31,10 @@ namespace DivertR.Redirects
 
             if (count == long.MinValue) // overflow
             {
-                count = Interlocked.Exchange(ref _callCount, (long) _recurCount + 1);
+                count = Interlocked.Exchange(ref _callCount, (long) _repeatCount + 1);
             }
 
-            return count <= _recurCount 
+            return count <= _repeatCount 
                 ? _innerRedirect.Call(callInfo)
                 : _via.Relay.CallNext(callInfo);
         }

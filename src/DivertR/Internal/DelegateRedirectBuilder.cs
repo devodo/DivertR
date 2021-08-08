@@ -19,7 +19,7 @@ namespace DivertR.Internal
             var fastDelegate = redirectDelegate.ToDelegate();
             var redirect = new DelegateRedirect<TTarget>(callInfo => fastDelegate.Invoke(callInfo.Arguments.InternalArgs), CallConstraint);
             
-            return Decorate(redirect);
+            return ApplyPostBuildActions(redirect);
         }
 
         public IVia<TTarget> To(Delegate redirectDelegate, int orderWeight = 0)
@@ -34,7 +34,7 @@ namespace DivertR.Internal
             _parsedCallExpression.Validate(inputDelegate);
             var redirect = new DelegateRedirect<TTarget>(mappedRedirect, CallConstraint);
 
-            return Decorate(redirect);
+            return ApplyPostBuildActions(redirect);
         }
 
         protected IVia<TTarget> InsertRedirect(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect, int orderWeight)

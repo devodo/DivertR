@@ -14,4 +14,12 @@ namespace DivertR.Redirects
             return new RecordedCall<TTarget, TReturn>(callInfo);
         }
     }
+    
+    internal class RecordedCallFactory<TTarget, TReturn, T1> : RecordedCallFactory<TTarget> where TTarget : class
+    {
+        internal override RecordedCall<TTarget> Create(CallInfo<TTarget> callInfo)
+        {
+            return new RecordedCall<TTarget, TReturn, T1>(callInfo);
+        }
+    }
 }

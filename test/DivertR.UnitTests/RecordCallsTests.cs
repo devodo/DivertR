@@ -64,10 +64,10 @@ namespace DivertR.UnitTests
             calls.Single().CallInfo.Arguments.Count.ShouldBe(1);
             calls.Single().CallInfo.ViaProxy.ShouldBeSameAs(fooProxy);
             
-            calls.Visit<string>((input, callReturn) =>
+            calls.Visit<string>(call =>
             {
-                input.ShouldBe(inputs[0]);
-                callReturn.Value.ShouldBe(outputs[0]);
+                call.Arg1.ShouldBe(inputs[0]);
+                call.Returned!.Value.ShouldBe(outputs[0]);
             });
         }
         
@@ -122,7 +122,7 @@ namespace DivertR.UnitTests
             // ASSERT
             var call = _callStream.To(x => x.EchoAsync("test")).Single();
             caughtException.ShouldNotBeNull();
-            call.Returned!.Exception.ShouldBeNull();
+            call.Returned!.Exception.ShouldBeSameAs(caughtException);
             
             Exception returnedException = null;
             try

@@ -11,7 +11,7 @@ namespace DivertR.Redirects
 {
     public class RecordRedirect<TTarget> : IRedirect<TTarget>, ICallStream<TTarget> where TTarget : class
     {
-        private static readonly ConcurrentDictionary<Type, RecordedCallFactory<TTarget>> CallFactories = new ConcurrentDictionary<Type, RecordedCallFactory<TTarget>>();
+        private static readonly ConcurrentDictionary<MethodInfo, RecordedCallFactory<TTarget>> CallFactories = new ConcurrentDictionary<MethodInfo, RecordedCallFactory<TTarget>>();
         
         private readonly IVia<TTarget> _via;
         private readonly IRelay<TTarget> _relay;
@@ -38,9 +38,9 @@ namespace DivertR.Redirects
                 returnType = typeof(object);
             }
             
-            var callFactory = CallFactories.GetOrAdd(returnType, type =>
+            var callFactory = CallFactories.GetOrAdd(callInfo.Method, type =>
             {
-                var factoryType = typeof(RecordedCallFactory<,>).MakeGenericType(typeof(TTarget), returnType);
+                var factoryType = typeof(RecordedCallFactory<,,>).MakeGenericType(typeof(TTarget), returnType, callInfo.Method.GetParameters()[0].ParameterType);
                 return (RecordedCallFactory<TTarget>) Activator.CreateInstance(factoryType, ActivatorFlags, null, null, default);
             });
             

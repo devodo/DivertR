@@ -12,4 +12,9 @@ namespace DivertR.Redirects
     {
         public new ICallReturn<TReturn>? Returned { get; }
     }
+    
+    public interface IRecordedCall<TTarget, out TReturn, out T1> : IRecordedCall<TTarget, TReturn> where TTarget : class
+    {
+        public T1 Arg1 { get; }
+    }
 }
