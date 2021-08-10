@@ -118,14 +118,23 @@ namespace DivertR.WebAppTests
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+            var callStream = fooRepoCalls
+                .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)));
+
+            foreach (var call in callStream)
+            {
+                
+            }
             
             fooRepoCalls.Count.ShouldBe(1);
             fooRepoCalls
                 .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
-                .Visit<Foo>(call =>
+                .Visit<Foo>((call, foo) =>
                 {
-                    response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{call.Arg1.Id}");
-                    call.Arg1.Name.ShouldBe(createFooRequest.Name);
+                    response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{foo.Id}");
+                    foo.Name.ShouldBe(createFooRequest.Name);
+                    call.Returned!.Value.IsCompleted.ShouldBe(true);
                     call.Returned!.Value.Result.ShouldBe(true);
                 }).Count.ShouldBe(1);
             

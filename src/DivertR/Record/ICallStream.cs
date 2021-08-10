@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace DivertR.Redirects
+namespace DivertR.Record
 {
     public interface ICallStream<TTarget> : IReadOnlyCollection<IRecordedCall<TTarget>> where TTarget : class
     {

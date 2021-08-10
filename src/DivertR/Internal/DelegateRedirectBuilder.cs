@@ -22,7 +22,7 @@ namespace DivertR.Internal
             return ApplyPostBuildActions(redirect);
         }
 
-        public IVia<TTarget> To(Delegate redirectDelegate, int orderWeight = 0)
+        public IVia<TTarget> Redirect(Delegate redirectDelegate, int orderWeight = 0)
         {
             var redirect = Build(redirectDelegate);
             

@@ -16,7 +16,7 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IFuncRedirectBuilder<TTarget, TReturn> AddRedirectDecorator(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> decorator)
+        public new IFuncRedirectBuilder<TTarget, TReturn> AddPostBuildAction(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> decorator)
         {
             base.AddPostBuildAction(decorator);
 

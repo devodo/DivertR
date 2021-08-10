@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using DivertR.DynamicProxy;
-using DivertR.Redirects;
+using DivertR.Record;
 using DivertR.Setup;
 using DivertR.UnitTests.Model;
 using Shouldly;
@@ -48,7 +48,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.RefNumber(ref Is<int>.AnyRef))
-                .To(new RefCall((ref int i) =>
+                .Redirect(new RefCall((ref int i) =>
                 {
                     _via.Next.RefNumber(ref i);
 
@@ -87,7 +87,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
-                .To(new OutCall((int i, out int o) =>
+                .Redirect(new OutCall((int i, out int o) =>
                 {
                     _via.Next.OutNumber(i, out o);
 
@@ -125,7 +125,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
-                .To(new OutCall((int i, out int o) =>
+                .Redirect(new OutCall((int i, out int o) =>
                 {
                     _via.Next.OutNumber(i, out o);
 
@@ -166,7 +166,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.RefArrayNumber(ref Is<int[]>.AnyRef))
-                .To(new RefArrayCall((ref int[] inRef) =>
+                .Redirect(new RefArrayCall((ref int[] inRef) =>
                 {
                     _via.Next.RefArrayNumber(ref inRef);
 
@@ -194,7 +194,7 @@ namespace DivertR.UnitTests
             int input = 5;
             via
                 .To(x => x.RefNumber(ref input))
-                .To(new RefCall((ref int i) =>
+                .Redirect(new RefCall((ref int i) =>
                 {
                     i = 50;
                 }));

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using DivertR.Redirects;
+using DivertR.Record;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;

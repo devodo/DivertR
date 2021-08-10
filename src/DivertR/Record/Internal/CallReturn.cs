@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace DivertR.Redirects
+namespace DivertR.Record.Internal
 {
     internal class CallReturn : ICallReturn
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DivertR.Redirects
+namespace DivertR.Record
 {
     public interface ICallReturn
     {

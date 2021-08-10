@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using DivertR.Core;
 using DivertR.Internal;
+using DivertR.Record;
+using DivertR.Record.Internal;
 using DivertR.Setup;
 
 namespace DivertR
@@ -12,7 +14,6 @@ namespace DivertR
         private readonly RedirectRepository _redirectRepository;
         private readonly IProxyFactory _proxyFactory;
         private readonly RelayContext<TTarget> _relayContext;
-        private readonly Lazy<IRelay<TTarget>> _relay;
 
         public Via(IDiverterSettings? diverterSettings = null) : this(ViaId.From<TTarget>(), new RedirectRepository(), diverterSettings ?? DiverterSettings.Default)
         {
@@ -27,12 +28,13 @@ namespace DivertR
             _redirectRepository = redirectRepository;
             
             _relayContext = new RelayContext<TTarget>();
-            _relay = new Lazy<IRelay<TTarget>>(() => new Relay<TTarget>(_relayContext, _proxyFactory));
+            Relay = new Relay<TTarget>(_relayContext, _proxyFactory);
         }
 
         public ViaId ViaId { get; }
 
-        public IRelay<TTarget> Relay => _relay.Value;
+        public IRelay<TTarget> Relay { get; }
+
         public TTarget Next => Relay.Next;
         
         public IReadOnlyList<IRedirect<TTarget>> ConfiguredRedirects => _redirectRepository.Get<TTarget>(ViaId);
@@ -114,6 +116,14 @@ namespace DivertR
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
 
             return new ActionRedirectBuilder<TTarget>(this, parsedCall);
+        }
+        
+        public ICallStream<TTarget> Record(ICallConstraint<TTarget>? callConstraint = null)
+        {
+            var recordRedirect = new RecordRedirect<TTarget>(Relay, callConstraint);
+            InsertRedirect(recordRedirect, int.MaxValue);
+
+            return recordRedirect.CreateCallStream(this);
         }
     }
 }

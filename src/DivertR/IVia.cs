@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using DivertR.Record;
 
 namespace DivertR
 {
@@ -26,5 +27,6 @@ namespace DivertR
         IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression);
         IActionRedirectBuilder<TTarget> To(Expression<Action<TTarget>> lambdaExpression);
         IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression);
+        ICallStream<TTarget> Record(ICallConstraint<TTarget>? callConstraint = null);
     }
 }

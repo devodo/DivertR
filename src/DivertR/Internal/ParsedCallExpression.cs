@@ -28,14 +28,22 @@ namespace DivertR.Internal
                 return;
             }
             
-            string DelegateSignatureToString()
-            {
-                var delegateParameters = redirectDelegate.Method.GetParameters();
-                var parameterTypes = delegateParameters.Select(x => x.ParameterType.FullName);
-                return $"{redirectDelegate.Method.ReturnType.FullName} Invoke({string.Join(", ", parameterTypes)})";
-            }
+            var delegateParameters = redirectDelegate.Method.GetParameters();
+            var parameterTypes = delegateParameters.Select(x => x.ParameterType.FullName);
+            var delegateSignature = $"{redirectDelegate.Method.ReturnType.FullName} Invoke({string.Join(", ", parameterTypes)})";
 
-            var errorMessage = $"To() delegate '{DelegateSignatureToString()}' invalid for redirect method '{Method}'";
+            var errorMessage = $"Redirect() delegate '{delegateSignature}' invalid for To() method '{Method}'";
+            throw new DiverterException(errorMessage);
+        }
+
+        public void ValidateArguments(params Type[] args)
+        {
+            if (ArgumentTypesValid(args, ParameterInfos))
+            {
+                return;
+            }
+            
+            var errorMessage = $"Argument types invalid for To() method '{Method}'";
             throw new DiverterException(errorMessage);
         }
 
@@ -88,6 +96,29 @@ namespace DivertR.Internal
                 }
                 
                 if (!delegateParams[i].ParameterType.IsAssignableFrom(callParams[i].ParameterType))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        
+        private static bool ArgumentTypesValid(Type[] argumentTypes, ParameterInfo[] callParams)
+        {
+            if (argumentTypes.Length > callParams.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < argumentTypes.Length; i++)
+            {
+                if (ReferenceEquals(argumentTypes[i], callParams[i].ParameterType))
+                {
+                    continue;
+                }
+                
+                if (!argumentTypes[i].IsAssignableFrom(callParams[i].ParameterType))
                 {
                     return false;
                 }

@@ -11,13 +11,13 @@
         public static IFuncRedirectBuilder<TTarget, TReturn> Repeat<TTarget, TReturn>(this IFuncRedirectBuilder<TTarget, TReturn> redirectBuilder, int repeatCount)
             where TTarget : class
         {
-            return redirectBuilder.AddRedirectDecorator((via, redirect) => new RepeatRedirect<TTarget>(via, redirect, repeatCount));
+            return redirectBuilder.AddPostBuildAction((via, redirect) => new RepeatRedirect<TTarget>(via, redirect, repeatCount));
         }
         
         public static IActionRedirectBuilder<TTarget> Repeat<TTarget>(this IActionRedirectBuilder<TTarget> redirectBuilder, int repeatCount)
             where TTarget : class
         {
-            return redirectBuilder.AddRedirectDecorator((via, redirect) => new RepeatRedirect<TTarget>(via, redirect, repeatCount));
+            return redirectBuilder.AddPostBuildAction((via, redirect) => new RepeatRedirect<TTarget>(via, redirect, repeatCount));
         }
         
         public static IRedirectBuilder<TTarget> Skip<TTarget>(this IRedirectBuilder<TTarget> redirectBuilder, int skipCount)
@@ -29,13 +29,13 @@
         public static IFuncRedirectBuilder<TTarget, TReturn> Skip<TTarget, TReturn>(this IFuncRedirectBuilder<TTarget, TReturn> redirectBuilder, int skipCount)
             where TTarget : class
         {
-            return redirectBuilder.AddRedirectDecorator((via, redirect) => new SkipRedirect<TTarget>(via, redirect, skipCount));
+            return redirectBuilder.AddPostBuildAction((via, redirect) => new SkipRedirect<TTarget>(via, redirect, skipCount));
         }
         
         public static IActionRedirectBuilder<TTarget> Skip<TTarget>(this IActionRedirectBuilder<TTarget> redirectBuilder, int skipCount)
             where TTarget : class
         {
-            return redirectBuilder.AddRedirectDecorator((via, redirect) => new SkipRedirect<TTarget>(via, redirect, skipCount));
+            return redirectBuilder.AddPostBuildAction((via, redirect) => new SkipRedirect<TTarget>(via, redirect, skipCount));
         }
     }
 }
