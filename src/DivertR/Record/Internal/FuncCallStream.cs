@@ -40,6 +40,17 @@ namespace DivertR.Record.Internal
 
             return castCalls;
         }
+        
+        public IEnumerable<TOut> Visit<T1, TOut>(Func<IRecordedCall<TTarget, TReturn, T1>, T1, TOut> visitor)
+        {
+            _parsedCallExpression.ValidateArguments(typeof(T1));
+            var castCalls = _recordedCalls.UnsafeCast<IRecordedCall<TTarget, TReturn, T1>>();
+
+            foreach (var call in castCalls)
+            {
+                yield return visitor.Invoke(call, call.Arg1);
+            }
+        }
 
         public IReadOnlyList<IRecordedCall<TTarget, TReturn, T1, T2>> Visit<T1, T2>(Action<IRecordedCall<TTarget, TReturn, T1, T2>>? visitor = null)
         {

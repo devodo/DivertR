@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using DivertR.Core;
 
 namespace DivertR.Internal
@@ -20,6 +21,7 @@ namespace DivertR.Internal
             return new CompositeCallConstraint<T>(_callConstraints.Add(callConstraint));
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(CallInfo<T> callInfo)
         {
             return _callConstraints.All(callConstraint => callConstraint.IsMatch(callInfo));

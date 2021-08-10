@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
@@ -12,6 +13,7 @@ namespace DivertR.Internal
             _genericTypes = genericTypes;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(MethodInfo methodInfo)
         {
             if (!methodInfo.IsGenericMethod)

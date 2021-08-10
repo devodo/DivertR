@@ -1,4 +1,5 @@
-﻿using DivertR.Core;
+﻿using System.Runtime.CompilerServices;
+using DivertR.Core;
 
 namespace DivertR.Internal
 {
@@ -11,6 +12,7 @@ namespace DivertR.Internal
             _relayContext = relayContext;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Call(CallInfo<TTarget> callInfo)
         {
             var lastCall = _relayContext.CallInfo;

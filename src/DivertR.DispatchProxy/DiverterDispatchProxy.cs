@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.DispatchProxy
 {
@@ -19,7 +20,8 @@ namespace DivertR.DispatchProxy
 
             return (TTarget) proxy;
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override object Invoke(MethodInfo targetMethod, object[] args)
         {
             return _invoker.Invoke(targetMethod, args);

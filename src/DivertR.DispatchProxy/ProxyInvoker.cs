@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using DivertR.Core;
 
 namespace DivertR.DispatchProxy
@@ -14,6 +15,7 @@ namespace DivertR.DispatchProxy
             _proxyCall = proxyCall;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object Invoke(MethodInfo targetMethod, object[] args)
         {
             var callInfo = new CallInfo<TTarget>(_proxy, null, targetMethod, args);

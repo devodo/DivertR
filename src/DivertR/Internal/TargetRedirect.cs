@@ -1,4 +1,5 @@
-﻿using DivertR.Core;
+﻿using System.Runtime.CompilerServices;
+using DivertR.Core;
 
 namespace DivertR.Internal
 {
@@ -13,7 +14,8 @@ namespace DivertR.Internal
         }
 
         public ICallConstraint<TTarget> CallConstraint { get; }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Call(CallInfo<TTarget> callInfo)
         {
             if (_target == null)

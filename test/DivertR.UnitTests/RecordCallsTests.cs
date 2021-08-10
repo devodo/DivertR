@@ -37,8 +37,18 @@ namespace DivertR.UnitTests
             var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
 
             // ASSERT
-            _callStream.Select(x => (string) x.CallInfo.Arguments[0]).ShouldBe(inputs);
-            _callStream.Select(x => (string) x.Returned?.Value).ShouldBe(outputs);
+            _callStream.Select(x => x.CallInfo.Arguments[0]).ShouldBe(inputs);
+            _callStream.Select(x => x.Returned?.Value).ShouldBe(outputs);
+            _callStream
+                .To(x => x.Echo(Is<string>.Any))
+                .Visit<string>().Select(x => x.Arg1).ShouldBe(inputs);
+            _callStream
+                .To(x => x.Echo(Is<string>.Any))
+                .Select(x => x.Returned!.Value).ShouldBe(outputs);
+            
+            _callStream
+                .To(x => x.Echo(Is<string>.Any))
+                .Visit<string, string>((call, input) => input).ShouldBe(inputs);
         }
         
         [Fact]
@@ -64,10 +74,10 @@ namespace DivertR.UnitTests
             calls.Single().CallInfo.Arguments.Count.ShouldBe(1);
             calls.Single().CallInfo.ViaProxy.ShouldBeSameAs(fooProxy);
             
-            calls.Visit<string>(call =>
+            calls.Visit<string>((call, input) =>
             {
-                call.Arg1.ShouldBe(inputs[0]);
-                call.Returned!.Value.ShouldBe(outputs[0]);
+                input.ShouldBe(inputs[0]);
+                call.Returned?.Value.ShouldBe(outputs[0]);
             });
         }
         
@@ -91,9 +101,11 @@ namespace DivertR.UnitTests
             }
 
             // ASSERT
-            var call = _callStream.To(x => x.Echo("test")).Single();
             caughtException.ShouldNotBeNull();
-            call.Returned!.Exception.ShouldBeSameAs(caughtException);
+            _callStream
+                .To(x => x.Echo("test"))
+                .Visit(call => call.Returned?.Exception.ShouldBeSameAs(caughtException))
+                .Count.ShouldBe(1);
         }
         
         [Fact]

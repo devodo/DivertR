@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using DivertR.Core;
 
@@ -28,6 +29,7 @@ namespace DivertR.Internal
         
         public IRedirect<TTarget> Redirect => Current.Redirect;
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? CallBegin(IList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
         {
             var redirect = BeginNewCall(redirects, callInfo);
@@ -46,7 +48,8 @@ namespace DivertR.Internal
                 EndCall(callInfo);
             }
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? CallOriginal(CallInfo<TTarget> callInfo)
         {
             if (callInfo.Original == null)
@@ -56,7 +59,8 @@ namespace DivertR.Internal
                 
             return callInfo.Invoke(callInfo.Original);
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? CallNext(CallInfo<TTarget> callInfo)
         {
             var redirect = BeginNextRedirect(callInfo);
@@ -76,6 +80,7 @@ namespace DivertR.Internal
             }
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IRedirect<TTarget>? BeginNewCall(IList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
         {
             var redirectContext = RedirectContext<TTarget>.Create(redirects, callInfo);
@@ -90,7 +95,8 @@ namespace DivertR.Internal
             
             return redirectContext.Redirect;
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void EndCall(CallInfo<TTarget> callInfo)
         {
             _redirectStack.Value = _redirectStack.Value.Pop(out var redirectContext);
@@ -100,7 +106,8 @@ namespace DivertR.Internal
                 throw new DiverterException("Fatal error: Encountered an unexpected redirect state ending the current call");
             }
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IRedirect<TTarget>? BeginNextRedirect(CallInfo<TTarget> callInfo)
         {
             var redirectStack = _redirectStack.Value;
@@ -115,7 +122,8 @@ namespace DivertR.Internal
 
             return redirectContext.Redirect;
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void EndRedirect(CallInfo<TTarget> invocation)
         {
             _redirectStack.Value = _redirectStack.Value.Pop(out var redirectContext);

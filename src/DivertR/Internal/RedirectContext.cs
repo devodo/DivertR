@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using DivertR.Core;
 
 namespace DivertR.Internal
@@ -10,7 +11,8 @@ namespace DivertR.Internal
         private readonly IList<IRedirect<TTarget>> _redirects;
         public CallInfo<TTarget> CallInfo { get; }
         public IRedirect<TTarget> Redirect => _redirects[_index];
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RedirectContext<TTarget>? Create(IList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
         {
             var index = GetNextIndex(-1, redirects, callInfo);
@@ -29,7 +31,8 @@ namespace DivertR.Internal
             _redirects = redirects;
             _index = index;
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RedirectContext<TTarget>? MoveNext(CallInfo<TTarget> callInfo)
         {
             var index = GetNextIndex(_index, _redirects, callInfo);
@@ -42,6 +45,7 @@ namespace DivertR.Internal
             return new RedirectContext<TTarget>(_redirects, index, callInfo);
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetNextIndex(int index, IList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
         {
             var startIndex = index + 1;

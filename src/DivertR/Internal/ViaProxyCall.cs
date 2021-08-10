@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using DivertR.Core;
 
 namespace DivertR.Internal
@@ -14,6 +15,7 @@ namespace DivertR.Internal
             _redirects = redirects;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Call(CallInfo<TTarget> callInfo)
         {
             return _relayContext.CallBegin(_redirects, callInfo);

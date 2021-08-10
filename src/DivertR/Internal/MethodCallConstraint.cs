@@ -1,4 +1,5 @@
-﻿using DivertR.Core;
+﻿using System.Runtime.CompilerServices;
+using DivertR.Core;
 
 namespace DivertR.Internal
 {
@@ -12,7 +13,8 @@ namespace DivertR.Internal
             _methodConstraint = methodConstraint;
             _argumentConditions = argumentConditions;
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(CallInfo<TTarget> callInfo)
         {
             if (!_methodConstraint.IsMatch(callInfo.Method))

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
@@ -84,12 +85,12 @@ namespace DivertR.Internal
         {
             return Redirect(() => instance, orderWeight);
         }
-
+        
         public IVia<TTarget> Redirect(Func<TReturn> redirectDelegate, int orderWeight = 0)
         {
             return InsertRedirect(redirectDelegate, callInfo => redirectDelegate.Invoke(), orderWeight);
         }
-
+        
         public IVia<TTarget> Redirect<T1>(Func<T1, TReturn> redirectDelegate, int orderWeight = 0)
         {
             return InsertRedirect(redirectDelegate, callInfo => redirectDelegate.Invoke((T1) callInfo.Arguments[0]), orderWeight);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using DivertR.Core;
 
 namespace DivertR.Internal
@@ -22,12 +23,14 @@ namespace DivertR.Internal
             _next = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new RedirectProxyCall<TTarget>(_relayContext)));
             _original = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new OriginalProxyCall<TTarget>(_relayContext)));
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? CallNext(CallInfo<TTarget>? callInfo = null)
         {
             return _relayContext.CallNext(callInfo ?? CallInfo);
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? CallOriginal(CallInfo<TTarget>? callInfo = null)
         {
             return _relayContext.CallOriginal(callInfo ?? CallInfo);

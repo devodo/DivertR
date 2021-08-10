@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.Core
 {
@@ -11,6 +12,7 @@ namespace DivertR.Core
             return (target, arguments) => delegateInternal.Invoke(target, arguments.InternalArgs);
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static object? Invoke<TTarget>(this CallInfo<TTarget> callInfo, TTarget target) where TTarget : class
         {
             if (target == null) throw new ArgumentNullException(nameof(target));

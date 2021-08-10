@@ -1,4 +1,6 @@
-﻿namespace DivertR.Internal
+﻿using System.Runtime.CompilerServices;
+
+namespace DivertR.Internal
 {
     internal class ConstantArgumentConstraint : IArgumentConstraint
     {
@@ -9,6 +11,7 @@
             _constantValue = constantValue;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(object? argument)
         {
             return Equals(_constantValue, argument);

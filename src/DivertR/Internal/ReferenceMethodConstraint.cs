@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
@@ -11,6 +12,7 @@ namespace DivertR.Internal
             _methodInfo = methodInfo;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(MethodInfo methodInfo)
         {
             return ReferenceEquals(_methodInfo, methodInfo);

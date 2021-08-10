@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using DivertR.Core;
 
 namespace DivertR.Record.Internal
@@ -20,7 +21,8 @@ namespace DivertR.Record.Internal
         }
 
         public ICallConstraint<TTarget> CallConstraint { get; }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Call(CallInfo<TTarget> callInfo)
         {
             var callFactory = GetRecordedCallFactory(callInfo.Method);

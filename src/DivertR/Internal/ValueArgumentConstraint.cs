@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
@@ -11,6 +12,7 @@ namespace DivertR.Internal
             GetValueFunc = getValueFunc;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(object? argument)
         {
             return Equals(GetValueFunc.Invoke(), argument);

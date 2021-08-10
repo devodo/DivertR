@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
@@ -11,7 +12,8 @@ namespace DivertR.Internal
         {
             _matchFunc = (Func<TTarget, bool>) lambdaExpression.Compile();
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(object? argument)
         {
             return _matchFunc((TTarget) argument!);

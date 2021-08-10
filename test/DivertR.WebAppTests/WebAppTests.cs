@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using DivertR.Redirects;
 using DivertR.SampleWebApp.Model;
 using DivertR.SampleWebApp.Services;
 using Shouldly;
@@ -119,14 +118,6 @@ namespace DivertR.WebAppTests
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
 
-            var callStream = fooRepoCalls
-                .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)));
-
-            foreach (var call in callStream)
-            {
-                
-            }
-            
             fooRepoCalls.Count.ShouldBe(1);
             fooRepoCalls
                 .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
@@ -157,11 +148,13 @@ namespace DivertR.WebAppTests
             {
                 Name = Guid.NewGuid().ToString()
             };
+
+            var testException = new Exception("test");
             
             var fooRepoCalls = _fooRepositoryVia.Record();
             _fooRepositoryVia
                 .To(x => x.TryInsertFoo(Is<Foo>.Any))
-                .Redirect(() => throw new Exception("test"));
+                .Redirect(() => throw testException);
 
             // ACT
             var response = await _fooClient.InsertFoo(createFooRequest);
@@ -174,7 +167,7 @@ namespace DivertR.WebAppTests
                 .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
                 .Visit<Foo>(call =>
                 {
-                    call.Returned!.Exception.ShouldBeOfType<Exception>();
+                    call.Returned!.Exception.ShouldBeSameAs(testException);
                 })
                 .Count.ShouldBe(1);
         }

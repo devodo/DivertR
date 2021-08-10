@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using DivertR.Core;
 
 namespace DivertR.DispatchProxy
@@ -16,7 +17,8 @@ namespace DivertR.DispatchProxy
             _original = original;
             _getProxyCall = getProxyCall;
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object Invoke(MethodInfo targetMethod, object[] args)
         {
             var proxyCall = _getProxyCall.Invoke();
@@ -31,6 +33,7 @@ namespace DivertR.DispatchProxy
             return proxyCall.Call(callInfo)!;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private object DefaultProceed(MethodInfo targetMethod, object[] args)
         {
             if (_original == null)
