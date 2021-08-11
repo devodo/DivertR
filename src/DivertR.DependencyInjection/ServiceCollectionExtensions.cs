@@ -5,7 +5,18 @@ namespace DivertR.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, Action<RegistrationBuilder>? builderAction = null)
+        public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, string? name = null)
+        {
+            return services.Divert(diverter, builder =>
+            {
+                foreach (var viaId in diverter.RegisteredVias(name))
+                {
+                    builder.Include(viaId.Type).WithViaName(viaId.Name);
+                }
+            });
+        }
+        
+        private static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, Action<RegistrationBuilder>? builderAction = null)
         {
             var builder = new RegistrationBuilder(services, diverter);
             builderAction?.Invoke(builder);

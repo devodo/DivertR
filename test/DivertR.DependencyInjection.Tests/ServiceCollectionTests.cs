@@ -86,20 +86,16 @@ namespace DivertR.DependencyInjection.Tests
         [Fact]
         public void GivenOpenGenericShouldRedirect()
         {
+            _diverter.Register<IList<string>>();
             _services.AddTransient(typeof(IList<>), typeof(List<>));
-            List<Type> typesDiverted = null;
-            _services.Divert(_diverter, builder =>
-            {
-                builder.Include<IList<string>>();
-                builder.WithOnCompleteCallback(types => { typesDiverted = types; });
-            });
+            
+            _services.Divert(_diverter);
 
             var provider = _services.BuildServiceProvider();
             var list = provider.GetRequiredService<IList<string>>();
             
             _diverter.Via<IList<string>>().To(x => x.Count).Redirect(10);
-
-            typesDiverted.ShouldBe(new[] {typeof(IList<string>)});
+            
             list.Count.ShouldBe(10);
             _diverter.ResetAll();
             list.Count.ShouldBe(0);
@@ -108,9 +104,10 @@ namespace DivertR.DependencyInjection.Tests
         [Fact]
         public void GivenOpenGeneric_ShouldRedirect()
         {
+            _diverter.Register<IList<string>>();
             var via = _diverter.Via<IList<string>>();
             _services.AddTransient(typeof(IList<>), typeof(List<>));
-            _services.Divert(via);
+            _services.Divert(_diverter);
 
             var provider = _services.BuildServiceProvider();
             var list = provider.GetRequiredService<IList<string>>();
@@ -125,12 +122,10 @@ namespace DivertR.DependencyInjection.Tests
         [Fact]
         public void GivenOpenAndClosedGenericRegistrationsShouldRegisterSingleDiverter()
         {
+            _diverter.Register<IList<string>>();
             _services.AddTransient(typeof(IList<>), typeof(List<>));
             _services.AddTransient<IList<string>, List<string>>();
-            _services.Divert(_diverter, builder =>
-            {
-                builder.Include<IList<string>>();
-            });
+            _services.Divert(_diverter);
 
             var provider = _services.BuildServiceProvider();
             var list = provider.GetRequiredService<IList<string>>();

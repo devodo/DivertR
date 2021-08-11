@@ -6,14 +6,16 @@ using DivertR.SampleWebApp.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Logging;
 using Refit;
-using Shouldly;
 using Xunit.Abstractions;
 
 namespace DivertR.WebAppTests
 {
     public class WebAppFixture
     {
-        private readonly IDiverter _diverter = new Diverter();
+        private readonly IDiverter _diverter = new Diverter().Register(new[]
+        {
+            typeof(ILoggerFactory), typeof(IFooRepository), typeof(IFooPublisher)
+        });
 
         private readonly WebApplicationFactory<Startup> _webApplicationFactory;
         
@@ -23,19 +25,7 @@ namespace DivertR.WebAppTests
             {
                 builder.ConfigureServices(services =>
                 {
-                    services.Divert(_diverter, diverterBuilder =>
-                    {
-                        diverterBuilder.IncludeRange<IFooRepository, IFooPublisher>();
-                        diverterBuilder.Include<ILoggerFactory>();
-                        // Assert
-                        diverterBuilder.WithOnCompleteCallback(types =>
-                        {
-                            types.ShouldBe(new[]
-                            {
-                                typeof(ILoggerFactory), typeof(IFooRepository), typeof(IFooPublisher)
-                            });
-                        });
-                    });
+                    services.Divert(_diverter);
                 });
             });
         }
@@ -52,7 +42,7 @@ namespace DivertR.WebAppTests
             return _diverter;
         }
 
-        public void InitLogging(ITestOutputHelper output)
+        private void InitLogging(ITestOutputHelper output)
         {
             _diverter.Via<ILoggerFactory>()
                 .To(x => x.CreateLogger(Is<string>.Any))

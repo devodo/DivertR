@@ -41,7 +41,7 @@ namespace DivertR
 
         public override string ToString()
         {
-            return $"{Type.Name}" + (Name != null ? $":{Name}" : string.Empty);
+            return $"Type:{Type.Name}" + (Name != null ? $" Name:{Name}" : string.Empty);
         }
 
         public static ViaId From(Type type, string? name = null)

@@ -7,6 +7,11 @@ namespace DivertR.UnitTests
     public class DiverterTests
     {
         private readonly IDiverter _diverter = new Diverter();
+
+        public DiverterTests()
+        {
+            _diverter.Register<IFoo>();
+        }
         
         [Fact]
         public void GivenRedirectWithRelay_ShouldRedirect()
