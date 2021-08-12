@@ -77,9 +77,9 @@ namespace DivertR
             return this;
         }
         
-        public IVia<TTarget> Redirect(TTarget target)
+        public IVia<TTarget> Retarget(TTarget target)
         {
-            return To().Redirect(target);
+            return To().Retarget(target);
         }
 
         public IRedirectBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null)

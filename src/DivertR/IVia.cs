@@ -22,7 +22,7 @@ namespace DivertR
         IVia<TTarget> InsertRedirect(IRedirect<TTarget> redirect, int orderWeight = 0);
         IVia<TTarget> Reset();
         
-        IVia<TTarget> Redirect(TTarget target);
+        IVia<TTarget> Retarget(TTarget target);
         IRedirectBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null);
         IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression);
         IActionRedirectBuilder<TTarget> To(Expression<Action<TTarget>> lambdaExpression);

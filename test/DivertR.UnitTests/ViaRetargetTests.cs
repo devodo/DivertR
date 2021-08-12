@@ -7,7 +7,7 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class ViaTargetRedirectTests
+    public class ViaRetargetTests
     {
         private readonly Via<IFoo> _via = new();
         
@@ -31,7 +31,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
             var foo = new Foo("hi DivertR");
-            _via.To().Redirect(foo);
+            _via.To().Retarget(foo);
             
             // ACT
             var name = proxy.Name;
@@ -41,12 +41,12 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithTargetRedirectTo_ShouldRedirect()
+        public void GivenProxyWithRetarget_ShouldRedirect()
         {
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
             var foo = new Foo("hi DivertR");
-            _via.Redirect(foo);
+            _via.Retarget(foo);
             
             // ACT
             var name = proxy.Name;
@@ -56,12 +56,12 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public void GivenProxyWithRedirect_WhenReset_ShouldDefaultToOriginal()
+        public void GivenProxyWithRetarget_WhenReset_ShouldDefaultToOriginal()
         {
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.Redirect(new Foo("diverted"));
+            _via.Retarget(new Foo("diverted"));
 
             // ACT
             _via.Reset();
@@ -71,12 +71,28 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithRelayToOriginalRedirect_ShouldRedirect()
+        public void GivenMultipleRetargets_WhenReset_ShouldDefaultToOriginal()
+        {
+            // ARRANGE
+            var original = new Foo("hello foo");
+            var proxy = _via.Proxy(original);
+
+            // ACT
+            _via.Retarget(new FooAlt(() => $"{_via.Relay.Next.Name} me"));
+            _via.Retarget(new FooAlt(() => $"{_via.Relay.Next.Name} again"));
+            _via.Reset();
+
+            // ASSERT
+            proxy.Name.ShouldBe(original.Name);
+        }
+        
+        [Fact]
+        public void GivenProxyWithRelayToOriginalRetarget_ShouldRedirect()
         {
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.Redirect(new FooAlt(() => $"hello {_via.Relay.Original.Name}"));
+            _via.Retarget(new FooAlt(() => $"hello {_via.Relay.Original.Name}"));
 
             // ACT
             var name = proxy.Name;
@@ -86,12 +102,12 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithRelayToNextRedirect_ShouldRedirect()
+        public void GivenProxyWithRelayToNextRetarget_ShouldRedirect()
         {
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.Redirect(new FooAlt(() => $"hello {_via.Relay.Next.Name}"));
+            _via.Retarget(new FooAlt(() => $"hello {_via.Relay.Next.Name}"));
             
             // ACT
             var name = proxy.Name;
@@ -101,13 +117,13 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithRelayToOriginalInstanceRedirect_ShouldRedirect()
+        public void GivenProxyWithRelayToOriginalInstanceRetarget_ShouldRedirect()
         {
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             IFoo originalReference = null;
-            _via.Redirect(new FooAlt(() =>
+            _via.Retarget(new FooAlt(() =>
             {
                 originalReference = _via.Relay.CallInfo.Original;
                 return $"hello {originalReference!.Name}";
@@ -122,14 +138,14 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenMultipleProxiesWithRelayToOriginalRedirects_ShouldRelay()
+        public void GivenMultipleProxiesWithRelayToOriginalRetarget_ShouldRelay()
         {
             // ARRANGE
             var proxies = Enumerable.Range(0, 10)
                 .Select(i => _via.Proxy(new Foo($"foo{i}")))
                 .ToList();
             
-            _via.Redirect(new FooAlt(() => $"diverted {_via.Relay.Original.Name}"));
+            _via.Retarget(new FooAlt(() => $"diverted {_via.Relay.Original.Name}"));
             
             // ACT
             var names = proxies.Select(x => x.Name).ToList();
@@ -142,14 +158,14 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenMultipleProxiesWithRelayToNextRedirects_ShouldRelay()
+        public void GivenMultipleProxiesWithRelayToNextRetarget_ShouldRelay()
         {
             // ARRANGE
             var proxies = Enumerable.Range(0, 10)
                 .Select(i => _via.Proxy(new Foo($"foo{i}")))
                 .ToList();
             
-            _via.Redirect(new FooAlt(() => $"diverted {_via.Next.Name}"));
+            _via.Retarget(new FooAlt(() => $"diverted {_via.Next.Name}"));
 
             // ACT
             var names = proxies.Select(x => x.Name).ToList();
@@ -162,7 +178,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithMockedRedirect_ShouldRedirect()
+        public void GivenProxyWithMockedRetarget_ShouldRedirect()
         {
             // ARRANGE
             var original = new Foo("hello");
@@ -173,7 +189,7 @@ namespace DivertR.UnitTests
                 .Setup(x => x.Name)
                 .Returns(() => $"{_via.Relay.Original.Name} world");
 
-            _via.Redirect(mock.Object);
+            _via.Retarget(mock.Object);
 
             // ACT
             var name = proxy.Name;
@@ -183,16 +199,16 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public void GivenProxyWithMultipleRedirects_ShouldChain()
+        public void GivenProxyWithMultipleRetargets_ShouldChain()
         {
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
             var next = _via.Relay.Next;
             
             _via
-                .Redirect(new FooAlt(() => $"again {next.Name} 3"))
-                .Redirect(new FooAlt(() => $"here {next.Name} 2"))
-                .Redirect(new FooAlt(() => $"DivertR {next.Name} 1"));
+                .Retarget(new FooAlt(() => $"again {next.Name} 3"))
+                .Retarget(new FooAlt(() => $"here {next.Name} 2"))
+                .Retarget(new FooAlt(() => $"DivertR {next.Name} 1"));
             
             // ACT
             var name = proxy.Name;
@@ -202,15 +218,15 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithMultipleInsertRedirects_ShouldChain()
+        public void GivenProxyWithMultipleWeightedRetargets_ShouldOrderChain()
         {
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
             var next = _via.Relay.Next;
             _via
-                .To().Redirect(new FooAlt(() => $"DivertR {next.Name} 1"))
-                .To().Redirect(new FooAlt(() => $"here {next.Name} 2"))
-                .To().Redirect(new FooAlt(() => $"again {next.Name} 3"), -10);
+                .To().Retarget(new FooAlt(() => $"DivertR {next.Name} 1"))
+                .To().Retarget(new FooAlt(() => $"here {next.Name} 2"))
+                .To().Retarget(new FooAlt(() => $"again {next.Name} 3"), -10);
 
             // ACT
             var name = proxy.Name;
@@ -220,7 +236,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithMultipleOrderedInsertRedirects_ShouldOrderChain()
+        public void GivenProxyWithMultipleOrderedBuildRetargets_ShouldOrderChain()
         {
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
@@ -239,7 +255,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithMultipleRedirectsWithNextAndOriginalRelays_ShouldChain()
+        public void GivenProxyWithMultipleRetargetssWithNextAndOriginalRelays_ShouldChain()
         {
             // ARRANGE
             const int NumRedirects = 2;
@@ -250,7 +266,7 @@ namespace DivertR.UnitTests
             for (var i = 0; i < NumRedirects; i++)
             {
                 var counter = i;
-                _via.Redirect(new FooAlt(() => $"{orig.Name} {counter} {next.Name}"));
+                _via.Retarget(new FooAlt(() => $"{orig.Name} {counter} {next.Name}"));
             }
             
             // ACT
@@ -262,7 +278,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithMultipleRedirectsWithRecursiveProxy_ShouldRedirect()
+        public void GivenProxyWithMultipleRetargetsWithRecursiveProxy_ShouldRedirect()
         {
             // ARRANGE
             var proxy = _via.Proxy(new Foo("foo"));
@@ -283,8 +299,8 @@ namespace DivertR.UnitTests
             });
             
             _via
-                .Redirect(new FooAlt(() => next.Name.Replace(orig.Name, "bar")))
-                .Redirect(recursive);
+                .Retarget(new FooAlt(() => next.Name.Replace(orig.Name, "bar")))
+                .Retarget(recursive);
             
             // ACT
             var name = proxy.Name;
@@ -292,60 +308,21 @@ namespace DivertR.UnitTests
             // ASSERT
             name.ShouldBe("[3bar [2bar [1bar bar foo1] foo2] foo3]");
         }
-        
-        [Fact]
-        public void GivenProxyWithInsertMultipleOrderedRedirects_ShouldChain()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("foo"));
-            
-            string WriteMessage(int num)
-            {
-                return $"{num} {_via.Relay.Next.Name} {num}";
-            }
-            
-            _via
-                .InsertRedirect(_via.To(x => x.Name).Build(() => WriteMessage(1)), 30)
-                .InsertRedirect(_via.To(x => x.Name).Build(() => WriteMessage(2)), 20)
-                .InsertRedirect(_via.To(x => x.Name).Build(() => WriteMessage(3)), 10);
 
-            // ACT
-            var name = proxy.Name;
-
-            // ASSERT
-            name.ShouldBe("1 2 3 foo 3 2 1");
-        }
-        
         [Fact]
-        public void GivenResetBetweenAddRedirects_ShouldOnlyRedirectAfterReset()
+        public void GivenResetBetweenAddRetargets_ShouldOnlyRedirectAfterReset()
         {
             // ARRANGE
             var original = new Foo("hello foo");
             var proxy = _via.Proxy(original);
 
             // ACT
-            _via.Redirect(new FooAlt(() => $"{_via.Relay.Next.Name} me"));
+            _via.Retarget(new FooAlt(() => $"{_via.Relay.Next.Name} me"));
             _via.Reset();
-            _via.Redirect(new FooAlt(() => $"{_via.Relay.Next.Name} again"));
+            _via.Retarget(new FooAlt(() => $"{_via.Relay.Next.Name} again"));
 
             // ASSERT
             proxy.Name.ShouldBe("hello foo again");
-        }
-        
-        [Fact]
-        public void GivenMultipleRedirects_WhenReset_ShouldDefaultToOriginal()
-        {
-            // ARRANGE
-            var original = new Foo("hello foo");
-            var proxy = _via.Proxy(original);
-
-            // ACT
-            _via.Redirect(new FooAlt(() => $"{_via.Relay.Next.Name} me"));
-            _via.Redirect(new FooAlt(() => $"{_via.Relay.Next.Name} again"));
-            _via.Reset();
-
-            // ASSERT
-            proxy.Name.ShouldBe(original.Name);
         }
     }
 }

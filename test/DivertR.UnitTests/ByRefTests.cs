@@ -70,7 +70,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var test = new Number(x => x * 2);
-            _via.Redirect(test);
+            _via.Retarget(test);
 
             // ACT
             int input = 5;
@@ -108,7 +108,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var test = new Number(x => x * 2);
-            _via.Redirect(test);
+            _via.Retarget(test);
             
             var viaProxy = _via.Proxy(new Number());
             
@@ -148,7 +148,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var test = new Number(x => x * 2);
-            _via.Redirect(test);
+            _via.Retarget(test);
 
             // ACT
             int[] inputOriginal = {5, 8};

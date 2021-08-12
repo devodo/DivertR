@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DivertR.Core;
 using DivertR.DependencyInjection.Tests.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -24,6 +25,13 @@ namespace DivertR.DependencyInjection.Tests
             _diverter.Via<IFoo>().To(x => x.Message).Redirect("Diverted");
             
             foo.Message.ShouldBe("Diverted");
+        }
+        
+        [Fact]
+        public void GivenServiceTypeMissingShouldThrowException()
+        {
+            Action test = () => _services.Divert(_diverter);
+            test.ShouldThrow<DiverterException>().Message.ShouldContain($"{typeof(IFoo).FullName}");
         }
         
         [Fact]

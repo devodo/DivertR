@@ -32,7 +32,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("foo"));
             var foo = new Foo("DivertR");
-            _via.Redirect(foo);
+            _via.Retarget(foo);
 
             // ACT
             var name = await proxy.GetNameAsync();
@@ -156,7 +156,7 @@ namespace DivertR.UnitTests
                 .Setup(x => x.GetNameAsync())
                 .Returns(async () => $"{await _via.Relay.Original.GetNameAsync()} world");
 
-            _via.Redirect(mock.Object);
+            _via.Retarget(mock.Object);
 
             // ACT
             var name = await proxy.GetNameAsync();

@@ -88,14 +88,14 @@ namespace DivertR.DemoApp
 
             fooVia
                 .To() // Default matches all calls
-                .Redirect(mock.Object);
+                .Retarget(mock.Object);
     
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Redirected - Mocked"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Redirected - Mocked"
             
             fooVia
                 .Reset()
-                .Redirect(mock.Object);
+                .Retarget(mock.Object);
             
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Mocked"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Mocked"

@@ -8,6 +8,6 @@ namespace DivertR
         IRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
         IRedirectBuilder<TTarget> AddPostBuildAction(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> postBuild);
         IRedirect<TTarget> Build(TTarget target);
-        IVia<TTarget> Redirect(TTarget target, int orderWeight = 0);
+        IVia<TTarget> Retarget(TTarget target, int orderWeight = 0);
     }
 }

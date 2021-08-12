@@ -17,7 +17,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new ValueTaskFoo("foo");
             var proxy = _via.Proxy(original);
-            _via.Redirect(new ValueTaskFoo(async () => $"hello {await _via.Relay.Original.MessageAsync}"));
+            _via.Retarget(new ValueTaskFoo(async () => $"hello {await _via.Relay.Original.MessageAsync}"));
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -32,7 +32,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new ValueTaskFoo("foo");
             var proxy = _via.Proxy(original);
-            _via.Redirect(new ValueTaskFoo(async () => $"hello {await _via.Relay.Next.MessageAsync}"));
+            _via.Retarget(new ValueTaskFoo(async () => $"hello {await _via.Relay.Next.MessageAsync}"));
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -48,7 +48,7 @@ namespace DivertR.UnitTests
             var original = new ValueTaskFoo("foo");
             var proxy = _via.Proxy(original);
             IValueTaskFoo originalReference = null;
-            _via.Redirect(new ValueTaskFoo(async () =>
+            _via.Retarget(new ValueTaskFoo(async () =>
             {
                 originalReference = _via.Relay.CallInfo.Original;
                 return $"hello {await originalReference!.MessageAsync}";
@@ -70,7 +70,7 @@ namespace DivertR.UnitTests
                 .Select(i => _via.Proxy(new ValueTaskFoo($"foo{i}")))
                 .ToList();
             
-            _via.Redirect(new ValueTaskFoo(async () => $"diverted {await _via.Relay.Original.MessageAsync}"));
+            _via.Retarget(new ValueTaskFoo(async () => $"diverted {await _via.Relay.Original.MessageAsync}"));
 
             // ACT
             var messages = proxies.Select(async p => await p.MessageAsync).ToList();
@@ -92,7 +92,7 @@ namespace DivertR.UnitTests
                 .ToList();
 
             _via
-                .Redirect(new ValueTaskFoo(async () => $"diverted {await _via.Relay.Next.MessageAsync}"));
+                .Retarget(new ValueTaskFoo(async () => $"diverted {await _via.Relay.Next.MessageAsync}"));
 
             // ACT
             var messages = proxies.Select(async p => await p.MessageAsync).ToList();
@@ -106,15 +106,15 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public async Task GivenMultipleRedirects_ShouldChain()
+        public async Task GivenMultipleRetargets_ShouldChain()
         {
             // ARRANGE
             var proxy = _via.Proxy(new ValueTaskFoo("hello foo"));
             var next = _via.Relay.Next;
             _via
-                .Redirect(new ValueTaskFoo(async () => $"again {await next.MessageAsync} 3"))
-                .Redirect(new ValueTaskFoo(async () => $"here {await next.MessageAsync} 2"))
-                .Redirect(new ValueTaskFoo(async () => $"DivertR {await next.MessageAsync} 1"));
+                .Retarget(new ValueTaskFoo(async () => $"again {await next.MessageAsync} 3"))
+                .Retarget(new ValueTaskFoo(async () => $"here {await next.MessageAsync} 2"))
+                .Retarget(new ValueTaskFoo(async () => $"DivertR {await next.MessageAsync} 1"));
 
             // ACT
             var message = await proxy.MessageAsync;
@@ -158,7 +158,7 @@ namespace DivertR.UnitTests
             for (var i = 0; i < numRedirects; i++)
             {
                 var counter = i;
-                _via.Redirect(new ValueTaskFoo(async () =>
+                _via.Retarget(new ValueTaskFoo(async () =>
                     $"{await orig.MessageAsync} {counter} {await next.MessageAsync}"));
             }
 
@@ -171,7 +171,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenMultipleRedirectsWithRecursiveProxy_ShouldDivert()
+        public async Task GivenMultipleRetargetsWithRecursiveProxy_ShouldDivert()
         {
             // ARRANGE
             var proxy = _via.Proxy(new ValueTaskFoo("foo"));
@@ -192,9 +192,9 @@ namespace DivertR.UnitTests
             });
 
             _via
-                .Redirect(new ValueTaskFoo(async () =>
+                .Retarget(new ValueTaskFoo(async () =>
                     (await next.MessageAsync).Replace(await orig.MessageAsync, "bar")))
-                .Redirect(recursive);
+                .Retarget(recursive);
             // ACT
             var message = await proxy.MessageAsync;
             

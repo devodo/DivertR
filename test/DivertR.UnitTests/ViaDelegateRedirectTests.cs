@@ -355,7 +355,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<INumber>();
             
-            via.Redirect(new Number(x => x * 2));
+            via.Retarget(new Number(x => x * 2));
             via
                 .To(x => x.ArrayNumber(Is<int[]>.Any))
                 .Redirect((int[] inputs) =>
@@ -407,6 +407,29 @@ namespace DivertR.UnitTests
 
             // ASSERT
             result.ShouldBe("1 2 3 hello 3 2 1");
+        }
+        
+        [Fact]
+        public void GivenProxyWithInsertMultipleOrderedRedirects_ShouldChain()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy(new Foo("foo"));
+            
+            string WriteMessage(int num)
+            {
+                return $"{num} {_via.Relay.Next.Name} {num}";
+            }
+            
+            _via
+                .InsertRedirect(_via.To(x => x.Name).Build(() => WriteMessage(1)), 30)
+                .InsertRedirect(_via.To(x => x.Name).Build(() => WriteMessage(2)), 20)
+                .InsertRedirect(_via.To(x => x.Name).Build(() => WriteMessage(3)), 10);
+
+            // ACT
+            var name = proxy.Name;
+
+            // ASSERT
+            name.ShouldBe("1 2 3 foo 3 2 1");
         }
     }
 }

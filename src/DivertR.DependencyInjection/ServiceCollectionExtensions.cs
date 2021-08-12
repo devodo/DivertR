@@ -21,7 +21,7 @@ namespace DivertR.DependencyInjection
             if (missingTypes.Length > 0)
             {
                 throw new DiverterException(
-                    $"Diverter registered types not found in service collection: {string.Join(",", missingTypes)}");
+                    $"Service type(s) not found: {string.Join(",", missingTypes)}");
             }
 
             foreach (var decorateAction in decorateActions.Values.SelectMany(x => x))
@@ -43,16 +43,9 @@ namespace DivertR.DependencyInjection
                     {
                         return null;
                     }
-                    
-                    var via = diverter.Via(descriptor.ServiceType, name);
 
-                    object ProxyFactory(IServiceProvider provider)
-                    {
-                        var instance = GetInstance(provider, descriptor);
-                        return via.ProxyObject(instance);
-                    }
-
-                    void DecorateAction() => services[index] = ServiceDescriptor.Describe(descriptor.ServiceType, ProxyFactory, descriptor.Lifetime);
+                    var proxyFactory = CreateViaProxyFactory(descriptor, diverter, name);
+                    void DecorateAction() => services[index] = ServiceDescriptor.Describe(descriptor.ServiceType, proxyFactory, descriptor.Lifetime);
 
                     return new
                     {
@@ -65,8 +58,21 @@ namespace DivertR.DependencyInjection
                 .ToDictionary(grp => grp.Key, 
                     grp => grp.Select(x => x!.Action));
         }
+
+        private static Func<IServiceProvider, object> CreateViaProxyFactory(ServiceDescriptor descriptor, IDiverter diverter, string? name)
+        {
+            var via = diverter.Via(descriptor.ServiceType, name);
+
+            object ProxyFactory(IServiceProvider provider)
+            {
+                var instance = GetServiceInstance(provider, descriptor);
+                return via.ProxyObject(instance);
+            }
+
+            return ProxyFactory;
+        }
         
-        private static object GetInstance(IServiceProvider provider, ServiceDescriptor descriptor)
+        private static object GetServiceInstance(IServiceProvider provider, ServiceDescriptor descriptor)
         {
             if (descriptor.ImplementationInstance != null)
             {
