@@ -16,9 +16,9 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IActionRedirectBuilder<TTarget> AddPostBuildAction(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> decorator)
+        public new IActionRedirectBuilder<TTarget> Chain(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> chainLink)
         {
-            base.AddPostBuildAction(decorator);
+            base.Chain(chainLink);
 
             return this;
         }

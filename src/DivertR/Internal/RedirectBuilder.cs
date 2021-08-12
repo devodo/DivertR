@@ -7,7 +7,7 @@ namespace DivertR.Internal
     {
         private readonly IVia<TTarget> _via;
 
-        private readonly List<Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>>> _postBuildActions =
+        private readonly List<Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>>> _redirectChain =
             new List<Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>>>();
         
         private CompositeCallConstraint<TTarget> _callConstraint = CompositeCallConstraint<TTarget>.Empty;
@@ -29,9 +29,9 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IRedirectBuilder<TTarget> AddPostBuildAction(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> postBuild)
+        public IRedirectBuilder<TTarget> Chain(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> chainLink)
         {
-            _postBuildActions.Add(postBuild);
+            _redirectChain.Add(chainLink);
 
             return this;
         }
@@ -42,7 +42,7 @@ namespace DivertR.Internal
         {
             var redirect = new TargetRedirect<TTarget>(target, _callConstraint);
 
-            return ApplyPostBuildActions(redirect);
+            return ApplyRedirectChain(redirect);
         }
         
         public IVia<TTarget> Retarget(TTarget target, int orderWeight = 0)
@@ -57,11 +57,11 @@ namespace DivertR.Internal
             return _via.InsertRedirect(redirect, orderWeight);
         }
         
-        protected IRedirect<TTarget> ApplyPostBuildActions(IRedirect<TTarget> redirect)
+        protected IRedirect<TTarget> ApplyRedirectChain(IRedirect<TTarget> redirect)
         {
-            foreach (var postBuild in _postBuildActions)
+            foreach (var chainLink in _redirectChain)
             {
-                redirect = postBuild.Invoke(_via, redirect);
+                redirect = chainLink.Invoke(_via, redirect);
             }
 
             return redirect;

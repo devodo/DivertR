@@ -57,7 +57,7 @@ namespace DivertR.WebAppTests
                 });
         }
 
-        public HttpClient CreateHttpClient()
+        private HttpClient CreateHttpClient()
         {
             var client = _webApplicationFactory.CreateClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));

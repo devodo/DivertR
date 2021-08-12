@@ -5,7 +5,7 @@ namespace DivertR
     public interface IFuncRedirectBuilder<TTarget, TReturn> : IDelegateRedirectBuilder<TTarget> where TTarget : class
     {
         new IFuncRedirectBuilder<TTarget, TReturn> AddConstraint(ICallConstraint<TTarget> callConstraint);
-        new IFuncRedirectBuilder<TTarget, TReturn> AddPostBuildAction(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> decorator);
+        new IFuncRedirectBuilder<TTarget, TReturn> Chain(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> chainLink);
         
         IRedirect<TTarget> Build(TReturn instance);
         IRedirect<TTarget> Build(Func<TReturn> redirectDelegate);
