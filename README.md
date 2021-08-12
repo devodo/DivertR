@@ -7,7 +7,7 @@ test code in and out at the dependency injection layer.
 
 With DivertR you can modify your dependency injection services at runtime by replacing them with configurable proxies.
 These can redirect calls to test doubles, such as substitute instances or delegates, and then optionally relay back to the
-original services. Update and reset configurations, on the fly, while the process is running.
+original services. Update and reset proxy configurations, on the fly, while the process is running.
 
 ![DivertR Via](./docs/assets/images/DivertR_Via.svg)
 
