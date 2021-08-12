@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using DivertR.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DivertR.DependencyInjection
@@ -7,43 +10,75 @@ namespace DivertR.DependencyInjection
     {
         public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, string? name = null)
         {
-            return services.Divert(diverter, builder =>
+            var decorateActions = CreateDecorateActions(services, diverter, name);
+
+            var missingTypes = diverter.RegisteredVias(name)
+                .Select(x => x.Type)
+                .Where(x => !decorateActions.ContainsKey(x))
+                .Select(x => x.FullName)
+                .ToArray();
+
+            if (missingTypes.Length > 0)
             {
-                foreach (var viaId in diverter.RegisteredVias(name))
+                throw new DiverterException(
+                    $"Diverter registered types not found in service collection: {string.Join(",", missingTypes)}");
+            }
+
+            foreach (var decorateAction in decorateActions.Values.SelectMany(x => x))
+            {
+                decorateAction.Invoke();
+            }
+
+            return services;
+        }
+
+        private static Dictionary<Type, IEnumerable<Action>> CreateDecorateActions(IServiceCollection services, IDiverter diverter, string? name)
+        {
+            var diverterTypes = new HashSet<Type>(diverter.RegisteredVias(name).Select(x => x.Type));
+
+            return services
+                .Select((descriptor, index) =>
                 {
-                    builder.Include(viaId.Type).WithViaName(viaId.Name);
-                }
-            });
-        }
-        
-        private static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, Action<RegistrationBuilder>? builderAction = null)
-        {
-            var builder = new RegistrationBuilder(services, diverter);
-            builderAction?.Invoke(builder);
-            builder.Build().Register();
-            return services;
-        }
+                    if (!diverterTypes.Contains(descriptor.ServiceType))
+                    {
+                        return null;
+                    }
+                    
+                    var via = diverter.Via(descriptor.ServiceType, name);
 
-        public static IServiceCollection Divert<TTarget>(this IServiceCollection services, IDiverter diverter, string? name = null) where TTarget : class
-        {
-            return services.Divert(diverter, typeof(TTarget), name);
+                    object ProxyFactory(IServiceProvider provider)
+                    {
+                        var instance = GetInstance(provider, descriptor);
+                        return via.ProxyObject(instance);
+                    }
+
+                    void DecorateAction() => services[index] = ServiceDescriptor.Describe(descriptor.ServiceType, ProxyFactory, descriptor.Lifetime);
+
+                    return new
+                    {
+                        Type = descriptor.ServiceType,
+                        Action = (Action) DecorateAction
+                    };
+                })
+                .Where(x => x != null)
+                .GroupBy(x => x!.Type)
+                .ToDictionary(grp => grp.Key, 
+                    grp => grp.Select(x => x!.Action));
         }
         
-        public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, Type type, string? name = null)
+        private static object GetInstance(IServiceProvider provider, ServiceDescriptor descriptor)
         {
-            return services.Divert(diverter, builder =>
+            if (descriptor.ImplementationInstance != null)
             {
-                builder.Include(type).WithViaName(name);
-            });
-        }
-        
-        public static IServiceCollection Divert(this IServiceCollection services, IVia via)
-        {
-            var configuration = new RegistrationConfiguration(services, via);
-            configuration.IncludeTypes.Add(via.ViaId.Type);
-            new DiverterRegistrar(configuration).Register();
+                return descriptor.ImplementationInstance;
+            }
 
-            return services;
+            if (descriptor.ImplementationType != null)
+            {
+                return ActivatorUtilities.GetServiceOrCreateInstance(provider, descriptor.ImplementationType);
+            }
+
+            return descriptor.ImplementationFactory(provider);
         }
     }
 }

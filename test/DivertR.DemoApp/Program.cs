@@ -36,8 +36,8 @@ namespace DivertR.DemoApp
             IServiceCollection services = new ServiceCollection();
             services.AddTransient<IFoo, Foo>();
             
-            var diverter = new Diverter();
-            services.Divert<IFoo>(diverter);
+            var diverter = new Diverter().Register<IFoo>();
+            services.Divert(diverter);
             
             IServiceProvider provider = services.BuildServiceProvider();
             IFoo foo = provider.GetRequiredService<IFoo>();

@@ -11,13 +11,13 @@ namespace DivertR.DependencyInjection.Tests
     public class ServiceCollectionTests
     {
         private readonly IServiceCollection _services = new ServiceCollection();
-        private readonly Diverter _diverter = new();
+        private readonly IDiverter _diverter = new Diverter().Register<IFoo>();
 
         [Fact]
         public void ShouldReplaceRegistration()
         {
             _services.AddSingleton<IFoo>(new Foo {Message = "Original"});
-            _services.Divert<IFoo>(_diverter);
+            _services.Divert(_diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
@@ -32,7 +32,7 @@ namespace DivertR.DependencyInjection.Tests
             var fooRegistrations = Enumerable.Range(0, 10)
                 .Select((_, i) => new Foo {Message = $"Foo{i}"}).ToList();
             fooRegistrations.ForEach(foo => _services.AddSingleton<IFoo>(foo));
-            _services.Divert<IFoo>(_diverter);
+            _services.Divert(_diverter);
             var provider = _services.BuildServiceProvider();
 
             _diverter.Via<IFoo>()
@@ -50,7 +50,7 @@ namespace DivertR.DependencyInjection.Tests
             var via = _diverter.Via<IFoo>();
             
             _services.AddTransient<IFoo>(_ => new Foo {Message = "Original"});
-            _services.Divert(via);
+            _services.Divert(_diverter);
             var provider = _services.BuildServiceProvider();
             
             var fooBefore = provider.GetRequiredService<IFoo>();
@@ -64,77 +64,6 @@ namespace DivertR.DependencyInjection.Tests
             
             fooBefore.Message.ShouldBe("Original");
             fooAfter.Message.ShouldBe("Original");
-        }
-        
-        [Fact]
-        public void GivenOpenGenericWithClosedRegistrationShouldRedirect()
-        {
-            _services.AddTransient(typeof(IList<>), typeof(List<>));
-            _services.AddTransient<IList<string>, List<string>>();
-            _services.Divert<IList<string>>(_diverter);
-
-            var provider = _services.BuildServiceProvider();
-            var list = provider.GetRequiredService<IList<string>>();
-            
-            _diverter.Via<IList<string>>().To(x => x.Count).Redirect(10);
-            
-            list.Count.ShouldBe(10);
-            _diverter.ResetAll();
-            list.Count.ShouldBe(0);
-        }
-
-        [Fact]
-        public void GivenOpenGenericShouldRedirect()
-        {
-            _diverter.Register<IList<string>>();
-            _services.AddTransient(typeof(IList<>), typeof(List<>));
-            
-            _services.Divert(_diverter);
-
-            var provider = _services.BuildServiceProvider();
-            var list = provider.GetRequiredService<IList<string>>();
-            
-            _diverter.Via<IList<string>>().To(x => x.Count).Redirect(10);
-            
-            list.Count.ShouldBe(10);
-            _diverter.ResetAll();
-            list.Count.ShouldBe(0);
-        }
-
-        [Fact]
-        public void GivenOpenGeneric_ShouldRedirect()
-        {
-            _diverter.Register<IList<string>>();
-            var via = _diverter.Via<IList<string>>();
-            _services.AddTransient(typeof(IList<>), typeof(List<>));
-            _services.Divert(_diverter);
-
-            var provider = _services.BuildServiceProvider();
-            var list = provider.GetRequiredService<IList<string>>();
-            
-            via.To(x => x.Count).Redirect(10);
-            
-            list.Count.ShouldBe(10);
-            _diverter.ResetAll();
-            list.Count.ShouldBe(0);
-        }
-        
-        [Fact]
-        public void GivenOpenAndClosedGenericRegistrationsShouldRegisterSingleDiverter()
-        {
-            _diverter.Register<IList<string>>();
-            _services.AddTransient(typeof(IList<>), typeof(List<>));
-            _services.AddTransient<IList<string>, List<string>>();
-            _services.Divert(_diverter);
-
-            var provider = _services.BuildServiceProvider();
-            var list = provider.GetRequiredService<IList<string>>();
-            
-            _diverter.Via<IList<string>>().To(x => x.Count).Redirect(10);
-            
-            list.Count.ShouldBe(10);
-            _diverter.ResetAll();
-            list.Count.ShouldBe(0);
         }
     }
 }
