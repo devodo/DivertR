@@ -7,21 +7,18 @@ using DivertR.Core;
 
 namespace DivertR.Record.Internal
 {
-    internal class RecordRedirect<TTarget> : IRedirect<TTarget> where TTarget : class
+    internal class RecordCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
         private static readonly ConcurrentDictionary<MethodInfo, RecordedCallFactory<TTarget>> CallFactories = new ConcurrentDictionary<MethodInfo, RecordedCallFactory<TTarget>>();
         
         private readonly IRelay<TTarget> _relay;
         private readonly ConcurrentQueue<RecordedCall<TTarget>> _recordedCalls = new ConcurrentQueue<RecordedCall<TTarget>>();
 
-        public RecordRedirect(IRelay<TTarget> relay, ICallConstraint<TTarget>? callConstraint = null)
+        public RecordCallHandler(IRelay<TTarget> relay)
         {
             _relay = relay ?? throw new ArgumentNullException(nameof(relay));
-            CallConstraint = callConstraint ?? TrueCallConstraint<TTarget>.Instance;
         }
 
-        public ICallConstraint<TTarget> CallConstraint { get; }
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Call(CallInfo<TTarget> callInfo)
         {
@@ -44,9 +41,9 @@ namespace DivertR.Record.Internal
             return returnValue;
         }
 
-        public ICallStream<TTarget> CreateCallStream(IVia<TTarget> via)
+        public ICallStream<TTarget> CreateCallStream()
         {
-            return new CallStream<TTarget>(via, _recordedCalls);
+            return new CallStream<TTarget>(_recordedCalls);
         }
 
         private static RecordedCallFactory<TTarget> GetRecordedCallFactory(MethodInfo callMethod)

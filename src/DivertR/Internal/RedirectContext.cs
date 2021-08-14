@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using DivertR.Core;
 
 namespace DivertR.Internal
@@ -7,52 +6,51 @@ namespace DivertR.Internal
     internal class RedirectContext<TTarget> where TTarget : class
     {
         private readonly int _index;
-
-        private readonly IList<IRedirect<TTarget>> _redirects;
+        private readonly RedirectState<TTarget> _redirectState;
         public CallInfo<TTarget> CallInfo { get; }
-        public IRedirect<TTarget> Redirect => _redirects[_index];
+        public Redirect<TTarget> Redirect => _redirectState.RedirectItems[_index];
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RedirectContext<TTarget>? Create(IList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
+        public static RedirectContext<TTarget>? Create(RedirectState<TTarget> redirectState, CallInfo<TTarget> callInfo)
         {
-            var index = GetNextIndex(-1, redirects, callInfo);
+            var index = GetNextIndex(-1, redirectState.RedirectItems, callInfo);
 
             if (index == -1)
             {
                 return null;
             }
             
-            return new RedirectContext<TTarget>(redirects, index, callInfo);
+            return new RedirectContext<TTarget>(redirectState, index, callInfo);
         }
 
-        private RedirectContext(IList<IRedirect<TTarget>> redirects, int index, CallInfo<TTarget> callInfo)
+        private RedirectContext(RedirectState<TTarget> redirectState, int index, CallInfo<TTarget> callInfo)
         {
+            _redirectState = redirectState;
             CallInfo = callInfo;
-            _redirects = redirects;
             _index = index;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RedirectContext<TTarget>? MoveNext(CallInfo<TTarget> callInfo)
         {
-            var index = GetNextIndex(_index, _redirects, callInfo);
+            var index = GetNextIndex(_index, _redirectState.RedirectItems, callInfo);
 
             if (index == -1)
             {
                 return null;
             }
 
-            return new RedirectContext<TTarget>(_redirects, index, callInfo);
+            return new RedirectContext<TTarget>(_redirectState, index, callInfo);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetNextIndex(int index, IList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
+        private static int GetNextIndex(int index, Redirect<TTarget>[] redirectItems, CallInfo<TTarget> callInfo)
         {
             var startIndex = index + 1;
 
-            for (var i = startIndex; i < redirects.Count; i++)
+            for (var i = startIndex; i < redirectItems.Length; i++)
             {
-                if (!redirects[i].CallConstraint.IsMatch(callInfo))
+                if (!redirectItems[i].CallConstraint.IsMatch(callInfo))
                 {
                     continue;
                 }

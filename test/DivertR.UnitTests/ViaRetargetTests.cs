@@ -226,7 +226,7 @@ namespace DivertR.UnitTests
             _via
                 .To().Retarget(new FooAlt(() => $"DivertR {next.Name} 1"))
                 .To().Retarget(new FooAlt(() => $"here {next.Name} 2"))
-                .To().Retarget(new FooAlt(() => $"again {next.Name} 3"), -10);
+                .To().WithOrderWeight(-10).Retarget(new FooAlt(() => $"again {next.Name} 3"));
 
             // ACT
             var name = proxy.Name;
@@ -234,26 +234,7 @@ namespace DivertR.UnitTests
             // ASSERT
             name.ShouldBe("here DivertR again hello foo 3 1 2");
         }
-        
-        [Fact]
-        public void GivenProxyWithMultipleOrderedBuildRetargets_ShouldOrderChain()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("hello foo"));
-            var next = _via.Relay.Next;
-            
-            _via
-                .InsertRedirect(_via.To().Build(new FooAlt(() => $"DivertR {next.Name} 1")))
-                .InsertRedirect(_via.To().Build(new FooAlt(() => $"here {next.Name} 2")))
-                .InsertRedirect(_via.To().Build(new FooAlt(() => $"again {next.Name} 3")), -10);
 
-            // ACT
-            var name = proxy.Name;
-            
-            // ASSERT
-            name.ShouldBe("here DivertR again hello foo 3 1 2");
-        }
-        
         [Fact]
         public void GivenProxyWithMultipleRetargetssWithNextAndOriginalRelays_ShouldChain()
         {

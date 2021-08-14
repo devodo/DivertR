@@ -4,18 +4,15 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class DelegateRedirect<TTarget> : IRedirect<TTarget> where TTarget : class
+    internal class DelegateCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
         private readonly Func<CallInfo<TTarget>, object?> _redirectDelegate;
 
-        public DelegateRedirect(Func<CallInfo<TTarget>, object?> redirectDelegate, ICallConstraint<TTarget> callConstraint)
+        public DelegateCallHandler(Func<CallInfo<TTarget>, object?> redirectDelegate)
         {
             _redirectDelegate = redirectDelegate ?? throw new ArgumentNullException(nameof(redirectDelegate));
-            CallConstraint = callConstraint ?? throw new ArgumentNullException(nameof(callConstraint));
         }
 
-        public ICallConstraint<TTarget> CallConstraint { get; }
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Call(CallInfo<TTarget> callInfo)
         {

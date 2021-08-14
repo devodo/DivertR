@@ -252,9 +252,9 @@ namespace DivertR.UnitTests
             }
 
             _via
-                .InsertRedirect(_via.To(x => x.GetNameAsync()).Build(() => WriteMessage(1)), 30)
-                .InsertRedirect(_via.To(x => x.GetNameAsync()).Build(() => WriteMessage(2)), 20)
-                .InsertRedirect(_via.To(x => x.GetNameAsync()).Build(() => WriteMessage(3)), 10);
+                .To(x => x.GetNameAsync()).WithOrderWeight(30).Redirect(() => WriteMessage(1))
+                .To(x => x.GetNameAsync()).WithOrderWeight(20).Redirect(() => WriteMessage(2))
+                .To(x => x.GetNameAsync()).WithOrderWeight(10).Redirect(() => WriteMessage(3));
 
             // ACT
             var name = await proxy.GetNameAsync();

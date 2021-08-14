@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using DivertR.Core;
@@ -27,12 +26,12 @@ namespace DivertR.Internal
         
         public CallInfo<TTarget> CallInfo => Current.CallInfo;
         
-        public IRedirect<TTarget> Redirect => Current.Redirect;
+        public Redirect<TTarget> Redirect => Current.Redirect;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? CallBegin(IList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
+        public object? CallBegin(RedirectState<TTarget> redirectState, CallInfo<TTarget> callInfo)
         {
-            var redirect = BeginNewCall(redirects, callInfo);
+            var redirect = BeginNewCall(redirectState, callInfo);
 
             if (redirect == null)
             {
@@ -41,7 +40,7 @@ namespace DivertR.Internal
 
             try
             {
-                return redirect.Call(callInfo);
+                return redirect.CallHandler.Call(callInfo);
             }
             finally
             {
@@ -72,7 +71,7 @@ namespace DivertR.Internal
 
             try
             {
-                return redirect.Call(callInfo);
+                return redirect.CallHandler.Call(callInfo);
             }
             finally
             {
@@ -81,9 +80,9 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IRedirect<TTarget>? BeginNewCall(IList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
+        private Redirect<TTarget>? BeginNewCall(RedirectState<TTarget> redirectState, CallInfo<TTarget> callInfo)
         {
-            var redirectContext = RedirectContext<TTarget>.Create(redirects, callInfo);
+            var redirectContext = RedirectContext<TTarget>.Create(redirectState, callInfo);
 
             if (redirectContext == null)
             {
@@ -108,7 +107,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IRedirect<TTarget>? BeginNextRedirect(CallInfo<TTarget> callInfo)
+        private Redirect<TTarget>? BeginNextRedirect(CallInfo<TTarget> callInfo)
         {
             var redirectStack = _redirectStack.Value;
             var redirectContext = redirectStack.Peek().MoveNext(callInfo);

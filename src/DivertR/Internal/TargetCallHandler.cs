@@ -3,18 +3,15 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class TargetRedirect<TTarget> : IRedirect<TTarget> where TTarget : class
+    internal class TargetCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
         private readonly TTarget _target;
 
-        public TargetRedirect(TTarget target, ICallConstraint<TTarget>? callConstraint = null)
+        public TargetCallHandler(TTarget target)
         {
             _target = target;
-            CallConstraint = callConstraint ?? TrueCallConstraint<TTarget>.Instance;
         }
 
-        public ICallConstraint<TTarget> CallConstraint { get; }
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Call(CallInfo<TTarget> callInfo)
         {

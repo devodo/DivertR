@@ -36,18 +36,19 @@ namespace DivertR
         public IRelay<TTarget> Relay { get; }
 
         public TTarget Next => Relay.Next;
-        
-        public IReadOnlyList<IRedirect<TTarget>> ConfiguredRedirects => _redirectRepository.Get<TTarget>(ViaId);
+
+        public IReadOnlyList<Redirect<TTarget>> ConfiguredRedirects =>
+            _redirectRepository.Get<TTarget>(ViaId)?.RedirectItems ?? Array.Empty<Redirect<TTarget>>();
 
         public TTarget Proxy(TTarget? original = null)
         {
             IProxyCall<TTarget>? GetProxyCall()
             {
-                var redirects = _redirectRepository.Get<TTarget>(ViaId);
+                var redirectState = _redirectRepository.Get<TTarget>(ViaId);
 
-                return redirects.Length == 0
+                return redirectState == null
                     ? null
-                    : new ViaProxyCall<TTarget>(_relayContext, redirects);
+                    : new ViaProxyCall<TTarget>(_relayContext, redirectState);
             }
 
             return _proxyFactory.CreateProxy(original, GetProxyCall);
@@ -63,9 +64,9 @@ namespace DivertR
             return Proxy(original as TTarget);
         }
 
-        public IVia<TTarget> InsertRedirect(IRedirect<TTarget> redirect, int orderWeight = 0)
+        public IVia<TTarget> InsertRedirect(Redirect<TTarget> redirect)
         {
-            _redirectRepository.InsertRedirect(ViaId, redirect, orderWeight);
+            _redirectRepository.InsertRedirect(ViaId, redirect);
 
             return this;
         }
@@ -120,10 +121,11 @@ namespace DivertR
         
         public ICallStream<TTarget> Record(ICallConstraint<TTarget>? callConstraint = null)
         {
-            var recordRedirect = new RecordRedirect<TTarget>(Relay, callConstraint);
-            InsertRedirect(recordRedirect, int.MaxValue);
+            var recordRedirect = new RecordCallHandler<TTarget>(Relay);
+            var redirect = new Redirect<TTarget>(recordRedirect, callConstraint, int.MaxValue, true);
+            InsertRedirect(redirect);
 
-            return recordRedirect.CreateCallStream(this);
+            return recordRedirect.CreateCallStream();
         }
     }
 }

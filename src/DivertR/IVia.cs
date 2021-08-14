@@ -15,11 +15,11 @@ namespace DivertR
     {
         IRelay<TTarget> Relay { get; }
         TTarget Next { get; }
-        IReadOnlyList<IRedirect<TTarget>> ConfiguredRedirects { get; }
+        IReadOnlyList<Redirect<TTarget>> ConfiguredRedirects { get; }
 
         TTarget Proxy(TTarget? original = null);
-
-        IVia<TTarget> InsertRedirect(IRedirect<TTarget> redirect, int orderWeight = 0);
+        
+        IVia<TTarget> InsertRedirect(Redirect<TTarget> redirect);
         IVia<TTarget> Reset();
         
         IVia<TTarget> Retarget(TTarget target);

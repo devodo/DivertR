@@ -10,6 +10,7 @@ namespace DivertR
         IDiverter Register(IEnumerable<Type> types, string? name = null);
         IEnumerable<ViaId> RegisteredVias(string? name = null);
         IVia<TTarget> Via<TTarget>(string? name = null) where TTarget : class;
+        IVia Via(ViaId id);
         IVia Via(Type type, string? name = null);
         IDiverter ResetAll();
     }

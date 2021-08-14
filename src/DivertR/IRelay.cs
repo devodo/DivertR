@@ -6,7 +6,7 @@ namespace DivertR
     {
         TTarget Next { get; }
         TTarget Original { get; }
-        IRedirect<TTarget> Redirect { get; }
+        Redirect<TTarget> Redirect { get; }
         CallInfo<TTarget> CallInfo { get; }
         object? CallNext(CallInfo<TTarget>? callInfo = null);
         object? CallOriginal(CallInfo<TTarget>? callInfo = null);

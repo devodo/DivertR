@@ -13,35 +13,35 @@ namespace DivertR.Internal
             _parsedCallExpression = parsedCallExpression ?? throw new ArgumentNullException(nameof(parsedCallExpression));
         }
 
-        public IRedirect<TTarget> Build(Delegate redirectDelegate)
+        public Redirect<TTarget> Build(Delegate redirectDelegate)
         {
             _parsedCallExpression.Validate(redirectDelegate);
             var fastDelegate = redirectDelegate.ToDelegate();
-            var redirect = new DelegateRedirect<TTarget>(callInfo => fastDelegate.Invoke(callInfo.Arguments.InternalArgs), CallConstraint);
-            
-            return ApplyRedirectChain(redirect);
+            var redirect = new DelegateCallHandler<TTarget>(callInfo => fastDelegate.Invoke(callInfo.Arguments.InternalArgs));
+
+            return Build(redirect);
         }
 
-        public IVia<TTarget> Redirect(Delegate redirectDelegate, int orderWeight = 0)
+        public IVia<TTarget> Redirect(Delegate redirectDelegate)
         {
             var redirect = Build(redirectDelegate);
             
-            return InsertRedirect(redirect, orderWeight);
+            return InsertRedirect(redirect);
         }
         
-        protected IRedirect<TTarget> Build(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
+        protected Redirect<TTarget> Build(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
         {
             _parsedCallExpression.Validate(inputDelegate);
-            var redirect = new DelegateRedirect<TTarget>(mappedRedirect, CallConstraint);
+            var redirect = new DelegateCallHandler<TTarget>(mappedRedirect);
 
-            return ApplyRedirectChain(redirect);
+            return Build(redirect);
         }
 
-        protected IVia<TTarget> InsertRedirect(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect, int orderWeight)
+        protected IVia<TTarget> InsertRedirect(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
         {
             var redirect = Build(inputDelegate, mappedRedirect);
 
-            return InsertRedirect(redirect, orderWeight);
+            return InsertRedirect(redirect);
         }
     }
 }

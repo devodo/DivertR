@@ -398,9 +398,9 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .To(x => x.Name).Redirect(() => $"1 {_via.Next.Name} 1", 30)
-                .To(x => x.Name).Redirect(() => $"2 {_via.Next.Name} 2", 20)
-                .To(x => x.Name).Redirect(() => $"3 {_via.Next.Name} 3", 10);
+                .To(x => x.Name).WithOrderWeight(30).Redirect(() => $"1 {_via.Next.Name} 1")
+                .To(x => x.Name).WithOrderWeight(20).Redirect(() => $"2 {_via.Next.Name} 2")
+                .To(x => x.Name).WithOrderWeight(10).Redirect(() => $"3 {_via.Next.Name} 3");
             
             // ACT
             var result = _via.Proxy(new Foo("hello")).Name;
@@ -421,9 +421,9 @@ namespace DivertR.UnitTests
             }
             
             _via
-                .InsertRedirect(_via.To(x => x.Name).Build(() => WriteMessage(1)), 30)
-                .InsertRedirect(_via.To(x => x.Name).Build(() => WriteMessage(2)), 20)
-                .InsertRedirect(_via.To(x => x.Name).Build(() => WriteMessage(3)), 10);
+                .To(x => x.Name).WithOrderWeight(30).Redirect(() => WriteMessage(1))
+                .To(x => x.Name).WithOrderWeight(20).Redirect(() => WriteMessage(2))
+                .To(x => x.Name).WithOrderWeight(10).Redirect(() => WriteMessage(3));
 
             // ACT
             var name = proxy.Name;

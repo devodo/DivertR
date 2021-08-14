@@ -13,7 +13,7 @@ namespace DivertR.Internal
         public TTarget Next => _next.Value;
         public TTarget Original => _original.Value;
 
-        public IRedirect<TTarget> Redirect => _relayContext.Redirect;
+        public Redirect<TTarget> Redirect => _relayContext.Redirect;
 
         public CallInfo<TTarget> CallInfo => _relayContext.CallInfo;
 

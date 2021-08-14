@@ -4,14 +4,14 @@ using DivertR.Core;
 
 namespace DivertR.Redirects
 {
-    public class SkipRedirect<TTarget> : IRedirect<TTarget> where TTarget : class
+    public class SkipCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
         private readonly IVia<TTarget> _via;
-        private readonly IRedirect<TTarget> _innerRedirect;
+        private readonly ICallHandler<TTarget> _innerCallHandler;
         private readonly int _skipCount;
         private long _callCount;
 
-        public SkipRedirect(IVia<TTarget> via, IRedirect<TTarget> innerRedirect, int skipCount)
+        public SkipCallHandler(IVia<TTarget> via, ICallHandler<TTarget> innerCallHandler, int skipCount)
         {
             if (skipCount < 0)
             {
@@ -19,12 +19,10 @@ namespace DivertR.Redirects
             }
             
             _via = via;
-            _innerRedirect = innerRedirect;
+            _innerCallHandler = innerCallHandler;
             _skipCount = skipCount;
         }
 
-        public ICallConstraint<TTarget> CallConstraint => _innerRedirect.CallConstraint;
-        
         public object? Call(CallInfo<TTarget> callInfo)
         {
             var count = Interlocked.Increment(ref _callCount);
@@ -35,7 +33,7 @@ namespace DivertR.Redirects
             }
 
             return count > _skipCount 
-                ? _innerRedirect.Call(callInfo)
+                ? _innerCallHandler.Call(callInfo)
                 : _via.Relay.CallNext(callInfo);
         }
     }

@@ -66,13 +66,16 @@ namespace DivertR
         
         public IVia<TTarget> Via<TTarget>(string? name = null) where TTarget : class
         {
-            return (IVia<TTarget>) Via(typeof(TTarget), name);
+            return (IVia<TTarget>) Via(ViaId.From<TTarget>(name));
         }
-        
+
         public IVia Via(Type type, string? name = null)
         {
-            var id = ViaId.From(type, name);
-            
+            return Via(ViaId.From(type, name));
+        }
+        
+        public IVia Via(ViaId id)
+        {
             if (!_vias.TryGetValue(id, out var via))
             {
                 throw new DiverterException($"Via not registered for {id}");

@@ -7,10 +7,13 @@ namespace DivertR.Internal
     {
         private readonly IVia<TTarget> _via;
 
-        private readonly List<Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>>> _redirectChain =
-            new List<Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>>>();
+        private readonly List<Func<IVia<TTarget>, ICallHandler<TTarget>, ICallHandler<TTarget>>> _callHandlerChain =
+            new List<Func<IVia<TTarget>, ICallHandler<TTarget>, ICallHandler<TTarget>>>();
         
         private CompositeCallConstraint<TTarget> _callConstraint = CompositeCallConstraint<TTarget>.Empty;
+
+        private int? _orderWeight;
+        private bool? _excludeStrict;
 
         public RedirectBuilder(IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
         {
@@ -29,42 +32,61 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IRedirectBuilder<TTarget> Chain(Func<IVia<TTarget>, IRedirect<TTarget>, IRedirect<TTarget>> chainLink)
+        public IRedirectBuilder<TTarget> ChainCallHandler(Func<IVia<TTarget>, ICallHandler<TTarget>, ICallHandler<TTarget>> chainLink)
         {
-            _redirectChain.Add(chainLink);
+            _callHandlerChain.Add(chainLink);
+
+            return this;
+        }
+        
+        public IRedirectBuilder<TTarget> WithOrderWeight(int orderWeight)
+        {
+            _orderWeight = orderWeight;
+
+            return this;
+        }
+        
+        public IRedirectBuilder<TTarget> WithExcludeStrict(bool excludeStrict = true)
+        {
+            _excludeStrict = excludeStrict;
 
             return this;
         }
 
-        public ICallConstraint<TTarget> CallConstraint => _callConstraint;
-
-        public IRedirect<TTarget> Build(TTarget target)
+        public Redirect<TTarget> Build(TTarget target)
         {
-            var redirect = new TargetRedirect<TTarget>(target, _callConstraint);
+            ICallHandler<TTarget> callHandler = new TargetCallHandler<TTarget>(target);
 
-            return ApplyRedirectChain(redirect);
+            return Build(callHandler);
         }
-        
-        public IVia<TTarget> Retarget(TTarget target, int orderWeight = 0)
+
+        public IVia<TTarget> Retarget(TTarget target)
         {
-            var redirect = Build(target);
+            var redirectItem = Build(target);
             
-            return _via.InsertRedirect(redirect, orderWeight);
+            return InsertRedirect(redirectItem);
         }
         
-        protected IVia<TTarget> InsertRedirect(IRedirect<TTarget> redirect, int orderWeight)
+        protected Redirect<TTarget> Build(ICallHandler<TTarget> callHandler)
         {
-            return _via.InsertRedirect(redirect, orderWeight);
+            callHandler = ApplyCallHandlerChain(callHandler);
+
+            return new Redirect<TTarget>(callHandler, _callConstraint, _orderWeight, _excludeStrict);
         }
         
-        protected IRedirect<TTarget> ApplyRedirectChain(IRedirect<TTarget> redirect)
+        protected IVia<TTarget> InsertRedirect(Redirect<TTarget> redirect)
         {
-            foreach (var chainLink in _redirectChain)
+            return _via.InsertRedirect(redirect);
+        }
+        
+        private ICallHandler<TTarget> ApplyCallHandlerChain(ICallHandler<TTarget> callHandler)
+        {
+            foreach (var chainLink in _callHandlerChain)
             {
-                redirect = chainLink.Invoke(_via, redirect);
+                callHandler = chainLink.Invoke(_via, callHandler);
             }
 
-            return redirect;
+            return callHandler;
         }
     }
 }

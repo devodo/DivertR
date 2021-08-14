@@ -135,10 +135,10 @@ namespace DivertR.UnitTests
             }
 
             _via
-                .InsertRedirect(_via.To(x => x.MessageAsync).Build(() => WriteMessage(1)), 30)
-                .InsertRedirect(_via.To(x => x.MessageAsync).Build(() => WriteMessage(2)), 20)
-                .InsertRedirect(_via.To(x => x.MessageAsync).Build(() => WriteMessage(3)), 10);
-                
+                .To(x => x.MessageAsync).WithOrderWeight(30).Redirect(() => WriteMessage(1))
+                .To(x => x.MessageAsync).WithOrderWeight(20).Redirect(() => WriteMessage(2))
+                .To(x => x.MessageAsync).WithOrderWeight(10).Redirect(() => WriteMessage(3));
+
             // ACT
             var message = await proxy.MessageAsync;
             
