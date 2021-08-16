@@ -34,7 +34,7 @@ namespace DivertR.Redirects
 
             return count <= _repeatCount 
                 ? _innerCallHandler.Call(callInfo)
-                : _via.Relay.CallNext(callInfo);
+                : _via.Relay.CallNext();
         }
     }
 }

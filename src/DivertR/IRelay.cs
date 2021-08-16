@@ -1,4 +1,5 @@
-﻿using DivertR.Core;
+﻿using System.Reflection;
+using DivertR.Core;
 
 namespace DivertR
 {
@@ -8,7 +9,9 @@ namespace DivertR
         TTarget Original { get; }
         Redirect<TTarget> Redirect { get; }
         CallInfo<TTarget> CallInfo { get; }
-        object? CallNext(CallInfo<TTarget>? callInfo = null);
-        object? CallOriginal(CallInfo<TTarget>? callInfo = null);
+        object? CallNext();
+        object? CallNext(MethodInfo method, CallArguments callArguments);
+        object? CallOriginal();
+        object? CallOriginal(MethodInfo method, CallArguments callArguments);
     }
 }

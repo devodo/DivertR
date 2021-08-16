@@ -29,7 +29,7 @@ namespace DivertR.Record.Internal
 
             try
             {
-                returnValue = _relay.CallNext(callInfo);
+                returnValue = _relay.CallNext();
                 recordedCall.SetReturned(returnValue);
             }
             catch (Exception ex)

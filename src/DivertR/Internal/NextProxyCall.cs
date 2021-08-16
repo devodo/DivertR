@@ -3,11 +3,11 @@ using DivertR.Core;
 
 namespace DivertR.Internal
 {
-    internal class OriginalProxyCall<TTarget> : IProxyCall<TTarget> where TTarget : class
+    internal class NextProxyCall<TTarget> : IProxyCall<TTarget> where TTarget : class
     {
         private readonly RelayContext<TTarget> _relayContext;
 
-        public OriginalProxyCall(RelayContext<TTarget> relayContext)
+        public NextProxyCall(RelayContext<TTarget> relayContext)
         {
             _relayContext = relayContext;
         }
@@ -15,7 +15,7 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Call(CallInfo<TTarget> callInfo)
         {
-            return _relayContext.CallOriginal(callInfo.Method, callInfo.Arguments);
+            return _relayContext.CallNext(callInfo.Method, callInfo.Arguments);
         }
     }
 }

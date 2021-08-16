@@ -38,17 +38,17 @@ namespace DivertR
         public TTarget Next => Relay.Next;
 
         public IReadOnlyList<Redirect<TTarget>> ConfiguredRedirects =>
-            _redirectRepository.Get<TTarget>(ViaId)?.RedirectItems ?? Array.Empty<Redirect<TTarget>>();
+            _redirectRepository.Get<TTarget>(ViaId)?.Redirects ?? Array.Empty<Redirect<TTarget>>();
 
         public TTarget Proxy(TTarget? original = null)
         {
             IProxyCall<TTarget>? GetProxyCall()
             {
-                var redirectState = _redirectRepository.Get<TTarget>(ViaId);
+                var redirectConfiguration = _redirectRepository.Get<TTarget>(ViaId);
 
-                return redirectState == null
+                return redirectConfiguration == null
                     ? null
-                    : new ViaProxyCall<TTarget>(_relayContext, redirectState);
+                    : new ViaProxyCall<TTarget>(_relayContext, redirectConfiguration);
             }
 
             return _proxyFactory.CreateProxy(original, GetProxyCall);
@@ -117,6 +117,13 @@ namespace DivertR
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
 
             return new ActionRedirectBuilder<TTarget>(this, parsedCall);
+        }
+
+        public IVia<TTarget> Strict()
+        {
+            _redirectRepository.SetStrictMode<TTarget>(ViaId);
+
+            return this;
         }
         
         public ICallStream<TTarget> Record(ICallConstraint<TTarget>? callConstraint = null)

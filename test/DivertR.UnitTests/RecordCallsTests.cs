@@ -72,7 +72,7 @@ namespace DivertR.UnitTests
             // ASSERT
             calls.Count.ShouldBe(1);
             calls.Single().CallInfo.Arguments.Count.ShouldBe(1);
-            calls.Single().CallInfo.ViaProxy.ShouldBeSameAs(fooProxy);
+            calls.Single().CallInfo.Proxy.ShouldBeSameAs(fooProxy);
             
             calls.Visit<string>((call, input) =>
             {

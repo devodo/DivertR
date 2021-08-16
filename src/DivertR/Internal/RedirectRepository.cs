@@ -9,14 +9,14 @@ namespace DivertR.Internal
     {
         private readonly ConcurrentDictionary<ViaId, object> _viaRedirects = new ConcurrentDictionary<ViaId, object>();
 
-        public RedirectState<TTarget>? Get<TTarget>(ViaId viaId) where TTarget : class
+        public RedirectConfiguration<TTarget>? Get<TTarget>(ViaId viaId) where TTarget : class
         {
             return _viaRedirects.TryGetValue(viaId, out var existing)
-                ? ((RedirectCollection<TTarget>) existing).RedirectState
+                ? ((RedirectCollection<TTarget>) existing).RedirectConfiguration
                 : null;
         }
 
-        public RedirectState<TTarget> InsertRedirect<TTarget>(ViaId viaId, Redirect<TTarget> redirect) where TTarget : class
+        public RedirectConfiguration<TTarget> InsertRedirect<TTarget>(ViaId viaId, Redirect<TTarget> redirect) where TTarget : class
         {
             RedirectCollection<TTarget> Create(ViaId _)
             {
@@ -31,25 +31,25 @@ namespace DivertR.Internal
             
             var result = (RedirectCollection<TTarget>) _viaRedirects.AddOrUpdate(viaId, Create, Update);
 
-            return result.RedirectState;
+            return result.RedirectConfiguration;
         }
         
-        public RedirectState<TTarget> SetStrict<TTarget>(ViaId viaId) where TTarget : class
+        public RedirectConfiguration<TTarget> SetStrictMode<TTarget>(ViaId viaId) where TTarget : class
         {
             static RedirectCollection<TTarget> Create(ViaId _)
             {
-                return RedirectCollection<TTarget>.Empty.SetStrict();
+                return RedirectCollection<TTarget>.Empty.SetStrictMode();
             }
 
             static RedirectCollection<TTarget> Update(ViaId _, object existing)
             {
                 var redirectCollection = (RedirectCollection<TTarget>) existing;
-                return redirectCollection.SetStrict();
+                return redirectCollection.SetStrictMode();
             }
             
             var result = (RedirectCollection<TTarget>) _viaRedirects.AddOrUpdate(viaId, Create, Update);
 
-            return result.RedirectState;
+            return result.RedirectConfiguration;
         }
         
         public bool Reset(ViaId viaId)
@@ -67,12 +67,12 @@ namespace DivertR.Internal
             private readonly int _insertSequence;
             private readonly ImmutableStack<InsertedRedirect<TTarget>> _redirectStack;
             
-            public RedirectState<TTarget> RedirectState { get; }
+            public RedirectConfiguration<TTarget> RedirectConfiguration { get; }
 
             public static readonly RedirectCollection<TTarget> Empty =
                 new RedirectCollection<TTarget>(0, ImmutableStack<InsertedRedirect<TTarget>>.Empty, false);
 
-            private RedirectCollection(int insertSequence, ImmutableStack<InsertedRedirect<TTarget>> redirectStack, bool isStrict)
+            private RedirectCollection(int insertSequence, ImmutableStack<InsertedRedirect<TTarget>> redirectStack, bool isStrictMode)
             {
                 _insertSequence = insertSequence;
                 _redirectStack = redirectStack;
@@ -82,18 +82,18 @@ namespace DivertR.Internal
                     .Select(x => x.Redirect)
                     .ToArray();
 
-                RedirectState = new RedirectState<TTarget>(redirectItems, isStrict);
+                RedirectConfiguration = new RedirectConfiguration<TTarget>(redirectItems, isStrictMode);
             }
 
             public RedirectCollection<TTarget> InsertRedirect(Redirect<TTarget> redirect)
             {
                 var inserted = new InsertedRedirect<TTarget>(redirect, _insertSequence + 1);
-                return new RedirectCollection<TTarget>(inserted.InsertSequence, _redirectStack.Push(inserted), RedirectState.IsStrict);
+                return new RedirectCollection<TTarget>(inserted.InsertSequence, _redirectStack.Push(inserted), RedirectConfiguration.IsStrictMode);
             }
             
-            public RedirectCollection<TTarget> SetStrict()
+            public RedirectCollection<TTarget> SetStrictMode()
             {
-                if (RedirectState.IsStrict)
+                if (RedirectConfiguration.IsStrictMode)
                 {
                     return this;
                 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using DivertR.Core;
 
@@ -20,20 +21,32 @@ namespace DivertR.Internal
         public Relay(RelayContext<TTarget> relayContext, IProxyFactory proxyFactory)
         {
             _relayContext = relayContext;
-            _next = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new RedirectProxyCall<TTarget>(_relayContext)));
+            _next = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new NextProxyCall<TTarget>(_relayContext)));
             _original = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new OriginalProxyCall<TTarget>(_relayContext)));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? CallNext(CallInfo<TTarget>? callInfo = null)
+        public object? CallNext()
         {
-            return _relayContext.CallNext(callInfo ?? CallInfo);
+            return _relayContext.CallNext();
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? CallOriginal(CallInfo<TTarget>? callInfo = null)
+        public object? CallNext(MethodInfo method, CallArguments callArguments)
         {
-            return _relayContext.CallOriginal(callInfo ?? CallInfo);
+            return _relayContext.CallNext(method, callArguments);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? CallOriginal()
+        {
+            return _relayContext.CallOriginal();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? CallOriginal(MethodInfo method, CallArguments callArguments)
+        {
+            return _relayContext.CallOriginal(method, callArguments);
         }
     }
 }
