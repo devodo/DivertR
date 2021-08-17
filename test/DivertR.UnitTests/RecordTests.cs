@@ -8,12 +8,12 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class RecordCallsTests
+    public class RecordTests
     {
         private readonly Via<IFoo> _via = new();
         private readonly ICallStream<IFoo> _callStream;
 
-        public RecordCallsTests()
+        public RecordTests()
         {
             _callStream = _via.Record();
         }
@@ -31,7 +31,6 @@ namespace DivertR.UnitTests
                 .Redirect(() => Guid.NewGuid().ToString());
 
             var fooProxy = _via.Proxy();
-            
 
             // ACT
             var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
@@ -147,6 +146,56 @@ namespace DivertR.UnitTests
             }
             
             returnedException.ShouldBeSameAs(caughtException);
+        }
+        
+        [Fact]
+        public async Task GivenRecord_WithStrict_WhenNoMatchingRedirects_ThrowsStrictNotSatisfiedException()
+        {
+            // ARRANGE
+            _via.Strict();
+            _via
+                .To(x => x.EchoAsync(Is<string>.Match(m => m != "test")))
+                .Redirect((string input) => _via.Next.EchoAsync(input));
+
+            // ACT
+            Func<Task<string>> testAction = () => _via.Proxy(new Foo()).EchoAsync("test");
+
+            // ASSERT
+            await testAction.ShouldThrowAsync<StrictNotSatisfiedException>();
+            
+            _callStream
+                .To(x => x.EchoAsync("test"))
+                .Visit<string>((call, input) =>
+                {
+                    input.ShouldBe("test");
+                    call.Returned!.Exception.ShouldBeOfType<StrictNotSatisfiedException>();
+                })
+                .Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public async Task GivenRecord_WithStrict_WhenMatchingRedirect_Redirects()
+        {
+            // ARRANGE
+            _via.Strict();
+            _via
+                .To(x => x.EchoAsync("test"))
+                .Redirect(async (string input) => await _via.Next.EchoAsync(input) + " diverted");
+
+            // ACT
+            var result = await _via.Proxy(new Foo()).EchoAsync("test");
+
+            // ASSERT
+            result.ShouldBe("test diverted");
+
+            _callStream
+                .To(x => x.EchoAsync("test"))
+                .Visit<string>((call, input) =>
+                {
+                    input.ShouldBe("test");
+                    call.Returned!.Value.Result.ShouldBe(result);
+                })
+                .Count.ShouldBe(1);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace DivertR.Internal
         private CompositeCallConstraint<TTarget> _callConstraint = CompositeCallConstraint<TTarget>.Empty;
 
         private int? _orderWeight;
-        private bool? _excludeStrict;
+        private bool? _noStrictSatisfy;
 
         public RedirectBuilder(IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
         {
@@ -46,9 +46,9 @@ namespace DivertR.Internal
             return this;
         }
         
-        public IRedirectBuilder<TTarget> WithExcludeStrict(bool excludeStrict = true)
+        public IRedirectBuilder<TTarget> WithNoStrictSatisfy(bool noStrictSatisfy = true)
         {
-            _excludeStrict = excludeStrict;
+            _noStrictSatisfy = noStrictSatisfy;
 
             return this;
         }
@@ -71,7 +71,7 @@ namespace DivertR.Internal
         {
             callHandler = ApplyCallHandlerChain(callHandler);
 
-            return new Redirect<TTarget>(callHandler, _callConstraint, _orderWeight, _excludeStrict);
+            return new Redirect<TTarget>(callHandler, _callConstraint, _orderWeight, _noStrictSatisfy);
         }
         
         protected IVia<TTarget> InsertRedirect(Redirect<TTarget> redirect)

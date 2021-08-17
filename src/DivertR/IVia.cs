@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using DivertR.Internal;
 using DivertR.Record;
 
 namespace DivertR
@@ -14,8 +15,7 @@ namespace DivertR
     public interface IVia<TTarget> : IVia where TTarget : class
     {
         IRelay<TTarget> Relay { get; }
-        TTarget Next { get; }
-        IReadOnlyList<Redirect<TTarget>> ConfiguredRedirects { get; }
+        RedirectPlan<TTarget> RedirectPlan { get; }
 
         TTarget Proxy(TTarget? original = null);
         
@@ -27,6 +27,8 @@ namespace DivertR
         IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression);
         IActionRedirectBuilder<TTarget> To(Expression<Action<TTarget>> lambdaExpression);
         IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression);
+        
+        IVia<TTarget> Strict();
         ICallStream<TTarget> Record(ICallConstraint<TTarget>? callConstraint = null);
     }
 }

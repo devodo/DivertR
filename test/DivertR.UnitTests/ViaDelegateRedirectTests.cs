@@ -447,5 +447,97 @@ namespace DivertR.UnitTests
             // ASSERT
             name.ShouldBe("1 2 3 foo 3 2 1");
         }
+        
+        [Fact]
+        public void GivenRedirect_WithCallOriginal_ShouldDefaultToOriginal()
+        {
+            // ARRANGE
+            var original = new Foo("foo");
+            var proxy = _via.Proxy(original);
+            _via
+                .To(x => x.Name)
+                .Redirect(() => (string) _via.Relay.CallOriginal());
+
+            // ACT
+            var result = proxy.Name;
+
+            // ASSERT
+            result.ShouldBe(original.Name);
+        }
+        
+        [Fact]
+        public void GivenRedirect_WithCallNext_ShouldDefaultToOriginal()
+        {
+            // ARRANGE
+            var original = new Foo("foo");
+            var proxy = _via.Proxy(original);
+            _via
+                .To(x => x.Name)
+                .Redirect(() => (string) _via.Relay.CallNext());
+
+            // ACT
+            var result = proxy.Name;
+
+            // ASSERT
+            result.ShouldBe(original.Name);
+        }
+        
+        [Fact]
+        public void GivenRedirect_WithCallNext_ShouldCallNextRedirect()
+        {
+            // ARRANGE
+            var original = new Foo("foo");
+            var proxy = _via.Proxy(original);
+            _via.To(x => x.Name).Redirect("test");
+            _via
+                .To(x => x.Name)
+                .Redirect(() => (string) _via.Relay.CallNext());
+
+            // ACT
+            var result = proxy.Name;
+
+            // ASSERT
+            result.ShouldBe("test");
+        }
+        
+        [Fact]
+        public void GivenRedirect_WithCallOriginal_WithMethod_ShouldCallOriginal()
+        {
+            // ARRANGE
+            var original = new Foo("foo");
+            var proxy = _via.Proxy(original);
+            _via
+                .To(x => x.Echo(Is<string>.Any))
+                .Redirect((string input) => $"{input}-test");
+            _via
+                .To(x => x.Echo("here"))
+                .Redirect(() => (string) _via.Relay.CallOriginal(_via.Relay.CallInfo.Method, new CallArguments(new object[] {"alter"})));
+
+            // ACT
+            var result = proxy.Echo("here");
+
+            // ASSERT
+            result.ShouldBe("alter");
+        }
+        
+        [Fact]
+        public void GivenRedirect_WithCallNext_WithMethod_ShouldCallNextRedirect()
+        {
+            // ARRANGE
+            var original = new Foo("foo");
+            var proxy = _via.Proxy(original);
+            _via
+                .To(x => x.Echo(Is<string>.Any))
+                .Redirect((string input) => $"{input}-test");
+            _via
+                .To(x => x.Echo("here"))
+                .Redirect(() => (string) _via.Relay.CallNext(_via.Relay.CallInfo.Method, new CallArguments(new object[] {"alter"})));
+
+            // ACT
+            var result = proxy.Echo("here");
+
+            // ASSERT
+            result.ShouldBe("alter-test");
+        }
     }
 }

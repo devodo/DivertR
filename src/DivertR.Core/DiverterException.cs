@@ -2,6 +2,7 @@
 
 namespace DivertR.Core
 {
+    [Serializable]
     public class DiverterException : Exception
     {
         public DiverterException()

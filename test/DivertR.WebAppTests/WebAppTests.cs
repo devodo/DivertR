@@ -82,11 +82,12 @@ namespace DivertR.WebAppTests
             bool? insertResult = null;
 
             _fooRepositoryVia
+                .Strict()
                 .To(x => x.TryInsertFoo(Is<Foo>.Any))
                 .Redirect(async (Foo foo) =>
                 {
                     insertedFoo = foo;
-                    insertResult = await _fooRepositoryVia.Next.TryInsertFoo(foo);
+                    insertResult = await _fooRepositoryVia.Relay.Next.TryInsertFoo(foo);
                     return insertResult.Value;
                 });
 

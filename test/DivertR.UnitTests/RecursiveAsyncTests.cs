@@ -44,7 +44,7 @@ namespace DivertR.UnitTests
             {
                 if (i < 2)
                 {
-                    return await _via.Next.GetNumber(i);
+                    return await _via.Relay.Next.GetNumber(i);
                 }
 
                 var num1Task = proxy.GetNumber(i - 1);
@@ -53,7 +53,7 @@ namespace DivertR.UnitTests
             });
 
             var times2 = new AsyncNumber(async i =>
-                await _via.Relay.Original.GetNumber(i) + await _via.Next.GetNumber(i));
+                await _via.Relay.Original.GetNumber(i) + await _via.Relay.Next.GetNumber(i));
 
             _via
                 .Retarget(times2)

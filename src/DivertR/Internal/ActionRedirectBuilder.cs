@@ -32,7 +32,7 @@ namespace DivertR.Internal
 
         public new IActionRedirectBuilder<TTarget> WithExcludeStrict(bool excludeStrict = true)
         {
-            base.WithExcludeStrict(excludeStrict);
+            base.WithNoStrictSatisfy(excludeStrict);
 
             return this;
         }

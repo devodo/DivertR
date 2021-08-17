@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using DivertR.Core;
 using DivertR.Internal;
@@ -34,8 +33,8 @@ namespace DivertR
 
         public TTarget Next => Relay.Next;
 
-        public IReadOnlyList<Redirect<TTarget>> ConfiguredRedirects =>
-            _redirectRepository.Get<TTarget>(ViaId)?.Redirects ?? Array.Empty<Redirect<TTarget>>();
+        public RedirectPlan<TTarget> RedirectPlan =>
+            _redirectRepository.Get<TTarget>(ViaId) ?? RedirectPlan<TTarget>.Empty;
 
         public TTarget Proxy(TTarget? original = null)
         {

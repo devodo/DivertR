@@ -45,7 +45,7 @@ namespace DivertR.DependencyInjection.Tests
 
             _diverter.Via<IFoo>()
                 .To(x => x.Message)
-                .Redirect(() => "Diverted: " + _diverter.Via<IFoo>().Next.Message);
+                .Redirect(() => "Diverted: " + _diverter.Via<IFoo>().Relay.Next.Message);
             
             var fooInstances = provider.GetServices<IFoo>().ToList();
             

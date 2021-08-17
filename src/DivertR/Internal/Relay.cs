@@ -27,15 +27,15 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? CallBegin(RedirectConfiguration<TTarget> redirectConfiguration, CallInfo<TTarget> callInfo)
+        public object? CallBegin(RedirectPlan<TTarget> redirectPlan, CallInfo<TTarget> callInfo)
         {
-            var redirectStep = BeginNewCall(redirectConfiguration, callInfo);
+            var redirectStep = BeginNewCall(redirectPlan, callInfo);
 
             if (redirectStep == null)
             {
-                if (redirectConfiguration.IsStrictMode)
+                if (redirectPlan.IsStrictMode)
                 {
-                    throw new DiverterException("Strict mode is enabled and the call did not match any redirects");
+                    throw new StrictNotSatisfiedException("Strict mode is enabled and the call did not match any redirects");
                 }
                 
                 return CallOriginal(callInfo);
@@ -144,7 +144,7 @@ namespace DivertR.Internal
         {
             if (!relayStep.StrictSatisfied)
             {
-                throw new DiverterException("Strict mode is enabled and the call did not match any redirects");
+                throw new StrictNotSatisfiedException("Strict mode is enabled and the call did not match any redirects");
             }
         }
         
@@ -160,9 +160,9 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private RelayStep<TTarget>? BeginNewCall(RedirectConfiguration<TTarget> redirectConfiguration, CallInfo<TTarget> callInfo)
+        private RelayStep<TTarget>? BeginNewCall(RedirectPlan<TTarget> redirectPlan, CallInfo<TTarget> callInfo)
         {
-            var redirectStep = RelayStep<TTarget>.Create(redirectConfiguration, callInfo);
+            var redirectStep = RelayStep<TTarget>.Create(redirectPlan, callInfo);
 
             if (redirectStep == null)
             {

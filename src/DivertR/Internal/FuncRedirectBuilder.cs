@@ -33,7 +33,7 @@ namespace DivertR.Internal
 
         public new IFuncRedirectBuilder<TTarget, TReturn> WithExcludeStrict(bool excludeStrict = true)
         {
-            base.WithExcludeStrict(excludeStrict);
+            base.WithNoStrictSatisfy(excludeStrict);
 
             return this;
         }

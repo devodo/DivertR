@@ -62,7 +62,7 @@ namespace DivertR.UnitTests
             {
                 if (i < 2)
                 {
-                    return _via.Next.GetNumber(i);
+                    return _via.Relay.Next.GetNumber(i);
                 }
 
                 return proxy.GetNumber(i - 1) + proxy.GetNumber(i - 2);
@@ -70,7 +70,7 @@ namespace DivertR.UnitTests
 
             _via
                 .To(x => x.GetNumber(Is<int>.Any))
-                .Redirect<int>(i => _via.Relay.Original.GetNumber(i) + _via.Next.GetNumber(i))
+                .Redirect<int>(i => _via.Relay.Original.GetNumber(i) + _via.Relay.Next.GetNumber(i))
                 .Retarget(fibonacci);
 
             return _via.Proxy(new Number());
