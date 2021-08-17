@@ -13,7 +13,7 @@ namespace DivertR
     {
         private readonly RedirectRepository _redirectRepository;
         private readonly IProxyFactory _proxyFactory;
-        private readonly RelayContext<TTarget> _relayContext;
+        private readonly Relay<TTarget> _relay;
 
         public Via(IDiverterSettings? diverterSettings = null) : this(ViaId.From<TTarget>(), new RedirectRepository(), diverterSettings ?? DiverterSettings.Default)
         {
@@ -23,17 +23,14 @@ namespace DivertR
         {
             _proxyFactory = diverterSettings.ProxyFactory;
             _proxyFactory.ValidateProxyTarget<TTarget>();
-
             ViaId = viaId;
             _redirectRepository = redirectRepository;
-            
-            _relayContext = new RelayContext<TTarget>();
-            Relay = new Relay<TTarget>(_relayContext, _proxyFactory);
+            _relay = new Relay<TTarget>(_proxyFactory);
         }
 
         public ViaId ViaId { get; }
 
-        public IRelay<TTarget> Relay { get; }
+        public IRelay<TTarget> Relay => _relay;
 
         public TTarget Next => Relay.Next;
 
@@ -48,7 +45,7 @@ namespace DivertR
 
                 return redirectConfiguration == null
                     ? null
-                    : new ViaProxyCall<TTarget>(_relayContext, redirectConfiguration);
+                    : new ViaProxyCall<TTarget>(_relay, redirectConfiguration);
             }
 
             return _proxyFactory.CreateProxy(original, GetProxyCall);

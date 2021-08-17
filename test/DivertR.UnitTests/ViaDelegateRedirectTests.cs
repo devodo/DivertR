@@ -1,3 +1,5 @@
+using System;
+using DivertR.Core;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -21,6 +23,20 @@ namespace DivertR.UnitTests
 
             // ASSERT
             name.ShouldBe(redirectMessage);
+        }
+        
+        [Fact]
+        public void GivenStrictModeWithNoRedirect_ShouldThrowException()
+        {
+            // ARRANGE
+            _via.Strict();
+            var proxy = _via.Proxy(new Foo("hello foo"));
+
+            // ACT
+            Func<string> testAction = () => proxy.Name;
+
+            // ASSERT
+            testAction.ShouldThrow<DiverterException>();
         }
         
         [Fact]

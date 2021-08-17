@@ -5,17 +5,17 @@ namespace DivertR.Internal
 {
     internal class NextProxyCall<TTarget> : IProxyCall<TTarget> where TTarget : class
     {
-        private readonly RelayContext<TTarget> _relayContext;
+        private readonly IRelay<TTarget> _relay;
 
-        public NextProxyCall(RelayContext<TTarget> relayContext)
+        public NextProxyCall(IRelay<TTarget> relay)
         {
-            _relayContext = relayContext;
+            _relay = relay;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Call(CallInfo<TTarget> callInfo)
         {
-            return _relayContext.CallNext(callInfo.Method, callInfo.Arguments);
+            return _relay.CallNext(callInfo.Method, callInfo.Arguments);
         }
     }
 }
