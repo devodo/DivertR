@@ -50,7 +50,7 @@ namespace DivertR.UnitTests
                 .To(x => x.RefNumber(ref Is<int>.AnyRef))
                 .Redirect(new RefCall((ref int i) =>
                 {
-                    _via.Next.RefNumber(ref i);
+                    _via.Relay.Next.RefNumber(ref i);
 
                     i += 10;
                 }));
@@ -89,7 +89,7 @@ namespace DivertR.UnitTests
                 .To(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
                 .Redirect(new OutCall((int i, out int o) =>
                 {
-                    _via.Next.OutNumber(i, out o);
+                    _via.Relay.Next.OutNumber(i, out o);
 
                     o += 10;
                 }));
@@ -127,7 +127,7 @@ namespace DivertR.UnitTests
                 .To(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
                 .Redirect(new OutCall((int i, out int o) =>
                 {
-                    _via.Next.OutNumber(i, out o);
+                    _via.Relay.Next.OutNumber(i, out o);
 
                     o += 10;
                 }));
@@ -168,7 +168,7 @@ namespace DivertR.UnitTests
                 .To(x => x.RefArrayNumber(ref Is<int[]>.AnyRef))
                 .Redirect(new RefArrayCall((ref int[] inRef) =>
                 {
-                    _via.Next.RefArrayNumber(ref inRef);
+                    _via.Relay.Next.RefArrayNumber(ref inRef);
 
                     for (var i = 0; i < inRef.Length; i++)
                     {

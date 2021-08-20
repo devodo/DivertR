@@ -10,7 +10,7 @@ namespace DivertR.UnitTests
 {
     public class RecordTests
     {
-        private readonly Via<IFoo> _via = new();
+        private readonly IVia<IFoo> _via = new Via<IFoo>();
         private readonly ICallStream<IFoo> _callStream;
 
         public RecordTests()
@@ -19,7 +19,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyCalls_ShouldCapture()
+        public void GivenProxyCalls_ShouldRecord()
         {
             // ARRANGE
             var inputs = Enumerable
@@ -38,20 +38,30 @@ namespace DivertR.UnitTests
             // ASSERT
             _callStream.Select(x => x.CallInfo.Arguments[0]).ShouldBe(inputs);
             _callStream.Select(x => x.Returned?.Value).ShouldBe(outputs);
+
             _callStream
                 .To(x => x.Echo(Is<string>.Any))
-                .Visit<string>().Select(x => x.Arg1).ShouldBe(inputs);
-            _callStream
-                .To(x => x.Echo(Is<string>.Any))
-                .Select(x => x.Returned!.Value).ShouldBe(outputs);
+                .ForEach((call, i) =>
+                {
+                    call.Returned!.Value.ShouldBe(outputs[i]);
+                    call.Args((string input) => input.ShouldBe(inputs[i]));
+                })
+                .Count.ShouldBe(inputs.Count);
             
             _callStream
                 .To(x => x.Echo(Is<string>.Any))
-                .Visit<string, string>((call, input) => input).ShouldBe(inputs);
+                .Select((call, i) =>
+                {
+                    call.Args((string input) =>
+                    {
+                        input.ShouldBe(inputs[i]);
+                    });
+                    return call.Returned!.Value;
+                }).ShouldBe(outputs);
         }
         
         [Fact]
-        public void GivenGetCallConstraint_ShouldFilter()
+        public void GivenToCallConstraint_ShouldFilter()
         {
             // ARRANGE
             var inputs = Enumerable
@@ -72,11 +82,11 @@ namespace DivertR.UnitTests
             calls.Count.ShouldBe(1);
             calls.Single().CallInfo.Arguments.Count.ShouldBe(1);
             calls.Single().CallInfo.Proxy.ShouldBeSameAs(fooProxy);
-            
-            calls.Visit<string>((call, input) =>
+
+            calls.ForEach(call =>
             {
-                input.ShouldBe(inputs[0]);
-                call.Returned?.Value.ShouldBe(outputs[0]);
+                call.Args<string>().ShouldBe(inputs[0]);
+                call.Returned!.Value.ShouldBe(outputs[0]);
             });
         }
         
@@ -103,7 +113,11 @@ namespace DivertR.UnitTests
             caughtException.ShouldNotBeNull();
             _callStream
                 .To(x => x.Echo("test"))
-                .Visit(call => call.Returned?.Exception.ShouldBeSameAs(caughtException))
+                .ForEach(call =>
+                {
+                    call.Args<string>().ShouldBe("test");
+                    call.Returned?.Exception.ShouldBeSameAs(caughtException);
+                })
                 .Count.ShouldBe(1);
         }
         
@@ -155,7 +169,7 @@ namespace DivertR.UnitTests
             _via.Strict();
             _via
                 .To(x => x.EchoAsync(Is<string>.Match(m => m != "test")))
-                .Redirect((string input) => _via.Next.EchoAsync(input));
+                .Redirect((string input) => _via.Relay.Next.EchoAsync(input));
 
             // ACT
             Func<Task<string>> testAction = () => _via.Proxy(new Foo()).EchoAsync("test");
@@ -165,9 +179,9 @@ namespace DivertR.UnitTests
             
             _callStream
                 .To(x => x.EchoAsync("test"))
-                .Visit<string>((call, input) =>
+                .ForEach(call =>
                 {
-                    input.ShouldBe("test");
+                    call.CallInfo.Arguments[0].ShouldBe("test");
                     call.Returned!.Exception.ShouldBeOfType<StrictNotSatisfiedException>();
                 })
                 .Count.ShouldBe(1);
@@ -180,7 +194,7 @@ namespace DivertR.UnitTests
             _via.Strict();
             _via
                 .To(x => x.EchoAsync("test"))
-                .Redirect(async (string input) => await _via.Next.EchoAsync(input) + " diverted");
+                .Redirect(async (string input) => await _via.Relay.Next.EchoAsync(input) + " diverted");
 
             // ACT
             var result = await _via.Proxy(new Foo()).EchoAsync("test");
@@ -190,12 +204,95 @@ namespace DivertR.UnitTests
 
             _callStream
                 .To(x => x.EchoAsync("test"))
-                .Visit<string>((call, input) =>
+                .ForEach(call =>
                 {
-                    input.ShouldBe("test");
+                    call.Args<string>().ShouldBe("test");
                     call.Returned!.Value.Result.ShouldBe(result);
                 })
                 .Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public void GivenProxyCallsToAction_ShouldRecord()
+        {
+            // ARRANGE
+            var inputs = Enumerable
+                .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
+                .ToList();
+            
+            _via
+                .To(x => x.SetName(Is<string>.Any))
+                .Redirect(() => { });
+
+            var fooProxy = _via.Proxy();
+
+            // ACT
+            inputs.ForEach(x => fooProxy.SetName(x));
+
+            // ASSERT
+            _callStream
+                .To(x => x.SetName(Is<string>.Any))
+                .Select((call, i) =>
+                {
+                    call.Returned!.Value.ShouldBeNull();
+                    return call.Args((string name) => name.ShouldBe(inputs[i]));
+                })
+                .ShouldBe(inputs);
+        }
+        
+        [Fact]
+        public void GivenProxyCallsToPropertyGetter_ShouldRecord()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.Name)
+                .Redirect(() => Guid.NewGuid().ToString());
+
+            var fooProxy = _via.Proxy();
+
+            // ACT
+            var outputs = Enumerable
+                .Range(0, 20)
+                .Select(x => fooProxy.Name).ToList();
+
+            // ASSERT
+            _callStream
+                .To(x => x.Name)
+                .ForEach(call =>
+                {
+                    outputs.ShouldContain(call.Returned!.Value);
+                })
+                .Select(call => call.Returned!.Value)
+                .ShouldBe(outputs);
+        }
+        
+        [Fact]
+        public void GivenProxyCallsToPropertySetter_ShouldRecord()
+        {
+            // ARRANGE
+            var inputs = Enumerable
+                .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
+                .ToList();
+            
+            _via
+                .ToSet(x => x.Name, () => Is<string>.Any)
+                .Redirect(() => { });
+
+            var fooProxy = _via.Proxy();
+
+            // ACT
+            inputs.ForEach(x => fooProxy.Name = x);
+
+            // ASSERT
+            _callStream
+                .ToSet(x => x.Name, () => Is<string>.Any)
+                .ForEach((call, i) =>
+                {
+                    call.Args((string name) => name.ShouldBe(inputs[i]));
+                    call.Returned!.Value.ShouldBeNull();
+                })
+                .Select(call => call.Args<string>())
+                .ShouldBe(inputs);
         }
     }
 }

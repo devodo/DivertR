@@ -7,7 +7,7 @@ namespace DivertR
         new IActionRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
         new IActionRedirectBuilder<TTarget> ChainCallHandler(Func<IVia<TTarget>, ICallHandler<TTarget>, ICallHandler<TTarget>> chainLink);
         new IActionRedirectBuilder<TTarget> WithOrderWeight(int orderWeight);
-        new IActionRedirectBuilder<TTarget> WithExcludeStrict(bool excludeStrict = true);
+        new IActionRedirectBuilder<TTarget> DisableSatisfyStrict(bool disableStrict = true);
         
         Redirect<TTarget> Build(Action redirectDelegate);
         Redirect<TTarget> Build<T1>(Action<T1> redirectDelegate);

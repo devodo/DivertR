@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using DivertR.Internal;
 using DivertR.Record;
 
 namespace DivertR

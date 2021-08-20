@@ -31,13 +31,13 @@ namespace DivertR.Record.Internal
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
             var calls = _recordedCalls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
-                .Cast<RecordedCall<TTarget, TReturn>>()
+                .Select(x => new FuncRecordedCall<TTarget, TReturn>((RecordedCall<TTarget, TReturn>) x, parsedCall))
                 .ToArray();
 
-            return new FuncCallStream<TTarget, TReturn>(parsedCall, calls);
+            return new FuncCallStream<TTarget, TReturn>(calls);
         }
 
-        public IReadOnlyList<IRecordedCall<TTarget>> To(Expression<Action<TTarget>> lambdaExpression)
+        public IActionCallStream<TTarget> To(Expression<Action<TTarget>> lambdaExpression)
         {
             if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
@@ -45,30 +45,30 @@ namespace DivertR.Record.Internal
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
             var calls = _recordedCalls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
-                .Cast<RecordedCall<TTarget>>()
+                .Select(x => new ActionRecordedCall<TTarget>(x, parsedCall))
                 .ToArray();
 
-            return new ActionCallStream<TTarget>(parsedCall, calls);
+            return new ActionCallStream<TTarget>(calls);
         }
 
-        public IReadOnlyList<IRecordedCall<TTarget>> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
+        public IActionCallStream<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
         {
             if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
             if (valueExpression?.Body == null) throw new ArgumentNullException(nameof(valueExpression));
 
             if (!(lambdaExpression.Body is MemberExpression propertyExpression))
             {
-                throw new ArgumentException("Only property member expressions are valid input to RedirectSet", nameof(propertyExpression));
+                throw new ArgumentException("Must be a property member expression", nameof(propertyExpression));
             }
 
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
             var calls = _recordedCalls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
-                .Cast<RecordedCall<TTarget>>()
+                .Select(x => new ActionRecordedCall<TTarget>(x, parsedCall))
                 .ToArray();
 
-            return new ActionCallStream<TTarget>(parsedCall, calls);
+            return new ActionCallStream<TTarget>(calls);
         }
         
         public int Count => _recordedCalls.Count;

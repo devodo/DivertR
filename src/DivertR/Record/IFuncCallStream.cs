@@ -3,11 +3,9 @@ using System.Collections.Generic;
 
 namespace DivertR.Record
 {
-    public interface IFuncCallStream<TTarget, out TReturn> : IReadOnlyList<IRecordedCall<TTarget, TReturn>> where TTarget : class
+    public interface IFuncCallStream<TTarget, out TReturn> : IReadOnlyList<IFuncRecordedCall<TTarget, TReturn>> where TTarget : class
     {
-        IReadOnlyList<IRecordedCall<TTarget, TReturn>> Visit(Action<IRecordedCall<TTarget, TReturn>>? visitor = null);
-        IReadOnlyList<IRecordedCall<TTarget, TReturn, T1>> Visit<T1>(Action<IRecordedCall<TTarget, TReturn, T1>>? visitor = null);
-        IReadOnlyList<IRecordedCall<TTarget, TReturn, T1>> Visit<T1>(Action<IRecordedCall<TTarget, TReturn, T1>, T1> visitor);
-        IEnumerable<TOut> Visit<T1, TOut>(Func<IRecordedCall<TTarget, TReturn, T1>, T1, TOut> visitor);
+        IFuncCallStream<TTarget, TReturn> ForEach(Action<IFuncRecordedCall<TTarget, TReturn>> visitor);
+        IFuncCallStream<TTarget, TReturn> ForEach(Action<IFuncRecordedCall<TTarget, TReturn>, int> visitor);
     }
 }

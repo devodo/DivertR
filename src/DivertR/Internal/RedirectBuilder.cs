@@ -46,9 +46,9 @@ namespace DivertR.Internal
             return this;
         }
         
-        public IRedirectBuilder<TTarget> WithNoStrictSatisfy(bool noStrictSatisfy = true)
+        public IRedirectBuilder<TTarget> DisableSatisfyStrict(bool disableStrict = true)
         {
-            _noStrictSatisfy = noStrictSatisfy;
+            _noStrictSatisfy = disableStrict;
 
             return this;
         }

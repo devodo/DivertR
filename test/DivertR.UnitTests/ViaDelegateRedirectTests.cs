@@ -8,7 +8,7 @@ namespace DivertR.UnitTests
 {
     public class ViaDelegateRedirectTests
     {
-        private readonly Via<IFoo> _via = new();
+        private readonly IVia<IFoo> _via = new Via<IFoo>();
 
         [Fact]
         public void GivenProxyWithDelegateRedirect_ShouldRedirect()
@@ -94,7 +94,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
             _via
                 .To(x => x.Name)
-                .Redirect(() => $"hello {_via.Next.Name}");
+                .Redirect(() => $"hello {_via.Relay.Next.Name}");
             
             // ACT
             var name = proxy.Name;
@@ -257,7 +257,7 @@ namespace DivertR.UnitTests
             var input = new Wrapper<string>("Hello");
 
             _via.To(x => x.Echo(input.Item))
-                .Redirect((string i) => $"{i} - {_via.Next.Name}");
+                .Redirect((string i) => $"{i} - {_via.Relay.Next.Name}");
             
             // ACT
             var result = _via.Proxy(new Foo("Foo")).Echo(input.Item);
@@ -414,9 +414,9 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .To(x => x.Name).WithOrderWeight(30).Redirect(() => $"1 {_via.Next.Name} 1")
-                .To(x => x.Name).WithOrderWeight(20).Redirect(() => $"2 {_via.Next.Name} 2")
-                .To(x => x.Name).WithOrderWeight(10).Redirect(() => $"3 {_via.Next.Name} 3");
+                .To(x => x.Name).WithOrderWeight(30).Redirect(() => $"1 {_via.Relay.Next.Name} 1")
+                .To(x => x.Name).WithOrderWeight(20).Redirect(() => $"2 {_via.Relay.Next.Name} 2")
+                .To(x => x.Name).WithOrderWeight(10).Redirect(() => $"3 {_via.Relay.Next.Name} 3");
             
             // ACT
             var result = _via.Proxy(new Foo("hello")).Name;

@@ -165,7 +165,7 @@ namespace DivertR.UnitTests
                 .Select(i => _via.Proxy(new Foo($"foo{i}")))
                 .ToList();
             
-            _via.Retarget(new FooAlt(() => $"diverted {_via.Next.Name}"));
+            _via.Retarget(new FooAlt(() => $"diverted {_via.Relay.Next.Name}"));
 
             // ACT
             var names = proxies.Select(x => x.Name).ToList();

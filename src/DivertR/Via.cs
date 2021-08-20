@@ -31,8 +31,6 @@ namespace DivertR
 
         public IRelay<TTarget> Relay => _relay;
 
-        public TTarget Next => Relay.Next;
-
         public RedirectPlan<TTarget> RedirectPlan =>
             _redirectRepository.Get<TTarget>(ViaId) ?? RedirectPlan<TTarget>.Empty;
 
@@ -89,6 +87,7 @@ namespace DivertR
             if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            
             return new FuncRedirectBuilder<TTarget, TReturn>(this, parsedCall);
         }
         
@@ -97,6 +96,7 @@ namespace DivertR
             if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            
             return new ActionRedirectBuilder<TTarget>(this, parsedCall);
         }
         
@@ -107,7 +107,7 @@ namespace DivertR
 
             if (!(lambdaExpression.Body is MemberExpression propertyExpression))
             {
-                throw new ArgumentException("Only property member expressions are valid input to RedirectSet", nameof(propertyExpression));
+                throw new ArgumentException("Must be a property member expression", nameof(propertyExpression));
             }
 
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
@@ -124,11 +124,11 @@ namespace DivertR
         
         public ICallStream<TTarget> Record(ICallConstraint<TTarget>? callConstraint = null)
         {
-            var recordRedirect = new RecordCallHandler<TTarget>(Relay);
-            var redirect = new Redirect<TTarget>(recordRedirect, callConstraint, int.MaxValue, true);
+            var recordHandler = new RecordCallHandler<TTarget>(Relay);
+            var redirect = new Redirect<TTarget>(recordHandler, callConstraint, int.MaxValue, true);
             InsertRedirect(redirect);
 
-            return recordRedirect.CreateCallStream();
+            return recordHandler.CallStream;
         }
     }
 }

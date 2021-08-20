@@ -54,6 +54,11 @@ namespace DivertR.UnitTests.Model
             await Task.Yield();
             return input;
         }
+        
+        public void SetName(string name)
+        {
+            _messageFactory = () => name;
+        }
 
         public string SetName(Wrapper<string> input)
         {

@@ -30,9 +30,9 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IActionRedirectBuilder<TTarget> WithExcludeStrict(bool excludeStrict = true)
+        public new IActionRedirectBuilder<TTarget> DisableSatisfyStrict(bool disableStrict = true)
         {
-            base.WithNoStrictSatisfy(excludeStrict);
+            base.DisableSatisfyStrict(disableStrict);
 
             return this;
         }

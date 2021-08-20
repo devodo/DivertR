@@ -8,7 +8,7 @@ namespace DivertR.UnitTests
 {
     public class RedirectBuilderExtensionsTests
     {
-        private readonly Via<IFoo> _via = new();
+        private readonly IVia<IFoo> _via = new Via<IFoo>();
 
         [Fact]
         public void GivenRepeatExtension_ShouldRedirectNumberOfTimes()
@@ -17,8 +17,8 @@ namespace DivertR.UnitTests
             const int Count = 5;
             var proxy = _via
                 .To(x => x.Name).Redirect("hello")
-                .To(x => x.Name).Repeat(1).Redirect(() => $"{_via.Next.Name} first")
-                .To(x => x.Name).Repeat(Count + 1).Redirect(() => $"{_via.Next.Name} diverted")
+                .To(x => x.Name).Repeat(1).Redirect(() => $"{_via.Relay.Next.Name} first")
+                .To(x => x.Name).Repeat(Count + 1).Redirect(() => $"{_via.Relay.Next.Name} diverted")
                 .Proxy();
 
             // ACT
@@ -37,8 +37,8 @@ namespace DivertR.UnitTests
             const int Count = 5;
             var proxy = _via
                 .To(x => x.Name).Redirect("hello")
-                .To(x => x.Name).Skip(1).Redirect(() => $"{_via.Next.Name} after")
-                .To(x => x.Name).Skip(Count).Redirect(() => $"{_via.Next.Name} diverted")
+                .To(x => x.Name).Skip(1).Redirect(() => $"{_via.Relay.Next.Name} after")
+                .To(x => x.Name).Skip(Count).Redirect(() => $"{_via.Relay.Next.Name} diverted")
                 .Proxy();
 
             // ACT
@@ -57,8 +57,8 @@ namespace DivertR.UnitTests
             const int Count = 5;
             var proxy = _via
                 .To(x => x.Name).Redirect("hello")
-                .To(x => x.Name).Repeat(1).Skip(1).Redirect(() => $"{_via.Next.Name} after")
-                .To(x => x.Name).Skip(Count).Redirect(() => $"{_via.Next.Name} diverted")
+                .To(x => x.Name).Repeat(1).Skip(1).Redirect(() => $"{_via.Relay.Next.Name} after")
+                .To(x => x.Name).Skip(Count).Redirect(() => $"{_via.Relay.Next.Name} diverted")
                 .Proxy();
 
             // ACT

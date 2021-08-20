@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using DivertR.Core;
 using DivertR.DependencyInjection.Tests.Model;

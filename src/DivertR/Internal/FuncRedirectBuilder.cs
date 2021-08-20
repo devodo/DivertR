@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
@@ -31,9 +30,9 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IFuncRedirectBuilder<TTarget, TReturn> WithExcludeStrict(bool excludeStrict = true)
+        public new IFuncRedirectBuilder<TTarget, TReturn> DisableSatisfyStrict(bool disableStrict = true)
         {
-            base.WithNoStrictSatisfy(excludeStrict);
+            base.DisableSatisfyStrict(disableStrict);
 
             return this;
         }

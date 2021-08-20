@@ -16,6 +16,8 @@ namespace DivertR.UnitTests.Model
         
         public ValueTask<string> EchoValueAsync(string input);
         
+        void SetName(string name);
+        
         string SetName(Wrapper<string> input);
 
         IFoo GetFoo();
