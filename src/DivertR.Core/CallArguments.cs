@@ -25,5 +25,7 @@ namespace DivertR.Core
         public int Count => InternalArgs.Length;
 
         public object this[int index] => InternalArgs[index];
+
+        public static implicit operator CallArguments(object[] args) => new CallArguments(args);
     }
 }

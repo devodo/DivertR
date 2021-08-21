@@ -11,7 +11,9 @@ namespace DivertR
         CallInfo<TTarget> CallInfo { get; }
         object? CallNext();
         object? CallNext(MethodInfo method, CallArguments callArguments);
+        object? CallNext(CallArguments callArguments);
         object? CallOriginal();
         object? CallOriginal(MethodInfo method, CallArguments callArguments);
+        object? CallOriginal(CallArguments callArguments);
     }
 }

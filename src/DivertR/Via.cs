@@ -38,11 +38,11 @@ namespace DivertR
         {
             IProxyCall<TTarget>? GetProxyCall()
             {
-                var redirectConfiguration = _redirectRepository.Get<TTarget>(ViaId);
+                var redirectPlan = _redirectRepository.Get<TTarget>(ViaId);
 
-                return redirectConfiguration == null
+                return redirectPlan == null
                     ? null
-                    : new ViaProxyCall<TTarget>(_relay, redirectConfiguration);
+                    : new ViaProxyCall<TTarget>(_relay, redirectPlan);
             }
 
             return _proxyFactory.CreateProxy(original, GetProxyCall);

@@ -55,18 +55,33 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithCallNextRedirect_ShouldDefaultToOriginal()
+        public void GivenProxyWithCallNextRedirect_ShouldRelayToOriginal()
         {
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.To(x => x.Name).Redirect(() => (string) _via.Relay.CallNext());
+            _via.To(x => x.Name).Redirect(() => "relay " + (string) _via.Relay.CallNext());
 
             // ACT
             var name = proxy.Name;
 
             // ASSERT
-            name.ShouldBe(original.Name);
+            name.ShouldBe("relay " + original.Name);
+        }
+        
+        [Fact]
+        public void GivenProxyWithCallNextRedirectWithArgs_ShouldRelayArgs()
+        {
+            // ARRANGE
+            var original = new Foo();
+            var proxy = _via.Proxy(original);
+            _via.To(x => x.Echo(Is<string>.Any)).Redirect(() => (string) _via.Relay.CallNext(new[] {"relay"}));
+
+            // ACT
+            var result = proxy.Echo("test");
+
+            // ASSERT
+            result.ShouldBe("relay");
         }
         
         [Fact]
@@ -449,37 +464,37 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirect_WithCallOriginal_ShouldDefaultToOriginal()
+        public void GivenRedirect_WithCallOriginal_ShouldRelayToOriginal()
         {
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             _via
                 .To(x => x.Name)
-                .Redirect(() => (string) _via.Relay.CallOriginal());
+                .Redirect(() => "relay " + (string) _via.Relay.CallOriginal());
 
             // ACT
             var result = proxy.Name;
 
             // ASSERT
-            result.ShouldBe(original.Name);
+            result.ShouldBe("relay " + original.Name);
         }
         
         [Fact]
-        public void GivenRedirect_WithCallNext_ShouldDefaultToOriginal()
+        public void GivenRedirect_WithCallNext_ShouldRelayToOriginal()
         {
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             _via
                 .To(x => x.Name)
-                .Redirect(() => (string) _via.Relay.CallNext());
+                .Redirect(() => "relay " + (string) _via.Relay.CallNext());
 
             // ACT
             var result = proxy.Name;
 
             // ASSERT
-            result.ShouldBe(original.Name);
+            result.ShouldBe("relay " + original.Name);
         }
         
         [Fact]
@@ -518,6 +533,21 @@ namespace DivertR.UnitTests
 
             // ASSERT
             result.ShouldBe("alter");
+        }
+        
+        [Fact]
+        public void GivenRedirect_WithCallOriginal_WithArgs_ShouldRelayArgs()
+        {
+            // ARRANGE
+            var original = new Foo();
+            var proxy = _via.Proxy(original);
+            _via.To(x => x.Echo(Is<string>.Any)).Redirect(() => (string) _via.Relay.CallOriginal(new[] {"relay"}));
+
+            // ACT
+            var result = proxy.Echo("test");
+
+            // ASSERT
+            result.ShouldBe("relay");
         }
         
         [Fact]

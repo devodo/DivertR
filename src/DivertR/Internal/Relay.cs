@@ -50,7 +50,7 @@ namespace DivertR.Internal
                 EndCall(callInfo);
             }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? CallOriginal()
         {
@@ -70,6 +70,16 @@ namespace DivertR.Internal
             return CallOriginal(callInfo);
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? CallOriginal(CallArguments callArguments)
+        {
+            var redirectStep = GetCurrentStack().Peek();
+            ValidateStrict(redirectStep);
+            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, redirectStep.CallInfo.Method, callArguments);
+            
+            return CallOriginal(callInfo);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? CallNext()
         {
@@ -103,7 +113,34 @@ namespace DivertR.Internal
             var redirectStack = GetCurrentStack();
             var redirectStep = redirectStack.Peek();
             var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, method, callArguments);
+            var nextRedirectIndex = redirectStep.MoveNext(callInfo);
 
+            if (nextRedirectIndex == null)
+            {
+                ValidateStrict(redirectStep);
+
+                return CallOriginal(callInfo);
+            }
+            
+            redirectStack = redirectStack.Push(nextRedirectIndex);
+            _redirectStack.Value = redirectStack;
+
+            try
+            {
+                return nextRedirectIndex.Redirect.CallHandler.Call(callInfo);
+            }
+            finally
+            {
+                _redirectStack.Value = redirectStack.Pop();
+            }
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? CallNext(CallArguments callArguments)
+        {
+            var redirectStack = GetCurrentStack();
+            var redirectStep = redirectStack.Peek();
+            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, redirectStep.CallInfo.Method, callArguments);
             var nextRedirectIndex = redirectStep.MoveNext(callInfo);
 
             if (nextRedirectIndex == null)
