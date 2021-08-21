@@ -14,7 +14,8 @@ namespace DivertR.UnitTests.Model
 
         string Echo(string input);
 
-        string EchoGeneric<T>(T input);
+        T1 EchoGeneric<T1>(T1 i1);
+        (T1, T2) EchoGeneric<T1, T2>(T1 i1, T2 i2);
 
         Task<string> EchoAsync(string input);
         

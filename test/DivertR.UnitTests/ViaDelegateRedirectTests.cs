@@ -55,7 +55,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithCallNextRedirect_ShouldRelayToOriginal()
+        public void GivenRedirectWithCallNextRelay_ShouldRelayToOriginal()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -370,14 +370,14 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoGeneric(Is<int>.Any))
-                .Redirect((int i) => $"{i} - {_via.Relay.Next.Name}");
+                .Redirect((int i) => i + 10);
             
             // ACT
             var proxy = _via.Proxy(new Foo("foo"));
             var result = proxy.EchoGeneric("Hello");
 
             // ASSERT
-            result.ShouldBe("foo: Hello");
+            result.ShouldBe("Hello");
         }
         
         [Fact]

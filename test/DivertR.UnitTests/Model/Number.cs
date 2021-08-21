@@ -34,9 +34,12 @@ namespace DivertR.UnitTests.Model
             }
         }
         
-        public void RefNumber(ref int input)
+        public int RefNumber(ref int input)
         {
+            var refIn = input;
             input = _numberFactory(input);
+
+            return refIn;
         }
 
         public void OutNumber(int input, out int output)

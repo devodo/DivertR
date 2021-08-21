@@ -8,6 +8,8 @@ namespace DivertR.UnitTests
 {
     public class ByRefInTests
     {
+        // Due to a known issue DispatchProxy does not currently support in byref parameters
+        // https://github.com/dotnet/runtime/issues/47522
         private static readonly DiverterSettings DiverterSettings = new()
         {
             ProxyFactory = new DynamicProxyFactory()

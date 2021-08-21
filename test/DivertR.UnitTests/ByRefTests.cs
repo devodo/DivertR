@@ -23,7 +23,7 @@ namespace DivertR.UnitTests
     
     public class ByRefTests
     {
-        private delegate void RefCall(ref int input);
+        private delegate int RefCall(ref int input);
         
         private delegate void RefArrayCall(ref int[] input);
         
@@ -50,18 +50,20 @@ namespace DivertR.UnitTests
                 .To(x => x.RefNumber(ref Is<int>.AnyRef))
                 .Redirect(new RefCall((ref int i) =>
                 {
-                    _via.Relay.Next.RefNumber(ref i);
-
+                    var refIn = _via.Relay.Next.RefNumber(ref i);
                     i += 10;
+
+                    return refIn;
                 }));
             
             var viaProxy = _via.Proxy(new Number(i => i * 2));
             
             // ACT
             int input = 3;
-            viaProxy.RefNumber(ref input);
+            var result = viaProxy.RefNumber(ref input);
 
             // ASSERT
+            result.ShouldBe(3);
             input.ShouldBe(16);
         }
         
@@ -196,15 +198,19 @@ namespace DivertR.UnitTests
                 .To(x => x.RefNumber(ref input))
                 .Redirect(new RefCall((ref int i) =>
                 {
+                    var refIn = i;
                     i = 50;
+
+                    return refIn + 1;
                 }));
 
             // ACT
             var i2 = 5;
             var proxy = via.Proxy(new Number());
-            proxy.RefNumber(ref i2);
+            var result = proxy.RefNumber(ref i2);
 
             // ASSERT
+            result.ShouldBe(6);
             i2.ShouldBe(50);
         }
 
@@ -215,14 +221,15 @@ namespace DivertR.UnitTests
             var via = new Via<INumber>();
             via
                 .To(x => x.RefNumber(ref Is<int>.AnyRef))
-                .Redirect(() => { });
+                .Redirect(() => 10);
 
             // ACT
             var input = 5;
             var proxy = via.Proxy(new Number());
-            proxy.RefNumber(ref input);
+            var result = proxy.RefNumber(ref input);
 
             // ASSERT
+            result.ShouldBe(10);
             input.ShouldBe(5);
         }
     }

@@ -48,9 +48,14 @@ namespace DivertR.UnitTests.Model
             return $"{Name}: {input}";
         }
 
-        public string EchoGeneric<T>(T input)
+        public T1 EchoGeneric<T1>(T1 i1)
         {
-            return Echo($"{input}");
+            return i1;
+        }
+
+        public (T1, T2) EchoGeneric<T1, T2>(T1 i1, T2 i2)
+        {
+            return (i1, i2);
         }
 
         public async Task<string> EchoAsync(string input)

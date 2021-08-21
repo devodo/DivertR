@@ -8,7 +8,7 @@ namespace DivertR.UnitTests.Model
         string GenericNumber<T>(T arg, int input);
         void ArrayNumber(int[] inputs);
         void RefArrayNumber(ref int[] inputs);
-        void RefNumber(ref int input);
+        int RefNumber(ref int input);
         void OutNumber(int input, out int output);
         
         Task<int> GetNumberAsync(int input);
