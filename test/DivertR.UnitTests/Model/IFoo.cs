@@ -5,8 +5,6 @@ namespace DivertR.UnitTests.Model
     public interface IFoo
     {
         string Name { get; set; }
-        
-        string NameVirtual { get; set; }
 
         Task<string> GetNameAsync();
         ValueTask<string> GetNameValueAsync();
@@ -15,6 +13,7 @@ namespace DivertR.UnitTests.Model
         string Echo(string input);
 
         T1 EchoGeneric<T1>(T1 i1);
+        T1 EchoGenericAlt<T1>(T1 i1);
         (T1, T2) EchoGeneric<T1, T2>(T1 i1, T2 i2);
 
         Task<string> EchoAsync(string input);

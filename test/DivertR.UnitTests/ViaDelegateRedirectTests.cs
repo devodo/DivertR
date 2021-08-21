@@ -349,6 +349,38 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenGenericInputRedirect_WhenGenericParentTypeMatch_ShouldRedirect()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.EchoGeneric(Is<object>.Any))
+                .Redirect((object i) => $"{i} - {_via.Relay.Next.Name}");
+
+            // ACT
+            var proxy = _via.Proxy(new Foo("foo"));
+            var result = proxy.EchoGeneric("Hello");
+
+            // ASSERT
+            result.ShouldBe("Hello - foo");
+        }
+        
+        [Fact]
+        public void GivenGenericInputRedirect_WhenMethodDoesNotMatch_ShouldNotRedirect()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.EchoGenericAlt(Is<string>.Any))
+                .Redirect((string i) => $"{i} - {_via.Relay.Next.Name}");
+
+            // ACT
+            var proxy = _via.Proxy(new Foo("foo"));
+            var result = proxy.EchoGeneric("Hello");
+
+            // ASSERT
+            result.ShouldBe("Hello");
+        }
+        
+        [Fact]
         public void GivenGenericInputRedirect_WhenGenericAssignable_ShouldDivert()
         {
             // ARRANGE

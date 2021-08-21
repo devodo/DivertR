@@ -106,12 +106,10 @@ namespace DivertR.Internal
         {
             if (!methodInfo.IsGenericMethod)
             {
-                return new ReferenceMethodConstraint(methodInfo);
+                return new StandardMethodConstraint(methodInfo);
             }
 
-            var genericArguments = methodInfo.GetGenericArguments();
-
-            return new GenericMethodConstraint(genericArguments);
+            return new GenericMethodConstraint(methodInfo);
         }
     }
 }

@@ -27,12 +27,6 @@ namespace DivertR.UnitTests.Model
             set => _messageFactory = () => value;
         }
 
-        public virtual string NameVirtual
-        {
-            get => _messageFactory.Invoke();
-            set => _messageFactory = () => value;
-        }
-
         public async Task<string> GetNameAsync()
         {
             await Task.Yield();
@@ -55,6 +49,11 @@ namespace DivertR.UnitTests.Model
         }
 
         public T1 EchoGeneric<T1>(T1 i1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T1 EchoGenericAlt<T1>(T1 i1)
         {
             throw new NotImplementedException();
         }

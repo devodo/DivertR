@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -6,17 +7,27 @@ namespace DivertR.Internal
 {
     internal class GenericMethodConstraint : IMethodConstraint
     {
+        private readonly MethodInfo _genericMethodDefinition;
         private readonly Type[] _genericTypes;
 
-        public GenericMethodConstraint(Type[] genericTypes)
+        private readonly ConcurrentDictionary<MethodInfo, bool> _matchCache =
+            new ConcurrentDictionary<MethodInfo, bool>();
+
+        public GenericMethodConstraint(MethodInfo methodInfo)
         {
-            _genericTypes = genericTypes;
+            _genericMethodDefinition = methodInfo.GetGenericMethodDefinition();
+            _genericTypes = methodInfo.GetGenericArguments();
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(MethodInfo methodInfo)
         {
-            if (!methodInfo.IsGenericMethod)
+            return methodInfo.IsGenericMethod && _matchCache.GetOrAdd(methodInfo, IsMatchInternal);
+        }
+
+        private bool IsMatchInternal(MethodInfo methodInfo)
+        {
+            if (!ReferenceEquals(_genericMethodDefinition, methodInfo.GetGenericMethodDefinition()))
             {
                 return false;
             }

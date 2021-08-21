@@ -3,11 +3,11 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class ReferenceMethodConstraint : IMethodConstraint
+    internal class StandardMethodConstraint : IMethodConstraint
     {
         private readonly MethodInfo _methodInfo;
 
-        public ReferenceMethodConstraint(MethodInfo methodInfo)
+        public StandardMethodConstraint(MethodInfo methodInfo)
         {
             _methodInfo = methodInfo;
         }
