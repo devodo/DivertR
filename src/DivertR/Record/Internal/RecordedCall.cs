@@ -9,6 +9,8 @@ namespace DivertR.Record.Internal
         
         private ICallReturn? _callReturn;
         public CallInfo<TTarget> CallInfo { get; }
+
+        public CallArguments Args => CallInfo.Arguments;
         
         public ICallReturn? Returned
         {

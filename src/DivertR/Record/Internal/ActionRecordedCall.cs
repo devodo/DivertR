@@ -14,6 +14,7 @@ namespace DivertR.Record.Internal
         }
 
         public CallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
+        public CallArguments Args => _recordedCall.CallInfo.Arguments;
         public ICallReturn? Returned => _recordedCall.Returned;
     }
 }

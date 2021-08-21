@@ -23,7 +23,7 @@ namespace DivertR.Internal
 
         public void Validate(Delegate redirectDelegate)
         {
-            if (ReturnTypeValid(redirectDelegate) && ParametersValid(redirectDelegate))
+            if (ReturnTypeValid(redirectDelegate) && DelegateParametersValid(redirectDelegate))
             {
                 return;
             }
@@ -36,14 +36,14 @@ namespace DivertR.Internal
             throw new DiverterException(errorMessage);
         }
 
-        public void ValidateArguments(params Type[] args)
+        public void ValidateParameterTypes(params Type[] types)
         {
-            if (ArgumentTypesValid(args, ParameterInfos))
+            if (ParametersTypesValid(types, ParameterInfos))
             {
                 return;
             }
             
-            var errorMessage = $"Argument types invalid for To() method '{Method}'";
+            var errorMessage = $"Parameter types invalid for To() method '{Method}'";
             throw new DiverterException(errorMessage);
         }
 
@@ -52,11 +52,11 @@ namespace DivertR.Internal
             return new MethodCallConstraint<TTarget>(_methodConstraint, _argumentConstraints);
         }
         
-        private bool ParametersValid(Delegate redirectDelegate)
+        private bool DelegateParametersValid(Delegate redirectDelegate)
         {
             var delegateParameters = redirectDelegate.Method.GetParameters();
 
-            return DelegateParametersValid(delegateParameters, ParameterInfos);
+            return ParametersValidStrict(delegateParameters, ParameterInfos);
         }
 
         private bool ReturnTypeValid(Delegate redirectDelegate)
@@ -76,26 +76,26 @@ namespace DivertR.Internal
             return false;
         }
         
-        private static bool DelegateParametersValid(ParameterInfo[] delegateParams, ParameterInfo[] callParams)
+        private static bool ParametersValidStrict(ParameterInfo[] testParams, ParameterInfo[] callParams)
         {
-            if (delegateParams.Length == 0)
+            if (testParams.Length == 0)
             {
                 return true;
             }
             
-            if (delegateParams.Length != callParams.Length)
+            if (testParams.Length != callParams.Length)
             {
                 return false;
             }
 
-            for (var i = 0; i < delegateParams.Length; i++)
+            for (var i = 0; i < testParams.Length; i++)
             {
-                if (ReferenceEquals(delegateParams[i].ParameterType, callParams[i].ParameterType))
+                if (ReferenceEquals(testParams[i].ParameterType, callParams[i].ParameterType))
                 {
                     continue;
                 }
                 
-                if (!delegateParams[i].ParameterType.IsAssignableFrom(callParams[i].ParameterType))
+                if (!testParams[i].ParameterType.IsAssignableFrom(callParams[i].ParameterType))
                 {
                     return false;
                 }
@@ -104,21 +104,21 @@ namespace DivertR.Internal
             return true;
         }
         
-        private static bool ArgumentTypesValid(Type[] argumentTypes, ParameterInfo[] callParams)
+        private static bool ParametersTypesValid(Type[] testTypes, ParameterInfo[] callParams)
         {
-            if (argumentTypes.Length > callParams.Length)
+            if (testTypes.Length > callParams.Length)
             {
                 return false;
             }
 
-            for (var i = 0; i < argumentTypes.Length; i++)
+            for (var i = 0; i < testTypes.Length; i++)
             {
-                if (ReferenceEquals(argumentTypes[i], callParams[i].ParameterType))
+                if (ReferenceEquals(testTypes[i], callParams[i].ParameterType))
                 {
                     continue;
                 }
                 
-                if (!argumentTypes[i].IsAssignableFrom(callParams[i].ParameterType))
+                if (!testTypes[i].IsAssignableFrom(callParams[i].ParameterType))
                 {
                     return false;
                 }
