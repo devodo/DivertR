@@ -59,9 +59,11 @@ namespace DivertR
             return this;
         }
         
-        public IEnumerable<ViaId> RegisteredVias(string? name = null)
+        public IEnumerable<IVia> RegisteredVias(string? name = null)
         {
-            return _vias.Keys.Where(x => x.Name == name);
+            return _vias
+                .Where(x => x.Key.Name == name)
+                .Select(x => x.Value);
         }
         
         public IVia<TTarget> Via<TTarget>(string? name = null) where TTarget : class
@@ -82,6 +84,16 @@ namespace DivertR
             }
             
             return via;
+        }
+
+        public IDiverter Strict(string? name = null)
+        {
+            foreach (var via in RegisteredVias(name))
+            {
+                via.Strict();
+            }
+
+            return this;
         }
         
         public IDiverter ResetAll()

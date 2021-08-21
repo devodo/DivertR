@@ -1,3 +1,4 @@
+using System;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -14,7 +15,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirectWithRelay_ShouldRedirect()
+        public void GivenRetargetWithRelay_ShouldRedirect()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -37,6 +38,38 @@ namespace DivertR.UnitTests
             
             via.Retarget(new FooAlt(() => $"{via.Relay.Next} me"));
             via.Retarget(new FooAlt(() => $"{via.Relay.Next} again"));
+
+            // ACT
+            _diverter.ResetAll();
+            
+            // ASSERT
+            subject.Name.ShouldBe(original.Name);
+        }
+        
+        [Fact]
+        public void GivenRegisteredVia_ShouldSetStrict()
+        {
+            // ARRANGE
+            var original = new Foo("hello foo");
+            var via = _diverter.Via<IFoo>();
+            var subject = via.Proxy(original);
+
+            // ACT
+            _diverter.Strict();
+            
+            // ASSERT
+            Func<string> testAction = () => subject.Name;
+            testAction.ShouldThrow<StrictNotSatisfiedException>();
+        }
+        
+        [Fact]
+        public void GivenStrict_WhenResetAll_ShouldReset()
+        {
+            // ARRANGE
+            var original = new Foo("hello foo");
+            var via = _diverter.Via<IFoo>();
+            var subject = via.Proxy(original);
+            _diverter.Strict();
 
             // ACT
             _diverter.ResetAll();

@@ -8,6 +8,7 @@ namespace DivertR
     {
         ViaId ViaId { get; }
         object ProxyObject(object? original = null);
+        IVia Strict();
     }
     
     public interface IVia<TTarget> : IVia where TTarget : class
@@ -25,8 +26,8 @@ namespace DivertR
         IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression);
         IActionRedirectBuilder<TTarget> To(Expression<Action<TTarget>> lambdaExpression);
         IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression);
-        
-        IVia<TTarget> Strict();
+
+        new IVia<TTarget> Strict();
         ICallStream<TTarget> Record(ICallConstraint<TTarget>? callConstraint = null);
     }
 }

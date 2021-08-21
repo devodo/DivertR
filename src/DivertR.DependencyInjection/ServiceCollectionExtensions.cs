@@ -13,7 +13,7 @@ namespace DivertR.DependencyInjection
             var decorateActions = CreateDecorateActions(services, diverter, name);
 
             var missingTypes = diverter.RegisteredVias(name)
-                .Select(x => x.Type)
+                .Select(x => x.ViaId.Type)
                 .Where(x => !decorateActions.ContainsKey(x))
                 .Select(x => x.FullName)
                 .ToArray();
@@ -34,7 +34,7 @@ namespace DivertR.DependencyInjection
 
         private static Dictionary<Type, IEnumerable<Action>> CreateDecorateActions(IServiceCollection services, IDiverter diverter, string? name)
         {
-            var diverterTypes = new HashSet<Type>(diverter.RegisteredVias(name).Select(x => x.Type));
+            var diverterTypes = new HashSet<Type>(diverter.RegisteredVias(name).Select(x => x.ViaId.Type));
 
             return services
                 .Select((descriptor, index) =>

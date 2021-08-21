@@ -122,6 +122,11 @@ namespace DivertR
             return this;
         }
         
+        IVia IVia.Strict()
+        {
+            return Strict();
+        }
+        
         public ICallStream<TTarget> Record(ICallConstraint<TTarget>? callConstraint = null)
         {
             var recordHandler = new RecordCallHandler<TTarget>(Relay);
