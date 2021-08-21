@@ -200,7 +200,7 @@ namespace DivertR.UnitTests
             var result = await _via.Proxy(new Foo()).EchoAsync("test");
 
             // ASSERT
-            result.ShouldBe("test diverted");
+            result.ShouldBe("original: test diverted");
 
             _callStream
                 .To(x => x.EchoAsync("test"))

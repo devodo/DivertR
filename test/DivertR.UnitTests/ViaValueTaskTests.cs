@@ -9,194 +9,126 @@ namespace DivertR.UnitTests
 {
     public class ViaValueTaskTests
     {
-        private readonly Via<IValueTaskFoo> _via = new();
+        private readonly IVia<IFoo> _via = new Via<IFoo>();
+        private readonly IFoo _original = new Foo("foo");
+        private readonly IFoo _proxy;
+
+        public ViaValueTaskTests()
+        {
+            _proxy = _via.Proxy(_original);
+        }
 
         [Fact]
-        public async Task GivenRedirectWithOriginalReference_ShouldRelay()
+        public async Task GivenTargetRedirectWithOriginalRelay_ShouldDivert()
         {
             // ARRANGE
-            var original = new ValueTaskFoo("foo");
-            var proxy = _via.Proxy(original);
-            _via.Retarget(new ValueTaskFoo(async () => $"hello {await _via.Relay.Original.MessageAsync}"));
+            _via.Retarget(new FooAlt(() => $"alt {_via.Relay.Original.Name}"));
 
             // ACT
-            var message = await proxy.MessageAsync;
+            var nameAsync = await _proxy.GetNameValueAsync();
+            var nameSync = await _proxy.GetNameValueAsync();
 
             // ASSERT
-            message.ShouldBe("hello foo");
+            nameAsync.ShouldBe("alt foo");
+            nameSync.ShouldBe("alt foo");
         }
         
         [Fact]
-        public async Task GivenRedirectWithNextReference_ShouldRelay()
+        public async Task GivenRedirectWithNextRelay_ShouldDivert()
         {
             // ARRANGE
-            var original = new ValueTaskFoo("foo");
-            var proxy = _via.Proxy(original);
-            _via.Retarget(new ValueTaskFoo(async () => $"hello {await _via.Relay.Next.MessageAsync}"));
-
-            // ACT
-            var message = await proxy.MessageAsync;
-
-            // ASSERT
-            message.ShouldBe("hello foo");
-        }
-        
-        [Fact]
-        public async Task GivenRedirectWithOriginalInstanceReference_ShouldRelay()
-        {
-            // ARRANGE
-            var original = new ValueTaskFoo("foo");
-            var proxy = _via.Proxy(original);
-            IValueTaskFoo originalReference = null;
-            _via.Retarget(new ValueTaskFoo(async () =>
-            {
-                originalReference = _via.Relay.CallInfo.Original;
-                return $"hello {await originalReference!.MessageAsync}";
-            }));
-
-            // ACT
-            var message = await proxy.MessageAsync;
-
-            // ASSERT
-            message.ShouldBe("hello foo");
-            originalReference.ShouldBeSameAs(original);
-        }
-        
-        [Fact]
-        public async Task GivenMultipleProxiesWithOriginalRelay_ShouldDivert()
-        {
-            // ARRANGE
-            var proxies = Enumerable.Range(0, 10)
-                .Select(i => _via.Proxy(new ValueTaskFoo($"foo{i}")))
-                .ToList();
-            
-            _via.Retarget(new ValueTaskFoo(async () => $"diverted {await _via.Relay.Original.MessageAsync}"));
-
-            // ACT
-            var messages = proxies.Select(async p => await p.MessageAsync).ToList();
-
-            // ASSERT
-            for (var i = 0; i < messages.Count; i++)
-            {
-                var message = await messages[i];
-                message.ShouldBe($"diverted foo{i}");
-            }
-        }
-        
-        [Fact]
-        public async Task GivenMultipleProxiesWithNextRelay_ShouldDivert()
-        {
-            // ARRANGE
-            var proxies = Enumerable.Range(0, 10)
-                .Select(i => _via.Proxy(new ValueTaskFoo($"foo{i}")))
-                .ToList();
-
             _via
-                .Retarget(new ValueTaskFoo(async () => $"diverted {await _via.Relay.Next.MessageAsync}"));
+                .To(x => x.EchoValueAsync(Is<string>.Any))
+                .Redirect(async (string input) => await _via.Relay.Next.EchoValueAsync(input) + " redirect");
 
             // ACT
-            var messages = proxies.Select(async p => await p.MessageAsync).ToList();
+            var message = await _proxy.EchoValueAsync("test");
 
             // ASSERT
-            for (var i = 0; i < messages.Count; i++)
-            {
-                var message = await messages[i];
-                message.ShouldBe($"diverted foo{i}");
-            }
-        }
-
-        [Fact]
-        public async Task GivenMultipleRetargets_ShouldChain()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new ValueTaskFoo("hello foo"));
-            var next = _via.Relay.Next;
-            _via
-                .Retarget(new ValueTaskFoo(async () => $"again {await next.MessageAsync} 3"))
-                .Retarget(new ValueTaskFoo(async () => $"here {await next.MessageAsync} 2"))
-                .Retarget(new ValueTaskFoo(async () => $"DivertR {await next.MessageAsync} 1"));
-
-            // ACT
-            var message = await proxy.MessageAsync;
-            
-            // ASSERT
-            message.ShouldBe("DivertR here again hello foo 3 2 1");
+            message.ShouldBe("foo: test redirect");
         }
         
         [Fact]
-        public async Task GivenMultipleRedirectsWithOrderWeights_ShouldChain()
+        public async Task GivenRedirectWithNextRelay_ShouldDivertSync()
         {
             // ARRANGE
-            var proxy = _via.Proxy(new ValueTaskFoo("foo"));
-            
-            async ValueTask<string> WriteMessage(int num)
-            {
-                return $"{num} {await _via.Relay.Next.MessageAsync} {num}";
-            }
-
             _via
-                .To(x => x.MessageAsync).WithOrderWeight(30).Redirect(() => WriteMessage(1))
-                .To(x => x.MessageAsync).WithOrderWeight(20).Redirect(() => WriteMessage(2))
-                .To(x => x.MessageAsync).WithOrderWeight(10).Redirect(() => WriteMessage(3));
+                .To(x => x.EchoValueSync(Is<string>.Any))
+                .Redirect((string input) => _via.Relay.Next.EchoValueSync($"{input} redirect"));
 
             // ACT
-            var message = await proxy.MessageAsync;
-            
+            var message = await _proxy.EchoValueSync("test");
+
             // ASSERT
-            message.ShouldBe("1 2 3 foo 3 2 1");
+            message.ShouldBe("foo: test redirect");
         }
         
+        [Fact]
+        public async Task GivenRedirectWithOriginalInstanceRelay_ShouldDivert()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.EchoValueAsync(Is<string>.Any))
+                .Redirect((string input) => _via.Relay.CallInfo.Original!.EchoValueAsync($"{input} redirect"));
+
+            // ACT
+            var message = await _proxy.EchoValueAsync("test");
+
+            // ASSERT
+            message.ShouldBe("foo: test redirect");
+        }
+
         [Fact]
         public async Task GivenMultipleRedirectsWithNextAndOriginalRelays_ShouldChain()
         {
             // ARRANGE
-            const int numRedirects = 100;
-            var proxy = _via.Proxy(new ValueTaskFoo("foo"));
+            const int NumRedirects = 100;
             var next = _via.Relay.Next;
             var orig = _via.Relay.Original;
 
-            for (var i = 0; i < numRedirects; i++)
+            for (var i = 0; i < NumRedirects; i++)
             {
                 var counter = i;
-                _via.Retarget(new ValueTaskFoo(async () =>
-                    $"{await orig.MessageAsync} {counter} {await next.MessageAsync}"));
+                _via
+                    .To(x => x.GetNameValueAsync())
+                    .Redirect(async () => $"{await orig.GetNameValueAsync()} {counter} {await next.GetNameValueAsync()}");
             }
 
             // ACT
-            var message = await proxy.MessageAsync;
+            var message = await _proxy.GetNameValueAsync();
             
             // ASSERT
-            var join = string.Join(" foo ", Enumerable.Range(0, numRedirects).Select(i => $"{i}").Reverse());
+            var join = string.Join(" foo ", Enumerable.Range(0, NumRedirects).Select(i => $"{i}").Reverse());
             message.ShouldBe($"foo {join} foo");
         }
-        
+       
         [Fact]
-        public async Task GivenMultipleRetargetsWithRecursiveProxy_ShouldDivert()
+        public async Task GivenMultipleRedirectsWithRecursiveProxy_ShouldDivert()
         {
             // ARRANGE
-            var proxy = _via.Proxy(new ValueTaskFoo("foo"));
             var next = _via.Relay.Next;
             var orig = _via.Relay.Original;
             int count = 4;
 
-            var recursive = new ValueTaskFoo(async () =>
+            async ValueTask<string> Recursive()
             {
                 var decrement = Interlocked.Decrement(ref count);
 
                 if (decrement > 0)
                 {
-                    return $"[{decrement}{await next.MessageAsync} {await proxy.MessageAsync} {await orig.MessageAsync}{decrement}]";
+                    return $"[{decrement}{await next.GetNameValueAsync()} {await _proxy.GetNameValueAsync()} {await orig.GetNameValueAsync()}{decrement}]";
                 }
 
-                return await next.MessageAsync;
-            });
+                return await next.GetNameValueAsync();
+            }
 
             _via
-                .Retarget(new ValueTaskFoo(async () =>
-                    (await next.MessageAsync).Replace(await orig.MessageAsync, "bar")))
-                .Retarget(recursive);
+                .To(x => x.GetNameValueAsync())
+                .Redirect(async () => (await next.GetNameValueAsync()).Replace(await orig.GetNameValueAsync(), "bar"))
+                .To(x => x.GetNameValueAsync())
+                .Redirect(Recursive);
             // ACT
-            var message = await proxy.MessageAsync;
+            var message = await _proxy.GetNameValueAsync();
             
             // ASSERT
             message.ShouldBe("[3bar [2bar [1bar bar foo1] foo2] foo3]");

@@ -70,7 +70,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithCallNextRedirectWithArgs_ShouldRelayArgs()
+        public void GivenRedirectWithCallNextRelayWithArgs_ShouldRelayArgs()
         {
             // ARRANGE
             var original = new Foo();
@@ -81,7 +81,7 @@ namespace DivertR.UnitTests
             var result = proxy.Echo("test");
 
             // ASSERT
-            result.ShouldBe("relay");
+            result.ShouldBe("original: relay");
         }
         
         [Fact]
@@ -165,14 +165,14 @@ namespace DivertR.UnitTests
             var via = new Via<IFoo>();
             via
                 .To(x => x.Echo("test"))
-                .Redirect((string input) => $"{via.Relay.Original.Name} {input}");
+                .Redirect((string input) => $"redirect {via.Relay.Original.Name} {input}");
 
             // ACT
             var proxy = via.Proxy(new Foo());
             var message = proxy.Echo("no match");
 
             // ASSERT
-            message.ShouldBe("no match");
+            message.ShouldBe("original: no match");
         }
 
         [Fact]
@@ -194,7 +194,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenVariableExpressionRedirect_WhenCallDoesNotMatch_ShouldDefaultToOriginal()
+        public void GivenVariableExpressionCallConstraint_WhenCallDoesNotMatch_ShouldDefaultToOriginal()
         {
             // ARRANGE
             var via = new Via<IFoo>();
@@ -209,7 +209,7 @@ namespace DivertR.UnitTests
             var message = proxy.Echo(input.Item);
 
             // ASSERT
-            message.ShouldBe("no match");
+            message.ShouldBe("original: no match");
         }
 
         [Fact]
@@ -238,14 +238,14 @@ namespace DivertR.UnitTests
             var via = new Via<IFoo>();
             via
                 .To(x => x.Echo(Is<string>.Match(p => p == "test")))
-                .Redirect((string i) => $"{via.Relay.Original.Name} {i}");
+                .Redirect((string i) => $"redirect {via.Relay.Original.Name} {i}");
 
             // ACT
             var proxy = via.Proxy(new Foo());
             var message = proxy.Echo("no match");
 
             // ASSERT
-            message.ShouldBe("no match");
+            message.ShouldBe("original: no match");
         }
         
         [Fact]
@@ -377,7 +377,7 @@ namespace DivertR.UnitTests
             var result = proxy.EchoGeneric("Hello");
 
             // ASSERT
-            result.ShouldBe("Hello");
+            result.ShouldBe("foo: Hello");
         }
         
         [Fact]
@@ -464,7 +464,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirect_WithCallOriginal_ShouldRelayToOriginal()
+        public void GivenRedirect_WithCallOriginalRelay_ShouldRelayToOriginal()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -498,7 +498,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirect_WithCallNext_ShouldCallNextRedirect()
+        public void GivenRedirect_WithCallNextRelay_ShouldCallNextRedirect()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -516,7 +516,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirect_WithCallOriginal_WithMethod_ShouldCallOriginal()
+        public void GivenRedirect_WithCallOriginalRelayWithMethod_ShouldCallOriginal()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -526,17 +526,17 @@ namespace DivertR.UnitTests
                 .Redirect((string input) => $"{input}-test");
             _via
                 .To(x => x.Echo("here"))
-                .Redirect(() => (string) _via.Relay.CallOriginal(_via.Relay.CallInfo.Method, new CallArguments(new object[] {"alter"})));
+                .Redirect(() => (string) _via.Relay.CallOriginal(_via.Relay.CallInfo.Method, new object[] {"alter"}));
 
             // ACT
             var result = proxy.Echo("here");
 
             // ASSERT
-            result.ShouldBe("alter");
+            result.ShouldBe("foo: alter");
         }
         
         [Fact]
-        public void GivenRedirect_WithCallOriginal_WithArgs_ShouldRelayArgs()
+        public void GivenRedirect_WithCallOriginalRelayWithArgs_ShouldRelayArgs()
         {
             // ARRANGE
             var original = new Foo();
@@ -547,11 +547,11 @@ namespace DivertR.UnitTests
             var result = proxy.Echo("test");
 
             // ASSERT
-            result.ShouldBe("relay");
+            result.ShouldBe("original: relay");
         }
         
         [Fact]
-        public void GivenRedirect_WithCallNext_WithMethod_ShouldCallNextRedirect()
+        public void GivenRedirect_WithCallNextRelayWithMethod_ShouldCallNextRedirect()
         {
             // ARRANGE
             var original = new Foo("foo");

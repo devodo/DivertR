@@ -15,7 +15,13 @@ namespace DivertR.UnitTests.Model
             _name = name;
         }
 
-        public virtual string Name
+        public string Name
+        {
+            get => _name;
+            set => _name = value;
+        }
+        
+        public virtual string NameVirtual
         {
             get => _name;
             set => _name = value;
@@ -24,29 +30,44 @@ namespace DivertR.UnitTests.Model
         public async Task<string> GetNameAsync()
         {
             await Task.Yield();
-            return _name;
+            return Name;
+        }
+
+        public async ValueTask<string> GetNameValueAsync()
+        {
+            return await GetNameAsync();
+        }
+
+        public ValueTask<string> GetNameValueSync()
+        {
+            return new(Name);
         }
 
         public string Echo(string input)
         {
-            return input;
+            return $"{Name}: {input}";
         }
 
         public string EchoGeneric<T>(T input)
         {
-            return $"{input}";
+            return Echo($"{input}");
         }
 
         public async Task<string> EchoAsync(string input)
         {
             await Task.Yield();
-            return input;
+            return Echo(input);
         }
 
         public async ValueTask<string> EchoValueAsync(string input)
         {
             await Task.Yield();
-            return input;
+            return await EchoAsync(input);
+        }
+        
+        public ValueTask<string> EchoValueSync(string input)
+        {
+            return new(Echo(input));
         }
         
         public void SetName(string name)
