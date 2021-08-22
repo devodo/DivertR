@@ -349,7 +349,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenGenericInputRedirect_WhenGenericParentTypeMatch_ShouldRedirect()
+        public void GivenGenericInputRedirect_WhenAssignableGenericType_ShouldRedirect()
         {
             // ARRANGE
             _via
@@ -362,6 +362,55 @@ namespace DivertR.UnitTests
 
             // ASSERT
             result.ShouldBe("Hello - foo");
+        }
+        
+        [Fact]
+        public void GivenGenericInputRedirect_WhenAssignableGenericTypeWithAdditionalConstraint_ShouldNotRedirect()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.EchoGeneric(Is<object>.Any))
+                .AddConstraint(new CallConstraint<IFoo>(callInfo => callInfo.Method.GetGenericArguments()[0] == typeof(object)))
+                .Redirect((object i) => $"{i} - {_via.Relay.Next.Name}");
+
+            // ACT
+            var proxy = _via.Proxy(new Foo("foo"));
+            var result = proxy.EchoGeneric("Hello");
+
+            // ASSERT
+            result.ShouldBe("Hello");
+        }
+        
+        [Fact]
+        public void GivenGenericInputRedirect_WhenAssignableGenericTypeWithMatchConstraint_ShouldNotRedirect()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.EchoGeneric(Is<object>.Match(m => m.GetType() == typeof(object))))
+                .Redirect((object i) => $"{i} - {_via.Relay.Next.Name}");
+
+            // ACT
+            var proxy = _via.Proxy(new Foo("foo"));
+            var result = proxy.EchoGeneric("Hello");
+
+            // ASSERT
+            result.ShouldBe("Hello");
+        }
+        
+        [Fact]
+        public void GivenGenericInputRedirect_WhenNotAssignableGenericType_ShouldNotRedirect()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.EchoGeneric(Is<string>.Any))
+                .Redirect((string i) => $"{i} - {_via.Relay.Next.Name}");
+
+            // ACT
+            var proxy = _via.Proxy(new Foo("foo"));
+            var result = proxy.EchoGeneric<object>("Hello");
+
+            // ASSERT
+            result.ShouldBe("Hello");
         }
         
         [Fact]
