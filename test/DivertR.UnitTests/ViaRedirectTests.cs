@@ -6,12 +6,26 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class ViaDelegateRedirectTests
+    public class ViaRedirectTests
     {
         private readonly IVia<IFoo> _via = new Via<IFoo>();
+        
+        [Fact]
+        public void GivenNoRedirects_ShouldDefaultToOriginal()
+        {
+            // ARRANGE
+            var original = new Foo("hello foo");
+            var proxy = _via.Proxy(original);
+
+            // ACT
+            var name = proxy.Name;
+
+            // ASSERT
+            name.ShouldBe(original.Name);
+        }
 
         [Fact]
-        public void GivenProxyWithDelegateRedirect_ShouldRedirect()
+        public void GivenValueRedirect_ShouldRedirect()
         {
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
@@ -23,6 +37,37 @@ namespace DivertR.UnitTests
 
             // ASSERT
             name.ShouldBe(redirectMessage);
+        }
+        
+        [Fact]
+        public void GivenFuncRedirect_ShouldRedirect()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.Echo(Is<string>.Any))
+                .Redirect(new Func<string, string>(input => $"func {input}"));
+
+            // ACT
+            var result = _via.Proxy().Echo("hello");
+
+            // ASSERT
+            result.ShouldBe("func hello");
+        }
+        
+        [Fact]
+        public void GivenActionRedirect_ShouldRedirect()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy(new Foo("foo"));
+            _via
+                .ToSet(x => x.Name, () => Is<string>.Any)
+                .Redirect(new Action<string>(input => _via.Relay.Original.Name = $"action {input}"));
+
+            // ACT
+            proxy.Name = "hello";
+
+            // ASSERT
+            proxy.Name.ShouldBe("action hello");
         }
         
         [Fact]
@@ -40,7 +85,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithRedirect_WhenReset_ShouldDefaultToOriginal()
+        public void GivenRedirect_WhenReset_ShouldDefaultToOriginal()
         {
             // ARRANGE
             var original = new Foo("foo");

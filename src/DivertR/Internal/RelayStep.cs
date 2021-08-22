@@ -24,7 +24,7 @@ namespace DivertR.Internal
                 return null;
             }
 
-            var strictSatisfied = !redirectPlan.IsStrictMode || !redirectPlan.Redirects[index].NoStrictSatisfy;
+            var strictSatisfied = !redirectPlan.IsStrictMode || !redirectPlan.Redirects[index].DisableSatisfyStrict;
             
             return new RelayStep<TTarget>(redirectPlan, index, callInfo, strictSatisfied);
         }
@@ -47,7 +47,7 @@ namespace DivertR.Internal
                 return null;
             }
 
-            var strictVisited = StrictSatisfied || !_redirectPlan.Redirects[index].NoStrictSatisfy;
+            var strictVisited = StrictSatisfied || !_redirectPlan.Redirects[index].DisableSatisfyStrict;
 
             return new RelayStep<TTarget>(_redirectPlan, index, callInfo, strictVisited);
         }

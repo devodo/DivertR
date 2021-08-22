@@ -22,7 +22,7 @@ namespace DivertR.WebAppTests
         }
 
         [Fact]
-        public async Task GivenFooExists_ShouldReturnFooContent_WithOk200()
+        public async Task GivenFooExists_WhenGetFoo_ThenReturnFooContent_WithOk200()
         {
             // ARRANGE
             var foo = new Foo
@@ -44,7 +44,7 @@ namespace DivertR.WebAppTests
         }
         
         [Fact]
-        public async Task GivenFooDoesNotExist_ShouldReturn404NotFound()
+        public async Task GivenFooDoesNotExist_WhenGetFoo_ThenReturn404NotFound()
         {
             // ARRANGE
             var foo = new Foo
@@ -69,7 +69,7 @@ namespace DivertR.WebAppTests
         }
 
         [Fact]
-        public async Task CanInsertFoo()
+        public async Task WhenInsertFoo_ThenReturn201Created_WithGetLocation()
         {
             // ARRANGE
             var createFooRequest = new CreateFooRequest
@@ -102,7 +102,7 @@ namespace DivertR.WebAppTests
         }
         
         [Fact]
-        public async Task CanRecordInsertFooCalls()
+        public async Task RecordAlt_WhenInsertFoo_ThenReturn201Created_WithGetLocation()
         {
             // ARRANGE
             var createFooRequest = new CreateFooRequest
@@ -117,8 +117,7 @@ namespace DivertR.WebAppTests
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
-
-            fooRepoCalls.Count.ShouldBe(1);
+            
             fooRepoCalls
                 .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
                 .ForEach(call =>
@@ -127,15 +126,15 @@ namespace DivertR.WebAppTests
                     {
                         response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{foo.Id}");
                         foo.Name.ShouldBe(createFooRequest.Name);
+                        response.Content.ShouldBeEquivalentTo(foo);
                     });
                     
-                    call.Returned!.Value.IsCompleted.ShouldBe(true);
                     call.Returned!.Value.Result.ShouldBe(true);
                 }).Count.ShouldBe(1);
         }
         
         [Fact]
-        public async Task CanRecordFooRepositoryExceptionCalls()
+        public async Task GivenFooRepositoryThrowsException_WhenInsertFoo_ThenReturns500InternalServerError()
         {
             // ARRANGE
             var createFooRequest = new CreateFooRequest

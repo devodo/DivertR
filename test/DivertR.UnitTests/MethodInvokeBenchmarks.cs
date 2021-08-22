@@ -11,7 +11,7 @@ namespace DivertR.UnitTests
     public class MethodInvokeBenchmarks
     {
         private const int Iterations = 1000;
-        private const int SpeedupFactor = 4;
+        private const int SpeedupFactor = 2;
         private readonly ITestOutputHelper _output;
 
         public MethodInvokeBenchmarks(ITestOutputHelper output)
@@ -30,6 +30,7 @@ namespace DivertR.UnitTests
 
             PrintResult("DynamicInvoke", dynamicInvoke);
             PrintResult("FastInvoke", fastInvoke);
+            _output.WriteLine($"Invoke speedup: {(double) dynamicInvoke.Iterations.ElapsedTicks / fastInvoke.Iterations.ElapsedTicks}");
             
             fastInvoke.Initial.ElapsedTicks.ShouldBeGreaterThan(dynamicInvoke.Initial.ElapsedTicks * SpeedupFactor);
             fastInvoke.Iterations.ElapsedTicks.ShouldBeLessThan(dynamicInvoke.Iterations.ElapsedTicks / SpeedupFactor);
@@ -46,6 +47,7 @@ namespace DivertR.UnitTests
             
             PrintResult("DynamicInvoke", methodInvoke);
             PrintResult("FastInvoke", fastInvoke);
+            _output.WriteLine($"Invoke speedup: {(double) methodInvoke.Iterations.ElapsedTicks / fastInvoke.Iterations.ElapsedTicks}");
             
             fastInvoke.Initial.ElapsedTicks.ShouldBeGreaterThan(methodInvoke.Initial.ElapsedTicks * SpeedupFactor);
             fastInvoke.Iterations.ElapsedTicks.ShouldBeLessThan(methodInvoke.Iterations.ElapsedTicks / SpeedupFactor);

@@ -23,17 +23,21 @@ namespace DivertR.Internal
 
         public void Validate(Delegate redirectDelegate)
         {
-            if (ReturnTypeValid(redirectDelegate) && DelegateParametersValid(redirectDelegate))
+            if (!ReturnTypeValid(redirectDelegate))
+            {
+                throw new InvalidRedirectException($"Redirect return type '{redirectDelegate.Method.ReturnType.FullName}' invalid for To method '{Method}'");
+            }
+            
+            if (DelegateParametersValid(redirectDelegate))
             {
                 return;
             }
             
             var delegateParameters = redirectDelegate.Method.GetParameters();
-            var parameterTypes = delegateParameters.Select(x => x.ParameterType.FullName);
-            var delegateSignature = $"{redirectDelegate.Method.ReturnType.FullName} Invoke({string.Join(", ", parameterTypes)})";
-
-            var errorMessage = $"Redirect() delegate '{delegateSignature}' invalid for To() method '{Method}'";
-            throw new DiverterException(errorMessage);
+            var parameterTypes = delegateParameters.Select(x => $"{x.ParameterType.FullName} {x.Name}");
+            var delegateSignature = $"Redirect({string.Join(", ", parameterTypes)})";
+            
+            throw new InvalidRedirectException($"'{delegateSignature}' parameters invalid for To method '{Method}'");
         }
 
         public void ValidateParameterTypes(params Type[] types)
@@ -43,7 +47,7 @@ namespace DivertR.Internal
                 return;
             }
             
-            var errorMessage = $"Parameter types invalid for To() method '{Method}'";
+            var errorMessage = $"Parameter types invalid for To method '{Method}'";
             throw new DiverterException(errorMessage);
         }
 
