@@ -7,6 +7,12 @@ namespace DivertR.Record.Internal
     {
         private readonly Exception? _exception;
         public object? Value { get; }
+        
+        public CallReturn(object? returnValue, Exception? exception)
+        {
+            _exception = exception;
+            Value = returnValue;
+        }
 
         public Exception? Exception
         {
@@ -27,32 +33,19 @@ namespace DivertR.Record.Internal
                 return null;
             }
         }
-        
-        protected CallReturn(object? returnValue, Exception? exception)
-        {
-            _exception = exception;
-            Value = returnValue;
-        }
     }
     
-    internal class CallReturn<TReturn> : CallReturn, ICallReturn<TReturn>
+    internal class CallReturn<TReturn> : ICallReturn<TReturn>
     {
-        public new TReturn Value
-        {
-            get
-            {
-                if (base.Value == null)
-                {
-                    return default!;
-                }
+        private readonly ICallReturn _callReturn;
 
-                return (TReturn) base.Value;
-            }
+        public CallReturn(ICallReturn callReturn)
+        {
+            _callReturn = callReturn;
         }
 
-        public CallReturn(TReturn returnValue, Exception? exception)
-            : base(returnValue, exception)
-        {
-        }
+        public TReturn Value => (TReturn) _callReturn.Value!;
+        object? ICallReturn.Value => Value;
+        public Exception? Exception => _callReturn.Exception;
     }
 }

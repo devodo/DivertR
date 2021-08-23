@@ -31,7 +31,7 @@ namespace DivertR.Record.Internal
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
             var calls = _recordedCalls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
-                .Select(x => new FuncRecordedCall<TTarget, TReturn>((RecordedCall<TTarget, TReturn>) x, parsedCall))
+                .Select(x => new FuncRecordedCall<TTarget, TReturn>(x, parsedCall))
                 .ToArray();
 
             return new FuncCallStream<TTarget, TReturn>(calls);

@@ -5,18 +5,18 @@ namespace DivertR.Record.Internal
 {
     internal class FuncRecordedCall<TTarget, TReturn> : RecordedCallArgs<TTarget>, IFuncRecordedCall<TTarget, TReturn> where TTarget : class
     {
-        private readonly IRecordedCall<TTarget, TReturn> _recordedCall;
-
-        internal FuncRecordedCall(IRecordedCall<TTarget, TReturn> recordedCall, ParsedCallExpression parsedCallExpression)
+        internal FuncRecordedCall(IRecordedCall<TTarget> recordedCall, ParsedCallExpression parsedCallExpression)
             : base(recordedCall, parsedCallExpression)
         {
-            _recordedCall = recordedCall;
+            if (recordedCall.Returned != null)
+            {
+                Returned = new CallReturn<TReturn>(recordedCall.Returned);
+            }
         }
 
-        public CallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
-        public CallArguments Args => _recordedCall.CallInfo.Arguments;
-        public ICallReturn<TReturn>? Returned => _recordedCall.Returned;
-
+        public CallInfo<TTarget> CallInfo => RecordedCall.CallInfo;
+        public CallArguments Args => RecordedCall.CallInfo.Arguments;
+        public ICallReturn<TReturn>? Returned { get; }
         ICallReturn? IRecordedCall<TTarget>.Returned => Returned;
     }
 }

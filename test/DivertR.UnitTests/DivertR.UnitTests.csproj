@@ -10,7 +10,9 @@
 
     <RootNamespace>DivertR.UnitTests</RootNamespace>
 
-    <TargetFramework>net5.0</TargetFramework>
+    <OutputType>Library</OutputType>
+
+    <TargetFrameworks>net472;net5.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

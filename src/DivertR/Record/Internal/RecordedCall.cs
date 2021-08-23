@@ -3,11 +3,17 @@ using DivertR.Core;
 
 namespace DivertR.Record.Internal
 {
-    internal abstract class RecordedCall<TTarget> : IRecordedCall<TTarget> where TTarget : class
+    internal class RecordedCall<TTarget> : IRecordedCall<TTarget> where TTarget : class
     {
         private readonly object _returnedLock = new object();
         
         private ICallReturn? _callReturn;
+        
+        public RecordedCall(CallInfo<TTarget> callInfo)
+        {
+            CallInfo = callInfo;
+        }
+        
         public CallInfo<TTarget> CallInfo { get; }
 
         public CallArguments Args => CallInfo.Arguments;
@@ -22,7 +28,7 @@ namespace DivertR.Record.Internal
                 }
             }
 
-            protected set
+            private set
             {
                 lock (_returnedLock)
                 {
@@ -31,33 +37,14 @@ namespace DivertR.Record.Internal
             }
         }
         
-        protected RecordedCall(CallInfo<TTarget> callInfo)
+        public void SetReturned(object? returnedObject)
         {
-            CallInfo = callInfo;
+            Returned = new CallReturn(returnedObject, null);
         }
 
-        internal abstract void SetReturned(object? returnedObject);
-
-        internal abstract void SetException(Exception exception);
-    }
-    
-    internal class RecordedCall<TTarget, TReturn> : RecordedCall<TTarget>, IRecordedCall<TTarget, TReturn> where TTarget : class
-    {
-        public new ICallReturn<TReturn>? Returned => (ICallReturn<TReturn>?) base.Returned;
-        
-        internal RecordedCall(CallInfo<TTarget> callInfo)
-            : base(callInfo)
+        public void SetException(Exception exception)
         {
-        }
-        
-        internal override void SetReturned(object? returnedObject)
-        {
-            base.Returned = new CallReturn<TReturn>((TReturn) returnedObject!, null);
-        }
-        
-        internal override void SetException(Exception exception)
-        {
-            base.Returned = new CallReturn<TReturn>(default!, exception);
+            Returned = new CallReturn(null, exception);
         }
     }
 }

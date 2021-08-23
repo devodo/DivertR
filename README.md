@@ -2,12 +2,15 @@
 
 .NET Dependency Injection Diversion
 
-DivertR is a tool that facilitates an integrated approach to testing by making it easy to hotswap
+DivertR is similar to well known mocking frameworks like Moq or FakeItEasy but provides additional features to seamlessly interact
+with your existing dependecy injection registrations. This facilitates an integrated approach to testing by making it easy to hotswap
 test code in and out at the dependency injection layer.
 
 With DivertR you can modify your dependency injection services at runtime by replacing them with configurable proxies.
 These can redirect calls to test doubles, such as substitute instances or delegates, and then optionally relay back to the
 original services. Update and reset proxy configurations, on the fly, while the process is running.
+
+DivertR was originally created to facilitate in-process integration/component testing using the [WebApplicationFactory framework](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) by making it easy to manipulate DI services dynamically at runtime. 
 
 ![DivertR Via](./docs/assets/images/DivertR_Via.svg)
 

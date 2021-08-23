@@ -40,9 +40,9 @@ namespace DivertR.Internal
             throw new InvalidRedirectException($"'{delegateSignature}' parameters invalid for To method '{Method}'");
         }
 
-        public void ValidateParameterTypes(params Type[] types)
+        public void ValidateArgumentTypes(params Type[] types)
         {
-            if (ParametersTypesValid(types, ParameterInfos))
+            if (ArgumentTypesValid(types, ParameterInfos))
             {
                 return;
             }
@@ -108,7 +108,7 @@ namespace DivertR.Internal
             return true;
         }
         
-        private static bool ParametersTypesValid(Type[] testTypes, ParameterInfo[] callParams)
+        private static bool ArgumentTypesValid(Type[] testTypes, ParameterInfo[] callParams)
         {
             if (testTypes.Length > callParams.Length)
             {
