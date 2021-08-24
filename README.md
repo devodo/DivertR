@@ -2,21 +2,23 @@
 
 .NET Dependency Injection Diversion
 
-DivertR is similar to well known mocking frameworks like Moq or FakeItEasy but provides additional features to seamlessly interact
-with your existing dependecy injection registrations. This facilitates an integrated approach to testing by making it easy to hotswap
-test code in and out at the dependency injection layer.
+DivertR is similar to well known mocking frameworks like Moq or FakeItEasy but provides additional features to directly manipulate your registered dependency injection services.
+DivertR enables an integrated approach to testing by making it easy to hotswap test code in and out at the DI layer.
 
-With DivertR you can modify your dependency injection services at runtime by replacing them with configurable proxies.
-These can redirect calls to test doubles, such as substitute instances or delegates, and then optionally relay back to the
-original services. Update and reset proxy configurations, on the fly, while the process is running.
+DivertR was originally created to facilitate in-process integration/component testing using the excellent
+[WebApplicationFactory framework](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) in-memory ASP.NET test server.
+WebApplicationFactory allows DI service customisation but this can only be done once at startup per server instance.
 
-DivertR was originally created to facilitate in-process integration/component testing using the [WebApplicationFactory framework](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) by making it easy to manipulate DI services dynamically at runtime. 
+With DivertR you can modify your DI services at runtime by replacing them with configurable proxies.
+These can redirect calls to test doubles, such as substitute instances, mocks or delegates, and then optionally relay back to the original services.
+Update and reset proxy configurations, on the fly, while the process is running.
 
 ![DivertR Via](./docs/assets/images/DivertR_Via.svg)
 
-## Quickstart
+## Code example
 
 ### Start with a Foo
+
 Given an `IFoo` interface and a `Foo` implementation:
 
 ```csharp
@@ -28,7 +30,7 @@ public interface IFoo
 
 public class Foo : IFoo
 {
-    public string Name { get; set; } = "original";
+    public string Name { get; set; } = "Foo";
     
     public string Echo(string input)
     {
@@ -42,14 +44,23 @@ With the following .NET `Microsoft.Extensions.DependencyInjection.IServiceCollec
 ```csharp
 IServiceCollection services = new ServiceCollection();
 services.AddTransient<IFoo, Foo>();
+services.AddSingleton<IExample, Example>(); // some other example registration
 ```
 
-### Hello DivertR
-DivertR is installed into the `IServiceCollection` by decorating the existing `IFoo` registration using a provided extension method:
+### Instantiate DivertR
+
+Next create a DivertR instance and register one or more DI service types of interest:
 
 ```csharp
-var diverter = new Diverter();
-services.Divert<IFoo>(diverter);
+var diverter = new Diverter()
+    .Register<IFoo>()
+    .Register<IExample>();
+```
+
+The registered DivertR types are installed into the `IServiceCollection` by decorating existing DI registrations using a provided extension method:
+
+```csharp    
+services.Divert(diverter);
 ```
 
 The `IServiceCollection` can now be used as usual to build the service provider and resolve dependency instances:
@@ -57,20 +68,20 @@ The `IServiceCollection` can now be used as usual to build the service provider 
 ```csharp
 IServiceProvider provider = services.BuildServiceProvider();
 IFoo foo = provider.GetService<IFoo>();
-foo.Name = "Foo1"
 
-Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello"
+Console.WriteLine(foo.Echo("Hello")); // "Foo: Hello"
 ```
 
 ### Redirect
+
 At this stage the behaviour of the resolved `IFoo` instances is unchanged. However, it can be modified using 
 a DivertR entity called a `Via` to configure a *redirect*:
 
 ```csharp
 IVia<IFoo> fooVia = diverter.Via<IFoo>();
 fooVia
-    .Redirect(x => x.Echo(Is<string>.Any)) // (1)
-    .To((string input) => $"{input} DivertR");   // (2)
+    .To(x => x.Echo(Is<string>.Any))                   // (1)
+    .Redirect((string input) => $"{input} DivertR");   // (2)
   
 Console.WriteLine(foo.Echo("Hello")); // "Hello DivertR"
 ```
@@ -95,7 +106,7 @@ To reset resolved instances back to their original behaviour simply discard all 
 ```csharp
 fooVia.Reset();
   
-Console.WriteLine(foo.Echo("Hello"));  // "Foo1: Hello"
+Console.WriteLine(foo.Echo("Hello"));  // "Foo: Hello"
 Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello"
 ```
 
@@ -110,19 +121,19 @@ diverter.ResetAll();
 ### Relay
 
 The `Via` also lets you *relay* back to the original registration
-by providing the `Relay.Next` property that can be called from the body of the redirect:
+by providing the `Relay.Original` property that can be called from the body of the redirect:
 
 ```csharp
-IFoo next = fooVia.Relay.Next;
+IFoo original = fooVia.Relay.Original;
 fooVia
-    .Redirect(x => x.Echo(Is<string>.Any))
-    .To((string input) =>
+    .To(x => x.Echo(Is<string>.Any))
+    .Redirect((string input) =>
     {
         // run test code before
         // ...
 
         // call original instance
-        var message = next.Echo(input);
+        var message = original.Echo(input);
     
         // run test code after
         // ...
@@ -130,74 +141,37 @@ fooVia
         return $"{message} - Redirected";
     });
   
-Console.WriteLine(foo.Echo("Hello"));  // "Foo1: Hello  - Redirected"
+Console.WriteLine(foo.Echo("Hello"));  // "Foo: Hello  - Redirected"
 Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello  - Redirected"
 ```
 
-> The `Relay.Next` property is a proxy that the `Via` connects to the current intercepted call.
-> Its members can only be accessed within this context otherwise a `DiverterException` is thrown.
+> The `Relay.Original` property is a proxy that the `Via` connects to the current intercepted call.
+> Its members can only be accessed within the context of an intercepted call otherwise a `DiverterException` is thrown.
 
 ### Retarget
 
-As well as redirecting to delegates you can also redirect to substitute targets. A valid 
-substitute is anything that implements the target interface (in this case `IFoo`).
+As well as redirecting to delegates you can also retarget to substitutes that implements the target interface (in this case `IFoo`).
 This includes, for example, Mock objects:
 
 ```csharp
 var mock = new Mock<IFoo>();
 mock
     .Setup(x => x.Echo(It.IsAny<string>()))
-    .Returns((string input) => $"{next.Echo(input)} - Mocked");
+    .Returns((string input) => $"{original.Echo(input)} - Mocked");
 
 fooVia
-    .Redirect() // No parameter defaults to match all calls
-    .To(mock.Object);
+    .To() // No parameter defaults to match all calls
+    .Redirect(mock.Object);
 
-Console.WriteLine(foo.Echo("Hello"));  // "Foo1: Hello - Redirected - Mocked"
+Console.WriteLine(foo.Echo("Hello"));  // "Foo: Hello - Redirected - Mocked"
 Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Redirected - Mocked"
 ```
+> Note the substitute/mock can also use the `Relay.Original` proxy to call the original.
 
-Note the Mock also calls the `Relay.Next` property. However, it does not relay to the original registration as before.
-Instead it goes to the delegate redirect that was previously added.
-This is because adding a new redirect does not replace the existing ones. Instead they are pushed onto a stack
-that the `Relay.Next` property traverses...
+### Interfaces only
 
-### Redirect chain
-
-![Redirect Stack](./docs/assets/images/Redirect_Stack.svg)
-
-When redirects are added they are pushed onto a stack. When the `Via` intercepts a call
-it traverses down the stack, starting from the last redirect added. The call is passed to the first eligible redirect (e.g. its lambda expression constraint matches).
-The redirect is then responsible for executing the call and can optionally continue back down the stack by calling the `Relay.Next` property. This will again traverse the stack
-until the next matching redirect is found. When there are no more redirects the original instance is called.
-> In summary, the redirects are stacked forming a chain of responsibility pipeline that is
-> traversed with the `Relay.Next` property.
-
-### Original relay
-
-The `Via` also provides the `Relay.Original` property that relays directly to the original instance,
-skipping over any remaining redirects.
-
-```csharp
-IFoo original = fooVia.Relay.Original;
-fooVia
-    .Redirect(x => x.Echo(Is<string>.Any))
-    .To((string input) => $"{original.Echo(input)} - Skipped");
-  
-Console.WriteLine(foo.Echo("Hello"));  // "Foo1: Hello - Skipped"
-Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Skipped"
-```
-
-> Similar to the `Relay.Next` property, `Relay.Original` is a proxy interface that relays to the original instance
-> but its members can only be accessed within the context of a `Via` intercepted call.
-
-### Class support
-
-By default DivertR can only be used to redirect interfaces. `Via` and `Relay` proxies are generated using `System.Reflection.DispatchProxy`
-that only supports interfaces.
-
-It is possible to configure a different proxy factory, e.g. Castle Dynamic Proxy, that does support classes.
-This is discouraged and is prone to unintuitive behaviour as only virtual or abstract class members can be intercepted and relayed.
+By default DivertR can only be used on interface types. Classes are not supported as calls to non-virtual members
+cannot be intercepted and this leads to confusing, unintuitive behaviour.
 
 ### Async support
 
@@ -218,12 +192,10 @@ public class Foo : IFoo
     }
 }
 
-diverter.ResetAll(); // Discard all previous redirects
-
 fooVia
-    .Redirect(x => x.EchoAsync(Is<string>.Any))
-    .To(async (string input) => $"{await next.EchoAsync(input)} - Async");
+    .To(x => x.EchoAsync(Is<string>.Any))
+    .Redirect(async (string input) => $"{await original.EchoAsync(input)} - Async");
 
-Console.WriteLine(await foo.EchoAsync("Hello"));  // "Foo1: Hello - Async"
+Console.WriteLine(await foo.EchoAsync("Hello"));  // "Foo: Hello - Async"
 Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello - Async"
 ```

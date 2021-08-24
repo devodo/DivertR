@@ -1,95 +1,38 @@
 # User guide
 
-## IServiceCollection Extensions
-Extension methods are provided on the .NET `Microsoft.Extensions.DependencyInjection.IServiceCollection` interface
-that convert existing registrations into Via proxy factories.
+Note the Mock also calls the `Relay.Next` property. However, it does not relay to the original registration as before.
+Instead it goes to the delegate redirect that was previously added.
+This is because adding a new redirect does not replace the existing ones. Instead they are pushed onto a stack
+that the `Relay.Next` property traverses...
 
-### Register a Via
+### Redirect chain
 
-Starting with an `IServiceCollection` that has an `IFoo` registered:
+![Redirect Stack](./assets/images/Redirect_Stack.svg)
 
-```csharp
-IServiceCollection services = new ServiceCollection();
-services.AddTransient<IFoo>(_ => new Foo {Message = "Original"});
-```
+When redirects are added they are pushed onto a stack. When the `Via` intercepts a call
+it traverses down the stack, starting from the last redirect added. The call is passed to the first eligible redirect (e.g. its lambda expression constraint matches).
+The redirect is then responsible for executing the call and can optionally continue back down the stack by calling the `Relay.Next` property. This will again traverse the stack
+until the next matching redirect is found. When there are no more redirects the original instance is called.
+> In summary, the redirects are stacked forming a chain of responsibility pipeline that is
+> traversed with the `Relay.Next` property.
 
-The `Divert` extension method replaces the `IFoo` registration with a factory that creates Via proxies
-wrapping the instances provided by the original registration:
+### Original relay
 
-```csharp
-var via = new Via<IFoo>();
-services.Divert(via);
-```
-
-The subsequent `IServiceProvider` will now resolve `IFoo` proxies of the `Via` instance that
-can be configured and redirected as before:
+The `Via` also provides the `Relay.Original` property that relays directly to the original instance,
+skipping over any remaining redirects.
 
 ```csharp
-IServiceProvider provider = services.BuildServiceProvider();
-var foo = provider.GetService<IFoo>();
-Console.WriteLine(foo.Message); // "Original"
-
-via.Redirect(new Foo {Message = "Diverted"});
-Console.WriteLine(foo.Message); // "Diverted"
-
-via.Reset();
-Console.WriteLine(foo.Message); // "Original"
+IFoo original = fooVia.Relay.Original;
+fooVia
+    .To(x => x.Echo(Is<string>.Any))
+    .Redirect((string input) => $"{original.Echo(input)} - Skipped");
+  
+Console.WriteLine(foo.Echo("Hello"));  // "Foo: Hello - Skipped"
+Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Skipped"
 ```
 
-### Register a Diverter
-
-Similarly a `Diverter` extension method is provided that replaces all existing `IServiceCollection` registrations with
-Via proxy factories at once.
-
-```csharp
-IServiceCollection services = new ServiceCollection();
-services.AddTransient<IFoo>(_ => new Foo {Message = "Original"});
-services.AddSingleton<IBar, Bar>();
-```
-
-Passing a `Diverter` instance to the `Divert` extension method will convert both the `IFoo` and `IBar` registrations
-into Via proxy factories:
-
-```csharp
-var diverter = new Diverter();
-services.Divert(diverter);
-```
-
-> By default Via proxies forward calls to their original instances. Therefore injecting Via proxies
-does not alter the behaviour of the system (when no redirects have been added).
-
-The resulting Via proxies are then configured via the passed in `diverter` instance:
-
-```csharp
-IServiceProvider provider = services.BuildServiceProvider();
-var foo = provider.GetService<IFoo>();
-
-diverter.Redirect<IFoo>(new Foo {Message = "Diverted"});
-Console.WriteLine(foo.Message); // "Diverted"
-```
-
-All redirects configured on the diverter instance can be reset by a single call to `ResetAll()`:
-
-```csharp
-diverter.ResetAll();
-Console.WriteLine(foo.Message); // "Original"
-```
-
-### Diverter registration builder
-
-As you may not wish to replace the entire `ServiceCollection` a builder extension method is provided with various helper methods to select which registrations
-are to be included or excluded. As the `ServiceCollection` registrations are stored in the order added, ranges of 
-types can be selected. When using ranges only supported types are selected, i.e. interfaces and closed generics.
-```csharp
-services.Divert(diverter, builder =>
-{
-    builder.IncludeRange<IStart, IEnd>(); // include all registrations between IStart and IEnd (inclusive by default)
-    builder.IncludeUntil<IStop>(inclusive:false); // include all from the start until IStop (not inclusive)
-    builder.ExcludeFrom<IBoring>(); // exclude from IBoring to the end (inclusive by default)
-    builder.Include<ILogger>(); // specifically include ILogger only
-    builder.Exclude(typeof(INope)); // specifically exclude INope
-});
-```
+> Similar to the `Relay.Next` property, `Relay.Original` is a proxy interface that relays to the original instance
+> but its members can only be accessed within the context of a `Via` intercepted call.
 
 ### Open generic registrations
 IServiceCollection supports open generic registrations for example:
