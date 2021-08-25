@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using DivertR.Core;
+using DivertR.Internal;
 
 namespace DivertR.DispatchProxy
 {

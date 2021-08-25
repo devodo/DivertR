@@ -1,4 +1,4 @@
-﻿namespace DivertR.Redirects
+﻿namespace DivertR.Extensions
 {
     public static class RedirectBuilderExtensions
     {

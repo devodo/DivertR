@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace DivertR.UnitTests.Model
 {
@@ -55,7 +56,7 @@ namespace DivertR.UnitTests.Model
 
         public T1 EchoGenericAlt<T1>(T1 i1)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public (T1, T2) EchoGeneric<T1, T2>(T1 i1, T2 i2)

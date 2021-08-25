@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
-using DivertR.Core;
 
 namespace DivertR.Record.Internal
 {

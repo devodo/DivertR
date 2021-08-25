@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Reflection;
-using DivertR.Core;
+using DivertR.Internal;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace DivertR.UnitTests
+namespace DivertR.Benchmarks
 {
     public class MethodInvokeBenchmarks
     {

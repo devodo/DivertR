@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace DivertR.Core
+namespace DivertR
 {
     public class CallArguments : IReadOnlyList<object>
     {

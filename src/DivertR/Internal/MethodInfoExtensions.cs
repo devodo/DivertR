@@ -5,9 +5,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace DivertR.Core
+namespace DivertR.Internal
 {
-    public static class MethodInfoExtensions
+    internal static class MethodInfoExtensions
     {
         private static readonly ConcurrentDictionary<MethodId, Func<object, object[], object>> DelegateCache =
             new ConcurrentDictionary<MethodId, Func<object, object[], object>>();

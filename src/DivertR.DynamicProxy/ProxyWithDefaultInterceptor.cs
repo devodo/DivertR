@@ -1,6 +1,5 @@
 ﻿using System;
 using Castle.DynamicProxy;
-using DivertR.Core;
 
 namespace DivertR.DynamicProxy
 {

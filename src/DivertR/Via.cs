@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq.Expressions;
-using DivertR.Core;
 using DivertR.Internal;
 using DivertR.Record;
 using DivertR.Record.Internal;

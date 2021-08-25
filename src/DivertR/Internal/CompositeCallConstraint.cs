@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using DivertR.Core;
 
 namespace DivertR.Internal
 {

@@ -1,6 +1,4 @@
-﻿using DivertR.Core;
-
-namespace DivertR.Setup
+﻿namespace DivertR.Setup
 {
     public interface IDiverterSettings
     {

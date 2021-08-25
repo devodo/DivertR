@@ -1,6 +1,4 @@
-﻿using DivertR.Core;
-
-namespace DivertR
+﻿namespace DivertR
 {
     public class TrueCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class
     {

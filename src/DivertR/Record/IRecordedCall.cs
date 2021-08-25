@@ -1,6 +1,4 @@
-﻿using DivertR.Core;
-
-namespace DivertR.Record
+﻿namespace DivertR.Record
 {
     public interface IRecordedCall<TTarget> where TTarget : class
     {

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Threading;
-using DivertR.Core;
 
-namespace DivertR.Redirects
+namespace DivertR.Extensions
 {
     public class RepeatCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {

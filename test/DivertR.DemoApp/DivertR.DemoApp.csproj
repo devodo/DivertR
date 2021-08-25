@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\DivertR.DependencyInjection\DivertR.DependencyInjection.csproj" />
       <ProjectReference Include="..\..\src\DivertR\DivertR.csproj" />
     </ItemGroup>
 

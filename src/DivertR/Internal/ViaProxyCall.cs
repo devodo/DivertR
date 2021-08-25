@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using DivertR.Core;
 
 namespace DivertR.Internal
 {

@@ -8,10 +8,7 @@ namespace DivertR.UnitTests
 {
     public class ViaClassTests
     {
-        private static readonly DiverterSettings DiverterSettings = new()
-        {
-            ProxyFactory = new DynamicProxyFactory()
-        };
+        private static readonly DiverterSettings DiverterSettings = new(new DynamicProxyFactory());
 
         private readonly Via<Foo> _via;
 

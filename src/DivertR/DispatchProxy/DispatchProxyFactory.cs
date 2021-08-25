@@ -1,5 +1,4 @@
 ﻿using System;
-using DivertR.Core;
 
 namespace DivertR.DispatchProxy
 {

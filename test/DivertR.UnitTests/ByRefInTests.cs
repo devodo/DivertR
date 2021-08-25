@@ -10,10 +10,7 @@ namespace DivertR.UnitTests
     {
         // Due to a known issue DispatchProxy does not currently support in byref parameters
         // https://github.com/dotnet/runtime/issues/47522
-        private static readonly DiverterSettings DiverterSettings = new()
-        {
-            ProxyFactory = new DynamicProxyFactory()
-        };
+        private static readonly DiverterSettings DiverterSettings = new(new DynamicProxyFactory());
         
         private delegate int InCall(in int input);
 

@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace DivertR.Core
+namespace DivertR
 {
     public class CallInfo<TTarget> where TTarget : class
     {

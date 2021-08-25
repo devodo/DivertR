@@ -2,20 +2,18 @@
 
 .NET Dependency Injection Diversion
 
-DivertR is similar to well known mocking frameworks like Moq or FakeItEasy but provides additional features to directly manipulate your registered dependency injection services.
-DivertR enables an integrated approach to testing by making it easy to hotswap test code in and out at the DI layer.
+[![NuGet](https://img.shields.io/nuget/v/DivertR.svg)](https://www.nuget.org/packages/DivertR)
 
-DivertR was originally created to facilitate in-process integration/component testing using the excellent
-[WebApplicationFactory framework](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) in-memory ASP.NET test server.
-WebApplicationFactory allows DI service customisation but this can only be done once at startup per server instance.
+DivertR is similar to well known mocking frameworks like Moq or FakeItEasy but provides additional features for directly manipulating your registered dependency injection services.
+This enables an integrated approach to testing by making it easy to hotswap test code in and out at the DI layer.
+
+![DivertR Via](./docs/assets/images/DivertR_Via.svg)
 
 With DivertR you can modify your DI services at runtime by replacing them with configurable proxies.
 These can redirect calls to test doubles, such as substitute instances, mocks or delegates, and then optionally relay back to the original services.
 Update and reset proxy configurations, on the fly, while the process is running.
 
-![DivertR Via](./docs/assets/images/DivertR_Via.svg)
-
-## Code example
+## Code overview
 
 ### Start with a Foo
 
@@ -49,7 +47,7 @@ services.AddSingleton<IExample, Example>(); // some other example registration
 
 ### Instantiate DivertR
 
-Next create a DivertR instance and register one or more DI service types of interest:
+Create a DivertR instance and register one or more DI service types of interest:
 
 ```csharp
 var diverter = new Diverter()
@@ -150,21 +148,21 @@ Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello  - Redirected"
 
 ### Retarget
 
-As well as redirecting to delegates you can also retarget to substitutes that implements the target interface (in this case `IFoo`).
+As well as redirecting to delegates you can also retarget to substitutes that implement the target interface (in this case `IFoo`).
 This includes, for example, Mock objects:
 
 ```csharp
 var mock = new Mock<IFoo>();
 mock
     .Setup(x => x.Echo(It.IsAny<string>()))
-    .Returns((string input) => $"{original.Echo(input)} - Mocked");
+    .Returns((string input) => $"{original.Echo(input)} - Mock");
 
 fooVia
     .To() // No parameter defaults to match all calls
-    .Redirect(mock.Object);
+    .Retarget(mock.Object);
 
-Console.WriteLine(foo.Echo("Hello"));  // "Foo: Hello - Redirected - Mocked"
-Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Redirected - Mocked"
+Console.WriteLine(foo.Echo("Hello"));  // "Foo: Hello - Redirected - Mock"
+Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Redirected - Mock"
 ```
 > Note the substitute/mock can also use the `Relay.Original` proxy to call the original.
 
@@ -199,3 +197,12 @@ fooVia
 Console.WriteLine(await foo.EchoAsync("Hello"));  // "Foo: Hello - Async"
 Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello - Async"
 ```
+
+### WebApplicationFactory example
+
+DivertR was originally created to facilitate in-process integration/component testing using the excellent
+[WebApplicationFactory framework](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) in-memory ASP.NET test server.
+WebApplicationFactory allows DI service customisation but this can only be done once at startup per server instance.
+
+With DivertR it is easy and efficient to modify DI customisations between tests running against the same test server instance
+as illustrated by the following [WebApp Testing Sample](https://github.com/devodo/DivertR/tree/main/test/DivertR.WebAppTests).

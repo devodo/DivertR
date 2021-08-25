@@ -1,6 +1,4 @@
-﻿using DivertR.Core;
-
-namespace DivertR
+﻿namespace DivertR
 {
     public interface ICallHandler<TTarget> where TTarget : class
     {

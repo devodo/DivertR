@@ -3,7 +3,6 @@ using System.Collections.Immutable;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using DivertR.Core;
 
 namespace DivertR.Internal
 {

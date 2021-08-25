@@ -1,5 +1,4 @@
-﻿using DivertR.Core;
-using DivertR.Internal;
+﻿using DivertR.Internal;
 
 namespace DivertR.Record.Internal
 {

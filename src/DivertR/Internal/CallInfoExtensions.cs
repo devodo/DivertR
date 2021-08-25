@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace DivertR.Core
+namespace DivertR.Internal
 {
-    public static class CallInfoExtensions
+    internal static class CallInfoExtensions
     {
-        public static Func<object, CallArguments, object> ToDelegate<T>(this CallInfo<T> callInfo) where T : class
-        {
-            var delegateInternal = callInfo.Method.ToDelegate<T>();
-
-            return (target, arguments) => delegateInternal.Invoke(target, arguments.InternalArgs);
-        }
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static object? Invoke<TTarget>(this CallInfo<TTarget> callInfo, TTarget target) where TTarget : class
         {

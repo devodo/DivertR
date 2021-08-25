@@ -10,10 +10,7 @@ namespace DivertR.UnitTests
 {
     public class ByRefTestsDynamicProxy : ByRefTests
     {
-        private static readonly DiverterSettings DiverterSettings = new()
-        {
-            ProxyFactory = new DynamicProxyFactory()
-        };
+        private static readonly DiverterSettings DiverterSettings = new(new DynamicProxyFactory());
 
         public ByRefTestsDynamicProxy()
             : base(new Via<INumber>(DiverterSettings))
