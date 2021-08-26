@@ -3,6 +3,7 @@
 .NET Dependency Injection Diversion
 
 [![NuGet](https://img.shields.io/nuget/v/DivertR.svg)](https://www.nuget.org/packages/DivertR)
+![Build](https://github.com/devodo/DivertR/actions/workflows/build.yml/badge.svg)
 
 DivertR is similar to well known mocking frameworks like Moq or FakeItEasy but provides additional features for directly manipulating your registered dependency injection services.
 This enables an integrated approach to testing by making it easy to hotswap test code in and out at the DI layer.
