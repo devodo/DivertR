@@ -89,5 +89,57 @@ namespace DivertR.Record.Internal
 
             return result;
         }
+
+        public TOut Args<T1, TOut>(Func<T1, TOut> action)
+        {
+            _parsedCallExpression.ValidateArgumentTypes(typeof(T1));
+            return action.Invoke((T1) RecordedCall.Args[0]);
+        }
+
+        public TOut Args<T1, T2, TOut>(Func<T1, T2, TOut> action)
+        {
+            _parsedCallExpression.ValidateArgumentTypes(typeof(T1), typeof(T2));
+            return action.Invoke((T1) RecordedCall.Args[0], (T2) RecordedCall.Args[1]);
+        }
+
+        public TOut Args<T1, T2, T3, TOut>(Func<T1, T2, T3, TOut> action)
+        {
+            _parsedCallExpression.ValidateArgumentTypes(typeof(T1), typeof(T2), typeof(T3));
+            return action.Invoke((T1) RecordedCall.Args[0], (T2) RecordedCall.Args[1], (T3) RecordedCall.Args[2]);
+        }
+
+        public TOut Args<T1, T2, T3, T4, TOut>(Func<T1, T2, T3, T4, TOut> action)
+        {
+            _parsedCallExpression.ValidateArgumentTypes(typeof(T1), typeof(T2), typeof(T3), typeof(T4));
+            return action.Invoke((T1) RecordedCall.Args[0], (T2) RecordedCall.Args[1], (T3) RecordedCall.Args[2], (T4) RecordedCall.Args[3]);
+        }
+
+        public TOut Args<T1, T2, T3, T4, T5, TOut>(Func<T1, T2, T3, T4, T5, TOut> action)
+        {
+            _parsedCallExpression.ValidateArgumentTypes(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5));
+            return action.Invoke((T1) RecordedCall.Args[0], (T2) RecordedCall.Args[1], (T3) RecordedCall.Args[2], (T4) RecordedCall.Args[3],
+                (T5) RecordedCall.Args[4]);
+        }
+
+        public TOut Args<T1, T2, T3, T4, T5, T6, TOut>(Func<T1, T2, T3, T4, T5, T6, TOut> action)
+        {
+            _parsedCallExpression.ValidateArgumentTypes(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6));
+            return action.Invoke((T1) RecordedCall.Args[0], (T2) RecordedCall.Args[1], (T3) RecordedCall.Args[2], (T4) RecordedCall.Args[3],
+                (T5) RecordedCall.Args[4], (T6) RecordedCall.Args[5]);
+        }
+
+        public TOut Args<T1, T2, T3, T4, T5, T6, T7, TOut>(Func<T1, T2, T3, T4, T5, T6, T7, TOut> action)
+        {
+            _parsedCallExpression.ValidateArgumentTypes(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7));
+            return action.Invoke((T1) RecordedCall.Args[0], (T2) RecordedCall.Args[1], (T3) RecordedCall.Args[2], (T4) RecordedCall.Args[3],
+                (T5) RecordedCall.Args[4], (T6) RecordedCall.Args[5], (T7) RecordedCall.Args[6]);
+        }
+
+        public TOut Args<T1, T2, T3, T4, T5, T6, T7, T8, TOut>(Func<T1, T2, T3, T4, T5, T6, T7, T8, TOut> action)
+        {
+            _parsedCallExpression.ValidateArgumentTypes(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7), typeof(T8));
+            return action.Invoke((T1) RecordedCall.Args[0], (T2) RecordedCall.Args[1], (T3) RecordedCall.Args[2], (T4) RecordedCall.Args[3],
+                (T5) RecordedCall.Args[4], (T6) RecordedCall.Args[5], (T7) RecordedCall.Args[6], (T8) RecordedCall.Args[7]);
+        }
     }
 }

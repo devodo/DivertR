@@ -39,14 +39,9 @@ namespace DivertR.UnitTests
             _callStream.Select(x => x.CallInfo.Arguments[0]).ShouldBe(inputs);
             _callStream.Select(x => x.Returned?.Value).ShouldBe(outputs);
 
-            _callStream
-                .To(x => x.Echo(Is<string>.Any))
-                .ForEach((call, i) =>
-                {
-                    call.Returned!.Value.ShouldBe(outputs[i]);
-                    call.Args((string input) => input.ShouldBe(inputs[i]));
-                })
-                .Count.ShouldBe(inputs.Count);
+            var echoCalls = _callStream.To(x => x.Echo(Is<string>.Any));
+            echoCalls.Select(call => call.Args((string input) => input)).ShouldBe(inputs);
+            echoCalls.Select(call => call.Returned!.Value).ShouldBe(outputs);
             
             _callStream
                 .To(x => x.Echo(Is<string>.Any))
@@ -56,6 +51,7 @@ namespace DivertR.UnitTests
                     {
                         input.ShouldBe(inputs[i]);
                     });
+                    
                     return call.Returned!.Value;
                 }).ShouldBe(outputs);
         }
