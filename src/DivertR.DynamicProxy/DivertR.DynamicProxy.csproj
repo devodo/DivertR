@@ -1,13 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <Title>DivertR.DynamicProxy</Title>
+    <Authors>David Naylor</Authors>
+    <Description>DivertR DynamicProxy plugin with class support</Description>
+    <Copyright>MIT Copyright (c) David Naylor</Copyright>
+    <PackageProjectUrl>https://github.com/devodo/DivertR</PackageProjectUrl>
+    <PackageTags>divert diverter divertr dynamicproxy</PackageTags>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <PackageId>DivertR.DynamicProxy</PackageId>
+    <Product>DivertR.DynamicProxy</Product>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <LangVersion>8</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="4.3.1" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="MinVer" Version="2.5.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

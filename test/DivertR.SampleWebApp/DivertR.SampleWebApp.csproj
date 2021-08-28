@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-    <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
-        <LangVersion>9</LangVersion>
-        <AssemblyName>DivertR.SampleWebApp</AssemblyName>
-        <RootNamespace>DivertR.SampleWebApp</RootNamespace>
-    </PropertyGroup>
-
-
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>9</LangVersion>
+    <AssemblyName>DivertR.SampleWebApp</AssemblyName>
+    <RootNamespace>DivertR.SampleWebApp</RootNamespace>
+  </PropertyGroup>
+  
 </Project>

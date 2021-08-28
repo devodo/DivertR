@@ -1,17 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-
     <IsPackable>false</IsPackable>
-
     <LangVersion>9</LangVersion>
-
     <AssemblyName>DivertR.UnitTests</AssemblyName>
-
     <RootNamespace>DivertR.UnitTests</RootNamespace>
-
     <OutputType>Library</OutputType>
-
     <TargetFrameworks>net472;net5.0</TargetFrameworks>
   </PropertyGroup>
 
