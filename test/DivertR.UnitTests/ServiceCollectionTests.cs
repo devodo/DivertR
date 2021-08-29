@@ -14,9 +14,35 @@ namespace DivertR.UnitTests
         private readonly IDiverter _diverter = new Diverter().Register<IFoo>();
 
         [Fact]
-        public void ShouldReplaceRegistration()
+        public void ShouldReplaceTypeRegistration()
         {
             _services.AddSingleton<IFoo, Foo>();
+            _services.Divert(_diverter);
+            var provider = _services.BuildServiceProvider();
+            var foo = provider.GetRequiredService<IFoo>();
+            
+            _diverter.Via<IFoo>().To(x => x.Name).Redirect("Diverted");
+            
+            foo.Name.ShouldBe("Diverted");
+        }
+        
+        [Fact]
+        public void ShouldReplaceInstanceRegistration()
+        {
+            _services.AddSingleton<IFoo>(new Foo());
+            _services.Divert(_diverter);
+            var provider = _services.BuildServiceProvider();
+            var foo = provider.GetRequiredService<IFoo>();
+            
+            _diverter.Via<IFoo>().To(x => x.Name).Redirect("Diverted");
+            
+            foo.Name.ShouldBe("Diverted");
+        }
+        
+        [Fact]
+        public void ShouldReplaceFactoryRegistration()
+        {
+            _services.AddSingleton<IFoo>(_ => new Foo());
             _services.Divert(_diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
