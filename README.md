@@ -14,6 +14,16 @@ With DivertR you can modify your DI services at runtime by replacing them with c
 These can redirect calls to test doubles, such as substitute instances, mocks or delegates, and then optionally relay back to the original services.
 Update and reset proxy configurations, on the fly, while the process is running.
 
+## Installing
+
+Install DivertR as a [NuGet package](https://www.nuget.org/packages/DivertR):
+
+    Install-Package DivertR
+
+Or via the .NET command line interface:
+
+    dotnet add package DivertR
+
 ## Code overview
 
 ### Start with a Foo
@@ -137,11 +147,11 @@ fooVia
         // run test code after
         // ...
     
-        return $"{message} - Redirected";
+        return $"{message} Redirect";
     });
   
-Console.WriteLine(foo.Echo("Hello"));  // "Foo: Hello  - Redirected"
-Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello  - Redirected"
+Console.WriteLine(foo.Echo("Hello"));  // "Foo: Hello Redirect"
+Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello Redirect"
 ```
 
 > The `Relay.Original` property is a proxy that the `Via` connects to the current intercepted call.
@@ -156,21 +166,21 @@ This includes, for example, Mock objects:
 var mock = new Mock<IFoo>();
 mock
     .Setup(x => x.Echo(It.IsAny<string>()))
-    .Returns((string input) => $"{original.Echo(input)} - Mock");
+    .Returns((string input) => $"{original.Echo(input)} Mock");
 
 fooVia
     .To() // No parameter defaults to match all calls
     .Retarget(mock.Object);
 
-Console.WriteLine(foo.Echo("Hello"));  // "Foo: Hello - Redirected - Mock"
-Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Redirected - Mock"
+Console.WriteLine(foo.Echo("Hello"));  // "Foo: Hello Mock"
+Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello Mock"
 ```
-> Note the substitute/mock can also use the `Relay.Original` proxy to call the original.
+> The substitute/mock can also use the `Relay.Original` proxy to call the original.
 
 ### Interfaces only
 
 By default DivertR can only be used on interface types. Classes are not supported as calls to non-virtual members
-cannot be intercepted and this leads to confusing, unintuitive behaviour.
+cannot be intercepted, causing inconsistent and confusing behaviour.
 
 ### Async support
 
@@ -193,10 +203,10 @@ public class Foo : IFoo
 
 fooVia
     .To(x => x.EchoAsync(Is<string>.Any))
-    .Redirect(async (string input) => $"{await original.EchoAsync(input)} - Async");
+    .Redirect(async (string input) => $"{await original.EchoAsync(input)} Async");
 
-Console.WriteLine(await foo.EchoAsync("Hello"));  // "Foo: Hello - Async"
-Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello - Async"
+Console.WriteLine(await foo.EchoAsync("Hello"));  // "Foo: Hello Async"
+Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello Async"
 ```
 
 ### WebApplicationFactory example
