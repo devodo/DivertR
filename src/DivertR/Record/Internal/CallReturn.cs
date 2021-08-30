@@ -23,7 +23,7 @@ namespace DivertR.Record.Internal
                     return _exception;
                 }
 
-                if (Value is Task {IsFaulted: true, Exception: { }} value)
+                if (Value is Task { IsFaulted: true, Exception: { } } value)
                 {
                     return value.Exception.InnerExceptions.Count > 1
                         ? value.Exception

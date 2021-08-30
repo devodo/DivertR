@@ -7,12 +7,17 @@ using DivertR.Setup;
 
 namespace DivertR
 {
+    /// <inheritdoc />
     public class Via<TTarget> : IVia<TTarget> where TTarget : class
     {
         private readonly RedirectRepository _redirectRepository;
         private readonly IProxyFactory _proxyFactory;
         private readonly Relay<TTarget> _relay;
-
+        
+        /// <summary>
+        /// Create a <see cref="Via{TTarget}"/> instance for type <typeparamref name="TTarget"/>.
+        /// </summary>
+        /// <param name="diverterSettings">Optionally override default DivertR settings.</param>
         public Via(IDiverterSettings? diverterSettings = null) : this(ViaId.From<TTarget>(), new RedirectRepository(), diverterSettings ?? DiverterSettings.Default)
         {
         }
@@ -57,6 +62,11 @@ namespace DivertR
             return Proxy(original as TTarget);
         }
 
+        IVia IVia.Reset()
+        {
+            return Reset();
+        }
+
         public IVia<TTarget> InsertRedirect(Redirect<TTarget> redirect)
         {
             _redirectRepository.InsertRedirect(ViaId, redirect);
@@ -81,35 +91,35 @@ namespace DivertR
             return new RedirectBuilder<TTarget>(this, callConstraint);
         }
         
-        public IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
+        public IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
+            if (constraintExpression?.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
             
             return new FuncRedirectBuilder<TTarget, TReturn>(this, parsedCall);
         }
         
-        public IActionRedirectBuilder<TTarget> To(Expression<Action<TTarget>> lambdaExpression)
+        public IActionRedirectBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
+            if (constraintExpression?.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
             
             return new ActionRedirectBuilder<TTarget>(this, parsedCall);
         }
         
-        public IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
+        public IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
-            if (valueExpression?.Body == null) throw new ArgumentNullException(nameof(valueExpression));
+            if (memberExpression?.Body == null) throw new ArgumentNullException(nameof(memberExpression));
+            if (constraintExpression?.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
-            if (!(lambdaExpression.Body is MemberExpression propertyExpression))
+            if (!(memberExpression.Body is MemberExpression propertyExpression))
             {
                 throw new ArgumentException("Must be a property member expression", nameof(propertyExpression));
             }
 
-            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
+            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, constraintExpression.Body);
 
             return new ActionRedirectBuilder<TTarget>(this, parsedCall);
         }

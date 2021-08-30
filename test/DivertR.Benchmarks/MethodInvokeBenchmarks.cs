@@ -23,7 +23,7 @@ namespace DivertR.Benchmarks
         public void DelegateInvokeTest()
         {
             Func<int, int, int> testDelegate = (a, b) => a + b;
-            var args = new object[] {1, 2};
+            var args = new object[] { 1, 2 };
             
             var dynamicInvoke = DelegateDynamicInvoke(testDelegate, args);
             var fastInvoke = DelegateFastInvoke(testDelegate, args);
@@ -40,7 +40,7 @@ namespace DivertR.Benchmarks
         public void MethodInvokeTest()
         {
             var methodInfo = GetType().GetTypeInfo().GetMethod(nameof(TestMethod), BindingFlags.NonPublic | BindingFlags.Instance);
-            var args = new object[] {1, 1};
+            var args = new object[] { 1, 1 };
             
             var methodInvoke = MethodInfoInvoke(methodInfo, args);
             var fastInvoke = MethodFastInvoke(methodInfo, args);

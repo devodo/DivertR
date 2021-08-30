@@ -20,7 +20,7 @@ namespace DivertR.SampleWebApp
         {
             services.AddControllers();
             services.AddTransient<IFooRepository, FooRepository>();
-            services.AddTransient<IFooPublisher, FooPublisher>();
+            services.AddSingleton<IFooPublisher, FooPublisher>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

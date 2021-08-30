@@ -22,6 +22,32 @@ namespace DivertR.UnitTests
             // ASSERT
             name.ShouldBe(original.Name);
         }
+        
+        [Fact]
+        public void GivenValidOriginalObjectType_WhenCreateProxyObject_ShouldCreateProxy()
+        {
+            // ARRANGE
+            var original = new Foo();
+
+            // ACT
+            var proxy = (IFoo) _via.ProxyObject(original);
+
+            // ASSERT
+            proxy.Name.ShouldBe(original.Name);
+        }
+        
+        [Fact]
+        public void GivenInvalidOriginalObjectType_WhenCreateProxyObject_ShouldThrowArgumentException()
+        {
+            // ARRANGE
+            var invalidOriginal = new object();
+
+            // ACT
+            Func<object> testAction = () => _via.ProxyObject(invalidOriginal);
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
+        }
 
         [Fact]
         public void GivenValueRedirect_ShouldRedirect()
@@ -68,7 +94,7 @@ namespace DivertR.UnitTests
             // ASSERT
             proxy.Name.ShouldBe("action hello");
         }
-        
+
         [Fact]
         public void GivenStrictModeWithNoRedirect_ShouldThrowException()
         {

@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using DivertR.SampleWebApp.Model;
 using DivertR.SampleWebApp.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace DivertR.SampleWebApp.Controllers
 {
@@ -12,12 +11,12 @@ namespace DivertR.SampleWebApp.Controllers
     public class FooController : ControllerBase
     {
         private readonly IFooRepository _fooRepository;
-        private readonly ILogger<FooController> _logger;
+        private readonly IFooPublisher _fooPublisher;
 
-        public FooController(IFooRepository fooRepository, ILogger<FooController> logger)
+        public FooController(IFooRepository fooRepository, IFooPublisher fooPublisher)
         {
-            _fooRepository = fooRepository;
-            _logger = logger;
+            _fooRepository = fooRepository ?? throw new ArgumentNullException(nameof(fooRepository));
+            _fooPublisher = fooPublisher ?? throw new ArgumentNullException(nameof(fooPublisher));
         }
         
         [HttpGet("{id:guid}")]
@@ -48,8 +47,11 @@ namespace DivertR.SampleWebApp.Controllers
             {
                 return UnprocessableEntity();
             }
+
+            await _fooPublisher.Publish(
+                new FooEvent { EventId = Guid.NewGuid(), EventType = FooEventType.Created, Foo = foo });
             
-            return CreatedAtAction(nameof(GetById), new {id = foo.Id}, foo);
+            return CreatedAtAction(nameof(GetById), new { id = foo.Id }, foo);
         }
     }
 }

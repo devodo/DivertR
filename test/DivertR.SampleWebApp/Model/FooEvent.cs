@@ -6,7 +6,7 @@ namespace DivertR.SampleWebApp.Model
     {
         public Guid EventId { get; init; }
 
-        public FooEventType EventType { get; set; }
+        public FooEventType EventType { get; init; }
         
         public Foo Foo { get; init; }
     }

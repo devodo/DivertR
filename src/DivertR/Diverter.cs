@@ -8,12 +8,17 @@ using DivertR.Setup;
 
 namespace DivertR
 {
+    /// <inheritdoc />
     public class Diverter : IDiverter
     {
         private readonly RedirectRepository _redirectRepository = new RedirectRepository();
         private readonly ConcurrentDictionary<ViaId, IVia> _vias = new ConcurrentDictionary<ViaId, IVia>();
         private readonly IDiverterSettings _diverterSettings;
-
+        
+        /// <summary>
+        /// Create a <see cref="Diverter"/> instance.
+        /// </summary>
+        /// <param name="diverterSettings">Optionally override default DivertR settings.</param>
         public Diverter(IDiverterSettings? diverterSettings = null)
         {
             _diverterSettings = diverterSettings ?? DiverterSettings.Default;
@@ -84,6 +89,17 @@ namespace DivertR
             
             return via;
         }
+        
+        public IDiverter StrictAll()
+        {
+            foreach (var via in _vias)
+            {
+                via.Value.Strict();
+            }
+            
+            return this;
+        }
+
 
         public IDiverter Strict(string? name = null)
         {
@@ -98,6 +114,16 @@ namespace DivertR
         public IDiverter ResetAll()
         {
             _redirectRepository.ResetAll();
+            return this;
+        }
+
+        public IDiverter Reset(string? name = null)
+        {
+            foreach (var via in RegisteredVias(name))
+            {
+                via.Reset();
+            }
+
             return this;
         }
     }
