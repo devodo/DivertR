@@ -1,4 +1,13 @@
-# User guide
+# Developer guide
+
+## Introduction
+
+DivertR is a proxy interception framework built on top of DispatchProxy that
+Similar to mocking frameworks like Moq lets you manipulate Dependency Injection
+services by decorating registrations with configurable proxies. These proxies
+share a lot of similarities 
+
+In process integration and component testing 
 
 Note the Mock also calls the `Relay.Next` property. However, it does not relay to the original registration as before.
 Instead it goes to the delegate redirect that was previously added.
