@@ -46,9 +46,9 @@ namespace DivertR.Internal
                 return null;
             }
 
-            var strictVisited = StrictSatisfied || !_redirectPlan.Redirects[index].DisableSatisfyStrict;
+            var strictSatisfied = StrictSatisfied || !_redirectPlan.Redirects[index].DisableSatisfyStrict;
 
-            return new RelayStep<TTarget>(_redirectPlan, index, callInfo, strictVisited);
+            return new RelayStep<TTarget>(_redirectPlan, index, callInfo, strictSatisfied);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

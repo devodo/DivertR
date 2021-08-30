@@ -28,7 +28,7 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? CallBegin(RedirectPlan<TTarget> redirectPlan, CallInfo<TTarget> callInfo)
         {
-            var redirectStep = BeginNewCall(redirectPlan, callInfo);
+            var redirectStep = RelayStep<TTarget>.Create(redirectPlan, callInfo);
 
             if (redirectStep == null)
             {
@@ -39,14 +39,18 @@ namespace DivertR.Internal
                 
                 return CallOriginal(callInfo);
             }
-
+            
+            var redirectStack = _redirectStack.Value ?? ImmutableStack<RelayStep<TTarget>>.Empty;
+            redirectStack = redirectStack.Push(redirectStep);
+            _redirectStack.Value = redirectStack;
+            
             try
             {
                 return redirectStep.Redirect.CallHandler.Call(callInfo);
             }
             finally
             {
-                EndCall(callInfo);
+                _redirectStack.Value = redirectStack.Pop();
             }
         }
 
@@ -112,21 +116,21 @@ namespace DivertR.Internal
             var redirectStack = GetCurrentStack();
             var redirectStep = redirectStack.Peek();
             var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, method, callArguments);
-            var nextRedirectIndex = redirectStep.MoveNext(callInfo);
+            var nextStep = redirectStep.MoveNext(callInfo);
 
-            if (nextRedirectIndex == null)
+            if (nextStep == null)
             {
                 ValidateStrict(redirectStep);
 
                 return CallOriginal(callInfo);
             }
             
-            redirectStack = redirectStack.Push(nextRedirectIndex);
+            redirectStack = redirectStack.Push(nextStep);
             _redirectStack.Value = redirectStack;
 
             try
             {
-                return nextRedirectIndex.Redirect.CallHandler.Call(callInfo);
+                return nextStep.Redirect.CallHandler.Call(callInfo);
             }
             finally
             {
@@ -140,21 +144,21 @@ namespace DivertR.Internal
             var redirectStack = GetCurrentStack();
             var redirectStep = redirectStack.Peek();
             var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, redirectStep.CallInfo.Method, callArguments);
-            var nextRedirectIndex = redirectStep.MoveNext(callInfo);
+            var nextStep = redirectStep.MoveNext(callInfo);
 
-            if (nextRedirectIndex == null)
+            if (nextStep == null)
             {
                 ValidateStrict(redirectStep);
 
                 return CallOriginal(callInfo);
             }
             
-            redirectStack = redirectStack.Push(nextRedirectIndex);
+            redirectStack = redirectStack.Push(nextStep);
             _redirectStack.Value = redirectStack;
 
             try
             {
-                return nextRedirectIndex.Redirect.CallHandler.Call(callInfo);
+                return nextStep.Redirect.CallHandler.Call(callInfo);
             }
             finally
             {
@@ -193,33 +197,6 @@ namespace DivertR.Internal
             }
 
             return callInfo.Invoke(callInfo.Original);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private RelayStep<TTarget>? BeginNewCall(RedirectPlan<TTarget> redirectPlan, CallInfo<TTarget> callInfo)
-        {
-            var redirectStep = RelayStep<TTarget>.Create(redirectPlan, callInfo);
-
-            if (redirectStep == null)
-            {
-                return null;
-            }
-            
-            var redirectStack = _redirectStack.Value ?? ImmutableStack<RelayStep<TTarget>>.Empty;
-            _redirectStack.Value = redirectStack.Push(redirectStep);
-            
-            return redirectStep;
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void EndCall(CallInfo<TTarget> callInfo)
-        {
-            _redirectStack.Value = _redirectStack.Value.Pop(out var redirectContext);
-
-            if (!ReferenceEquals(callInfo, redirectContext.CallInfo))
-            {
-                throw new DiverterException("Fatal error: Encountered an unexpected redirect state ending the current call");
-            }
         }
     }
 }
