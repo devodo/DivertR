@@ -33,7 +33,7 @@ Given an `IFoo` interface and a `Foo` implementation:
 ```csharp
 public interface IFoo
 {
-    public string Name { get; set; }
+    string Name { get; set; }
     string Echo(string input);
 }
 
