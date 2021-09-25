@@ -1,7 +1,7 @@
 # Developer guide
 
 DivertR is a testing framework that can be used to dynamically manipulate your dependency injection services.
-It works by decorating existing DI registrations to resolve proxies instead that wrap the original instances.
+It works by decorating existing DI registrations to instead resolve proxies that wrap the original instances.
 Calls are then intercepted by these proxies and they can be configured to divert them to test doubles such as substitutes, mocks or delegates.
 The test doubles are also able to conveniently call back into the original instances.
 
