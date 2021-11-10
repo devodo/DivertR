@@ -83,10 +83,10 @@ namespace DivertR.WebAppTests
             _fooRepositoryVia
                 .Strict()
                 .To(x => x.TryInsertFoo(Is<Foo>.Any))
-                .Redirect<(Foo foo, __)>(async args =>
+                .Redirect<(Foo foo, __)>(async call =>
                 {
-                    insertedFoo = args.foo;
-                    insertResult = await _fooRepositoryVia.Relay.Next.TryInsertFoo(args.foo);
+                    insertedFoo = call.Args.foo;
+                    insertResult = await call.Relay.Next.TryInsertFoo(call.Args.foo);
                     return insertResult.Value;
                 });
 

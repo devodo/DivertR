@@ -91,7 +91,7 @@ namespace DivertR.Internal
             return this;
         }
         
-        public IFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Func<TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var builder = new FuncRedirectBuilder<TTarget, TReturn, TArgs>(Via, ParsedCallExpression, _relay);
@@ -173,9 +173,17 @@ namespace DivertR.Internal
             ParsedCallExpression.Validate(typeof(TReturn), _valueTupleFactory.ArgumentTypes);
         }
 
-        public IFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            InsertRedirect(callInfo => redirectDelegate.Invoke((TArgs) _valueTupleFactory.Create(callInfo.Arguments)), optionsAction);
+            object? CallHandler(CallInfo<TTarget> callInfo)
+            {
+                var args = (TArgs) _valueTupleFactory.Create(callInfo.Arguments);
+                var redirectCall = new FuncRedirectCall<TTarget, TReturn, TArgs>(callInfo, args, _relay);
+
+                return redirectDelegate.Invoke(redirectCall);
+            }
+            
+            InsertRedirect(CallHandler, optionsAction);
 
             return this;
         }

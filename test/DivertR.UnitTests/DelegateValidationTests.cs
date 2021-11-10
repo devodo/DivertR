@@ -16,7 +16,7 @@ namespace DivertR.UnitTests
             var builder = _via.To(x => x.Echo(Is<string>.Any));
 
             // ACT
-            Action testAction = () => builder.Redirect<(int input, __)>(args => args.input.ToString());
+            Action testAction = () => builder.Redirect<(int input, __)>(call => call.Args.input.ToString());
 
             // ASSERT
             testAction.ShouldThrow<InvalidRedirectException>();

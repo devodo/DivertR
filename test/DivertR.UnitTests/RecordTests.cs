@@ -165,7 +165,7 @@ namespace DivertR.UnitTests
             _via.Strict();
             _via
                 .To(x => x.EchoAsync(Is<string>.Match(m => m != "test")))
-                .Redirect<(string input, __)>(args => _via.Relay.Next.EchoAsync(args.input));
+                .Redirect<(string input, __)>(call => call.Relay.Next.EchoAsync(call.Args.input));
 
             // ACT
             Func<Task<string>> testAction = () => _via.Proxy(new Foo()).EchoAsync("test");
@@ -190,7 +190,7 @@ namespace DivertR.UnitTests
             _via.Strict();
             _via
                 .To(x => x.EchoAsync("test"))
-                .Redirect<(string input, __)>(async args => await _via.Relay.Next.EchoAsync(args.input) + " diverted");
+                .Redirect<(string input, __)>(async call => await call.Relay.Next.EchoAsync(call.Args.input) + " diverted");
 
             // ACT
             var result = await _via.Proxy(new Foo()).EchoAsync("test");

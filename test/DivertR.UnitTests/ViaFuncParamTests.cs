@@ -46,17 +46,17 @@ namespace DivertR.UnitTests
         {
             _via
                 .To(x => x.EchoGeneric(Is<int>.Any))
-                .Redirect<(int i1, __)>(args =>
+                .Redirect<(int i1, __)>(call =>
                 {
-                    var item1 = _via.Relay.Next.EchoGeneric(args.i1);
+                    var item1 = call.Relay.Next.EchoGeneric(call.Args.i1);
                     return item1 + _inputs[0][0].Incr;
                 });
             
             _via
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any))
-                .Redirect<(int i1, int i2)>(args =>
+                .Redirect<(int i1, int i2)>(call =>
                 {
-                    var (item1, item2) = _via.Relay.Next.EchoGeneric(args.i1, args.i2);
+                    var (item1, item2) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2);
                     return (item1 + _inputs[1][0].Incr, item2 + _inputs[1][1].Incr);
                 });
             

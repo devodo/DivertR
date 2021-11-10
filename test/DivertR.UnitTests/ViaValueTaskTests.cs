@@ -39,7 +39,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoValueAsync(Is<string>.Any))
-                .Redirect<(string input, __)>(async args => await _via.Relay.Next.EchoValueAsync(args.input) + " redirect");
+                .Redirect<(string input, __)>(async call => await call.Relay.Next.EchoValueAsync(call.Args.input) + " redirect");
 
             // ACT
             var message = await _proxy.EchoValueAsync("test");
@@ -54,7 +54,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoValueSync(Is<string>.Any))
-                .Redirect<(string input, __)>(args => _via.Relay.Next.EchoValueSync($"{args.input} redirect"));
+                .Redirect<(string input, __)>(call => call.Relay.Next.EchoValueSync($"{call.Args.input} redirect"));
 
             // ACT
             var message = await _proxy.EchoValueSync("test");
@@ -69,7 +69,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoValueAsync(Is<string>.Any))
-                .Redirect<(string input, __)>(args => _via.Relay.CallInfo.Original!.EchoValueAsync($"{args.input} redirect"));
+                .Redirect<(string input, __)>(call => call.Relay.CallInfo.Original!.EchoValueAsync($"{call.Args.input} redirect"));
 
             // ACT
             var message = await _proxy.EchoValueAsync("test");

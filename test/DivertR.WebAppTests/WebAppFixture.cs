@@ -46,14 +46,14 @@ namespace DivertR.WebAppTests
         {
             _diverter.Via<ILoggerFactory>()
                 .To(x => x.CreateLogger(Is<string>.Any))
-                .Redirect<(string name, __)>(args =>
+                .Redirect<(string name, __)>(call =>
                 {
-                    if (args.name.StartsWith("Microsoft"))
+                    if (call.Args.name.StartsWith("Microsoft"))
                     {
-                        return output.BuildLogger(LogLevel.Warning, args.name);
+                        return output.BuildLogger(LogLevel.Warning, call.Args.name);
                     }
                     
-                    return output.BuildLogger(args.name);
+                    return output.BuildLogger(call.Args.name);
                 });
         }
 
