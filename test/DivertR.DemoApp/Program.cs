@@ -31,7 +31,7 @@ namespace DivertR.DemoApp
     
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task Main()
         {
             IServiceCollection services = new ServiceCollection();
             services.AddTransient<IFoo, Foo>();
@@ -48,7 +48,7 @@ namespace DivertR.DemoApp
             IVia<IFoo> fooVia = diverter.Via<IFoo>();
             fooVia
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect((string input) => $"{input} DivertR");
+                .Redirect<(string input, __)>(args => $"{args.input} DivertR");
   
             Console.WriteLine(foo.Echo("Hello")); // "Hello DivertR"
             
@@ -64,13 +64,13 @@ namespace DivertR.DemoApp
             IFoo next = fooVia.Relay.Next;
             fooVia
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect((string input) =>
+                .Redirect<(string input, __)>(args =>
                 {
                     // run test code before
                     // ...
 
                     // call original instance
-                    var message = next.Echo(input);
+                    var message = next.Echo(args.input);
     
                     // run test code after
                     // ...
@@ -103,7 +103,7 @@ namespace DivertR.DemoApp
             IFoo original = fooVia.Relay.Original;
             fooVia
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect((string input) => $"{original.Echo(input)} - Skipped");
+                .Redirect<(string input, __)>(args => $"{original.Echo(args.input)} - Skipped");
   
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Skipped"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Skipped"
@@ -112,7 +112,7 @@ namespace DivertR.DemoApp
 
             fooVia
                 .To(x => x.EchoAsync(Is<string>.Any))
-                .Redirect(async (string input) => $"{await next.EchoAsync(input)} - Async");
+                .Redirect<(string input, __)>(async args => $"{await next.EchoAsync(args.input)} - Async");
             
             Console.WriteLine(await foo.EchoAsync("Hello")); // "Foo1: Hello - Async"
             Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello - Async"

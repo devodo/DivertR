@@ -70,7 +70,7 @@ namespace DivertR.UnitTests
 
             _via
                 .To(x => x.GetNumber(Is<int>.Any))
-                .Redirect<int>(i => _via.Relay.Original.GetNumber(i) + _via.Relay.Next.GetNumber(i))
+                .Redirect<(int i, __)>(args => _via.Relay.Original.GetNumber(args.i) + _via.Relay.Next.GetNumber(args.i))
                 .Retarget(fibonacci);
 
             return _via.Proxy(new Number());

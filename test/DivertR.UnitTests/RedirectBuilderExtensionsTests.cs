@@ -15,11 +15,13 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             const int Count = 5;
-            var proxy = _via
-                .To(x => x.Name).Redirect("hello")
-                .To(x => x.Name).Repeat(1).Redirect(() => $"{_via.Relay.Next.Name} first")
-                .To(x => x.Name).Repeat(Count + 1).Redirect(() => $"{_via.Relay.Next.Name} diverted")
-                .Proxy();
+            _via
+                .To(x => x.Name)
+                .Redirect("hello")
+                .Redirect(() => $"{_via.Relay.Next.Name} first", options => options.Repeat(1))
+                .Redirect(() => $"{_via.Relay.Next.Name} diverted", options => options.Repeat(Count + 1));
+
+            var proxy = _via.Proxy();
 
             // ACT
             var results = Enumerable.Range(0, Count + 2).Select(_ => proxy.Name).ToList();
@@ -35,11 +37,13 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             const int Count = 5;
-            var proxy = _via
-                .To(x => x.Name).Redirect("hello")
-                .To(x => x.Name).Skip(1).Redirect(() => $"{_via.Relay.Next.Name} after")
-                .To(x => x.Name).Skip(Count).Redirect(() => $"{_via.Relay.Next.Name} diverted")
-                .Proxy();
+            _via
+                .To(x => x.Name)
+                .Redirect("hello")
+                .Redirect(() => $"{_via.Relay.Next.Name} after", options => options.Skip(1))
+                .Redirect(() => $"{_via.Relay.Next.Name} diverted", options => options.Skip(Count));
+            
+            var proxy = _via.Proxy();
 
             // ACT
             var results = Enumerable.Range(0, Count + 1).Select(_ => proxy.Name).ToList();
@@ -55,11 +59,13 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             const int Count = 5;
-            var proxy = _via
-                .To(x => x.Name).Redirect("hello")
-                .To(x => x.Name).Repeat(1).Skip(1).Redirect(() => $"{_via.Relay.Next.Name} after")
-                .To(x => x.Name).Skip(Count).Redirect(() => $"{_via.Relay.Next.Name} diverted")
-                .Proxy();
+            _via
+                .To(x => x.Name)
+                .Redirect("hello")
+                .Redirect(() => $"{_via.Relay.Next.Name} after", options => options.Repeat(1).Skip(1))
+                .Redirect(() => $"{_via.Relay.Next.Name} diverted", options => options.Skip(Count));
+            
+            var proxy = _via.Proxy();
 
             // ACT
             var results = Enumerable.Range(0, Count + 1).Select(_ => proxy.Name).ToList();

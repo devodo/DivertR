@@ -42,7 +42,7 @@ namespace DivertR
 
             var id = ViaId.From(type, name);
             var diverterType = typeof(Via<>).MakeGenericType(type);
-            var constructorParams = new object[] {id, _redirectRepository, _diverterSettings};
+            var constructorParams = new object[] { id, _redirectRepository, _diverterSettings };
             var via = (IVia) Activator.CreateInstance(diverterType, ActivatorFlags, null, constructorParams, default);
 
             if (!_vias.TryAdd(id, via))

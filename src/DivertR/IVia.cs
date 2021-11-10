@@ -86,7 +86,7 @@ namespace DivertR
         /// <returns>The Redirect builder.</returns>
         /// 
         IRedirectBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null);
-        
+
         /// <summary>
         /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning <typeparam name="TReturn" />.
         /// </summary>
@@ -94,7 +94,7 @@ namespace DivertR
         /// <typeparam name="TReturn">The Expression return type</typeparam>
         /// <returns>The Redirect builder instance.</returns>
         IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression);
-        
+
         /// <summary>
         /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning void />.
         /// </summary>

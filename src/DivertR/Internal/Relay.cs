@@ -64,21 +64,21 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? CallOriginal(MethodInfo method, CallArguments callArguments)
+        public object? CallOriginal(MethodInfo method, CallArguments args)
         {
             var redirectStep = GetCurrentStack().Peek();
             ValidateStrict(redirectStep);
-            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, method, callArguments);
+            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, method, args);
             
             return CallOriginal(callInfo);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? CallOriginal(CallArguments callArguments)
+        public object? CallOriginal(CallArguments args)
         {
             var redirectStep = GetCurrentStack().Peek();
             ValidateStrict(redirectStep);
-            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, redirectStep.CallInfo.Method, callArguments);
+            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, redirectStep.CallInfo.Method, args);
             
             return CallOriginal(callInfo);
         }
@@ -111,11 +111,11 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? CallNext(MethodInfo method, CallArguments callArguments)
+        public object? CallNext(MethodInfo method, CallArguments args)
         {
             var redirectStack = GetCurrentStack();
             var redirectStep = redirectStack.Peek();
-            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, method, callArguments);
+            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, method, args);
             var nextStep = redirectStep.MoveNext(callInfo);
 
             if (nextStep == null)
@@ -139,11 +139,11 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? CallNext(CallArguments callArguments)
+        public object? CallNext(CallArguments args)
         {
             var redirectStack = GetCurrentStack();
             var redirectStep = redirectStack.Peek();
-            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, redirectStep.CallInfo.Method, callArguments);
+            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, redirectStep.CallInfo.Method, args);
             var nextStep = redirectStep.MoveNext(callInfo);
 
             if (nextStep == null)
@@ -197,6 +197,81 @@ namespace DivertR.Internal
             }
 
             return callInfo.Invoke(callInfo.Original);
+        }
+    }
+
+    internal class Relay<TTarget, TReturn> : IRelay<TTarget, TReturn> where TTarget : class
+    {
+        private readonly IRelay<TTarget> _relay;
+
+        public Relay(IRelay<TTarget> relay)
+        {
+            _relay = relay;
+        }
+
+        public TTarget Next => _relay.Next;
+        public TTarget Original => _relay.Original;
+        public Redirect<TTarget> Redirect => _relay.Redirect;
+        public CallInfo<TTarget> CallInfo => _relay.CallInfo;
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        object? IRelay<TTarget>.CallNext()
+        {
+            return _relay.CallNext();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TReturn CallNext(CallArguments args)
+        {
+            return (TReturn) _relay.CallNext(args)!;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TReturn CallOriginal()
+        {
+            return (TReturn) _relay.CallOriginal()!;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TReturn CallOriginal(CallArguments args)
+        {
+            return (TReturn) _relay.CallOriginal(args)!;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TReturn CallNext()
+        {
+            return (TReturn) _relay.CallNext()!;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? CallNext(MethodInfo method, CallArguments args)
+        {
+            return _relay.CallNext(method, args);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        object? IRelay<TTarget>.CallNext(CallArguments args)
+        {
+            return _relay.CallNext(args);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        object? IRelay<TTarget>.CallOriginal()
+        {
+            return _relay.CallOriginal();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? CallOriginal(MethodInfo method, CallArguments args)
+        {
+            return _relay.CallOriginal(method, args);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        object? IRelay<TTarget>.CallOriginal(CallArguments args)
+        {
+            return _relay.CallOriginal(args);
         }
     }
 }

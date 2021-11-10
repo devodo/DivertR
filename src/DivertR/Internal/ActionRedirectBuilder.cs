@@ -15,28 +15,7 @@ namespace DivertR.Internal
 
             return this;
         }
-
-        public new IActionRedirectBuilder<TTarget> ChainCallHandler(Func<IVia<TTarget>, ICallHandler<TTarget>, ICallHandler<TTarget>> chainLink)
-        {
-            base.ChainCallHandler(chainLink);
-
-            return this;
-        }
-
-        public new IActionRedirectBuilder<TTarget> WithOrderWeight(int orderWeight)
-        {
-            base.WithOrderWeight(orderWeight);
-
-            return this;
-        }
-
-        public new IActionRedirectBuilder<TTarget> DisableSatisfyStrict(bool disableStrict = true)
-        {
-            base.DisableSatisfyStrict(disableStrict);
-
-            return this;
-        }
-
+        
         public Redirect<TTarget> Build(Action redirectDelegate)
         {
             return Build(redirectDelegate, callInfo =>

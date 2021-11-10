@@ -9,10 +9,18 @@ namespace DivertR
         Redirect<TTarget> Redirect { get; }
         CallInfo<TTarget> CallInfo { get; }
         object? CallNext();
-        object? CallNext(MethodInfo method, CallArguments callArguments);
-        object? CallNext(CallArguments callArguments);
+        object? CallNext(MethodInfo method, CallArguments args);
+        object? CallNext(CallArguments args);
         object? CallOriginal();
-        object? CallOriginal(MethodInfo method, CallArguments callArguments);
-        object? CallOriginal(CallArguments callArguments);
+        object? CallOriginal(MethodInfo method, CallArguments args);
+        object? CallOriginal(CallArguments args);
+    }
+
+    public interface IRelay<TTarget, out TReturn> : IRelay<TTarget> where TTarget : class
+    {
+        new TReturn CallNext();
+        new TReturn CallNext(CallArguments args);
+        new TReturn CallOriginal();
+        new TReturn CallOriginal(CallArguments args);
     }
 }

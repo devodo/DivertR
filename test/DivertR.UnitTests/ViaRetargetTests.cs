@@ -212,7 +212,7 @@ namespace DivertR.UnitTests
             _via
                 .To().Retarget(new FooAlt(() => $"DivertR {next.Name} 1"))
                 .To().Retarget(new FooAlt(() => $"here {next.Name} 2"))
-                .To().WithOrderWeight(-10).Retarget(new FooAlt(() => $"again {next.Name} 3"));
+                .To().Retarget(new FooAlt(() => $"again {next.Name} 3"), options => options.OrderWeight(-10));
 
             // ACT
             var name = proxy.Name;

@@ -165,7 +165,7 @@ namespace DivertR.UnitTests
             _via.Strict();
             _via
                 .To(x => x.EchoAsync(Is<string>.Match(m => m != "test")))
-                .Redirect((string input) => _via.Relay.Next.EchoAsync(input));
+                .Redirect<(string input, __)>(args => _via.Relay.Next.EchoAsync(args.input));
 
             // ACT
             Func<Task<string>> testAction = () => _via.Proxy(new Foo()).EchoAsync("test");
@@ -190,7 +190,7 @@ namespace DivertR.UnitTests
             _via.Strict();
             _via
                 .To(x => x.EchoAsync("test"))
-                .Redirect(async (string input) => await _via.Relay.Next.EchoAsync(input) + " diverted");
+                .Redirect<(string input, __)>(async args => await _via.Relay.Next.EchoAsync(args.input) + " diverted");
 
             // ACT
             var result = await _via.Proxy(new Foo()).EchoAsync("test");
@@ -289,6 +289,52 @@ namespace DivertR.UnitTests
                 })
                 .Select(call => call.Args<string>())
                 .ShouldBe(inputs);
+        }
+        
+        [Fact]
+        public void GivenProxyCalls_ShouldRecord2()
+        {
+            // ARRANGE
+            var inputs = Enumerable
+                .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
+                .ToList();
+
+            var echosa = _via
+                .To(x => x.Echo(Is<string>.Any))
+                .Record(call => call.Args((string input) => new
+                {
+                    input,
+                    call.Returned!.Value
+                }));
+            
+            var d = _via
+                .To(x => x.Echo(Is<string>.Any))
+                .Record();
+
+            var fooProxy = _via.Proxy();
+
+            // ACT
+            var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
+
+            // ASSERT
+            _callStream.Select(x => x.CallInfo.Arguments[0]).ShouldBe(inputs);
+            _callStream.Select(x => x.Returned?.Value).ShouldBe(outputs);
+
+            var echoCalls = _callStream.To(x => x.Echo(Is<string>.Any));
+            echoCalls.Select(call => call.Args((string input) => input)).ShouldBe(inputs);
+            echoCalls.Select(call => call.Returned!.Value).ShouldBe(outputs);
+            
+            _callStream
+                .To(x => x.Echo(Is<string>.Any))
+                .Select((call, i) =>
+                {
+                    call.Args((string input) =>
+                    {
+                        input.ShouldBe(inputs[i]);
+                    });
+                    
+                    return call.Returned!.Value;
+                }).ShouldBe(outputs);
         }
     }
 }

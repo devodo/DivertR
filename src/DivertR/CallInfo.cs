@@ -4,12 +4,12 @@ namespace DivertR
 {
     public class CallInfo<TTarget> where TTarget : class
     {
-        public CallInfo(TTarget proxy, TTarget? original, MethodInfo method, CallArguments callArguments)
+        public CallInfo(TTarget proxy, TTarget? original, MethodInfo method, CallArguments args)
         {
             Proxy = proxy;
             Original = original;
             Method = method;
-            Arguments = callArguments;
+            Arguments = args;
         }
         
         public CallInfo(TTarget proxy, TTarget? original, MethodInfo method, object[] args)

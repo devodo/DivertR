@@ -39,7 +39,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoValueAsync(Is<string>.Any))
-                .Redirect(async (string input) => await _via.Relay.Next.EchoValueAsync(input) + " redirect");
+                .Redirect<(string input, __)>(async args => await _via.Relay.Next.EchoValueAsync(args.input) + " redirect");
 
             // ACT
             var message = await _proxy.EchoValueAsync("test");
@@ -54,7 +54,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoValueSync(Is<string>.Any))
-                .Redirect((string input) => _via.Relay.Next.EchoValueSync($"{input} redirect"));
+                .Redirect<(string input, __)>(args => _via.Relay.Next.EchoValueSync($"{args.input} redirect"));
 
             // ACT
             var message = await _proxy.EchoValueSync("test");
@@ -69,7 +69,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoValueAsync(Is<string>.Any))
-                .Redirect((string input) => _via.Relay.CallInfo.Original!.EchoValueAsync($"{input} redirect"));
+                .Redirect<(string input, __)>(args => _via.Relay.CallInfo.Original!.EchoValueAsync($"{args.input} redirect"));
 
             // ACT
             var message = await _proxy.EchoValueAsync("test");
@@ -125,7 +125,6 @@ namespace DivertR.UnitTests
             _via
                 .To(x => x.GetNameValueAsync())
                 .Redirect(async () => (await next.GetNameValueAsync()).Replace(await orig.GetNameValueAsync(), "bar"))
-                .To(x => x.GetNameValueAsync())
                 .Redirect(Recursive);
             // ACT
             var message = await _proxy.GetNameValueAsync();
