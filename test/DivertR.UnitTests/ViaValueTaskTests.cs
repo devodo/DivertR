@@ -69,7 +69,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoValueAsync(Is<string>.Any))
-                .Redirect<(string input, __)>(call => call.Relay.CallInfo.Original!.EchoValueAsync($"{call.Args.input} redirect"));
+                .Redirect<(string input, __)>(call => call.CallInfo.Original!.EchoValueAsync($"{call.Args.input} redirect"));
 
             // ACT
             var message = await _proxy.EchoValueAsync("test");

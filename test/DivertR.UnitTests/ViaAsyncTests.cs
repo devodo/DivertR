@@ -84,9 +84,9 @@ namespace DivertR.UnitTests
             IFoo originalReference = null;
             _via
                 .To(x => x.GetNameAsync())
-                .Redirect(async () =>
+                .Redirect(async call =>
                 {
-                    originalReference = _via.Relay.CallInfo.Original;
+                    originalReference = call.CallInfo.Original;
                     return $"hello {await originalReference!.GetNameAsync()}";
                 });
 

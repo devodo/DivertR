@@ -199,9 +199,9 @@ namespace DivertR.UnitTests
             IFoo originalReference = null;
             _via
                 .To(x => x.Name)
-                .Redirect(() =>
+                .Redirect(call =>
                 {
-                    originalReference = _via.Relay.CallInfo.Original;
+                    originalReference = call.CallInfo.Original;
                     return $"hello {originalReference!.Name}";
                 });
 
@@ -681,7 +681,7 @@ namespace DivertR.UnitTests
                 .Redirect<(string input, __)>(call => $"{call.Args.input}-test");
             _via
                 .To(x => x.Echo("here"))
-                .Redirect(() => (string) _via.Relay.CallOriginal(_via.Relay.CallInfo.Method, new object[] {"alter"}));
+                .Redirect(call => (string) call.Relay.CallOriginal(call.CallInfo.Method, new object[] { "alter" }));
 
             // ACT
             var result = proxy.Echo("here");
@@ -716,7 +716,7 @@ namespace DivertR.UnitTests
                 .Redirect<(string input, __)>(call => $"{call.Args.input}-test");
             _via
                 .To(x => x.Echo("here"))
-                .Redirect(() => (string) _via.Relay.CallNext(_via.Relay.CallInfo.Method, new CallArguments(new object[] { "alter" })));
+                .Redirect(call => (string) _via.Relay.CallNext(call.CallInfo.Method, new CallArguments(new object[] { "alter" })));
 
             // ACT
             var result = proxy.Echo("here");

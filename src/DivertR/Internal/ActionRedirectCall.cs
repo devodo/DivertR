@@ -3,24 +3,25 @@ using System.Collections;
 
 namespace DivertR.Internal
 {
-    internal class FuncRedirectCall<TTarget, TReturn> : IFuncRedirectCall<TTarget, TReturn> where TTarget : class
+    internal class ActionRedirectCall<TTarget> : IActionRedirectCall<TTarget> where TTarget : class
     {
-        public FuncRedirectCall(CallInfo<TTarget> callInfo, IRelay<TTarget, TReturn> relay)
+        public ActionRedirectCall(CallInfo<TTarget> callInfo, IRelay<TTarget> relay)
         {
             CallInfo = callInfo;
             Relay = relay;
         }
         
         public CallInfo<TTarget> CallInfo { get; }
+        
         public CallArguments Args => CallInfo.Arguments;
-        public IRelay<TTarget, TReturn> Relay { get; }
+        public IRelay<TTarget> Relay { get; }
     }
     
-    internal class FuncRedirectCall<TTarget, TReturn, TArgs> : IFuncRedirectCall<TTarget, TReturn, TArgs>
+    internal class ActionRedirectCall<TTarget, TArgs> : IActionRedirectCall<TTarget, TArgs>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        public FuncRedirectCall(CallInfo<TTarget> callInfo, TArgs args, IRelay<TTarget, TReturn> relay)
+        public ActionRedirectCall(CallInfo<TTarget> callInfo, TArgs args, IRelay<TTarget> relay)
         {
             CallInfo = callInfo;
             Args = args;
@@ -29,6 +30,6 @@ namespace DivertR.Internal
         
         public CallInfo<TTarget> CallInfo { get; }
         public TArgs Args { get; }
-        public IRelay<TTarget, TReturn> Relay { get; }
+        public IRelay<TTarget> Relay { get; }
     }
 }

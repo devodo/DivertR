@@ -111,7 +111,7 @@ namespace DivertR.UnitTests
             IFoo originalReference = null;
             _via.Retarget(new FooAlt(() =>
             {
-                originalReference = _via.Relay.CallInfo.Original;
+                originalReference = _via.Relay.GetCurrentCall().CallInfo.Original;
                 return $"hello {originalReference!.Name}";
             }));
 

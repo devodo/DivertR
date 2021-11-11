@@ -90,7 +90,21 @@ namespace DivertR.Internal
             
             return this;
         }
-        
+
+        public IFuncRedirectBuilder<TTarget, TReturn> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            object? CallHandler(CallInfo<TTarget> callInfo)
+            {
+                var redirectCall = new FuncRedirectCall<TTarget, TReturn>(callInfo, _relay);
+
+                return redirectDelegate.Invoke(redirectCall);
+            }
+            
+            InsertRedirect(CallHandler, optionsAction);
+
+            return this;
+        }
+
         public IFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {

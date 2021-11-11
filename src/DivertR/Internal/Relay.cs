@@ -13,9 +13,6 @@ namespace DivertR.Internal
         private readonly Lazy<TTarget> _next;
         private readonly Lazy<TTarget> _original;
 
-        public CallInfo<TTarget> CallInfo => GetCurrentStack().Peek().CallInfo;
-        public Redirect<TTarget> Redirect => GetCurrentStack().Peek().Redirect;
-        
         public TTarget Next => _next.Value;
         public TTarget Original => _original.Value;
 
@@ -81,6 +78,12 @@ namespace DivertR.Internal
             var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, redirectStep.CallInfo.Method, args);
             
             return CallOriginal(callInfo);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IRedirectCall<TTarget> GetCurrentCall()
+        {
+            return new RedirectCall<TTarget>(GetCurrentStack().Peek());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -211,9 +214,13 @@ namespace DivertR.Internal
 
         public TTarget Next => _relay.Next;
         public TTarget Original => _relay.Original;
-        public Redirect<TTarget> Redirect => _relay.Redirect;
-        public CallInfo<TTarget> CallInfo => _relay.CallInfo;
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IRedirectCall<TTarget> GetCurrentCall()
+        {
+            return _relay.GetCurrentCall();
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         object? IRelay<TTarget>.CallNext()
         {
