@@ -10,12 +10,10 @@ namespace DivertR
         IRelay<TTarget, TReturn> Relay { get; }
     }
     
-    public interface IFuncRedirectCall<TTarget, out TReturn, out TArgs>
+    public interface IFuncRedirectCall<TTarget, out TReturn, out TArgs> : IFuncRedirectCall<TTarget, TReturn>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        CallInfo<TTarget> CallInfo { get; }
-        TArgs Args { get; }
-        IRelay<TTarget, TReturn> Relay { get; }
+        new TArgs Args { get; }
     }
 }

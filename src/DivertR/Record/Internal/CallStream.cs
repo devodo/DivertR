@@ -31,10 +31,10 @@ namespace DivertR.Record.Internal
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
             var calls = _recordedCalls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
-                .Select(x => new FuncRecordedCall<TTarget, TReturn>(x, parsedCall))
+                .Select(x => new FuncRecordedCall<TTarget, TReturn>(x))
                 .ToArray();
 
-            return new FuncCallStream<TTarget, TReturn>(calls);
+            return new FuncCallStream<TTarget, TReturn>(calls, parsedCall);
         }
 
         public IActionCallStream<TTarget> To(Expression<Action<TTarget>> lambdaExpression)
@@ -45,10 +45,10 @@ namespace DivertR.Record.Internal
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
             var calls = _recordedCalls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
-                .Select(x => new ActionRecordedCall<TTarget>(x, parsedCall))
+                .Select(x => new ActionRecordedCall<TTarget>(x))
                 .ToArray();
 
-            return new ActionCallStream<TTarget>(calls);
+            return new ActionCallStream<TTarget>(calls, parsedCall);
         }
 
         public IActionCallStream<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
@@ -65,10 +65,10 @@ namespace DivertR.Record.Internal
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
             var calls = _recordedCalls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
-                .Select(x => new ActionRecordedCall<TTarget>(x, parsedCall))
+                .Select(x => new ActionRecordedCall<TTarget>(x))
                 .ToArray();
 
-            return new ActionCallStream<TTarget>(calls);
+            return new ActionCallStream<TTarget>(calls, parsedCall);
         }
         
         public int Count => _recordedCalls.Count;

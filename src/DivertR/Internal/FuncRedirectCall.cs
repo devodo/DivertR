@@ -16,19 +16,15 @@ namespace DivertR.Internal
         public IRelay<TTarget, TReturn> Relay { get; }
     }
     
-    internal class FuncRedirectCall<TTarget, TReturn, TArgs> : IFuncRedirectCall<TTarget, TReturn, TArgs>
+    internal class FuncRedirectCall<TTarget, TReturn, TArgs> : FuncRedirectCall<TTarget, TReturn>, IFuncRedirectCall<TTarget, TReturn, TArgs>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        public FuncRedirectCall(CallInfo<TTarget> callInfo, TArgs args, IRelay<TTarget, TReturn> relay)
+        public FuncRedirectCall(CallInfo<TTarget> callInfo, IRelay<TTarget, TReturn> relay, TArgs args) : base(callInfo, relay)
         {
-            CallInfo = callInfo;
             Args = args;
-            Relay = relay;
         }
         
-        public CallInfo<TTarget> CallInfo { get; }
-        public TArgs Args { get; }
-        public IRelay<TTarget, TReturn> Relay { get; }
+        public new TArgs Args { get; }
     }
 }

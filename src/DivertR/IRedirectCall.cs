@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-
-namespace DivertR
+﻿namespace DivertR
 {
     public interface IRedirectCall<TTarget> where TTarget : class
     {

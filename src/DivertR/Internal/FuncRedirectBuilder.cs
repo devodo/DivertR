@@ -192,7 +192,7 @@ namespace DivertR.Internal
             object? CallHandler(CallInfo<TTarget> callInfo)
             {
                 var args = (TArgs) _valueTupleFactory.Create(callInfo.Arguments);
-                var redirectCall = new FuncRedirectCall<TTarget, TReturn, TArgs>(callInfo, args, _relay);
+                var redirectCall = new FuncRedirectCall<TTarget, TReturn, TArgs>(callInfo, _relay, args);
 
                 return redirectDelegate.Invoke(redirectCall);
             }

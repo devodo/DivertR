@@ -120,14 +120,11 @@ namespace DivertR.WebAppTests
             
             fooRepoCalls
                 .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
-                .ForEach(call =>
+                .ForEach<(Foo foo, __)>(call =>
                 {
-                    call.Args((Foo foo) =>
-                    {
-                        response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{foo.Id}");
-                        foo.Name.ShouldBe(createFooRequest.Name);
-                        response.Content.ShouldBeEquivalentTo(foo);
-                    });
+                    response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{call.Args.foo.Id}");
+                    call.Args.foo.Name.ShouldBe(createFooRequest.Name);
+                    response.Content.ShouldBeEquivalentTo(call.Args.foo);
                     
                     call.Returned!.Value.Result.ShouldBe(true);
                 }).Count.ShouldBe(1);
@@ -158,10 +155,7 @@ namespace DivertR.WebAppTests
             fooRepoCalls.Count.ShouldBe(1);
             fooRepoCalls
                 .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
-                .ForEach(call =>
-                {
-                    call.Returned!.Exception.ShouldBeSameAs(testException);
-                })
+                .ForEach(call => call.Returned!.Exception.ShouldBeSameAs(testException))
                 .Count.ShouldBe(1);
         }
     }

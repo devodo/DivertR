@@ -135,7 +135,7 @@ namespace DivertR.UnitTests
             result.ShouldBe(_inputs[0][0].Result);
             _calls
                 .To(x => x.GenericAction(_inputs[0][0].Arg))
-                .ForEach(call =>
+                .ForEach<(int i1, __)>(call =>
                 {
                     call.Returned!.Value.ShouldBeNull();
                     call.Args((int i1) =>

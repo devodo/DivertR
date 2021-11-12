@@ -126,7 +126,7 @@ namespace DivertR.UnitTests
             result.ShouldBe(_inputs[0][0].Result);
             _calls
                 .To(x => x.EchoGeneric(_inputs[0][0].Arg))
-                .ForEach(call =>
+                .ForEach(<>)(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
                     call.Args((int i1) =>

@@ -39,15 +39,16 @@ namespace DivertR
         IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6, T7>(Func<T1, T2, T3, T4, T5, T6, T7, TReturn> redirectDelegate);
         IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6, T7, T8>(Func<T1, T2, T3, T4, T5, T6, T7, T8, TReturn> redirectDelegate);
 
-        IReadOnlyCollection<T> Record<T>(Func<IFuncRecordedCall<TTarget, TReturn>, T> visitor);
+        IReadOnlyList<TMap> Record<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
 
-        IFuncCallStream<TTarget, TReturn> Record();
+        IFuncCallStream<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
     }
 
-    public interface IFuncRedirectBuilder<TTarget, TReturn, TArgs> : IFuncRedirectBuilder<TTarget, TReturn>
+    public interface IFuncRedirectBuilder<TTarget, TReturn, out TArgs> : IFuncRedirectBuilder<TTarget, TReturn>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         IFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        IReadOnlyList<TMap> Record<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
     }
 }

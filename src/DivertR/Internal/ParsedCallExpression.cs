@@ -41,14 +41,17 @@ namespace DivertR.Internal
             throw new InvalidRedirectException($"'{delegateSignature}' parameters invalid for To method '{Method}'");
         }
 
-        public void Validate(Type returnType, Type[] argumentTypes)
+        public void Validate(Type returnType, Type[] argumentTypes, bool isStrict = true)
         {
             if (!ReturnTypeValid(returnType))
             {
-                throw new InvalidRedirectException($"'{returnType.FullName}' invalid redirect return type To method '{Method}'");
+                throw new InvalidRedirectException($"'{returnType.FullName}' invalid return type for To method '{Method}'");
             }
+
+            var checkArguments =
+                isStrict ? (Func<Type[], ParameterInfo[], bool>) ArgumentTypesValidStrict : ArgumentTypesValid;
             
-            if (ArgumentTypesValidStrict(argumentTypes, ParameterInfos))
+            if (checkArguments(argumentTypes, ParameterInfos))
             {
                 return;
             }

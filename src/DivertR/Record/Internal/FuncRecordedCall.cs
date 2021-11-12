@@ -1,21 +1,33 @@
-﻿using DivertR.Internal;
-
-namespace DivertR.Record.Internal
+﻿namespace DivertR.Record.Internal
 {
-    internal class FuncRecordedCall<TTarget, TReturn> : RecordedCallArgs<TTarget>, IFuncRecordedCall<TTarget, TReturn> where TTarget : class
+    internal class FuncRecordedCall<TTarget, TReturn> : IFuncRecordedCall<TTarget, TReturn> where TTarget : class
     {
-        internal FuncRecordedCall(IRecordedCall<TTarget> recordedCall, ParsedCallExpression parsedCallExpression)
-            : base(recordedCall, parsedCallExpression)
+        private readonly IRecordedCall<TTarget> _recordedCall;
+
+        public FuncRecordedCall(IRecordedCall<TTarget> recordedCall)
         {
+            _recordedCall = recordedCall;
+            
             if (recordedCall.Returned != null)
             {
                 Returned = new CallReturn<TReturn>(recordedCall.Returned);
             }
         }
 
-        public CallInfo<TTarget> CallInfo => RecordedCall.CallInfo;
-        public CallArguments Args => RecordedCall.CallInfo.Arguments;
+        public CallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
+        public CallArguments Args => _recordedCall.CallInfo.Arguments;
         public ICallReturn<TReturn>? Returned { get; }
         ICallReturn? IRecordedCall<TTarget>.Returned => Returned;
+    }
+
+    internal class FuncRecordedCall<TTarget, TReturn, TArgs> : FuncRecordedCall<TTarget, TReturn>, IFuncRecordedCall<TTarget, TReturn, TArgs>
+        where TTarget : class
+    {
+        public FuncRecordedCall(IRecordedCall<TTarget> recordedCall, TArgs args) : base(recordedCall)
+        {
+            Args = args;
+        }
+
+        public new TArgs Args { get; }
     }
 }

@@ -1,16 +1,16 @@
-﻿using DivertR.Internal;
-
-namespace DivertR.Record.Internal
+﻿namespace DivertR.Record.Internal
 {
-    internal class ActionRecordedCall<TTarget> : RecordedCallArgs<TTarget>, IActionRecordedCall<TTarget> where TTarget : class
+    internal class ActionRecordedCall<TTarget> : IActionRecordedCall<TTarget> where TTarget : class
     {
-        internal ActionRecordedCall(IRecordedCall<TTarget> recordedCall, ParsedCallExpression parsedCallExpression)
-            : base(recordedCall, parsedCallExpression)
+        private readonly IRecordedCall<TTarget> _recordedCall;
+
+        public ActionRecordedCall(IRecordedCall<TTarget> recordedCall)
         {
+            _recordedCall = recordedCall;
         }
 
-        public CallInfo<TTarget> CallInfo => RecordedCall.CallInfo;
-        public CallArguments Args => RecordedCall.CallInfo.Arguments;
-        public ICallReturn? Returned => RecordedCall.Returned;
+        public CallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
+        public CallArguments Args => _recordedCall.CallInfo.Arguments;
+        public ICallReturn? Returned => _recordedCall.Returned;
     }
 }
