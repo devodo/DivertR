@@ -70,14 +70,23 @@ namespace DivertR
         /// </summary>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
         new IVia<TTarget> Reset();
-        
+
         /// <summary>
         /// Create and insert a redirect (with no <see cref="ICallConstraint{TTarget}"/>) to the given <paramref name="target"/>
         /// into the Via <see cref="RedirectPlan{TTarget}" />.
         /// </summary>
         /// <param name="target">The target instance to redirect call to.</param>
+        /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
-        IVia<TTarget> Retarget(TTarget target);
+        IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        
+        /// <summary>
+        /// Inserts a redirect that captures incoming calls from all proxies.
+        /// By default record redirects are configured to not satisfy strict calls if strict mode is enabled.
+        /// </summary>
+        /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
+        /// <returns>An <see cref="IRecordStream{TTarget}"/> reference for retrieving and iterating the recorded calls.</returns>
+        IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         
         /// <summary>
         /// Creates a Redirect builder. />
@@ -116,14 +125,5 @@ namespace DivertR
         /// </summary>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
         new IVia<TTarget> Strict();
-        
-        /// <summary>
-        /// Inserts a redirect that captures incoming calls from all proxies.
-        /// The redirect is created with maximum order weighting so it is always at the top of the redirect stack and therefore
-        /// first to handle the call. The redirect is also configured to not satisfy strict calls if strict mode is enabled.
-        /// </summary>
-        /// <param name="callConstraint">Optional constraint to filter calls captured.</param>
-        /// <returns>An <see cref="ICallStream{TTarget}"/> reference for retrieving and iterating the recorded calls.</returns>
-        ICallStream<TTarget> Record(ICallConstraint<TTarget>? callConstraint = null);
     }
 }

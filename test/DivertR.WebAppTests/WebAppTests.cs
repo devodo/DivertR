@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using DivertR.Record;
 using DivertR.SampleWebApp.Model;
 using DivertR.SampleWebApp.Services;
 using Shouldly;
@@ -53,7 +55,7 @@ namespace DivertR.WebAppTests
                 Name = Guid.NewGuid().ToString()
             };
             
-            var fooRepoCalls = _fooRepositoryVia.Record();
+            var fooRepoCalls = _fooRepositoryVia.Record(options => options.OrderWeight(int.MaxValue));
             _fooRepositoryVia
                 .To(x => x.GetFoo(Is<Guid>.Any))
                 .Redirect(Task.FromResult<Foo>(null));
@@ -65,7 +67,7 @@ namespace DivertR.WebAppTests
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
             response.Content.ShouldBeNull();
             fooRepoCalls.Count.ShouldBe(1);
-            fooRepoCalls.To(x => x.GetFoo(foo.Id)).Count.ShouldBe(1);
+            fooRepoCalls.To(x => x.GetFoo(foo.Id)).Count().ShouldBe(1);
         }
 
         [Fact]
@@ -110,7 +112,7 @@ namespace DivertR.WebAppTests
                 Name = Guid.NewGuid().ToString()
             };
             
-            var fooRepoCalls = _fooRepositoryVia.Record();
+            var recordedCalls = _fooRepositoryVia.Record();
 
             // ACT  
             var response = await _fooClient.InsertFoo(createFooRequest);
@@ -118,16 +120,18 @@ namespace DivertR.WebAppTests
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
             
-            fooRepoCalls
+            recordedCalls.Count.ShouldBe(1);
+            recordedCalls
                 .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
-                .ForEach<(Foo foo, __)>(call =>
+                .WithArgs<(Foo foo, __)>()
+                .ForEach(call =>
                 {
                     response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{call.Args.foo.Id}");
                     call.Args.foo.Name.ShouldBe(createFooRequest.Name);
                     response.Content.ShouldBeEquivalentTo(call.Args.foo);
                     
                     call.Returned!.Value.Result.ShouldBe(true);
-                }).Count.ShouldBe(1);
+                }).Count().ShouldBe(1);
         }
         
         [Fact]
@@ -140,11 +144,11 @@ namespace DivertR.WebAppTests
             };
 
             var testException = new Exception("test");
-            
-            var fooRepoCalls = _fooRepositoryVia.Record();
-            _fooRepositoryVia
+
+            var recordedCalls = _fooRepositoryVia
                 .To(x => x.TryInsertFoo(Is<Foo>.Any))
-                .Redirect(() => throw testException);
+                .Redirect(() => throw testException)
+                .Record();
 
             // ACT
             var response = await _fooClient.InsertFoo(createFooRequest);
@@ -152,11 +156,9 @@ namespace DivertR.WebAppTests
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
             
-            fooRepoCalls.Count.ShouldBe(1);
-            fooRepoCalls
-                .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
+            recordedCalls
                 .ForEach(call => call.Returned!.Exception.ShouldBeSameAs(testException))
-                .Count.ShouldBe(1);
+                .Count().ShouldBe(1);
         }
     }
 }

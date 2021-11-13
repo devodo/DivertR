@@ -4,8 +4,9 @@
     {
     }
     
-    public interface IActionRecordedCall<TTarget, out TArgs> : IActionRecordedCall<TTarget>, IRecordedCall<TTarget, TArgs>
+    public interface IActionRecordedCall<TTarget, out TArgs> : IActionRecordedCall<TTarget>
         where TTarget : class
     {
+        new TArgs Args { get; }
     }
 }

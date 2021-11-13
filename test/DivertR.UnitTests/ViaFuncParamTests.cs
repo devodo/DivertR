@@ -13,14 +13,14 @@ namespace DivertR.UnitTests
         private readonly IVia<IFoo> _via = new Via<IFoo>();
         private readonly IFoo _original = new Foo();
         private readonly IFoo _proxy;
-        private readonly ICallStream<IFoo> _calls;
+        private readonly IRecordStream<IFoo> _recordStream;
 
         private readonly List<(int Arg, int Incr, int Result)[]> _inputs = new();
 
         public ViaFuncParamTests()
         {
             _proxy = _via.Proxy(_original);
-            _calls = _via.Record();
+            _recordStream = _via.Record(options => options.OrderWeight(int.MaxValue));
             InitInputs();
         }
 
@@ -124,18 +124,14 @@ namespace DivertR.UnitTests
 
             // ASSERT
             result.ShouldBe(_inputs[0][0].Result);
-            _calls
+            _recordStream
                 .To(x => x.EchoGeneric(_inputs[0][0].Arg))
-                .ForEach(<>)(call =>
+                .WithArgs<(int i1, __)>()
+                .ForEach(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
-                    call.Args((int i1) =>
-                    {
-                        i1.ShouldBe(_inputs[0][0].Arg);
-                    }).ShouldBe(_inputs[0][0].Arg);
-                    
-                    call.Args((int i1) => i1).ShouldBe(_inputs[0][0].Arg);
-                }).Count.ShouldBe(1);
+                    call.Args.i1.ShouldBe(_inputs[0][0].Arg);
+                }).Count().ShouldBe(1);
         }
         
         [Fact]
@@ -149,19 +145,15 @@ namespace DivertR.UnitTests
 
             // ASSERT
             result.ShouldBe((_inputs[1][0].Result, _inputs[1][1].Result));
-            _calls
+            _recordStream
                 .To(x => x.EchoGeneric(_inputs[1][0].Arg, _inputs[1][1].Arg))
+                .WithArgs<(int i1, int i2)>()
                 .ForEach(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
-                    call.Args((int i1, int i2) =>
-                    {
-                        i1.ShouldBe(_inputs[1][0].Arg);
-                        i2.ShouldBe(_inputs[1][1].Arg);
-                    }).ShouldBe((_inputs[1][0].Arg, _inputs[1][1].Arg));
-                    
-                    call.Args((int i1, int i2) => (i1, i2)).ShouldBe((_inputs[1][0].Arg, _inputs[1][1].Arg));
-                }).Count.ShouldBe(1);
+                    call.Args.i1.ShouldBe(_inputs[1][0].Arg);
+                    call.Args.i2.ShouldBe(_inputs[1][1].Arg);
+                }).Count().ShouldBe(1);
         }
         
         [Fact]
@@ -175,20 +167,16 @@ namespace DivertR.UnitTests
 
             // ASSERT
             result.ShouldBe((_inputs[2][0].Result, _inputs[2][1].Result, _inputs[2][2].Result));
-            _calls
+            _recordStream
                 .To(x => x.EchoGeneric(_inputs[2][0].Arg, _inputs[2][1].Arg, _inputs[2][2].Arg))
+                .WithArgs<(int i1, int i2, int i3)>()
                 .ForEach(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
-                    call.Args((int i1, int i2, int i3) =>
-                    {
-                        i1.ShouldBe(_inputs[2][0].Arg);
-                        i2.ShouldBe(_inputs[2][1].Arg);
-                        i3.ShouldBe(_inputs[2][2].Arg);
-                    }).ShouldBe((_inputs[2][0].Arg, _inputs[2][1].Arg, _inputs[2][2].Arg));
-                    
-                    call.Args((int i1, int i2, int i3) => (i1, i2, i3)).ShouldBe((_inputs[2][0].Arg, _inputs[2][1].Arg, _inputs[2][2].Arg));
-                }).Count.ShouldBe(1);
+                    call.Args.i1.ShouldBe(_inputs[2][0].Arg);
+                    call.Args.i2.ShouldBe(_inputs[2][1].Arg);
+                    call.Args.i3.ShouldBe(_inputs[2][2].Arg);
+                }).Count().ShouldBe(1);
         }
         
         [Fact]
@@ -202,21 +190,17 @@ namespace DivertR.UnitTests
 
             // ASSERT
             result.ShouldBe((_inputs[3][0].Result, _inputs[3][1].Result, _inputs[3][2].Result, _inputs[3][3].Result));
-            _calls
+            _recordStream
                 .To(x => x.EchoGeneric(_inputs[3][0].Arg, _inputs[3][1].Arg, _inputs[3][2].Arg, _inputs[3][3].Arg))
+                .WithArgs<(int i1, int i2, int i3, int i4)>()
                 .ForEach(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
-                    call.Args((int i1, int i2, int i3, int i4) =>
-                    {
-                        i1.ShouldBe(_inputs[3][0].Arg);
-                        i2.ShouldBe(_inputs[3][1].Arg);
-                        i3.ShouldBe(_inputs[3][2].Arg);
-                        i4.ShouldBe(_inputs[3][3].Arg);
-                    }).ShouldBe((_inputs[3][0].Arg, _inputs[3][1].Arg, _inputs[3][2].Arg, _inputs[3][3].Arg));
-                    
-                    call.Args((int i1, int i2, int i3, int i4) => (i1, i2, i3, i4)).ShouldBe((_inputs[3][0].Arg, _inputs[3][1].Arg, _inputs[3][2].Arg, _inputs[3][3].Arg));
-                }).Count.ShouldBe(1);
+                    call.Args.i1.ShouldBe(_inputs[3][0].Arg);
+                    call.Args.i2.ShouldBe(_inputs[3][1].Arg);
+                    call.Args.i3.ShouldBe(_inputs[3][2].Arg);
+                    call.Args.i4.ShouldBe(_inputs[3][3].Arg);
+                }).Count().ShouldBe(1);
         }
         
         [Fact]
@@ -232,25 +216,19 @@ namespace DivertR.UnitTests
             // ASSERT
             result.ShouldBe((_inputs[4][0].Result, _inputs[4][1].Result, _inputs[4][2].Result, _inputs[4][3].Result,
                 _inputs[4][4].Result));
-            _calls
+            _recordStream
                 .To(x => x.EchoGeneric(_inputs[4][0].Arg, _inputs[4][1].Arg, _inputs[4][2].Arg, _inputs[4][3].Arg,
                     _inputs[4][4].Arg))
+                .WithArgs<(int i1, int i2, int i3, int i4, int i5)>()
                 .ForEach(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
-                    call.Args((int i1, int i2, int i3, int i4, int i5) =>
-                    {
-                        i1.ShouldBe(_inputs[4][0].Arg);
-                        i2.ShouldBe(_inputs[4][1].Arg);
-                        i3.ShouldBe(_inputs[4][2].Arg);
-                        i4.ShouldBe(_inputs[4][3].Arg);
-                        i5.ShouldBe(_inputs[4][4].Arg);
-                    }).ShouldBe((_inputs[4][0].Arg, _inputs[4][1].Arg, _inputs[4][2].Arg, _inputs[4][3].Arg,
-                        _inputs[4][4].Arg));
-                    
-                    call.Args((int i1, int i2, int i3, int i4, int i5) => (i1, i2, i3, i4, i5)).ShouldBe((_inputs[4][0].Arg, _inputs[4][1].Arg, _inputs[4][2].Arg, _inputs[4][3].Arg,
-                        _inputs[4][4].Arg));
-                }).Count.ShouldBe(1);
+                    call.Args.i1.ShouldBe(_inputs[4][0].Arg);
+                    call.Args.i2.ShouldBe(_inputs[4][1].Arg);
+                    call.Args.i3.ShouldBe(_inputs[4][2].Arg);
+                    call.Args.i4.ShouldBe(_inputs[4][3].Arg);
+                    call.Args.i5.ShouldBe(_inputs[4][4].Arg);
+                }).Count().ShouldBe(1);
         }
         
         [Fact]
@@ -266,26 +244,20 @@ namespace DivertR.UnitTests
             // ASSERT
             result.ShouldBe((_inputs[5][0].Result, _inputs[5][1].Result, _inputs[5][2].Result, _inputs[5][3].Result,
                 _inputs[5][4].Result, _inputs[5][5].Result));
-            _calls
+            _recordStream
                 .To(x => x.EchoGeneric(_inputs[5][0].Arg, _inputs[5][1].Arg, _inputs[5][2].Arg, _inputs[5][3].Arg,
                     _inputs[5][4].Arg, _inputs[5][5].Arg))
+                .WithArgs<(int i1, int i2, int i3, int i4, int i5, int i6)>()
                 .ForEach(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
-                    call.Args((int i1, int i2, int i3, int i4, int i5, int i6) =>
-                    {
-                        i1.ShouldBe(_inputs[5][0].Arg);
-                        i2.ShouldBe(_inputs[5][1].Arg);
-                        i3.ShouldBe(_inputs[5][2].Arg);
-                        i4.ShouldBe(_inputs[5][3].Arg);
-                        i5.ShouldBe(_inputs[5][4].Arg);
-                        i6.ShouldBe(_inputs[5][5].Arg);
-                    }).ShouldBe((_inputs[5][0].Arg, _inputs[5][1].Arg, _inputs[5][2].Arg, _inputs[5][3].Arg,
-                        _inputs[5][4].Arg, _inputs[5][5].Arg));
-                    
-                    call.Args((int i1, int i2, int i3, int i4, int i5, int i6) => (i1, i2, i3, i4, i5, i6)).ShouldBe((_inputs[5][0].Arg, _inputs[5][1].Arg, _inputs[5][2].Arg, _inputs[5][3].Arg,
-                        _inputs[5][4].Arg, _inputs[5][5].Arg));
-                }).Count.ShouldBe(1);
+                    call.Args.i1.ShouldBe(_inputs[5][0].Arg);
+                    call.Args.i2.ShouldBe(_inputs[5][1].Arg);
+                    call.Args.i3.ShouldBe(_inputs[5][2].Arg);
+                    call.Args.i4.ShouldBe(_inputs[5][3].Arg);
+                    call.Args.i5.ShouldBe(_inputs[5][4].Arg);
+                    call.Args.i6.ShouldBe(_inputs[5][5].Arg);
+                }).Count().ShouldBe(1);
         }
         
         [Fact]
@@ -301,27 +273,21 @@ namespace DivertR.UnitTests
             // ASSERT
             result.ShouldBe((_inputs[6][0].Result, _inputs[6][1].Result, _inputs[6][2].Result, _inputs[6][3].Result,
                 _inputs[6][4].Result, _inputs[6][5].Result, _inputs[6][6].Result));
-            _calls
+            _recordStream
                 .To(x => x.EchoGeneric(_inputs[6][0].Arg, _inputs[6][1].Arg, _inputs[6][2].Arg, _inputs[6][3].Arg,
                     _inputs[6][4].Arg, _inputs[6][5].Arg, _inputs[6][6].Arg))
+                .WithArgs<(int i1, int i2, int i3, int i4, int i5, int i6, int i7)>()
                 .ForEach(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
-                    call.Args((int i1, int i2, int i3, int i4, int i5, int i6, int i7) =>
-                    {
-                        i1.ShouldBe(_inputs[6][0].Arg);
-                        i2.ShouldBe(_inputs[6][1].Arg);
-                        i3.ShouldBe(_inputs[6][2].Arg);
-                        i4.ShouldBe(_inputs[6][3].Arg);
-                        i5.ShouldBe(_inputs[6][4].Arg);
-                        i6.ShouldBe(_inputs[6][5].Arg);
-                        i7.ShouldBe(_inputs[6][6].Arg);
-                    }).ShouldBe((_inputs[6][0].Arg, _inputs[6][1].Arg, _inputs[6][2].Arg, _inputs[6][3].Arg,
-                        _inputs[6][4].Arg, _inputs[6][5].Arg, _inputs[6][6].Arg));
-                    
-                    call.Args((int i1, int i2, int i3, int i4, int i5, int i6, int i7) => (i1, i2, i3, i4, i5, i6, i7)).ShouldBe((_inputs[6][0].Arg, _inputs[6][1].Arg, _inputs[6][2].Arg, _inputs[6][3].Arg,
-                        _inputs[6][4].Arg, _inputs[6][5].Arg, _inputs[6][6].Arg));
-                }).Count.ShouldBe(1);
+                    call.Args.i1.ShouldBe(_inputs[6][0].Arg);
+                    call.Args.i2.ShouldBe(_inputs[6][1].Arg);
+                    call.Args.i3.ShouldBe(_inputs[6][2].Arg);
+                    call.Args.i4.ShouldBe(_inputs[6][3].Arg);
+                    call.Args.i5.ShouldBe(_inputs[6][4].Arg);
+                    call.Args.i6.ShouldBe(_inputs[6][5].Arg);
+                    call.Args.i7.ShouldBe(_inputs[6][6].Arg);
+                }).Count().ShouldBe(1);
         }
         
         [Fact]
@@ -337,28 +303,22 @@ namespace DivertR.UnitTests
             // ASSERT
             result.ShouldBe((_inputs[7][0].Result, _inputs[7][1].Result, _inputs[7][2].Result, _inputs[7][3].Result,
                 _inputs[7][4].Result, _inputs[7][5].Result, _inputs[7][6].Result, _inputs[7][7].Result));
-            _calls
+            _recordStream
                 .To(x => x.EchoGeneric(_inputs[7][0].Arg, _inputs[7][1].Arg, _inputs[7][2].Arg, _inputs[7][3].Arg,
                     _inputs[7][4].Arg, _inputs[7][5].Arg, _inputs[7][6].Arg, _inputs[7][7].Arg))
+                .WithArgs<(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8)>()
                 .ForEach(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
-                    call.Args((int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8) =>
-                    {
-                        i1.ShouldBe(_inputs[7][0].Arg);
-                        i2.ShouldBe(_inputs[7][1].Arg);
-                        i3.ShouldBe(_inputs[7][2].Arg);
-                        i4.ShouldBe(_inputs[7][3].Arg);
-                        i5.ShouldBe(_inputs[7][4].Arg);
-                        i6.ShouldBe(_inputs[7][5].Arg);
-                        i7.ShouldBe(_inputs[7][6].Arg);
-                        i8.ShouldBe(_inputs[7][7].Arg);
-                    }).ShouldBe((_inputs[7][0].Arg, _inputs[7][1].Arg, _inputs[7][2].Arg, _inputs[7][3].Arg,
-                        _inputs[7][4].Arg, _inputs[7][5].Arg, _inputs[7][6].Arg, _inputs[7][7].Arg));
-                    
-                    call.Args((int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8) => (i1, i2, i3, i4, i5, i6, i7, i8)).ShouldBe((_inputs[7][0].Arg, _inputs[7][1].Arg, _inputs[7][2].Arg, _inputs[7][3].Arg,
-                        _inputs[7][4].Arg, _inputs[7][5].Arg, _inputs[7][6].Arg, _inputs[7][7].Arg));
-                }).Count.ShouldBe(1);
+                    call.Args.i1.ShouldBe(_inputs[7][0].Arg);
+                    call.Args.i2.ShouldBe(_inputs[7][1].Arg);
+                    call.Args.i3.ShouldBe(_inputs[7][2].Arg);
+                    call.Args.i4.ShouldBe(_inputs[7][3].Arg);
+                    call.Args.i5.ShouldBe(_inputs[7][4].Arg);
+                    call.Args.i6.ShouldBe(_inputs[7][5].Arg);
+                    call.Args.i7.ShouldBe(_inputs[7][6].Arg);
+                    call.Args.i8.ShouldBe(_inputs[7][7].Arg);
+                }).Count().ShouldBe(1);
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using DivertR.Record;
+using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
@@ -6,7 +8,7 @@ namespace DivertR.Internal
     {
         protected readonly IVia<TTarget> Via;
 
-        private CompositeCallConstraint<TTarget> _callConstraint = CompositeCallConstraint<TTarget>.Empty;
+        protected CompositeCallConstraint<TTarget> CallConstraint { get; private set; } = CompositeCallConstraint<TTarget>.Empty;
 
         public RedirectBuilder(IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
         {
@@ -14,44 +16,73 @@ namespace DivertR.Internal
 
             if (callConstraint != null)
             {
-                _callConstraint = _callConstraint.AddCallConstraint(callConstraint);
+                CallConstraint = CallConstraint.AddCallConstraint(callConstraint);
             }
         }
 
         public IRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint)
         {
-            _callConstraint = _callConstraint.AddCallConstraint(callConstraint);
+            CallConstraint = CallConstraint.AddCallConstraint(callConstraint);
 
             return this;
         }
 
-        public Redirect<TTarget> Build(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? options = null)
+        public Redirect<TTarget> Build(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             ICallHandler<TTarget> callHandler = new TargetCallHandler<TTarget>(target);
 
-            return Build(callHandler, options);
+            return Build(callHandler, optionsAction);
         }
 
-        public IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? options = null)
+        public IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = Build(target, options);
+            var redirect = Build(target, optionsAction);
             
             return InsertRedirect(redirect);
         }
 
-        protected Redirect<TTarget> Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var builder = new RedirectOptionsBuilder<TTarget>();
-            optionsAction?.Invoke(builder);
-            var options = builder.Build();
-            callHandler = options.CallHandlerDecorator?.Invoke(Via, callHandler) ?? callHandler;
+            var recordHandler = new RecordCallHandler<TTarget>(Via.Relay);
+            var redirectOptions = BuildOptions(optionsAction);
+            redirectOptions.DisableSatisfyStrict ??= true;
+            InsertRedirect(recordHandler, redirectOptions);
 
-            return new Redirect<TTarget>(callHandler, _callConstraint, options.OrderWeight, options.DisableSatisfyStrict);
+            return recordHandler.RecordStream;
         }
         
+        protected Redirect<TTarget> Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var redirectOption = BuildOptions(optionsAction);
+
+            return Build(callHandler, redirectOption);
+        }
+
         protected IVia<TTarget> InsertRedirect(Redirect<TTarget> redirect)
         {
             return Via.InsertRedirect(redirect);
+        }
+        
+        private static RedirectOptions<TTarget> BuildOptions(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var builder = new RedirectOptionsBuilder<TTarget>();
+            optionsAction?.Invoke(builder);
+            
+            return builder.Build();
+        }
+        
+        private Redirect<TTarget> Build(ICallHandler<TTarget> callHandler, RedirectOptions<TTarget> redirectOptions)
+        {
+            callHandler = redirectOptions.CallHandlerDecorator?.Invoke(Via, callHandler) ?? callHandler;
+
+            return new Redirect<TTarget>(callHandler, CallConstraint, redirectOptions.OrderWeight, redirectOptions.DisableSatisfyStrict);
+        }
+
+        private IVia<TTarget> InsertRedirect(ICallHandler<TTarget> callHandler, RedirectOptions<TTarget> redirectOptions)
+        {
+            var redirect = Build(callHandler, redirectOptions);
+
+            return InsertRedirect(redirect);
         }
     }
 }

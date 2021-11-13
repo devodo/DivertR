@@ -6,8 +6,8 @@ namespace DivertR.Internal
     {
         protected readonly ParsedCallExpression ParsedCallExpression;
 
-        protected DelegateRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression)
-            : base(via, parsedCallExpression.ToCallConstraint<TTarget>())
+        protected DelegateRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
+            : base(via, callConstraint)
         {
             ParsedCallExpression = parsedCallExpression ?? throw new ArgumentNullException(nameof(parsedCallExpression));
         }

@@ -61,19 +61,19 @@ namespace DivertR
 
             return Proxy(original as TTarget);
         }
-
-        IVia IVia.Reset()
-        {
-            return Reset();
-        }
-
+        
         public IVia<TTarget> InsertRedirect(Redirect<TTarget> redirect)
         {
             _redirectRepository.InsertRedirect(ViaId, redirect);
 
             return this;
         }
-        
+
+        IVia IVia.Reset()
+        {
+            return Reset();
+        }
+
         public IVia<TTarget> Reset()
         {
             _redirectRepository.Reset(ViaId);
@@ -81,9 +81,14 @@ namespace DivertR
             return this;
         }
         
-        public IVia<TTarget> Retarget(TTarget target)
+        public IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            return To().Retarget(target);
+            return To().Retarget(target, optionsAction);
+        }
+        
+        public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            return To().Record(optionsAction);
         }
 
         public IRedirectBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null)
@@ -134,15 +139,6 @@ namespace DivertR
         IVia IVia.Strict()
         {
             return Strict();
-        }
-        
-        public ICallStream<TTarget> Record(ICallConstraint<TTarget>? callConstraint = null)
-        {
-            var recordHandler = new RecordCallHandler<TTarget>(Relay);
-            var redirect = new Redirect<TTarget>(recordHandler, callConstraint, int.MaxValue, true);
-            InsertRedirect(redirect);
-
-            return recordHandler.CallStream;
         }
     }
 }

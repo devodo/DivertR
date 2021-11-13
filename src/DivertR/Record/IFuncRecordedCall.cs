@@ -5,8 +5,9 @@
         new ICallReturn<TReturn>? Returned { get; }
     }
     
-    public interface IFuncRecordedCall<TTarget, out TReturn, out TArgs> : IFuncRecordedCall<TTarget, TReturn>, IRecordedCall<TTarget, TArgs>
+    public interface IFuncRecordedCall<TTarget, out TReturn, out TArgs> : IFuncRecordedCall<TTarget, TReturn>
         where TTarget : class
     {
+        new TArgs Args { get; }
     }
 }

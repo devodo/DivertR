@@ -1,11 +1,17 @@
 ﻿using System;
+using System.Collections;
 
 namespace DivertR.Internal
 {
     internal class ActionRedirectBuilder<TTarget> : DelegateRedirectBuilder<TTarget>, IActionRedirectBuilder<TTarget> where TTarget : class
     {
         public ActionRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression)
-            : base(via, parsedCallExpression)
+            : base(via, parsedCallExpression, parsedCallExpression.ToCallConstraint<TTarget>())
+        {
+        }
+        
+        protected ActionRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
+            : base(via, parsedCallExpression, callConstraint)
         {
         }
         
@@ -176,6 +182,36 @@ namespace DivertR.Internal
                 redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6], (T8) callInfo.Arguments[7]);
                 return default;
             });
+        }
+    }
+
+    internal class ActionRedirectBuilder<TTarget, TArgs> : ActionRedirectBuilder<TTarget>, IActionRedirectBuilder<TTarget, TArgs>
+        where TTarget : class
+        where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+    {
+        public ActionRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
+            : base(via, parsedCallExpression, callConstraint)
+        {
+        }
+
+        public IActionRedirectBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            object? CallHandler(CallInfo<TTarget> callInfo)
+            {
+                var args = (TArgs) _valueTupleFactory.Create(callInfo.Arguments);
+                var redirectCall = new FuncRedirectCall<TTarget, TReturn, TArgs>(callInfo, Relay, args);
+
+                return redirectDelegate.Invoke(redirectCall);
+            }
+            
+            InsertRedirect(CallHandler, optionsAction);
+
+            return this;
+        }
+
+        public new IActionRedirectBuilder<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }
