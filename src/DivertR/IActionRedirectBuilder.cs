@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using DivertR.Record;
 
 namespace DivertR
 {
@@ -26,6 +27,14 @@ namespace DivertR
         IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6>(Action<T1, T2, T3, T4, T5, T6> redirectDelegate);
         IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6, T7>(Action<T1, T2, T3, T4, T5, T6, T7> redirectDelegate);
         IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6, T7, T8>(Action<T1, T2, T3, T4, T5, T6, T7, T8> redirectDelegate);
+        
+        IActionRedirectBuilder<TTarget, TArgs> WithArgs<TArgs>()
+            where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        
+        new IActionRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        
+        IActionRecordStream<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+            where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
     
     public interface IActionRedirectBuilder<TTarget, out TArgs> : IActionRedirectBuilder<TTarget>
@@ -33,6 +42,6 @@ namespace DivertR
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         IActionRedirectBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
-        new IActionRedirectBuilder<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        new IActionRecordStream<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
     }
 }

@@ -6,5 +6,6 @@ namespace DivertR.Internal
     {
         Type[] ArgumentTypes { get; }
         object Create(CallArguments args);
+        object Create(CallArguments args, int offset);
     }
 }

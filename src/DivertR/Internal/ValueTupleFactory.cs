@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -53,6 +54,12 @@ namespace DivertR.Internal
         {
             return new ValueTuple();
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Create(CallArguments args, int offset)
+        {
+            return new ValueTuple();
+        }
     }
     
     internal class ValueTupleFactory<T1> : IValueTupleFactory
@@ -66,6 +73,12 @@ namespace DivertR.Internal
         {
             return new ValueTuple<T1>((T1) args[0]);
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Create(CallArguments args, int offset)
+        {
+            return new ValueTuple<T1>((T1) args[offset]);
+        }
     }
     
     internal class ValueTupleFactory<T1, T2> : IValueTupleFactory
@@ -74,7 +87,7 @@ namespace DivertR.Internal
         private static readonly Type[] ArgTypes;
         
         // ReSharper disable once StaticMemberInGenericType
-        private static readonly Func<CallArguments, object> CreateFunc;
+        private static readonly Func<CallArguments, int, object> CreateFunc;
 
         static ValueTupleFactory()
         {
@@ -95,19 +108,25 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object Create(CallArguments args)
         {
-            return CreateFunc(args);
+            return CreateFunc(args, 0);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static object CreateFull(CallArguments args)
+        public object Create(CallArguments args, int offset)
         {
-            return ((T1) args[0], (T2) args[1]);
+            return CreateFunc(args, offset);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static object CreatePartial(CallArguments args)
+        private static object CreateFull(CallArguments args, int offset)
         {
-            return ((T1) args[0], __.Instance);
+            return ((T1) args[offset++], (T2) args[offset]);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static object CreatePartial(CallArguments args, int offset)
+        {
+            return ((T1) args[offset], __.Instance);
         }
     }
     
@@ -122,6 +141,12 @@ namespace DivertR.Internal
         {
             return ((T1) args[0], (T2) args[1], (T3) args[2]);
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Create(CallArguments args, int offset)
+        {
+            return ((T1) args[offset++], (T2) args[offset++], (T3) args[offset]);
+        }
     }
     
     internal class ValueTupleFactory<T1, T2, T3, T4> : IValueTupleFactory
@@ -134,6 +159,12 @@ namespace DivertR.Internal
         public object Create(CallArguments args)
         {
             return ((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3]);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Create(CallArguments args, int offset)
+        {
+            return ((T1) args[offset++], (T2) args[offset++], (T3) args[offset++], (T4) args[offset]);
         }
     }
     
@@ -148,6 +179,12 @@ namespace DivertR.Internal
         {
             return ((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3], (T5) args[4]);
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Create(CallArguments args, int offset)
+        {
+            return ((T1) args[offset++], (T2) args[offset++], (T3) args[offset++], (T4) args[offset++], (T5) args[offset]);
+        }
     }
     
     internal class ValueTupleFactory<T1, T2, T3, T4, T5, T6> : IValueTupleFactory
@@ -160,6 +197,12 @@ namespace DivertR.Internal
         public object Create(CallArguments args)
         {
             return ((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3], (T5) args[4], (T6) args[5]);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Create(CallArguments args, int offset)
+        {
+            return ((T1) args[offset++], (T2) args[offset++], (T3) args[offset++], (T4) args[offset++], (T5) args[offset++], (T6) args[offset]);
         }
     }
     
@@ -174,18 +217,43 @@ namespace DivertR.Internal
         {
             return ((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3], (T5) args[4], (T6) args[5], (T7) args[6]);
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Create(CallArguments args, int offset)
+        {
+            return ((T1) args[offset++], (T2) args[offset++], (T3) args[offset++], (T4) args[offset++], (T5) args[offset++], (T6) args[offset++], (T7) args[offset]);
+        }
     }
     
-    internal class ValueTupleFactory<T1, T2, T3, T4, T5, T6, T7, T8> : IValueTupleFactory
+    internal class ValueTupleFactory<T1, T2, T3, T4, T5, T6, T7, TRest> : IValueTupleFactory where TRest : struct
     {
-        private static readonly Type[] ArgTypes = { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7), typeof(T8) };
+        // ReSharper disable once StaticMemberInGenericType
+        private static readonly Type[] ArgTypes;
+        
+        // ReSharper disable once StaticMemberInGenericType
+        private static readonly IValueTupleFactory NestedFactory;
+        
+        static ValueTupleFactory()
+        {
+            NestedFactory = ValueTupleFactory.CreateFactory<TRest>();
+            ArgTypes = new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7) }
+                .Concat(NestedFactory.ArgumentTypes)
+                .ToArray();
+        }
         
         public Type[] ArgumentTypes => ArgTypes;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object Create(CallArguments args)
         {
-            return ((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3], (T5) args[4], (T6) args[5], (T7) args[6], (T8) args[7]);
+            return Create(args, 0);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object Create(CallArguments args, int offset)
+        {
+            return new ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>(
+                (T1) args[offset++], (T2) args[offset++], (T3) args[offset++], (T4) args[offset++], (T5) args[offset++], (T6) args[offset++], (T7) args[offset++], (TRest) NestedFactory.Create(args, offset));
         }
     }
 }

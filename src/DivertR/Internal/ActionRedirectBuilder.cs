@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using DivertR.Record;
+using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
@@ -183,15 +185,36 @@ namespace DivertR.Internal
                 return default;
             });
         }
+
+        public IActionRedirectBuilder<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        {
+            return new ActionRedirectBuilder<TTarget, TArgs>(Via, ParsedCallExpression, CallConstraint);
+        }
+
+        public new IActionRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
+
+            return new ActionRecordStream<TTarget>(recordStream, ParsedCallExpression, skipValidation: true);
+        }
+
+        public IActionRecordStream<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        {
+            return WithArgs<TArgs>().Record(optionsAction);
+        }
     }
 
     internal class ActionRedirectBuilder<TTarget, TArgs> : ActionRedirectBuilder<TTarget>, IActionRedirectBuilder<TTarget, TArgs>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
+        private readonly IValueTupleFactory _valueTupleFactory;
+        
         public ActionRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
             : base(via, parsedCallExpression, callConstraint)
         {
+            _valueTupleFactory = ValueTupleFactory.CreateFactory<TArgs>();
+            ParsedCallExpression.Validate(typeof(void), _valueTupleFactory.ArgumentTypes);
         }
 
         public IActionRedirectBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -199,9 +222,10 @@ namespace DivertR.Internal
             object? CallHandler(CallInfo<TTarget> callInfo)
             {
                 var args = (TArgs) _valueTupleFactory.Create(callInfo.Arguments);
-                var redirectCall = new FuncRedirectCall<TTarget, TReturn, TArgs>(callInfo, Relay, args);
-
-                return redirectDelegate.Invoke(redirectCall);
+                var redirectCall = new ActionRedirectCall<TTarget, TArgs>(callInfo, Via.Relay, args);
+                redirectDelegate.Invoke(redirectCall);
+                
+                return default;
             }
             
             InsertRedirect(CallHandler, optionsAction);
@@ -209,9 +233,11 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IActionRedirectBuilder<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IActionRecordStream<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            throw new NotImplementedException();
+            var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
+
+            return new ActionRecordStream<TTarget, TArgs>(recordStream, ParsedCallExpression, skipValidation: true);
         }
     }
 }
