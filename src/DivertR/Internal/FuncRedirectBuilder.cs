@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using DivertR.Record;
 using DivertR.Record.Internal;
 
@@ -170,12 +171,24 @@ namespace DivertR.Internal
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
 
-            return new FuncRecordStream<TTarget, TReturn>(recordStream, ParsedCallExpression, skipValidation: true);
+            return new FuncRecordStream<TTarget, TReturn>(recordStream, ParsedCallExpression);
         }
 
         public IFuncRecordStream<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Record(optionsAction);
+        }
+
+        public IReadOnlyCollection<TMap> Spy<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            TMap Map(IRecordedCall<TTarget> recordedCall)
+            {
+                var funcRecordedCall = new FuncRecordedCall<TTarget, TReturn>(recordedCall);
+
+                return mapper.Invoke(funcRecordedCall);
+            }
+
+            return base.Spy(Map, optionsAction);
         }
     }
 
@@ -202,7 +215,7 @@ namespace DivertR.Internal
                 return redirectDelegate.Invoke(redirectCall);
             }
             
-            InsertRedirect(CallHandler, optionsAction);
+            base.InsertRedirect(CallHandler, optionsAction);
 
             return this;
         }
@@ -211,7 +224,20 @@ namespace DivertR.Internal
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
 
-            return new FuncRecordStream<TTarget, TReturn, TArgs>(recordStream, ParsedCallExpression, skipValidation: true);
+            return new FuncRecordStream<TTarget, TReturn, TArgs>(recordStream, ParsedCallExpression, _valueTupleFactory);
+        }
+
+        public IReadOnlyCollection<TMap> Spy<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            TMap Map(IRecordedCall<TTarget> recordedCall)
+            {
+                var args = (TArgs) _valueTupleFactory.Create(recordedCall.Args);
+                var funcRecordedCall = new FuncRecordedCall<TTarget, TReturn, TArgs>(recordedCall, args);
+
+                return mapper.Invoke(funcRecordedCall);
+            }
+
+            return base.Spy(Map, optionsAction);
         }
     }
 }

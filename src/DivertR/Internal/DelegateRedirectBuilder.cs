@@ -12,18 +12,18 @@ namespace DivertR.Internal
             ParsedCallExpression = parsedCallExpression ?? throw new ArgumentNullException(nameof(parsedCallExpression));
         }
 
-        public Redirect<TTarget> Build(Delegate redirectDelegate)
+        public Redirect<TTarget> Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             ParsedCallExpression.Validate(redirectDelegate);
             var fastDelegate = redirectDelegate.ToDelegate();
             var redirect = new DelegateCallHandler<TTarget>(callInfo => fastDelegate.Invoke(callInfo.Arguments.InternalArgs));
 
-            return Build(redirect);
+            return Build(redirect, optionsAction);
         }
 
-        public IVia<TTarget> Redirect(Delegate redirectDelegate)
+        public IVia<TTarget> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = Build(redirectDelegate);
+            var redirect = Build(redirectDelegate, optionsAction);
             
             return InsertRedirect(redirect);
         }
@@ -46,6 +46,13 @@ namespace DivertR.Internal
         protected IVia<TTarget> InsertRedirect(Func<CallInfo<TTarget>, object?> mappedRedirect, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction)
         {
             var callHandler = new DelegateCallHandler<TTarget>(mappedRedirect);
+            var redirect = Build(callHandler, optionsAction);
+
+            return InsertRedirect(redirect);
+        }
+        
+        protected IVia<TTarget> InsertRedirect(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction)
+        {
             var redirect = Build(callHandler, optionsAction);
 
             return InsertRedirect(redirect);

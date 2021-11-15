@@ -25,20 +25,20 @@ namespace DivertR.Internal
             
             if (!(propertyExpression.Member is PropertyInfo property))
             {
-                throw new ArgumentException($"Member expression must be of type PropertyInfo but got: {propertyExpression.Member?.GetType()}", nameof(propertyExpression));
+                throw new ArgumentException($"Member expression must be of type PropertyInfo but got: {propertyExpression.Member.GetType()}", nameof(propertyExpression));
             }
             
             var methodInfo = property.GetSetMethod(true);
             var parameterInfos = methodInfo.GetParameters();
             var methodConstraint = CreateMethodConstraint(methodInfo);
-            var argumentConstraints = CreateArgumentConstraints(parameterInfos, new[] {valueExpression});
+            var argumentConstraints = CreateArgumentConstraints(parameterInfos, new[] { valueExpression });
 
             return new ParsedCallExpression(methodInfo, parameterInfos, methodConstraint, argumentConstraints);
         }
         
         private static ParsedCallExpression FromMethodCall(MethodCallExpression methodExpression)
         {
-            var methodInfo = methodExpression?.Method ?? throw new ArgumentNullException(nameof(methodExpression));
+            var methodInfo = methodExpression.Method ?? throw new ArgumentNullException(nameof(methodExpression));
             var parameterInfos = methodInfo.GetParameters();
             var argumentConstraints = CreateArgumentConstraints(parameterInfos, methodExpression.Arguments);
             var methodConstraint = CreateMethodConstraint(methodInfo);
@@ -52,7 +52,7 @@ namespace DivertR.Internal
             
             if (!(propertyExpression.Member is PropertyInfo property))
             {
-                throw new ArgumentException($"Member expression must be of type PropertyInfo but got: {propertyExpression.Member?.GetType()}", nameof(propertyExpression));
+                throw new ArgumentException($"Member expression must be of type PropertyInfo but got: {propertyExpression.Member.GetType()}", nameof(propertyExpression));
             }
             
             var methodInfo = property.GetGetMethod(true);
@@ -80,33 +80,65 @@ namespace DivertR.Internal
             {
                 case ConstantExpression constantExpression:
                     return new ConstantArgumentConstraint(constantExpression.Value);
-                case MemberExpression memberExpression when memberExpression.Member.DeclaringType != null &&
-                                                            memberExpression.Member.DeclaringType.IsGenericType &&
-                                                            memberExpression.Member.DeclaringType.GetGenericTypeDefinition() == typeof(Is<>) &&
-                                                            (memberExpression.Member.Name == nameof(Is<object>.Any) ||
-                                                             memberExpression.Member.Name == nameof(Is<object>.AnyRef) && parameterInfo.ParameterType.IsByRef):
-                    return TrueArgumentConstraint.Instance;
-                case MethodCallExpression callExpression when callExpression.Method.DeclaringType != null &&
-                                                              callExpression.Method.DeclaringType.IsGenericType &&
-                                                              callExpression.Method.DeclaringType.GetGenericTypeDefinition() == typeof(Is<>):
+
+                case MemberExpression memberExpression
+                    when memberExpression.Member.DeclaringType != null &&
+                         memberExpression.Member.DeclaringType.IsGenericType &&
+                         (memberExpression.Member.DeclaringType.GetGenericTypeDefinition() == typeof(Is<>) ||
+                          memberExpression.Member.DeclaringType.GetGenericTypeDefinition() == typeof(IsRef<>) &&
+                          parameterInfo.ParameterType.IsByRef) &&
+                         memberExpression.Member.Name == nameof(Is<object>.Any):
                     {
-                        const BindingFlags ActivatorFlags = BindingFlags.Public | BindingFlags.Instance;
-                        var lambdaType = typeof(LambdaArgumentConstraint<>).MakeGenericType(callExpression.Type);
-                        return (IArgumentConstraint) Activator.CreateInstance(lambdaType, ActivatorFlags, null, new object[] {callExpression.Arguments[0]}, default);
+                        return TrueArgumentConstraint.Instance;
                     }
+
+                case MethodCallExpression callExpression
+                    when callExpression.Method.DeclaringType != null &&
+                         callExpression.Method.DeclaringType.IsGenericType &&
+                         callExpression.Method.DeclaringType.GetGenericTypeDefinition() == typeof(Is<>) &&
+                         callExpression.Arguments.Any() &&
+                         callExpression.Arguments[0] is LambdaExpression lambdaExpression &&
+                         lambdaExpression.ReturnType == typeof(bool):
+                    {
+                        return BuildLambdaMatchConstraint(callExpression.Type, lambdaExpression);
+                    }
+                
+                case MemberExpression { Expression: MethodCallExpression callExpression }
+                    when callExpression.Method.DeclaringType != null &&
+                         callExpression.Method.DeclaringType.IsGenericType &&
+                         callExpression.Method.DeclaringType.GetGenericTypeDefinition() == typeof(IsRef<>) &&
+                         parameterInfo.ParameterType.IsByRef &&
+                         callExpression.Type.IsGenericType && 
+                         callExpression.Type.GetGenericTypeDefinition() == typeof(RefValue<>) &&
+                         callExpression.Arguments.Any() &&
+                         callExpression.Arguments[0] is LambdaExpression lambdaExpression &&
+                         lambdaExpression.ReturnType == typeof(bool):
+                    {
+                        return BuildLambdaMatchConstraint(callExpression.Type.GenericTypeArguments[0], lambdaExpression);
+                    }
+                
                 default:
                     {
                         var value = Expression.Lambda(argument).Compile().DynamicInvoke();
+                        
                         return new ConstantArgumentConstraint(value);
                     }
             }
+        }
+
+        private static IArgumentConstraint BuildLambdaMatchConstraint(Type argumentType, LambdaExpression matchExpression)
+        {
+            const BindingFlags ActivatorFlags = BindingFlags.Public | BindingFlags.Instance;
+            var lambdaType = typeof(LambdaArgumentConstraint<>).MakeGenericType(argumentType);
+            
+            return (IArgumentConstraint) Activator.CreateInstance(lambdaType, ActivatorFlags, null, new object[] { matchExpression }, default);
         }
 
         private static IMethodConstraint CreateMethodConstraint(MethodInfo methodInfo)
         {
             if (!methodInfo.IsGenericMethod)
             {
-                return new StandardMethodConstraint(methodInfo);
+                return new EqualsMethodConstraint(methodInfo);
             }
 
             return new GenericMethodConstraint(methodInfo);

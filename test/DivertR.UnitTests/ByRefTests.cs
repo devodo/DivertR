@@ -44,7 +44,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .To(x => x.RefNumber(ref Is<int>.AnyRef))
+                .To(x => x.RefNumber(ref IsRef<int>.Match(m => m == 3).Value))
                 .Redirect(new RefCall((ref int i) =>
                 {
                     var refIn = _via.Relay.Next.RefNumber(ref i);
@@ -85,7 +85,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .To(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
+                .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
                 .Redirect(new OutCall((int i, out int o) =>
                 {
                     _via.Relay.Next.OutNumber(i, out o);
@@ -123,7 +123,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .To(x => x.OutNumber(Is<int>.Any, out Is<int>.AnyRef))
+                .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
                 .Redirect(new OutCall((int i, out int o) =>
                 {
                     _via.Relay.Next.OutNumber(i, out o);
@@ -164,7 +164,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .To(x => x.RefArrayNumber(ref Is<int[]>.AnyRef))
+                .To(x => x.RefArrayNumber(ref IsRef<int[]>.Any))
                 .Redirect(new RefArrayCall((ref int[] inRef) =>
                 {
                     _via.Relay.Next.RefArrayNumber(ref inRef);
@@ -217,7 +217,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var via = new Via<INumber>();
             via
-                .To(x => x.RefNumber(ref Is<int>.AnyRef))
+                .To(x => x.RefNumber(ref IsRef<int>.Any))
                 .Redirect(() => 10);
 
             // ACT

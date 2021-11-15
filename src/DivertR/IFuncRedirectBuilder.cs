@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using DivertR.Record;
 
 namespace DivertR
@@ -42,6 +43,8 @@ namespace DivertR
         
         IFuncRecordStream<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        
+        IReadOnlyCollection<T> Spy<T>(Func<IFuncRecordedCall<TTarget, TReturn>, T> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
     }
 
     public interface IFuncRedirectBuilder<TTarget, TReturn, out TArgs> : IFuncRedirectBuilder<TTarget, TReturn>
@@ -50,5 +53,7 @@ namespace DivertR
     {
         IFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         new IFuncRecordStream<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        
+        IReadOnlyCollection<T> Spy<T>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, T> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
     }
 }

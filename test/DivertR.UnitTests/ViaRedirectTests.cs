@@ -760,5 +760,22 @@ namespace DivertR.UnitTests
             // ASSERT
             result.ShouldBe("foo: test diverted");
         }
+        
+        [Fact]
+        public void TestNumber()
+        {
+            // ARRANGE
+            var via = new Via<INumber>();
+            via
+                .To(x => x.GetNumber(Is<int>.Any))
+                .Redirect<(int input, __)>(call => call.Args.input + 5);
+
+            // ACT
+            var proxy = via.Proxy(new Number());
+            var result = proxy.GetNumber(10);
+
+            // ASSERT
+            result.ShouldBe(15);
+        }
     }
 }

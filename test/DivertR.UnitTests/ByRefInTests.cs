@@ -21,7 +21,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via
-                .To(x => x.GetNumber(in Is<int>.AnyRef))
+                .To(x => x.GetNumber(in IsRef<int>.Any))
                 .Redirect(new InCall((in int i) => _via.Relay.Next.GetNumber(i) + 10));
             
             var viaProxy = _via.Proxy(new NumberIn());

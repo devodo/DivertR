@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using DivertR.Record;
 using DivertR.Record.Internal;
 
@@ -45,12 +46,25 @@ namespace DivertR.Internal
         {
             var recordHandler = new RecordCallHandler<TTarget>(Via.Relay);
             var redirectOptions = BuildOptions(optionsAction);
-            redirectOptions.DisableSatisfyStrict ??= true;
+
+            if (CallConstraint == CompositeCallConstraint<TTarget>.Empty)
+            {
+                redirectOptions.DisableSatisfyStrict ??= true;
+            }
+            
             InsertRedirect(recordHandler, redirectOptions);
 
             return recordHandler.RecordStream;
         }
-        
+
+        public IReadOnlyCollection<TMap> Spy<TMap>(Func<IRecordedCall<TTarget>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var spyCallHandler = new SpyCallHandler<TTarget, TMap>(Via.Relay, mapper);
+            InsertRedirect(spyCallHandler, BuildOptions(optionsAction));
+
+            return spyCallHandler.MappedCalls;
+        }
+
         protected Redirect<TTarget> Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var redirectOption = BuildOptions(optionsAction);

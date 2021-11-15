@@ -31,7 +31,7 @@ namespace DivertR.Record.Internal
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
             var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
-            return new FuncRecordStream<TTarget, TReturn>(calls, parsedCall, skipValidation: true);
+            return new FuncRecordStream<TTarget, TReturn>(calls, parsedCall);
         }
 
         public IActionRecordStream<TTarget> To(Expression<Action<TTarget>> lambdaExpression)
@@ -42,7 +42,7 @@ namespace DivertR.Record.Internal
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
             var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
-            return new ActionRecordStream<TTarget>(calls, parsedCall, skipValidation: true);
+            return new ActionRecordStream<TTarget>(calls, parsedCall);
         }
 
         public IActionRecordStream<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
@@ -59,7 +59,7 @@ namespace DivertR.Record.Internal
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
             var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
-            return new ActionRecordStream<TTarget>(calls, parsedCall, skipValidation: true);
+            return new ActionRecordStream<TTarget>(calls, parsedCall);
         }
         
         public int Count => _recordedCalls.Count;

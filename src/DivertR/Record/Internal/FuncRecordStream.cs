@@ -8,48 +8,26 @@ namespace DivertR.Record.Internal
 {
     internal class FuncRecordStream<TTarget, TReturn> : IFuncRecordStream<TTarget, TReturn> where TTarget : class
     {
-        private readonly IEnumerable<IFuncRecordedCall<TTarget, TReturn>> _recordedCalls;
+        private readonly IEnumerable<IRecordedCall<TTarget>> _recordedCalls;
         private readonly ParsedCallExpression _parsedCallExpression;
+        
+        public FuncRecordStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ParsedCallExpression parsedCallExpression)
+        {
+            _recordedCalls = recordedCalls;
+            _parsedCallExpression = parsedCallExpression;
+        }
         
         public IFuncRecordStream<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new FuncRecordStream<TTarget, TReturn, TArgs>(_recordedCalls, _parsedCallExpression);
+            var valueTupleFactory = ValueTupleFactory.CreateFactory<TArgs>();
+            _parsedCallExpression.Validate(typeof(TReturn), valueTupleFactory.ArgumentTypes, false);
+            
+            return new FuncRecordStream<TTarget, TReturn, TArgs>(_recordedCalls, _parsedCallExpression, valueTupleFactory);
         }
         
-        public FuncRecordStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ParsedCallExpression parsedCallExpression, bool skipValidation = false)
-        {
-            if (!skipValidation)
-            {
-                parsedCallExpression.Validate(typeof(TReturn), Array.Empty<Type>());
-            }
-            
-            _recordedCalls = recordedCalls.Select(x => new FuncRecordedCall<TTarget, TReturn>(x));
-            _parsedCallExpression = parsedCallExpression;
-        }
-
-        public IEnumerable<IFuncRecordedCall<TTarget, TReturn>> ForEach(Action<IFuncRecordedCall<TTarget, TReturn>> visitor)
-        {
-            return ((IEnumerable<IFuncRecordedCall<TTarget, TReturn>>) this).ForEach(visitor);
-        }
-
-        public IEnumerable<IFuncRecordedCall<TTarget, TReturn>> ForEach(Action<IFuncRecordedCall<TTarget, TReturn>, int> visitor)
-        {
-            return ((IEnumerable<IFuncRecordedCall<TTarget, TReturn>>) this).ForEach(visitor);
-        }
-
-        public IEnumerable<IFuncRecordedCall<TTarget, TReturn, TArgs>> ForEach<TArgs>(Action<IFuncRecordedCall<TTarget, TReturn, TArgs>> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
-        {
-            return WithArgs<TArgs>().ForEach(visitor);
-        }
-
-        public IEnumerable<IFuncRecordedCall<TTarget, TReturn, TArgs>> ForEach<TArgs>(Action<IFuncRecordedCall<TTarget, TReturn, TArgs>, int> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
-        {
-            return WithArgs<TArgs>().ForEach(visitor);
-        }
-
         public IEnumerator<IFuncRecordedCall<TTarget, TReturn>> GetEnumerator()
         {
-            return _recordedCalls.GetEnumerator();
+            return _recordedCalls.Select(x => new FuncRecordedCall<TTarget, TReturn>(x)).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -62,30 +40,28 @@ namespace DivertR.Record.Internal
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
+        private readonly IEnumerable<IRecordedCall<TTarget>> _recordedCalls;
         private readonly ParsedCallExpression _parsedCallExpression;
-        private readonly IEnumerable<IFuncRecordedCall<TTarget, TReturn, TArgs>> _recordedCalls;
+        private readonly IValueTupleFactory _valueTupleFactory;
 
-        public FuncRecordStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ParsedCallExpression parsedCallExpression, bool skipValidation = false)
+
+        public FuncRecordStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ParsedCallExpression parsedCallExpression, IValueTupleFactory valueTupleFactory)
         {
-            var valueTupleFactory = ValueTupleFactory.CreateFactory<TArgs>();
-
-            if (!skipValidation)
-            {
-                parsedCallExpression.Validate(typeof(TReturn), valueTupleFactory.ArgumentTypes, false);
-            }
-            
+            _recordedCalls = recordedCalls;
             _parsedCallExpression = parsedCallExpression;
-            _recordedCalls = recordedCalls.Select(call => new FuncRecordedCall<TTarget, TReturn, TArgs>(call, (TArgs) valueTupleFactory.Create(call.Args)));
+            _valueTupleFactory = valueTupleFactory;
         }
 
         public IFuncRecordStream<TTarget, TReturn, TNewArgs> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new FuncRecordStream<TTarget, TReturn, TNewArgs>(_recordedCalls, _parsedCallExpression);
+            return new FuncRecordStream<TTarget, TReturn, TNewArgs>(_recordedCalls, _parsedCallExpression, _valueTupleFactory);
         }
 
         public IEnumerator<IFuncRecordedCall<TTarget, TReturn, TArgs>> GetEnumerator()
         {
-            return _recordedCalls.GetEnumerator();
+            return _recordedCalls
+                .Select(call => new FuncRecordedCall<TTarget, TReturn, TArgs>(call, (TArgs) _valueTupleFactory.Create(call.Args)))
+                .GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
