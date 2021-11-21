@@ -234,7 +234,7 @@ namespace DivertR.Internal
         {
             object? CallHandler(CallInfo<TTarget> callInfo)
             {
-                var args = (TArgs) _valueTupleFactory.Create(callInfo.Arguments);
+                var args = (TArgs) _valueTupleFactory.Create(callInfo.Arguments.InternalArgs);
                 var redirectCall = new ActionRedirectCall<TTarget, TArgs>(callInfo, Via.Relay, args);
                 redirectDelegate.Invoke(redirectCall);
                 
@@ -257,7 +257,7 @@ namespace DivertR.Internal
         {
             TMap Map(IRecordedCall<TTarget> recordedCall)
             {
-                var args = (TArgs) _valueTupleFactory.Create(recordedCall.Args);
+                var args = (TArgs) _valueTupleFactory.Create(recordedCall.Args.InternalArgs);
                 var funcRecordedCall = new ActionRecordedCall<TTarget, TArgs>(recordedCall, args);
 
                 return mapper.Invoke(funcRecordedCall);

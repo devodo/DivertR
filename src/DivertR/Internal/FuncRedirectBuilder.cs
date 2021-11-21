@@ -207,15 +207,8 @@ namespace DivertR.Internal
 
         public IFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            object? CallHandler(CallInfo<TTarget> callInfo)
-            {
-                var args = (TArgs) _valueTupleFactory.Create(callInfo.Arguments);
-                var redirectCall = new FuncRedirectCall<TTarget, TReturn, TArgs>(callInfo, Relay, args);
-
-                return redirectDelegate.Invoke(redirectCall);
-            }
-            
-            base.InsertRedirect(CallHandler, optionsAction);
+            var callHandler = new FuncRedirectCallHandler<TTarget, TReturn, TArgs>(_valueTupleFactory, Relay, redirectDelegate);
+            base.InsertRedirect(callHandler, optionsAction);
 
             return this;
         }
@@ -231,7 +224,7 @@ namespace DivertR.Internal
         {
             TMap Map(IRecordedCall<TTarget> recordedCall)
             {
-                var args = (TArgs) _valueTupleFactory.Create(recordedCall.Args);
+                var args = (TArgs) _valueTupleFactory.Create(recordedCall.Args.InternalArgs);
                 var funcRecordedCall = new FuncRecordedCall<TTarget, TReturn, TArgs>(recordedCall, args);
 
                 return mapper.Invoke(funcRecordedCall);

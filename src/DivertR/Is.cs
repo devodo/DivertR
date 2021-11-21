@@ -2,31 +2,33 @@
 
 namespace DivertR
 {
-    public static class Is<TTarget>
+    public static class Is<T>
     {
-        public static TTarget Any => default!;
+        public static T Any => default!;
 
-        public static TTarget Match(Func<TTarget, bool> match)
+        public static T Match(Func<T, bool> match)
         {
             return default!;
         }
     }
     
-    public static class IsRef<TTarget>
+    public static class IsRef<T>
     {
-        public static TTarget Any = default!;
+        public static T Any = default!;
         
-        public static RefValue<TTarget> Match(Func<TTarget, bool> match)
+        public static RefValue<T> Match(Func<T, bool> match)
         {
-            return RefValue<TTarget>.Instance;
+            return RefValue<T>.Instance;
         }
     }
     
-    public class RefValue<TTarget>
+    public class RefValue<T>
     {
-        internal static readonly RefValue<TTarget> Instance = new RefValue<TTarget>();
+        internal static readonly RefValue<T> Instance = new RefValue<T>();
+
         private RefValue() { }
         
-        public TTarget Value = default!;
+        // ReSharper disable once InconsistentNaming
+        public T Value = default!;
     }
 }

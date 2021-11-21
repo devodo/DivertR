@@ -20,14 +20,14 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public void GivenProxyCalls_ShouldRecord()
+        public void GivenSpyRedirect_ShouldRecordAndMapCalls()
         {
             // ARRANGE
             var inputs = Enumerable
                 .Range(0, 20).Select(_ => Guid.NewGuid())
                 .ToList();
 
-            var spiedCalls = _via
+            var echoes = _via
                 .To(x => x.EchoGeneric(Is<Guid>.Any))
                 .Redirect<(Guid input, __)>(_ => Guid.NewGuid())
                 .Spy(call => new { Input = call.Args.input, Returned = call.Returned!.Value });
@@ -36,9 +36,9 @@ namespace DivertR.UnitTests
             var outputs = inputs.Select(x => _proxy.EchoGeneric(x)).ToList();
 
             // ASSERT
-            spiedCalls.Count.ShouldBe(inputs.Count);
-            spiedCalls.Select(x => x.Input).ShouldBe(inputs);
-            spiedCalls.Select(x => x.Returned).ShouldBe(outputs);
+            echoes.Count.ShouldBe(inputs.Count);
+            echoes.Select(x => x.Input).ShouldBe(inputs);
+            echoes.Select(x => x.Returned).ShouldBe(outputs);
         }
     }
 }

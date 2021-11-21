@@ -142,12 +142,7 @@ namespace DivertR.Internal
 
             for (var i = 0; i < testTypes.Length; i++)
             {
-                if (ReferenceEquals(testTypes[i], callParams[i].ParameterType))
-                {
-                    continue;
-                }
-                
-                if (!testTypes[i].IsAssignableFrom(callParams[i].ParameterType))
+                if (!IsArgumentTypeValid(testTypes[i], callParams[i].ParameterType))
                 {
                     return false;
                 }
@@ -155,7 +150,7 @@ namespace DivertR.Internal
 
             return true;
         }
-        
+
         private static bool ArgumentTypesValid(Type[] testTypes, ParameterInfo[] callParams)
         {
             if (testTypes.Length > callParams.Length)
@@ -165,18 +160,59 @@ namespace DivertR.Internal
 
             for (var i = 0; i < testTypes.Length; i++)
             {
-                if (ReferenceEquals(testTypes[i], callParams[i].ParameterType))
-                {
-                    continue;
-                }
-                
-                if (!testTypes[i].IsAssignableFrom(callParams[i].ParameterType))
+                if (!IsArgumentTypeValid(testTypes[i], callParams[i].ParameterType))
                 {
                     return false;
                 }
             }
 
             return true;
+        }
+
+        private static bool IsArgumentTypeValid(Type testType, Type parameterType)
+        {
+            return !parameterType.IsByRef 
+                ? IsTypeValid(testType, parameterType)
+                : IsRefTypeValid(testType, parameterType);
+        }
+        
+        private static bool IsTypeValid(Type testType, Type parameterType)
+        {
+            if (ReferenceEquals(testType, parameterType))
+            {
+                return true;
+            }
+                
+            if (testType.IsAssignableFrom(parameterType))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsRefTypeValid(Type refType, Type parameterType)
+        {
+            if (!refType.IsGenericType ||
+                refType.GenericTypeArguments.Length != 1 ||
+                refType.GetGenericTypeDefinition() != typeof(Ref<>))
+            {
+                return false;
+            }
+
+            var elementType = parameterType.GetElementType();
+            
+            if (ReferenceEquals(refType.GenericTypeArguments[0], elementType))
+            {
+                return true;
+            }
+                
+            if (!refType.GenericTypeArguments[0].IsAssignableFrom(elementType))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

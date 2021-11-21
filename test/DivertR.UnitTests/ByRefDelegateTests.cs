@@ -8,17 +8,17 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class ByRefTestsDynamicProxy : ByRefTests
+    public class ByRefDelegateTestsDynamicProxy : ByRefTests
     {
         private static readonly DiverterSettings DiverterSettings = new(new DynamicProxyFactory());
 
-        public ByRefTestsDynamicProxy()
+        public ByRefDelegateTestsDynamicProxy()
             : base(new Via<INumber>(DiverterSettings))
         {
         }
     }
     
-    public class ByRefTests
+    public class ByRefDelegateTests
     {
         private delegate int RefCall(ref int input);
         
@@ -27,17 +27,15 @@ namespace DivertR.UnitTests
         private delegate void OutCall(int input, out int output);
 
         private readonly Via<INumber> _via;
-        private readonly INumber _proxy;
         private readonly IRecordStream<INumber> _recordStream;
 
-        public ByRefTests() : this(new Via<INumber>())
+        public ByRefDelegateTests() : this(new Via<INumber>())
         {
         }
 
-        protected ByRefTests(Via<INumber> via)
+        protected ByRefDelegateTests(Via<INumber> via)
         {
             _via = via;
-            _proxy = _via.Proxy(new Number(i => i + 100));
             _recordStream = _via.Record();
         }
         
@@ -47,21 +45,23 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.RefNumber(ref IsRef<int>.Match(m => m == 3).Value))
-                .Redirect<(Ref<int> input, __)>(call =>
+                .Redirect(new RefCall((ref int i) =>
                 {
-                    var relayResult = _via.Relay.Next.RefNumber(ref call.Args.input.Value);
-                    call.Args.input.Value += 10;
+                    var refIn = _via.Relay.Next.RefNumber(ref i);
+                    i += 10;
 
-                    return relayResult;
-                });
-
+                    return refIn;
+                }));
+            
+            var viaProxy = _via.Proxy(new Number(i => i * 2));
+            
             // ACT
             int input = 3;
-            var result = _proxy.RefNumber(ref input);
+            var result = viaProxy.RefNumber(ref input);
 
             // ASSERT
             result.ShouldBe(3);
-            input.ShouldBe(113);
+            input.ShouldBe(16);
         }
         
         [Fact]

@@ -12,10 +12,20 @@ namespace DivertR.Internal
         
         private readonly Lazy<TTarget> _next;
         private readonly Lazy<TTarget> _original;
+        
+        public TTarget Next
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _next.Value;
+        }
 
-        public TTarget Next => _next.Value;
-        public TTarget Original => _original.Value;
+        public TTarget Original
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _original.Value;
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Relay(IProxyFactory proxyFactory)
         {
             _next = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new NextProxyCall<TTarget>(this)));

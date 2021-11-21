@@ -59,7 +59,7 @@ namespace DivertR.Record.Internal
         public IEnumerator<IActionRecordedCall<TTarget, TArgs>> GetEnumerator()
         {
             return _recordedCalls
-                .Select(call => new ActionRecordedCall<TTarget, TArgs>(call, (TArgs) _valueTupleFactory.Create(call.Args)))
+                .Select(call => new ActionRecordedCall<TTarget, TArgs>(call, (TArgs) _valueTupleFactory.Create(call.Args.InternalArgs)))
                 .GetEnumerator();
         }
 

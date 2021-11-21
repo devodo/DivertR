@@ -26,12 +26,23 @@ namespace DivertR.Internal
                 throw new DiverterException($"Type {valueTupleType.Name} is not a ValueTuple type");
             }
 
-            var factoryTypeDefinition = ValueTupleFactoryTypes[valueTupleType.GenericTypeArguments.Length];
-            var factoryType = factoryTypeDefinition.MakeGenericType(valueTupleType.GenericTypeArguments);
+            Type factoryType;
+            if (valueTupleType.GenericTypeArguments.Length == 2 && valueTupleType.GenericTypeArguments[1] == typeof(__))
+            {
+                var factoryTypeDefinition = typeof(ValueTupleFactoryDiscard<>);
+                factoryType = factoryTypeDefinition.MakeGenericType(valueTupleType.GenericTypeArguments[0]);
+            }
+            else
+            {
+                var factoryTypeDefinition = ValueTupleFactoryTypes[valueTupleType.GenericTypeArguments.Length];
+                factoryType = factoryTypeDefinition.MakeGenericType(valueTupleType.GenericTypeArguments);
+            }
+            
+            var refMapper = GetRefMapper(valueTupleType.GenericTypeArguments);
 
             const BindingFlags ActivatorFlags = BindingFlags.Public | BindingFlags.Instance;
-            var factory = (IValueTupleFactory) Activator.CreateInstance(factoryType, ActivatorFlags, null, Array.Empty<object>(), default);
-
+            var factory = (IValueTupleFactory) Activator.CreateInstance(factoryType, ActivatorFlags, null, new object[] { refMapper! }, default);
+            
             return factory;
         }
 
@@ -47,182 +58,209 @@ namespace DivertR.Internal
             return genericTypeDefinition == ValueTupleTypes[type.GenericTypeArguments.Length];
         }
 
+        private static ReferenceArgumentMapper? GetRefMapper(Type[] arguments)
+        {
+            const BindingFlags ActivatorFlags = BindingFlags.Public | BindingFlags.Instance;
+
+            var factories = arguments
+                .Select((arg, i) =>
+                {
+                    if (!arg.IsGenericType ||
+                        arg.GenericTypeArguments.Length != 1 ||
+                        arg.GetGenericTypeDefinition() != typeof(Ref<>))
+                    {
+                        return ((IReferenceArgumentFactory) null!, 0);
+                    }
+                    
+                    var typeDefinition = typeof(ReferenceArgumentFactory<>);
+                    var factoryType = typeDefinition.MakeGenericType(arg.GenericTypeArguments[0]);
+                    var factory = (IReferenceArgumentFactory) Activator.CreateInstance(factoryType, ActivatorFlags, null, null, default);
+
+                    return (factory, i);
+                })
+                .Where(x => x.Item1 != null)
+                .ToArray();
+
+            return factories.Length > 0 ? new ReferenceArgumentMapper(factories) : null;
+        }
+
         public Type[] ArgumentTypes => Array.Empty<Type>();
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args)
+        public object Create(Span<object> args)
         {
             return new ValueTuple();
         }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args, int offset)
-        {
-            return new ValueTuple();
-        }
+
+        public ReferenceArgumentMapper? GetRefMapper() => null;
     }
     
     internal class ValueTupleFactory<T1> : IValueTupleFactory
     {
         private static readonly Type[] ArgTypes = { typeof(T1) };
+        private readonly ReferenceArgumentMapper? _refMapper;
+        
+        public ValueTupleFactory(ReferenceArgumentMapper? refMapper)
+        {
+            _refMapper = refMapper;
+        }
 
         public Type[] ArgumentTypes => ArgTypes;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args)
+        public object Create(Span<object> args)
         {
             return new ValueTuple<T1>((T1) args[0]);
         }
+
+        public ReferenceArgumentMapper? GetRefMapper() => _refMapper;
+    }
+    
+    internal class ValueTupleFactoryDiscard<T1> : IValueTupleFactory
+    {
+        private static readonly Type[] ArgTypes = { typeof(T1) };
+        private readonly ReferenceArgumentMapper? _refMapper;
+
+        public ValueTupleFactoryDiscard(ReferenceArgumentMapper? refMapper)
+        {
+            _refMapper = refMapper;
+        }
+
+        public Type[] ArgumentTypes => ArgTypes;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args, int offset)
+        public object Create(Span<object> args)
         {
-            return new ValueTuple<T1>((T1) args[offset]);
+            return ((T1) args[0], __.Instance);
         }
+
+        public ReferenceArgumentMapper? GetRefMapper() => _refMapper;
     }
     
     internal class ValueTupleFactory<T1, T2> : IValueTupleFactory
     {
-        // ReSharper disable once StaticMemberInGenericType
-        private static readonly Type[] ArgTypes;
-        
-        // ReSharper disable once StaticMemberInGenericType
-        private static readonly Func<CallArguments, int, object> CreateFunc;
+        private static readonly Type[] ArgTypes = { typeof(T1), typeof(T2) };
+        private readonly ReferenceArgumentMapper? _refMapper;
 
-        static ValueTupleFactory()
+        public ValueTupleFactory(ReferenceArgumentMapper? refMapper)
         {
-            if (typeof(T2) == typeof(__))
-            {
-                ArgTypes = new[] { typeof(T1) };
-                CreateFunc = CreatePartial;
-            }
-            else
-            {
-                ArgTypes = new[] { typeof(T1), typeof(T2) };
-                CreateFunc = CreateFull;
-            }
+            _refMapper = refMapper;
         }
-        
+
         public Type[] ArgumentTypes => ArgTypes;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args)
+        public object Create(Span<object> args)
         {
-            return CreateFunc(args, 0);
+            return ((T1) args[0], (T2) args[1]);
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args, int offset)
-        {
-            return CreateFunc(args, offset);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static object CreateFull(CallArguments args, int offset)
-        {
-            return ((T1) args[offset++], (T2) args[offset]);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static object CreatePartial(CallArguments args, int offset)
-        {
-            return ((T1) args[offset], __.Instance);
-        }
+        public ReferenceArgumentMapper? GetRefMapper() => _refMapper;
     }
     
     internal class ValueTupleFactory<T1, T2, T3> : IValueTupleFactory
     {
         private static readonly Type[] ArgTypes = { typeof(T1), typeof(T2), typeof(T3) };
-        
+        private readonly ReferenceArgumentMapper? _refMapper;
+
+        public ValueTupleFactory(ReferenceArgumentMapper? refMapper)
+        {
+            _refMapper = refMapper;
+        }
+
         public Type[] ArgumentTypes => ArgTypes;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args)
+        public object Create(Span<object> args)
         {
             return ((T1) args[0], (T2) args[1], (T3) args[2]);
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args, int offset)
-        {
-            return ((T1) args[offset++], (T2) args[offset++], (T3) args[offset]);
-        }
+        public ReferenceArgumentMapper? GetRefMapper() => _refMapper;
     }
     
     internal class ValueTupleFactory<T1, T2, T3, T4> : IValueTupleFactory
     {
         private static readonly Type[] ArgTypes = { typeof(T1), typeof(T2), typeof(T3), typeof(T4) };
-        
+        private readonly ReferenceArgumentMapper? _refMapper;
+
+        public ValueTupleFactory(ReferenceArgumentMapper? refMapper)
+        {
+            _refMapper = refMapper;
+        }
+
         public Type[] ArgumentTypes => ArgTypes;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args)
+        public object Create(Span<object> args)
         {
             return ((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3]);
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args, int offset)
-        {
-            return ((T1) args[offset++], (T2) args[offset++], (T3) args[offset++], (T4) args[offset]);
-        }
+        public ReferenceArgumentMapper? GetRefMapper() => _refMapper;
     }
     
     internal class ValueTupleFactory<T1, T2, T3, T4, T5> : IValueTupleFactory
     {
         private static readonly Type[] ArgTypes = { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5) };
-        
+        private readonly ReferenceArgumentMapper? _refMapper;
+
+        public ValueTupleFactory(ReferenceArgumentMapper? refMapper)
+        {
+            _refMapper = refMapper;
+        }
+
         public Type[] ArgumentTypes => ArgTypes;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args)
+        public object Create(Span<object> args)
         {
             return ((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3], (T5) args[4]);
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args, int offset)
-        {
-            return ((T1) args[offset++], (T2) args[offset++], (T3) args[offset++], (T4) args[offset++], (T5) args[offset]);
-        }
+        public ReferenceArgumentMapper? GetRefMapper() => _refMapper;
     }
     
     internal class ValueTupleFactory<T1, T2, T3, T4, T5, T6> : IValueTupleFactory
     {
         private static readonly Type[] ArgTypes = { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6) };
-        
+        private readonly ReferenceArgumentMapper? _refMapper;
+
+        public ValueTupleFactory(ReferenceArgumentMapper? refMapper)
+        {
+            _refMapper = refMapper;
+        }
+
         public Type[] ArgumentTypes => ArgTypes;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args)
+        public object Create(Span<object> args)
         {
             return ((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3], (T5) args[4], (T6) args[5]);
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args, int offset)
-        {
-            return ((T1) args[offset++], (T2) args[offset++], (T3) args[offset++], (T4) args[offset++], (T5) args[offset++], (T6) args[offset]);
-        }
+        public ReferenceArgumentMapper? GetRefMapper() => _refMapper;
     }
     
     internal class ValueTupleFactory<T1, T2, T3, T4, T5, T6, T7> : IValueTupleFactory
     {
         private static readonly Type[] ArgTypes = { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7) };
-        
+        private readonly ReferenceArgumentMapper? _refMapper;
+
+        public ValueTupleFactory(ReferenceArgumentMapper? refMapper)
+        {
+            _refMapper = refMapper;
+        }
+
         public Type[] ArgumentTypes => ArgTypes;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args)
+        public object Create(Span<object> args)
         {
             return ((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3], (T5) args[4], (T6) args[5], (T7) args[6]);
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args, int offset)
-        {
-            return ((T1) args[offset++], (T2) args[offset++], (T3) args[offset++], (T4) args[offset++], (T5) args[offset++], (T6) args[offset++], (T7) args[offset]);
-        }
+        public ReferenceArgumentMapper? GetRefMapper() => _refMapper;
     }
     
     internal class ValueTupleFactory<T1, T2, T3, T4, T5, T6, T7, TRest> : IValueTupleFactory where TRest : struct
@@ -241,19 +279,23 @@ namespace DivertR.Internal
                 .ToArray();
         }
         
+        private readonly ReferenceArgumentMapper? _refMapper;
+
+        public ValueTupleFactory(ReferenceArgumentMapper? refMapper)
+        {
+            _refMapper = refMapper;
+        }
+
         public Type[] ArgumentTypes => ArgTypes;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args)
+        public object Create(Span<object> args)
         {
-            return Create(args, 0);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(CallArguments args, int offset)
-        {
+            var rest = (TRest) NestedFactory.Create(args.Slice(7));
             return new ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>(
-                (T1) args[offset++], (T2) args[offset++], (T3) args[offset++], (T4) args[offset++], (T5) args[offset++], (T6) args[offset++], (T7) args[offset++], (TRest) NestedFactory.Create(args, offset));
+                (T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3], (T5) args[4], (T6) args[5], (T7) args[6], rest);
         }
+
+        public ReferenceArgumentMapper? GetRefMapper() => _refMapper;
     }
 }

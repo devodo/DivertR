@@ -5,7 +5,8 @@ namespace DivertR.Internal
     internal interface IValueTupleFactory
     {
         Type[] ArgumentTypes { get; }
-        object Create(CallArguments args);
-        object Create(CallArguments args, int offset);
+        object Create(Span<object> args);
+
+        ReferenceArgumentMapper? GetRefMapper();
     }
 }

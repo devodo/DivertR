@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
@@ -24,7 +25,11 @@ namespace DivertR
 
         public int Count => InternalArgs.Length;
 
-        public object this[int index] => InternalArgs[index];
+        public object this[int index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => InternalArgs[index];
+        }
 
         public static implicit operator CallArguments(object[] args) => new CallArguments(args);
     }
