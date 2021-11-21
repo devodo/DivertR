@@ -24,8 +24,7 @@ namespace DivertR.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _original.Value;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public Relay(IProxyFactory proxyFactory)
         {
             _next = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new NextProxyCall<TTarget>(this)));
@@ -222,9 +221,18 @@ namespace DivertR.Internal
             _relay = relay;
         }
 
-        public TTarget Next => _relay.Next;
-        public TTarget Original => _relay.Original;
-        
+        public TTarget Next
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _relay.Next;
+        }
+
+        public TTarget Original
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _relay.Original;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IRedirectCall<TTarget> GetCurrentCall()
         {

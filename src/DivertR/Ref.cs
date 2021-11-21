@@ -7,7 +7,7 @@ namespace DivertR
         private T _value;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Ref(T value)
+        internal Ref(T value)
         {
             _value = value;
         }

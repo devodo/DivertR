@@ -28,7 +28,6 @@ namespace DivertR.UnitTests
 
         private readonly Via<INumber> _via;
         private readonly INumber _proxy;
-        private readonly IRecordStream<INumber> _recordStream;
 
         public ByRefTests() : this(new Via<INumber>())
         {
@@ -38,7 +37,6 @@ namespace DivertR.UnitTests
         {
             _via = via;
             _proxy = _via.Proxy(new Number(i => i + 100));
-            _recordStream = _via.Record();
         }
         
         [Fact]
@@ -119,17 +117,18 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenOutParameterRedirect_ShouldLogCallArguments()
+        public void GivenOutParameterRedirect_ShouldRecordCallArguments()
         {
             // ARRANGE
-            _via
+            var recordStream = _via
                 .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
-                .Redirect(new OutCall((int i, out int o) =>
+                .Redirect<(int input, Ref<int> output)>(call =>
                 {
-                    _via.Relay.Next.OutNumber(i, out o);
+                    call.Relay.Next.OutNumber(call.Args.input, out call.Args.output.Value);
 
-                    o += 10;
-                }));
+                    call.Args.output.Value += 10;
+                })
+                .Record();
             
             var viaProxy = _via.Proxy(new Number());
 
@@ -138,8 +137,38 @@ namespace DivertR.UnitTests
 
             // ASSERT
             output.ShouldBe(13);
-            _recordStream.Count.ShouldBe(1);
-            _recordStream.First().CallInfo.Arguments[0].ShouldBe(3);
+            recordStream
+                .ForEach(call =>
+                {
+                    call.Args.input.ShouldBe(3);
+                    call.Args.output.Value.ShouldBe(13);
+                })
+                .Count().ShouldBe(1);
+        }
+        
+        [Fact]
+        public void GivenOutParameterRedirectDelegate_ShouldRecordCallArguments()
+        {
+            // ARRANGE
+            var recordStream = _via
+                .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
+                .Redirect(new OutCall((int i, out int o) =>
+                {
+                    _via.Relay.Next.OutNumber(i, out o);
+
+                    o += 10;
+                }))
+                .Record();
+            
+            var viaProxy = _via.Proxy(new Number());
+
+            // ACT
+            viaProxy.OutNumber(3, out var output);
+
+            // ASSERT
+            output.ShouldBe(13);
+            recordStream.Count.ShouldBe(1);
+            recordStream.First().CallInfo.Arguments[0].ShouldBe(3);
         }
 
         [Fact]
@@ -150,7 +179,7 @@ namespace DivertR.UnitTests
             _via.Retarget(test);
 
             // ACT
-            int[] inputOriginal = {5, 8};
+            int[] inputOriginal = { 5, 8 };
             var input = inputOriginal;
             var proxy = _via.Proxy(new Number());
             proxy.RefArrayNumber(ref input);
@@ -176,7 +205,7 @@ namespace DivertR.UnitTests
                 }));
 
             // ACT
-            int[] inputOriginal = {5, 8};
+            int[] inputOriginal = { 5, 8 };
             var input = inputOriginal;
             var proxy = _via.Proxy(new Number());
             proxy.RefArrayNumber(ref input);

@@ -1,35 +1,21 @@
-﻿using System;
+﻿using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class ReferenceArgumentMapper
+    internal class ReferenceArgumentMapper<T> : IReferenceArgumentMapper
     {
-        private readonly (IReferenceArgumentFactory ArgFactory, int Index)[] _refArgumentIndex;
-
-        public ReferenceArgumentMapper((IReferenceArgumentFactory ArgFactory, int Index)[] refArgumentIndex)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object ToRef(object arg)
         {
-            _refArgumentIndex = refArgumentIndex;
+            return new Ref<T>((T) arg);
         }
-
-        public object[] MapToReferences(object[] args)
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object FromRef(object mappedArg)
         {
-            var mappedArgs = new object[args.Length];
-            Array.Copy(args, mappedArgs, args.Length);
+            var argRef = (Ref<T>) mappedArg;
 
-            foreach (var refIndex in _refArgumentIndex)
-            {
-                mappedArgs[refIndex.Index] = refIndex.ArgFactory.Create(args[refIndex.Index]);
-            }
-
-            return mappedArgs;
-        }
-
-        public void WriteReferences(object[] mappedArgs, object[] args)
-        {
-            foreach (var refIndex in _refArgumentIndex)
-            {
-                args[refIndex.Index] = refIndex.ArgFactory.GetRefValue(mappedArgs[refIndex.Index]);
-            }
+            return argRef.Value!;
         }
     }
 }

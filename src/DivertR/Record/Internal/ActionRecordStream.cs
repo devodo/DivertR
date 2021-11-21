@@ -19,7 +19,7 @@ namespace DivertR.Record.Internal
         
         public IActionRecordStream<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            var valueTupleFactory = ValueTupleFactory.CreateFactory<TArgs>();
+            var valueTupleFactory = ValueTupleMapperFactory.Create<TArgs>();
             _parsedCallExpression.Validate(typeof(void), valueTupleFactory.ArgumentTypes, false);
             
             return new ActionRecordStream<TTarget, TArgs>(_recordedCalls, _parsedCallExpression, valueTupleFactory);
@@ -42,24 +42,24 @@ namespace DivertR.Record.Internal
     {
         private readonly IEnumerable<IRecordedCall<TTarget>> _recordedCalls;
         private readonly ParsedCallExpression _parsedCallExpression;
-        private readonly IValueTupleFactory _valueTupleFactory;
+        private readonly IValueTupleMapper _valueTupleMapper;
 
-        public ActionRecordStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ParsedCallExpression parsedCallExpression, IValueTupleFactory valueTupleFactory)
+        public ActionRecordStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ParsedCallExpression parsedCallExpression, IValueTupleMapper valueTupleMapper)
         {
             _recordedCalls = recordedCalls;
             _parsedCallExpression = parsedCallExpression;
-            _valueTupleFactory = valueTupleFactory;
+            _valueTupleMapper = valueTupleMapper;
         }
         
         public IActionRecordStream<TTarget, TNewArgs> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new ActionRecordStream<TTarget, TNewArgs>(_recordedCalls, _parsedCallExpression, _valueTupleFactory);
+            return new ActionRecordStream<TTarget, TNewArgs>(_recordedCalls, _parsedCallExpression, _valueTupleMapper);
         }
 
         public IEnumerator<IActionRecordedCall<TTarget, TArgs>> GetEnumerator()
         {
             return _recordedCalls
-                .Select(call => new ActionRecordedCall<TTarget, TArgs>(call, (TArgs) _valueTupleFactory.Create(call.Args.InternalArgs)))
+                .Select(call => new ActionRecordedCall<TTarget, TArgs>(call, (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs)))
                 .GetEnumerator();
         }
 

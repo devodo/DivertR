@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using DivertR.Internal.CallHandlers;
 using DivertR.Record;
 using DivertR.Record.Internal;
 
@@ -187,6 +188,19 @@ namespace DivertR.Internal
             });
         }
 
+        public IActionRedirectBuilder<TTarget> Redirect(Action<IActionRedirectCall<TTarget>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var callHandler = new ActionRedirectCallHandler<TTarget>(Via.Relay, redirectDelegate);
+            base.InsertRedirect(callHandler, optionsAction);
+            
+            return this;
+        }
+
+        public IActionRedirectBuilder<TTarget, TArgs> Redirect<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        {
+            return WithArgs<TArgs>().Redirect(redirectDelegate, optionsAction);
+        }
+
         public IActionRedirectBuilder<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return new ActionRedirectBuilder<TTarget, TArgs>(Via, ParsedCallExpression, CallConstraint);
@@ -221,28 +235,20 @@ namespace DivertR.Internal
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        private readonly IValueTupleFactory _valueTupleFactory;
+        private readonly IValueTupleMapper _valueTupleMapper;
         
         public ActionRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
             : base(via, parsedCallExpression, callConstraint)
         {
-            _valueTupleFactory = ValueTupleFactory.CreateFactory<TArgs>();
-            ParsedCallExpression.Validate(typeof(void), _valueTupleFactory.ArgumentTypes);
+            _valueTupleMapper = ValueTupleMapperFactory.Create<TArgs>();
+            ParsedCallExpression.Validate(typeof(void), _valueTupleMapper.ArgumentTypes);
         }
 
         public IActionRedirectBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            object? CallHandler(CallInfo<TTarget> callInfo)
-            {
-                var args = (TArgs) _valueTupleFactory.Create(callInfo.Arguments.InternalArgs);
-                var redirectCall = new ActionRedirectCall<TTarget, TArgs>(callInfo, Via.Relay, args);
-                redirectDelegate.Invoke(redirectCall);
-                
-                return default;
-            }
+            var callHandler = new ActionRedirectCallHandler<TTarget, TArgs>(_valueTupleMapper, Via.Relay, redirectDelegate);
+            base.InsertRedirect(callHandler, optionsAction);
             
-            InsertRedirect(CallHandler, optionsAction);
-
             return this;
         }
 
@@ -250,14 +256,14 @@ namespace DivertR.Internal
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
 
-            return new ActionRecordStream<TTarget, TArgs>(recordStream, ParsedCallExpression, _valueTupleFactory);
+            return new ActionRecordStream<TTarget, TArgs>(recordStream, ParsedCallExpression, _valueTupleMapper);
         }
 
         public IReadOnlyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget, TArgs>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             TMap Map(IRecordedCall<TTarget> recordedCall)
             {
-                var args = (TArgs) _valueTupleFactory.Create(recordedCall.Args.InternalArgs);
+                var args = (TArgs) _valueTupleMapper.ToTuple(recordedCall.Args.InternalArgs);
                 var funcRecordedCall = new ActionRecordedCall<TTarget, TArgs>(recordedCall, args);
 
                 return mapper.Invoke(funcRecordedCall);
