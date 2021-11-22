@@ -100,7 +100,7 @@ namespace DivertR.DemoApp
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Mocked"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Mocked"
             
-            IFoo original = fooVia.Relay.Original;
+            IFoo original = fooVia.Relay.Root;
             fooVia
                 .To(x => x.Echo(Is<string>.Any))
                 .Redirect<(string input, __)>(call => $"{original.Echo(call.Args.input)} - Skipped");

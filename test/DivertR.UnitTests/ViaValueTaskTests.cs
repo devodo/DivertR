@@ -22,7 +22,7 @@ namespace DivertR.UnitTests
         public async Task GivenTargetRedirectWithOriginalRelay_ShouldDivert()
         {
             // ARRANGE
-            _via.Retarget(new FooAlt(() => $"alt {_via.Relay.Original.Name}"));
+            _via.Retarget(new FooAlt(() => $"alt {_via.Relay.Root.Name}"));
 
             // ACT
             var nameAsync = await _proxy.GetNameValueAsync();
@@ -84,7 +84,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             const int NumRedirects = 100;
             var next = _via.Relay.Next;
-            var orig = _via.Relay.Original;
+            var orig = _via.Relay.Root;
 
             for (var i = 0; i < NumRedirects; i++)
             {
@@ -107,7 +107,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var next = _via.Relay.Next;
-            var orig = _via.Relay.Original;
+            var orig = _via.Relay.Root;
             int count = 4;
 
             async ValueTask<string> Recursive()

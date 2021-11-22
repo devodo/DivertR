@@ -19,7 +19,7 @@ namespace DivertR.Internal
             get => _next.Value;
         }
 
-        public TTarget Original
+        public TTarget Root
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _original.Value;
@@ -61,7 +61,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? CallOriginal()
+        public object? CallRoot()
         {
             var redirectStep = GetCurrentStack().Peek();
             ValidateStrict(redirectStep);
@@ -70,7 +70,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? CallOriginal(MethodInfo method, CallArguments args)
+        public object? CallRoot(MethodInfo method, CallArguments args)
         {
             var redirectStep = GetCurrentStack().Peek();
             ValidateStrict(redirectStep);
@@ -80,7 +80,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? CallOriginal(CallArguments args)
+        public object? CallRoot(CallArguments args)
         {
             var redirectStep = GetCurrentStack().Peek();
             ValidateStrict(redirectStep);
@@ -227,10 +227,10 @@ namespace DivertR.Internal
             get => _relay.Next;
         }
 
-        public TTarget Original
+        public TTarget Root
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _relay.Original;
+            get => _relay.Root;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -252,15 +252,15 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TReturn CallOriginal()
+        public TReturn CallRoot()
         {
-            return (TReturn) _relay.CallOriginal()!;
+            return (TReturn) _relay.CallRoot()!;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TReturn CallOriginal(CallArguments args)
+        public TReturn CallRoot(CallArguments args)
         {
-            return (TReturn) _relay.CallOriginal(args)!;
+            return (TReturn) _relay.CallRoot(args)!;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -282,21 +282,21 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        object? IRelay<TTarget>.CallOriginal()
+        object? IRelay<TTarget>.CallRoot()
         {
-            return _relay.CallOriginal();
+            return _relay.CallRoot();
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? CallOriginal(MethodInfo method, CallArguments args)
+        public object? CallRoot(MethodInfo method, CallArguments args)
         {
-            return _relay.CallOriginal(method, args);
+            return _relay.CallRoot(method, args);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        object? IRelay<TTarget>.CallOriginal(CallArguments args)
+        object? IRelay<TTarget>.CallRoot(CallArguments args)
         {
-            return _relay.CallOriginal(args);
+            return _relay.CallRoot(args);
         }
     }
 }

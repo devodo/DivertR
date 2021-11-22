@@ -132,6 +132,22 @@ namespace DivertR
             return Strict();
         }
         
+        public IVia<TReturn> Divert<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TReturn : class
+        {
+            if (constraintExpression?.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
+
+            var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
+            
+            var via = new Via<TReturn>();
+            ICallHandler<TTarget> callHandler = new DelegateCallHandler<TTarget>(callInfo => via.Proxy((TReturn) Relay.CallNext()!));
+            var options = optionsAction.Create();
+            callHandler = options.CallHandlerDecorator?.Invoke(this, callHandler) ?? callHandler;
+            var redirect = new Redirect<TTarget>(callHandler, parsedCall.ToCallConstraint<TTarget>(), options.OrderWeight, options.DisableSatisfyStrict);
+            InsertRedirect(redirect);
+
+            return via;
+        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IProxyCall<TTarget>? GetProxyCall()
         {

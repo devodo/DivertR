@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Runtime.CompilerServices;
 
-namespace DivertR.Internal.CallHandlers
+namespace DivertR.Internal
 {
     internal class ActionRedirectCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {

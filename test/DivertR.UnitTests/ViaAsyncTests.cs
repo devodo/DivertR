@@ -49,7 +49,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
             _via
                 .To(x => x.GetNameAsync())
-                .Redirect(async () => $"Diverted {await _via.Relay.Original.GetNameAsync()}");
+                .Redirect(async () => $"Diverted {await _via.Relay.Root.GetNameAsync()}");
 
             // ACT
             var name = await proxy.GetNameAsync();
@@ -108,7 +108,7 @@ namespace DivertR.UnitTests
 
             _via
                 .To(x => x.GetNameAsync())
-                .Redirect(async () => $"diverted {await _via.Relay.Original.GetNameAsync()}");
+                .Redirect(async () => $"diverted {await _via.Relay.Root.GetNameAsync()}");
 
             // ACT
             var names = proxies.Select(p => p.GetNameAsync()).ToList();
@@ -154,7 +154,7 @@ namespace DivertR.UnitTests
             var mock = new Mock<IFoo>();
             mock
                 .Setup(x => x.GetNameAsync())
-                .Returns(async () => $"{await _via.Relay.Original.GetNameAsync()} world");
+                .Returns(async () => $"{await _via.Relay.Root.GetNameAsync()} world");
 
             _via.Retarget(mock.Object);
 
@@ -190,7 +190,7 @@ namespace DivertR.UnitTests
             const int numRedirects = 100;
             var proxy = _via.Proxy(new Foo("foo"));
             var next = _via.Relay.Next;
-            var orig = _via.Relay.Original;
+            var orig = _via.Relay.Root;
 
             for (var i = 0; i < numRedirects; i++)
             {
@@ -213,7 +213,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("foo"));
             var next = _via.Relay.Next;
-            var orig = _via.Relay.Original;
+            var orig = _via.Relay.Root;
             var count = 4;
 
             async Task<string> Recursive()

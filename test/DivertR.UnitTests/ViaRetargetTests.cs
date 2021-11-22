@@ -78,7 +78,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            _via.Retarget(new FooAlt(() => $"hello {_via.Relay.Original.Name}"));
+            _via.Retarget(new FooAlt(() => $"hello {_via.Relay.Root.Name}"));
 
             // ACT
             var name = proxy.Name;
@@ -131,7 +131,7 @@ namespace DivertR.UnitTests
                 .Select(i => _via.Proxy(new Foo($"foo{i}")))
                 .ToList();
             
-            _via.Retarget(new FooAlt(() => $"diverted {_via.Relay.Original.Name}"));
+            _via.Retarget(new FooAlt(() => $"diverted {_via.Relay.Root.Name}"));
             
             // ACT
             var names = proxies.Select(x => x.Name).ToList();
@@ -173,7 +173,7 @@ namespace DivertR.UnitTests
             var mock = new Mock<IFoo>();
             mock
                 .Setup(x => x.Name)
-                .Returns(() => $"{_via.Relay.Original.Name} world");
+                .Returns(() => $"{_via.Relay.Root.Name} world");
 
             _via.Retarget(mock.Object);
 
@@ -228,7 +228,7 @@ namespace DivertR.UnitTests
             const int NumRedirects = 2;
             var proxy = _via.Proxy(new Foo("foo"));
             var next = _via.Relay.Next;
-            var orig = _via.Relay.Original;
+            var orig = _via.Relay.Root;
             
             for (var i = 0; i < NumRedirects; i++)
             {
@@ -250,7 +250,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("foo"));
             var next = _via.Relay.Next;
-            var orig = _via.Relay.Original;
+            var orig = _via.Relay.Root;
             var count = 4;
 
             var recursive = new FooAlt(() =>

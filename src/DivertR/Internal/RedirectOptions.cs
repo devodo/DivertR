@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace DivertR
+namespace DivertR.Internal
 {
-    public class RedirectOptions<TTarget> where TTarget : class
+    internal class RedirectOptions<TTarget> where TTarget : class
     {
         public int? OrderWeight { get; set; }
 

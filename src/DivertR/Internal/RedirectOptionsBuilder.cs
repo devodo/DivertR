@@ -12,7 +12,7 @@ namespace DivertR.Internal
         
         private readonly List<Func<IVia<TTarget>, ICallHandler<TTarget>, ICallHandler<TTarget>>> _callHandlerChain =
             new List<Func<IVia<TTarget>, ICallHandler<TTarget>, ICallHandler<TTarget>>>();
-        
+
         public IRedirectOptionsBuilder<TTarget> OrderWeight(int orderWeight)
         {
             _orderWeight = orderWeight;
@@ -44,7 +44,7 @@ namespace DivertR.Internal
             return ChainCallHandler((via, redirect) => new SkipCallHandler<TTarget>(via, redirect, skipCount));
         }
 
-        internal RedirectOptions<TTarget> Build()
+        public RedirectOptions<TTarget> Build()
         {
             return new RedirectOptions<TTarget>
             {
