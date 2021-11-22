@@ -378,7 +378,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .ToSet(x => x.Name, () => Is<string>.Any)
-                .Redirect((string value) => _via.Relay.Original.Name = $"New {value} set");
+                .Redirect<(string value, __)>(call => call.Relay.Original.Name = $"New {call.Args.value} set");
 
             // ACT
             var proxy = _via.Proxy(new Foo("hello foo"));
@@ -394,7 +394,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .ToSet(x => x.Name, () => Is<string>.Match(s => s == "test"))
-                .Redirect((string value) => _via.Relay.Original.Name = $"New {value} set");
+                .Redirect<(string value, __)>(call => call.Relay.Original.Name = $"New {call.Args.value} set");
 
             // ACT
             var proxy = _via.Proxy(new Foo("hello foo"));
@@ -542,18 +542,18 @@ namespace DivertR.UnitTests
             via.Retarget(new Number(x => x * 2));
             via
                 .To(x => x.ArrayNumber(Is<int[]>.Any))
-                .Redirect((int[] inputs) =>
+                .Redirect<(int[] inputs, __)>(call =>
                 {
-                    via.Relay.Next.ArrayNumber(inputs);
+                    call.Relay.Next.ArrayNumber(call.Args.inputs);
                     
-                    for (var i = 0; i < inputs.Length; i++)
+                    for (var i = 0; i < call.Args.inputs.Length; i++)
                     {
-                        inputs[i] = inputs[i] + 1;
+                        call.Args.inputs[i] += 1;
                     }
                 });
             
             // ACT
-            var input = new[] {1, 5};
+            var input = new[] { 1, 5 };
             var proxy = via.Proxy(new Number());
             proxy.ArrayNumber(input);
 

@@ -5,9 +5,9 @@ namespace DivertR.Internal
     internal class ReferenceArgumentMapper<T> : IReferenceArgumentMapper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object ToRef(object arg)
+        public object ToRef(object? arg)
         {
-            return new Ref<T>((T) arg);
+            return arg != null ? new Ref<T>((T) arg) : new Ref<T>(default!);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

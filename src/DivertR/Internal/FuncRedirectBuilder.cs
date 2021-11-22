@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using DivertR.Internal.CallHandlers;
 using DivertR.Record;
 using DivertR.Record.Internal;
@@ -174,16 +173,11 @@ namespace DivertR.Internal
             return WithArgs<TArgs>().Record(optionsAction);
         }
 
-        public IReadOnlyCollection<TMap> Spy<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public ISpyCollection<TMap> Spy<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            TMap Map(IRecordedCall<TTarget> recordedCall)
-            {
-                var funcRecordedCall = new FuncRecordedCall<TTarget, TReturn>(recordedCall);
+            var spyMapper = new SpyFuncMapper<TTarget, TReturn, TMap>(mapper);
 
-                return mapper.Invoke(funcRecordedCall);
-            }
-
-            return base.Spy(Map, optionsAction);
+            return base.Spy(spyMapper.Map, optionsAction);
         }
     }
 
@@ -215,17 +209,11 @@ namespace DivertR.Internal
             return new FuncRecordStream<TTarget, TReturn, TArgs>(recordStream, ParsedCallExpression, _valueTupleMapper);
         }
 
-        public IReadOnlyCollection<TMap> Spy<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public ISpyCollection<TMap> Spy<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            TMap Map(IRecordedCall<TTarget> recordedCall)
-            {
-                var args = (TArgs) _valueTupleMapper.ToTuple(recordedCall.Args.InternalArgs);
-                var funcRecordedCall = new FuncRecordedCall<TTarget, TReturn, TArgs>(recordedCall, args);
+            var spyMapper = new SpyFuncMapper<TTarget, TReturn, TArgs, TMap>(_valueTupleMapper, mapper);
 
-                return mapper.Invoke(funcRecordedCall);
-            }
-
-            return base.Spy(Map, optionsAction);
+            return base.Spy(spyMapper.Map, optionsAction);
         }
     }
 }

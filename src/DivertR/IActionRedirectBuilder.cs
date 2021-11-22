@@ -20,7 +20,6 @@ namespace DivertR
         Redirect<TTarget> Build<T1, T2, T3, T4, T5, T6, T7, T8>(Action<T1, T2, T3, T4, T5, T6, T7, T8> redirectDelegate);
         
         IVia<TTarget> Redirect(Action redirectDelegate);
-        IVia<TTarget> Redirect<T1>(Action<T1> redirectDelegate);
         IVia<TTarget> Redirect<T1, T2>(Action<T1, T2> redirectDelegate);
         IVia<TTarget> Redirect<T1, T2, T3>(Action<T1, T2, T3> redirectDelegate);
         IVia<TTarget> Redirect<T1, T2, T3, T4>(Action<T1, T2, T3, T4> redirectDelegate);
@@ -42,7 +41,7 @@ namespace DivertR
         IActionRecordStream<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
-        IReadOnlyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        ISpyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
     }
     
     public interface IActionRedirectBuilder<TTarget, out TArgs> : IActionRedirectBuilder<TTarget>
@@ -52,6 +51,6 @@ namespace DivertR
         IActionRedirectBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         new IActionRecordStream<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         
-        IReadOnlyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget, TArgs>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        ISpyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget, TArgs>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
     }
 }

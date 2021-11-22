@@ -8,16 +8,17 @@ namespace DivertR.Record.Internal
     internal class SpyCallHandler<TTarget, TMap> : ICallHandler<TTarget> where TTarget : class
     {
         private readonly ConcurrentQueue<TMap> _mappedCalls = new ConcurrentQueue<TMap>();
-        
+        private readonly SpyCollection<TMap> _spyCollection;
         private readonly IRelay<TTarget> _relay;
         private readonly Func<IRecordedCall<TTarget>, TMap> _mapper;
         
-        public IReadOnlyCollection<TMap> MappedCalls => _mappedCalls;
+        public ISpyCollection<TMap> MappedCalls => _spyCollection;
 
         public SpyCallHandler(IRelay<TTarget> relay, Func<IRecordedCall<TTarget>, TMap> mapper)
         {
             _relay = relay ?? throw new ArgumentNullException(nameof(relay));
             _mapper = mapper;
+            _spyCollection = new SpyCollection<TMap>(_mappedCalls);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -36,9 +37,11 @@ namespace DivertR.Record.Internal
                 recordedCall.SetException(ex);
                 throw;
             }
-
-            var mapped = _mapper.Invoke(recordedCall);
-            _mappedCalls.Enqueue(mapped);
+            finally
+            {
+                var mapped = _mapper.Invoke(recordedCall);
+                _mappedCalls.Enqueue(mapped);
+            }
             
             return returnValue;
         }

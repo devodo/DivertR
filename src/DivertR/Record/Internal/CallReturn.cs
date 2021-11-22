@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace DivertR.Record.Internal
@@ -6,16 +7,35 @@ namespace DivertR.Record.Internal
     internal class CallReturn : ICallReturn
     {
         private readonly Exception? _exception;
-        public object? Value { get; }
-        
+
+        public bool IsValue
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => !IsException;
+        }
+
+        public bool IsException
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+
+        public object? Value
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+
         public CallReturn(object? returnValue, Exception? exception)
         {
             _exception = exception;
             Value = returnValue;
+            IsException = exception != null;
         }
 
         public Exception? Exception
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if (_exception != null)
@@ -44,8 +64,34 @@ namespace DivertR.Record.Internal
             _callReturn = callReturn;
         }
 
-        public TReturn Value => (TReturn) _callReturn.Value!;
-        object? ICallReturn.Value => Value;
-        public Exception? Exception => _callReturn.Exception;
+        public bool IsValue
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _callReturn.IsValue;
+        }
+
+        public bool IsException
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _callReturn.IsException;
+        }
+
+        public TReturn Value
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => (TReturn) _callReturn.Value!;
+        }
+
+        object? ICallReturn.Value
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Value;
+        }
+
+        public Exception? Exception
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _callReturn.Exception;
+        }
     }
 }

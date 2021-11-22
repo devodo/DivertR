@@ -46,11 +46,11 @@ namespace DivertR.UnitTests
         {
             _via
                 .To(x => x.GenericAction(Is<int>.Any))
-                .Redirect((int i1) =>
+                .Redirect<(int i1, __)>(call =>
                 {
-                    _via.Relay.Next.GenericAction(i1);
-                    var item1 = (int) _via.Relay.Next.LastAction;
-                    _via.Relay.Next.LastAction = item1 + _inputs[0][0].Incr;
+                    _via.Relay.Next.GenericAction(call.Args.i1);
+                    var item1 = (int) call.Relay.Next.LastAction;
+                    call.Relay.Next.LastAction = item1 + _inputs[0][0].Incr;
                 });
             
             _via

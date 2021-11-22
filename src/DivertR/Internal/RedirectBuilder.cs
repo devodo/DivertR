@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using DivertR.Record;
 using DivertR.Record.Internal;
 
@@ -57,7 +56,7 @@ namespace DivertR.Internal
             return recordHandler.RecordStream;
         }
 
-        public IReadOnlyCollection<TMap> Spy<TMap>(Func<IRecordedCall<TTarget>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public ISpyCollection<TMap> Spy<TMap>(Func<IRecordedCall<TTarget>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var spyCallHandler = new SpyCallHandler<TTarget, TMap>(Via.Relay, mapper);
             InsertRedirect(spyCallHandler, BuildOptions(optionsAction));
