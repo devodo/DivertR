@@ -102,6 +102,7 @@ namespace DivertR.UnitTests
             }).ToList();
 
             // ASSERT
+            inputs.Select(x => x * 10).ShouldBe(outputs);
             results.Select(x => x.input).ShouldBe(inputs);
             results.Select(x => x.output).ShouldBe(outputs);
         }

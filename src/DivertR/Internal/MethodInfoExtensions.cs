@@ -112,9 +112,11 @@ namespace DivertR.Internal
                 var resultVariable = Expression.Variable(typeof(object));
                 byRefState.Variables.Add(resultVariable);
                 var assignExpression = Expression.Assign(resultVariable, callCastExpr);
+                var tryFinallyExpression = byRefState.PostCall.Count > 0
+                    ? (Expression) Expression.TryFinally(assignExpression, Expression.Block(byRefState.PostCall))
+                    : assignExpression;
                 var blockExpressions = byRefState.PreCall
-                    .Append(assignExpression)
-                    .Concat(byRefState.PostCall)
+                    .Append(tryFinallyExpression)
                     .Append(resultVariable);
 
                 lambdaBodyExpr = Expression.Block(byRefState.Variables, blockExpressions);
