@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
@@ -11,13 +12,25 @@ namespace DivertR
             OrderWeight = orderWeight ?? 0;
             DisableSatisfyStrict = disableSatisfyStrict ?? false;
         }
-        
-        public ICallHandler<TTarget> CallHandler { get; }
-        
-        public ICallConstraint<TTarget> CallConstraint { get; }
+
+        public ICallHandler<TTarget> CallHandler
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+
+        public ICallConstraint<TTarget> CallConstraint
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
         
         public int OrderWeight { get; }
 
-        public bool DisableSatisfyStrict { get; }
+        public bool DisableSatisfyStrict
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
     }
 }

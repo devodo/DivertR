@@ -25,7 +25,7 @@ namespace DivertR.Internal
         {
             var redirect = Build(redirectDelegate, optionsAction);
             
-            return InsertRedirect(redirect);
+            return Via.InsertRedirect(redirect);
         }
         
         protected Redirect<TTarget> Build(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
@@ -40,22 +40,14 @@ namespace DivertR.Internal
         {
             var redirect = Build(inputDelegate, mappedRedirect);
 
-            return InsertRedirect(redirect);
+            return Via.InsertRedirect(redirect);
         }
-        
-        protected IVia<TTarget> InsertRedirect(Func<CallInfo<TTarget>, object?> mappedRedirect, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction)
-        {
-            var callHandler = new DelegateCallHandler<TTarget>(mappedRedirect);
-            var redirect = Build(callHandler, optionsAction);
 
-            return InsertRedirect(redirect);
-        }
-        
         protected IVia<TTarget> InsertRedirect(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction)
         {
             var redirect = Build(callHandler, optionsAction);
 
-            return InsertRedirect(redirect);
+            return Via.InsertRedirect(redirect);
         }
     }
 }

@@ -28,64 +28,32 @@ namespace DivertR.Internal
 
             return this;
         }
-
-        public Redirect<TTarget> Build(TReturn instance)
+        
+        public Redirect<TTarget> Build(TReturn instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            return Build(() => instance);
+            return Build(() => instance, optionsAction);
         }
         
-        public Redirect<TTarget> Build(Func<TReturn> redirectDelegate)
+        public Redirect<TTarget> Build(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            return Build(redirectDelegate, callInfo => redirectDelegate.Invoke());
+            ParsedCallExpression.Validate(redirectDelegate);
+            var callHandler = new DelegateCallHandler<TTarget>(callInfo => redirectDelegate.Invoke());
+
+            return base.Build(callHandler, optionsAction);
         }
 
-        public Redirect<TTarget> Build<T1>(Func<T1, TReturn> redirectDelegate)
+        public Redirect<TTarget> Build(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            return Build(redirectDelegate, callInfo => redirectDelegate.Invoke((T1) callInfo.Arguments[0]));
+            var callHandler = new FuncRedirectCallHandler<TTarget, TReturn>(Relay, redirectDelegate);
+            
+            return base.Build(callHandler, optionsAction);
         }
 
-        public Redirect<TTarget> Build<T1, T2>(Func<T1, T2, TReturn> redirectDelegate)
+        public Redirect<TTarget> Build<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return Build(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1]));
+            return WithArgs<TArgs>().Build(redirectDelegate, optionsAction);
         }
-
-        public Redirect<TTarget> Build<T1, T2, T3>(Func<T1, T2, T3, TReturn> redirectDelegate)
-        {
-            return Build(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2]));
-        }
-
-        public Redirect<TTarget> Build<T1, T2, T3, T4>(Func<T1, T2, T3, T4, TReturn> redirectDelegate)
-        {
-            return Build(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3]));
-        }
-
-        public Redirect<TTarget> Build<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, TReturn> redirectDelegate)
-        {
-            return Build(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4]));
-        }
-
-        public Redirect<TTarget> Build<T1, T2, T3, T4, T5, T6>(Func<T1, T2, T3, T4, T5, T6, TReturn> redirectDelegate)
-        {
-            return Build(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5]));
-        }
-
-        public Redirect<TTarget> Build<T1, T2, T3, T4, T5, T6, T7>(Func<T1, T2, T3, T4, T5, T6, T7, TReturn> redirectDelegate)
-        {
-            return Build(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6]));
-        }
-
-        public Redirect<TTarget> Build<T1, T2, T3, T4, T5, T6, T7, T8>(Func<T1, T2, T3, T4, T5, T6, T7, T8, TReturn> redirectDelegate)
-        {
-            return Build(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6], (T8) callInfo.Arguments[7]));
-        }
-
+        
         public IFuncRedirectBuilder<TTarget, TReturn> Redirect(TReturn instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             return Redirect(() => instance, optionsAction);
@@ -93,15 +61,16 @@ namespace DivertR.Internal
 
         public IFuncRedirectBuilder<TTarget, TReturn> Redirect(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            InsertRedirect(callInfo => redirectDelegate.Invoke(), optionsAction);
-            
+            var redirect = Build(redirectDelegate, optionsAction);
+            Via.InsertRedirect(redirect);
+
             return this;
         }
 
         public IFuncRedirectBuilder<TTarget, TReturn> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            ICallHandler<TTarget> callHandler = new FuncRedirectCallHandler<TTarget, TReturn>(Relay, redirectDelegate);
-            base.InsertRedirect(callHandler, optionsAction);
+            var redirect = Build(redirectDelegate, optionsAction);
+            Via.InsertRedirect(redirect);
 
             return this;
         }
@@ -116,51 +85,7 @@ namespace DivertR.Internal
         {
             return new FuncRedirectBuilder<TTarget, TReturn, TArgs>(Via, ParsedCallExpression, CallConstraint, Relay);
         }
-
-        public IFuncRedirectBuilder<TTarget, TReturn, ValueTuple<CallArguments, T1, T2>> Redirect<T1, T2>(Func<T1, T2, TReturn> redirectDelegate)
-        {
-            InsertRedirect(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1]));
-            
-            return new FuncRedirectBuilder<TTarget, TReturn, ValueTuple<CallArguments, T1, T2>>(Via, ParsedCallExpression, CallConstraint, Relay);
-        }
-
-        public IVia<TTarget> Redirect<T1, T2, T3>(Func<T1, T2, T3, TReturn> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2]));
-        }
-
-        public IVia<TTarget> Redirect<T1, T2, T3, T4>(Func<T1, T2, T3, T4, TReturn> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3]));
-        }
-
-        public IVia<TTarget> Redirect<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, TReturn> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4]));
-        }
-
-        public IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6>(Func<T1, T2, T3, T4, T5, T6, TReturn> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5]));
-        }
-
-        public IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6, T7>(Func<T1, T2, T3, T4, T5, T6, T7, TReturn> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6]));
-        }
-
-        public IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6, T7, T8>(Func<T1, T2, T3, T4, T5, T6, T7, T8, TReturn> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6], (T8) callInfo.Arguments[7]));
-        }
-
+        
         public new IFuncRecordStream<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
@@ -194,10 +119,17 @@ namespace DivertR.Internal
             ParsedCallExpression.Validate(typeof(TReturn), _valueTupleMapper.ArgumentTypes);
         }
 
-        public IFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public Redirect<TTarget> Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             ICallHandler<TTarget> callHandler = new FuncRedirectCallHandler<TTarget, TReturn, TArgs>(_valueTupleMapper, Relay, redirectDelegate);
-            base.InsertRedirect(callHandler, optionsAction);
+            
+            return base.Build(callHandler, optionsAction);
+        }
+
+        public IFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var redirect = Build(redirectDelegate, optionsAction);
+            Via.InsertRedirect(redirect);
 
             return this;
         }

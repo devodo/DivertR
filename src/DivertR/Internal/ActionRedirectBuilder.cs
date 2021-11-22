@@ -25,172 +25,43 @@ namespace DivertR.Internal
             return this;
         }
         
-        public Redirect<TTarget> Build(Action redirectDelegate)
+        public Redirect<TTarget> Build(Action redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            return Build(redirectDelegate, callInfo =>
+            ParsedCallExpression.Validate(redirectDelegate);
+            var callHandler = new DelegateCallHandler<TTarget>(callInfo =>
             {
                 redirectDelegate.Invoke();
+
                 return default;
             });
+
+            return base.Build(callHandler, optionsAction);
         }
-        
-        public Redirect<TTarget> Build<T1>(Action<T1> redirectDelegate)
+
+        public Redirect<TTarget> Build(Action<IActionRedirectCall<TTarget>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            return Build(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0]);
-                return default;
-            });
+            var callHandler = new ActionRedirectCallHandler<TTarget>(Via.Relay, redirectDelegate);
+
+            return base.Build(callHandler, optionsAction);
         }
-        
-        public Redirect<TTarget> Build<T1, T2>(Action<T1, T2> redirectDelegate)
+
+        public Redirect<TTarget> Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return Build(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1]);
-                return default;
-            });
+            return WithArgs<TArgs>().Build(redirectDelegate, optionsAction);
         }
-        
-        public Redirect<TTarget> Build<T1, T2, T3>(Action<T1, T2, T3> redirectDelegate)
+
+        public IActionRedirectBuilder<TTarget> Redirect(Action redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            return Build(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2]);
-                return default;
-            });
-        }
-        
-        public Redirect<TTarget> Build<T1, T2, T3, T4>(Action<T1, T2, T3, T4> redirectDelegate)
-        {
-            return Build(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3]);
-                return default;
-            });
-        }
-        
-        public Redirect<TTarget> Build<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> redirectDelegate)
-        {
-            return Build(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4]);
-                return default;
-            });
-        }
-        
-        public Redirect<TTarget> Build<T1, T2, T3, T4, T5, T6>(Action<T1, T2, T3, T4, T5, T6> redirectDelegate)
-        {
-            return Build(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5]);
-                return default;
-            });
-        }
-        
-        public Redirect<TTarget> Build<T1, T2, T3, T4, T5, T6, T7>(Action<T1, T2, T3, T4, T5, T6, T7> redirectDelegate)
-        {
-            return Build(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6]);
-                return default;
-            });
-        }
-        
-        public Redirect<TTarget> Build<T1, T2, T3, T4, T5, T6, T7, T8>(Action<T1, T2, T3, T4, T5, T6, T7, T8> redirectDelegate)
-        {
-            return Build(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6], (T8) callInfo.Arguments[7]);
-                return default;
-            });
-        }
-        
-        public IVia<TTarget> Redirect(Action redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke();
-                return default;
-            });
-        }
-        
-        public IVia<TTarget> Redirect<T1>(Action<T1> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0]);
-                return default;
-            });
-        }
-        
-        public IVia<TTarget> Redirect<T1, T2>(Action<T1, T2> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1]);
-                return default;
-            });
-        }
-        
-        public IVia<TTarget> Redirect<T1, T2, T3>(Action<T1, T2, T3> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2]);
-                return default;
-            });
-        }
-        
-        public IVia<TTarget> Redirect<T1, T2, T3, T4>(Action<T1, T2, T3, T4> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3]);
-                return default;
-            });
-        }
-        
-        public IVia<TTarget> Redirect<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4]);
-                return default;
-            });
-        }
-        
-        public IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6>(Action<T1, T2, T3, T4, T5, T6> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5]);
-                return default;
-            });
-        }
-        
-        public IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6, T7>(Action<T1, T2, T3, T4, T5, T6, T7> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6]);
-                return default;
-            });
-        }
-        
-        public IVia<TTarget> Redirect<T1, T2, T3, T4, T5, T6, T7, T8>(Action<T1, T2, T3, T4, T5, T6, T7, T8> redirectDelegate)
-        {
-            return InsertRedirect(redirectDelegate, callInfo =>
-            {
-                redirectDelegate.Invoke((T1) callInfo.Arguments[0], (T2) callInfo.Arguments[1], (T3) callInfo.Arguments[2], (T4) callInfo.Arguments[3], (T5) callInfo.Arguments[4], (T6) callInfo.Arguments[5], (T7) callInfo.Arguments[6], (T8) callInfo.Arguments[7]);
-                return default;
-            });
+            var redirect = Build(redirectDelegate, optionsAction);
+            Via.InsertRedirect(redirect);
+
+            return this;
         }
 
         public IActionRedirectBuilder<TTarget> Redirect(Action<IActionRedirectCall<TTarget>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var callHandler = new ActionRedirectCallHandler<TTarget>(Via.Relay, redirectDelegate);
-            base.InsertRedirect(callHandler, optionsAction);
+            var redirect = Build(redirectDelegate, optionsAction);
+            Via.InsertRedirect(redirect);
             
             return this;
         }
@@ -238,10 +109,17 @@ namespace DivertR.Internal
             ParsedCallExpression.Validate(typeof(void), _valueTupleMapper.ArgumentTypes);
         }
 
-        public IActionRedirectBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public Redirect<TTarget> Build(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var callHandler = new ActionRedirectCallHandler<TTarget, TArgs>(_valueTupleMapper, Via.Relay, redirectDelegate);
-            base.InsertRedirect(callHandler, optionsAction);
+            
+            return base.Build(callHandler, optionsAction);
+        }
+
+        public IActionRedirectBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var redirect = Build(redirectDelegate, optionsAction);
+            Via.InsertRedirect(redirect);
             
             return this;
         }

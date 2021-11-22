@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using DivertR.Internal;
 using DivertR.Record;
-using DivertR.Record.Internal;
 using DivertR.Setup;
 
 namespace DivertR
@@ -40,15 +40,6 @@ namespace DivertR
 
         public TTarget Proxy(TTarget? original = null)
         {
-            IProxyCall<TTarget>? GetProxyCall()
-            {
-                var redirectPlan = _redirectRepository.Get<TTarget>(ViaId);
-
-                return redirectPlan == null
-                    ? null
-                    : new ViaProxyCall<TTarget>(_relay, redirectPlan);
-            }
-
             return _proxyFactory.CreateProxy(original, GetProxyCall);
         }
 
@@ -139,6 +130,16 @@ namespace DivertR
         IVia IVia.Strict()
         {
             return Strict();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private IProxyCall<TTarget>? GetProxyCall()
+        {
+            var redirectPlan = _redirectRepository.Get<TTarget>(ViaId);
+
+            return redirectPlan == null
+                ? null
+                : new ViaProxyCall<TTarget>(_relay, redirectPlan);
         }
     }
 }

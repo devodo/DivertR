@@ -90,9 +90,9 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object?[] ToObjectArray(object boxedTuple)
         {
-            var valueTuple = (ValueTuple<T1, T2>) boxedTuple;
+            var (item1, item2) = (ValueTuple<T1, T2>) boxedTuple;
 
-            return new object?[] { valueTuple.Item1, valueTuple.Item2 };
+            return new object?[] { item1, item2 };
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -115,9 +115,9 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object?[] ToObjectArray(object boxedTuple)
         {
-            var valueTuple = (ValueTuple<T1, T2, T3>) boxedTuple;
+            var (item1, item2, item3) = (ValueTuple<T1, T2, T3>) boxedTuple;
 
-            return new object?[] { valueTuple.Item1, valueTuple.Item2, valueTuple.Item3 };
+            return new object?[] { item1, item2, item3 };
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -140,9 +140,9 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object?[] ToObjectArray(object boxedTuple)
         {
-            var valueTuple = (ValueTuple<T1, T2, T3, T4>) boxedTuple;
+            var (item1, item2, item3, item4) = (ValueTuple<T1, T2, T3, T4>) boxedTuple;
 
-            return new object?[] { valueTuple.Item1, valueTuple.Item2, valueTuple.Item3, valueTuple.Item4 };
+            return new object?[] { item1, item2, item3, item4 };
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -165,9 +165,9 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object?[] ToObjectArray(object boxedTuple)
         {
-            var valueTuple = (ValueTuple<T1, T2, T3, T4, T5>) boxedTuple;
+            var (item1, item2, item3, item4, item5) = (ValueTuple<T1, T2, T3, T4, T5>) boxedTuple;
 
-            return new object?[] { valueTuple.Item1, valueTuple.Item2, valueTuple.Item3, valueTuple.Item4, valueTuple.Item5 };
+            return new object?[] { item1, item2, item3, item4, item5 };
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -190,9 +190,9 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object?[] ToObjectArray(object boxedTuple)
         {
-            var valueTuple = (ValueTuple<T1, T2, T3, T4, T5, T6>) boxedTuple;
+            var (item1, item2, item3, item4, item5, item6) = (ValueTuple<T1, T2, T3, T4, T5, T6>) boxedTuple;
 
-            return new object?[] { valueTuple.Item1, valueTuple.Item2, valueTuple.Item3, valueTuple.Item4, valueTuple.Item5, valueTuple.Item6 };
+            return new object?[] { item1, item2, item3, item4, item5, item6 };
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -215,9 +215,9 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object?[] ToObjectArray(object boxedTuple)
         {
-            var valueTuple = (ValueTuple<T1, T2, T3, T4, T5, T6, T7>) boxedTuple;
+            var (item1, item2, item3, item4, item5, item6, item7) = (ValueTuple<T1, T2, T3, T4, T5, T6, T7>) boxedTuple;
 
-            return new object?[] { valueTuple.Item1, valueTuple.Item2, valueTuple.Item3, valueTuple.Item4, valueTuple.Item5, valueTuple.Item6, valueTuple.Item7 };
+            return new object?[] { item1, item2, item3, item4, item5, item6, item7 };
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -255,9 +255,9 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object?[] ToObjectArray(object boxedTuple)
         {
-            var valueTuple = (ValueTuple<T1, T2, T3, T4, T5, T6, T7>) boxedTuple;
+            var (item1, item2, item3, item4, item5, item6, item7) = (ValueTuple<T1, T2, T3, T4, T5, T6, T7>) boxedTuple;
 
-            return new object?[] { valueTuple.Item1, valueTuple.Item2, valueTuple.Item3, valueTuple.Item4, valueTuple.Item5, valueTuple.Item6, valueTuple.Item7 };
+            return new object?[] { item1, item2, item3, item4, item5, item6, item7 };
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

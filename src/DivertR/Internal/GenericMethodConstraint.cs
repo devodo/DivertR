@@ -24,7 +24,8 @@ namespace DivertR.Internal
         {
             return methodInfo.IsGenericMethod && _matchCache.GetOrAdd(methodInfo, IsMatchInternal);
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsMatchInternal(MethodInfo methodInfo)
         {
             if (!ReferenceEquals(_genericMethodDefinition, methodInfo.GetGenericMethodDefinition()))

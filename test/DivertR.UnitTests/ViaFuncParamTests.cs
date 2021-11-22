@@ -62,52 +62,52 @@ namespace DivertR.UnitTests
             
             _via
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any, Is<int>.Any))
-                .Redirect((int i1, int i2, int i3) =>
+                .Redirect<(int i1, int i2, int i3)>(call =>
                 {
-                    var (item1, item2, item3) = _via.Relay.Next.EchoGeneric(i1, i2, i3);
+                    var (item1, item2, item3) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2, call.Args.i3);
                     return (item1 + _inputs[2][0].Incr, item2 + _inputs[2][1].Incr, item3 + _inputs[2][2].Incr);
                 });
             
             _via
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any))
-                .Redirect((int i1, int i2, int i3, int i4) =>
+                .Redirect<(int i1, int i2, int i3, int i4)>(call =>
                 {
-                    var (item1, item2, item3, item4) = _via.Relay.Next.EchoGeneric(i1, i2, i3, i4);
+                    var (item1, item2, item3, item4) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2, call.Args.i3, call.Args.i4);
                     return (item1 + _inputs[3][0].Incr, item2 + _inputs[3][1].Incr, item3 + _inputs[3][2].Incr, item4 + _inputs[3][3].Incr);
                 });
             
             _via
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any))
-                .Redirect((int i1, int i2, int i3, int i4, int i5) =>
+                .Redirect<(int i1, int i2, int i3, int i4, int i5)>(call =>
                 {
-                    var (item1, item2, item3, item4, item5) = _via.Relay.Next.EchoGeneric(i1, i2, i3, i4, i5);
+                    var (item1, item2, item3, item4, item5) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2, call.Args.i3, call.Args.i4, call.Args.i5);
                     return (item1 + _inputs[4][0].Incr, item2 + _inputs[4][1].Incr, item3 + _inputs[4][2].Incr, item4 + _inputs[4][3].Incr,
                         item5 + _inputs[4][4].Incr);
                 });
             
             _via
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any))
-                .Redirect((int i1, int i2, int i3, int i4, int i5, int i6) =>
+                .Redirect<(int i1, int i2, int i3, int i4, int i5, int i6)>(call =>
                 {
-                    var (item1, item2, item3, item4, item5, item6) = _via.Relay.Next.EchoGeneric(i1, i2, i3, i4, i5, i6);
+                    var (item1, item2, item3, item4, item5, item6) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2, call.Args.i3, call.Args.i4, call.Args.i5, call.Args.i6);
                     return (item1 + _inputs[5][0].Incr, item2 + _inputs[5][1].Incr, item3 + _inputs[5][2].Incr, item4 + _inputs[5][3].Incr,
                         item5 + _inputs[5][4].Incr, item6 + _inputs[5][5].Incr);
                 });
             
             _via
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any))
-                .Redirect((int i1, int i2, int i3, int i4, int i5, int i6, int i7) =>
+                .Redirect<(int i1, int i2, int i3, int i4, int i5, int i6, int i7)>(call =>
                 {
-                    var (item1, item2, item3, item4, item5, item6, item7) = _via.Relay.Next.EchoGeneric(i1, i2, i3, i4, i5, i6, i7);
+                    var (item1, item2, item3, item4, item5, item6, item7) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2, call.Args.i3, call.Args.i4, call.Args.i5, call.Args.i6, call.Args.i7);
                     return (item1 + _inputs[6][0].Incr, item2 + _inputs[6][1].Incr, item3 + _inputs[6][2].Incr, item4 + _inputs[6][3].Incr,
                         item5 + _inputs[6][4].Incr, item6 + _inputs[6][5].Incr, item7 + _inputs[6][6].Incr);
                 });
             
             _via
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any))
-                .Redirect((int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8) =>
+                .Redirect<(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8)>(call =>
                 {
-                    var (item1, item2, item3, item4, item5, item6, item7, item8) = _via.Relay.Next.EchoGeneric(i1, i2, i3, i4, i5, i6, i7, i8);
+                    var (item1, item2, item3, item4, item5, item6, item7, item8) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2, call.Args.i3, call.Args.i4, call.Args.i5, call.Args.i6, call.Args.i7, call.Args.i8);
                     return (item1 + _inputs[7][0].Incr, item2 + _inputs[7][1].Incr, item3 + _inputs[7][2].Incr, item4 + _inputs[7][3].Incr,
                         item5 + _inputs[7][4].Incr, item6 + _inputs[7][5].Incr, item7 + _inputs[7][6].Incr, item8 + _inputs[7][7].Incr);
                 });

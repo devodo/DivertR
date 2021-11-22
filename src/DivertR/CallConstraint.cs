@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
@@ -11,6 +12,7 @@ namespace DivertR
             _matchFunc = matchFunc;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(CallInfo<TTarget> callInfo)
         {
             return _matchFunc.Invoke(callInfo);

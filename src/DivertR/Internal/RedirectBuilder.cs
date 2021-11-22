@@ -38,7 +38,7 @@ namespace DivertR.Internal
         {
             var redirect = Build(target, optionsAction);
             
-            return InsertRedirect(redirect);
+            return Via.InsertRedirect(redirect);
         }
 
         public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -71,11 +71,6 @@ namespace DivertR.Internal
             return Build(callHandler, redirectOption);
         }
 
-        protected IVia<TTarget> InsertRedirect(Redirect<TTarget> redirect)
-        {
-            return Via.InsertRedirect(redirect);
-        }
-        
         private static RedirectOptions<TTarget> BuildOptions(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var builder = new RedirectOptionsBuilder<TTarget>();
@@ -91,11 +86,10 @@ namespace DivertR.Internal
             return new Redirect<TTarget>(callHandler, CallConstraint, redirectOptions.OrderWeight, redirectOptions.DisableSatisfyStrict);
         }
 
-        private IVia<TTarget> InsertRedirect(ICallHandler<TTarget> callHandler, RedirectOptions<TTarget> redirectOptions)
+        private void InsertRedirect(ICallHandler<TTarget> callHandler, RedirectOptions<TTarget> redirectOptions)
         {
             var redirect = Build(callHandler, redirectOptions);
-
-            return InsertRedirect(redirect);
+            Via.InsertRedirect(redirect);
         }
     }
 }

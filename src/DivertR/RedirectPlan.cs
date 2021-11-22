@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
@@ -13,7 +14,16 @@ namespace DivertR
             IsStrictMode = isStrictMode;
         }
 
-        public IReadOnlyList<Redirect<TTarget>> Redirects { get; }
-        public bool IsStrictMode { get; }
+        public IReadOnlyList<Redirect<TTarget>> Redirects
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+
+        public bool IsStrictMode
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
     }
 }

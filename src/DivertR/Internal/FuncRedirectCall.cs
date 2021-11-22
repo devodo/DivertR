@@ -12,10 +12,24 @@ namespace DivertR.Internal
             CallInfo = callInfo;
             Relay = relay;
         }
+
+        public CallInfo<TTarget> CallInfo
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
         
-        public CallInfo<TTarget> CallInfo { get; }
-        public CallArguments Args => CallInfo.Arguments;
-        public IRelay<TTarget, TReturn> Relay { get; }
+        public CallArguments Args
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => CallInfo.Arguments;
+        }
+
+        public IRelay<TTarget, TReturn> Relay
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
     }
     
     internal class FuncRedirectCall<TTarget, TReturn, TArgs> : FuncRedirectCall<TTarget, TReturn>, IFuncRedirectCall<TTarget, TReturn, TArgs>
@@ -27,7 +41,11 @@ namespace DivertR.Internal
         {
             Args = args;
         }
-        
-        public new TArgs Args { get; }
+
+        public new TArgs Args
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
     }
 }
