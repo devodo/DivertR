@@ -127,11 +127,11 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.EchoGeneric(_inputs[0][0].Arg))
                 .WithArgs<(int i1, __)>()
-                .ForEach(call =>
+                .Scan(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[0][0].Arg);
-                }).Count().ShouldBe(1);
+                }).ShouldBe(1);
         }
         
         [Fact]
@@ -148,12 +148,12 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.EchoGeneric(_inputs[1][0].Arg, _inputs[1][1].Arg))
                 .WithArgs<(int i1, int i2)>()
-                .ForEach(call =>
+                .Scan(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[1][0].Arg);
                     call.Args.i2.ShouldBe(_inputs[1][1].Arg);
-                }).Count().ShouldBe(1);
+                }).ShouldBe(1);
         }
         
         [Fact]
@@ -170,13 +170,13 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.EchoGeneric(_inputs[2][0].Arg, _inputs[2][1].Arg, _inputs[2][2].Arg))
                 .WithArgs<(int i1, int i2, int i3)>()
-                .ForEach(call =>
+                .Scan(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[2][0].Arg);
                     call.Args.i2.ShouldBe(_inputs[2][1].Arg);
                     call.Args.i3.ShouldBe(_inputs[2][2].Arg);
-                }).Count().ShouldBe(1);
+                }).ShouldBe(1);
         }
         
         [Fact]
@@ -193,14 +193,14 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.EchoGeneric(_inputs[3][0].Arg, _inputs[3][1].Arg, _inputs[3][2].Arg, _inputs[3][3].Arg))
                 .WithArgs<(int i1, int i2, int i3, int i4)>()
-                .ForEach(call =>
+                .Scan(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[3][0].Arg);
                     call.Args.i2.ShouldBe(_inputs[3][1].Arg);
                     call.Args.i3.ShouldBe(_inputs[3][2].Arg);
                     call.Args.i4.ShouldBe(_inputs[3][3].Arg);
-                }).Count().ShouldBe(1);
+                }).ShouldBe(1);
         }
         
         [Fact]
@@ -220,7 +220,7 @@ namespace DivertR.UnitTests
                 .To(x => x.EchoGeneric(_inputs[4][0].Arg, _inputs[4][1].Arg, _inputs[4][2].Arg, _inputs[4][3].Arg,
                     _inputs[4][4].Arg))
                 .WithArgs<(int i1, int i2, int i3, int i4, int i5)>()
-                .ForEach(call =>
+                .Scan(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[4][0].Arg);
@@ -228,7 +228,7 @@ namespace DivertR.UnitTests
                     call.Args.i3.ShouldBe(_inputs[4][2].Arg);
                     call.Args.i4.ShouldBe(_inputs[4][3].Arg);
                     call.Args.i5.ShouldBe(_inputs[4][4].Arg);
-                }).Count().ShouldBe(1);
+                }).ShouldBe(1);
         }
         
         [Fact]
@@ -248,7 +248,7 @@ namespace DivertR.UnitTests
                 .To(x => x.EchoGeneric(_inputs[5][0].Arg, _inputs[5][1].Arg, _inputs[5][2].Arg, _inputs[5][3].Arg,
                     _inputs[5][4].Arg, _inputs[5][5].Arg))
                 .WithArgs<(int i1, int i2, int i3, int i4, int i5, int i6)>()
-                .ForEach(call =>
+                .Scan(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[5][0].Arg);
@@ -257,7 +257,7 @@ namespace DivertR.UnitTests
                     call.Args.i4.ShouldBe(_inputs[5][3].Arg);
                     call.Args.i5.ShouldBe(_inputs[5][4].Arg);
                     call.Args.i6.ShouldBe(_inputs[5][5].Arg);
-                }).Count().ShouldBe(1);
+                }).ShouldBe(1);
         }
         
         [Fact]
@@ -277,7 +277,7 @@ namespace DivertR.UnitTests
                 .To(x => x.EchoGeneric(_inputs[6][0].Arg, _inputs[6][1].Arg, _inputs[6][2].Arg, _inputs[6][3].Arg,
                     _inputs[6][4].Arg, _inputs[6][5].Arg, _inputs[6][6].Arg))
                 .WithArgs<(int i1, int i2, int i3, int i4, int i5, int i6, int i7)>()
-                .ForEach(call =>
+                .Scan(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[6][0].Arg);
@@ -287,7 +287,7 @@ namespace DivertR.UnitTests
                     call.Args.i5.ShouldBe(_inputs[6][4].Arg);
                     call.Args.i6.ShouldBe(_inputs[6][5].Arg);
                     call.Args.i7.ShouldBe(_inputs[6][6].Arg);
-                }).Count().ShouldBe(1);
+                }).ShouldBe(1);
         }
         
         [Fact]
@@ -307,7 +307,7 @@ namespace DivertR.UnitTests
                 .To(x => x.EchoGeneric(_inputs[7][0].Arg, _inputs[7][1].Arg, _inputs[7][2].Arg, _inputs[7][3].Arg,
                     _inputs[7][4].Arg, _inputs[7][5].Arg, _inputs[7][6].Arg, _inputs[7][7].Arg))
                 .WithArgs<(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8)>()
-                .ForEach(call =>
+                .Scan(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[7][0].Arg);
@@ -318,7 +318,7 @@ namespace DivertR.UnitTests
                     call.Args.i6.ShouldBe(_inputs[7][5].Arg);
                     call.Args.i7.ShouldBe(_inputs[7][6].Arg);
                     call.Args.i8.ShouldBe(_inputs[7][7].Arg);
-                }).Count().ShouldBe(1);
+                }).ShouldBe(1);
         }
     }
 }

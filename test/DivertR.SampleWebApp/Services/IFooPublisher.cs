@@ -5,6 +5,6 @@ namespace DivertR.SampleWebApp.Services
 {
     public interface IFooPublisher
     {
-        Task Publish(FooEvent fooEvent);
+        Task PublishAsync(FooEvent fooEvent);
     }
 }

@@ -22,7 +22,7 @@ namespace DivertR.SampleWebApp.Controllers
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<Foo>> GetById(Guid id)
         {
-            var foo = await _fooRepository.GetFoo(id);
+            var foo = await _fooRepository.GetFooAsync(id);
 
             if (foo == null)
             {
@@ -41,14 +41,14 @@ namespace DivertR.SampleWebApp.Controllers
                 Name = request.Name
             };
             
-            var inserted = await _fooRepository.TryInsertFoo(foo);
+            var inserted = await _fooRepository.TryInsertFooAsync(foo);
 
             if (!inserted)
             {
                 return UnprocessableEntity();
             }
 
-            await _fooPublisher.Publish(
+            await _fooPublisher.PublishAsync(
                 new FooEvent { EventId = Guid.NewGuid(), EventType = FooEventType.Created, Foo = foo });
             
             return CreatedAtAction(nameof(GetById), new { id = foo.Id }, foo);

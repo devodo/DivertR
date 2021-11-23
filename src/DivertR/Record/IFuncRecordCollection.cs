@@ -4,17 +4,17 @@ using System.Collections.Generic;
 
 namespace DivertR.Record
 {
-    public interface IFuncRecordStream<TTarget, out TReturn> : IEnumerable<IFuncRecordedCall<TTarget, TReturn>> where TTarget : class
+    public interface IFuncRecordCollection<TTarget, out TReturn> : IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn>> where TTarget : class
     {
-        IFuncRecordStream<TTarget, TReturn, TArgs> WithArgs<TArgs>()
+        IFuncRecordCollection<TTarget, TReturn, TArgs> WithArgs<TArgs>()
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
     
-    public interface IFuncRecordStream<TTarget, out TReturn, out TArgs> : IEnumerable<IFuncRecordedCall<TTarget, TReturn, TArgs>>
+    public interface IFuncRecordCollection<TTarget, out TReturn, out TArgs> : IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn, TArgs>>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        IFuncRecordStream<TTarget, TReturn, TNewArgs> WithArgs<TNewArgs>()
+        IFuncRecordCollection<TTarget, TReturn, TNewArgs> WithArgs<TNewArgs>()
             where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
 }

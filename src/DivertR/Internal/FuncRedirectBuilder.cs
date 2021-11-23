@@ -85,14 +85,14 @@ namespace DivertR.Internal
             return new FuncRedirectBuilder<TTarget, TReturn, TArgs>(Via, ParsedCallExpression, CallConstraint, Relay);
         }
         
-        public new IFuncRecordStream<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IFuncRecordCollection<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
 
-            return new FuncRecordStream<TTarget, TReturn>(recordStream, ParsedCallExpression);
+            return new FuncRecordCollection<TTarget, TReturn>(recordStream, ParsedCallExpression);
         }
 
-        public IFuncRecordStream<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IFuncRecordCollection<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Record(optionsAction);
         }
@@ -133,11 +133,11 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IFuncRecordStream<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IFuncRecordCollection<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
 
-            return new FuncRecordStream<TTarget, TReturn, TArgs>(recordStream, ParsedCallExpression, _valueTupleMapper);
+            return new FuncRecordCollection<TTarget, TReturn, TArgs>(recordStream, ParsedCallExpression, _valueTupleMapper);
         }
 
         public ISpyCollection<TMap> Spy<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)

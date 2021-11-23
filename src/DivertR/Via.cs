@@ -33,7 +33,11 @@ namespace DivertR
 
         public ViaId ViaId { get; }
 
-        public IRelay<TTarget> Relay => _relay;
+        public IRelay<TTarget> Relay
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _relay;
+        }
 
         public RedirectPlan<TTarget> RedirectPlan =>
             _redirectRepository.Get<TTarget>(ViaId) ?? RedirectPlan<TTarget>.Empty;
@@ -132,20 +136,12 @@ namespace DivertR
             return Strict();
         }
         
-        public IVia<TReturn> Divert<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TReturn : class
+        public IDivertRedirectBuilder<TTarget, TReturn> Divert<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : class
         {
             if (constraintExpression?.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
-            
-            var via = new Via<TReturn>();
-            ICallHandler<TTarget> callHandler = new DelegateCallHandler<TTarget>(callInfo => via.Proxy((TReturn) Relay.CallNext()!));
-            var options = optionsAction.Create();
-            callHandler = options.CallHandlerDecorator?.Invoke(this, callHandler) ?? callHandler;
-            var redirect = new Redirect<TTarget>(callHandler, parsedCall.ToCallConstraint<TTarget>(), options.OrderWeight, options.DisableSatisfyStrict);
-            InsertRedirect(redirect);
-
-            return via;
+            return new DivertRedirectBuilder<TTarget, TReturn>(this, parsedCall);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

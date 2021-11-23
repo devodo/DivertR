@@ -75,14 +75,14 @@ namespace DivertR.Internal
             return new ActionRedirectBuilder<TTarget, TArgs>(Via, ParsedCallExpression, CallConstraint);
         }
 
-        public new IActionRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IActionRecordCollection<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
 
-            return new ActionRecordStream<TTarget>(recordStream, ParsedCallExpression);
+            return new ActionRecordCollection<TTarget>(recordStream, ParsedCallExpression);
         }
 
-        public IActionRecordStream<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IActionRecordCollection<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Record(optionsAction);
         }
@@ -123,11 +123,11 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IActionRecordStream<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IActionRecordCollection<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
 
-            return new ActionRecordStream<TTarget, TArgs>(recordStream, ParsedCallExpression, _valueTupleMapper);
+            return new ActionRecordCollection<TTarget, TArgs>(recordStream, ParsedCallExpression, _valueTupleMapper);
         }
 
         public ISpyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget, TArgs>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)

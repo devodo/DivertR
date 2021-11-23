@@ -185,13 +185,17 @@ namespace DivertR.UnitTests
 
             // ASSERT
             output.ShouldBe(13);
-            recordStream
-                .ForEach(call =>
-                {
-                    call.Args.input.ShouldBe(3);
-                    call.Args.output.Value.ShouldBe(13);
-                })
-                .Count().ShouldBe(1);
+            foreach (var call in recordStream)
+            {
+                call.Args.input.ShouldBe(3);
+                call.Args.output.Value.ShouldBe(13);
+            }
+
+            recordStream.Scan(call =>
+            {
+                call.Args.input.ShouldBe(3);
+                call.Args.output.Value.ShouldBe(13);
+            }).ShouldBe(1);
         }
         
         [Fact]
@@ -347,7 +351,7 @@ namespace DivertR.UnitTests
             var via = new Via<INumber>();
             via
                 .To(x => x.RefNumber(ref IsRef<int>.Any))
-                .Redirect(call => 10);
+                .Redirect(_ => 10);
 
             // ACT
             var input = 5;

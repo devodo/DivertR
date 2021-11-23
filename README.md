@@ -99,7 +99,7 @@ The `Via` intercepts calls to the resolved `IFoo` instances.
 By default calls are simply forwarded to the original registration, in this case instances of the `Foo` class.
 However, after adding the redirect any calls that match the lambda expression (1) are redirected to the delegate (2).
 
-Call arguments can be accessed in the redirect from the `call.Args` property. As C# does not provide a way to extract the argument types from the lambda expression
+Call arguments can be accessed by the redirect delegate from the `call.Args` property. As C# does not provide a way to extract the argument types from the lambda expression
 by default the `call.Args` is and `object[]`. However DivertR lets you optionally provide strong argument types using a named ValueTuple as follows:
 
 ```csharp
@@ -151,7 +151,7 @@ by providing the `Relay.Root` property that can be called from the body of the r
 ```csharp
 fooVia
     .To(x => x.Echo(Is<string>.Any))
-    .Redirect<(string input)>(call =>
+    .Redirect<(string input, __)>(call =>
     {
         // run test code before
         // ...

@@ -31,7 +31,10 @@ namespace DivertR.UnitTests
         public void GivenDivertRedirect_ShouldDivertAndRedirect()
         {
             // ARRANGE
-            var fooVia = _via.Divert(x => x.GetFoo());
+            var fooVia = _via
+                .Divert(x => x.GetFoo())
+                .Via();
+            
             fooVia.To(x => x.Name).Redirect("Diverted");
 
             // ACT

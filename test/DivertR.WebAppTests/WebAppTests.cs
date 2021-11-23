@@ -34,7 +34,7 @@ namespace DivertR.WebAppTests
             };
 
             _fooRepositoryVia
-                .To(x => x.GetFoo(foo.Id))
+                .To(x => x.GetFooAsync(foo.Id))
                 .Redirect(Task.FromResult(foo));
             
             // ACT
@@ -57,7 +57,7 @@ namespace DivertR.WebAppTests
             
             var fooRepoCalls = _fooRepositoryVia.Record(options => options.OrderWeight(int.MaxValue));
             _fooRepositoryVia
-                .To(x => x.GetFoo(Is<Guid>.Any))
+                .To(x => x.GetFooAsync(Is<Guid>.Any))
                 .Redirect(Task.FromResult<Foo>(null));
             
             // ACT
@@ -67,7 +67,7 @@ namespace DivertR.WebAppTests
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
             response.Content.ShouldBeNull();
             fooRepoCalls.Count.ShouldBe(1);
-            fooRepoCalls.To(x => x.GetFoo(foo.Id)).Count().ShouldBe(1);
+            fooRepoCalls.To(x => x.GetFooAsync(foo.Id)).Count().ShouldBe(1);
         }
 
         [Fact]
@@ -84,11 +84,11 @@ namespace DivertR.WebAppTests
 
             _fooRepositoryVia
                 .Strict()
-                .To(x => x.TryInsertFoo(Is<Foo>.Any))
+                .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
                 .Redirect<(Foo foo, __)>(async call =>
                 {
                     insertedFoo = call.Args.foo;
-                    insertResult = await call.Relay.Next.TryInsertFoo(call.Args.foo);
+                    insertResult = await call.Relay.Next.TryInsertFooAsync(call.Args.foo);
                     return insertResult.Value;
                 });
 
@@ -104,7 +104,7 @@ namespace DivertR.WebAppTests
         }
         
         [Fact]
-        public async Task RecordAlt_WhenInsertFoo_ThenReturn201Created_WithGetLocation()
+        public async Task Record_WhenInsertFoo_ThenReturn201Created_WithGetLocation()
         {
             // ARRANGE
             var createFooRequest = new CreateFooRequest
@@ -112,26 +112,56 @@ namespace DivertR.WebAppTests
                 Name = Guid.NewGuid().ToString()
             };
             
-            var recordedCalls = _fooRepositoryVia.Record();
+            var insertCalls = _fooRepositoryVia
+                .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
+                .Record<(Foo foo, __)>();
 
             // ACT  
             var response = await _fooClient.InsertFoo(createFooRequest);
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
+            (await insertCalls.ScanAsync(async call =>
+            {
+                response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{call.Args.foo.Id}");
+                call.Args.foo.Name.ShouldBe(createFooRequest.Name);
+                response.Content.ShouldBeEquivalentTo(call.Args.foo);
+
+                (await call.Returned!.Value).ShouldBe(true);
+            })).ShouldBe(1);
+        }
+        
+        [Fact]
+        public async Task Spy_WhenInsertFoo_ThenReturn201Created_WithGetLocation()
+        {
+            // ARRANGE
+            var createFooRequest = new CreateFooRequest
+            {
+                Name = Guid.NewGuid().ToString()
+            };
             
-            recordedCalls.Count.ShouldBe(1);
-            recordedCalls
-                .To(x => x.TryInsertFoo(Is<Foo>.Match(f => f.Name == createFooRequest.Name)))
+            var insertCalls = _fooRepositoryVia
+                .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
                 .WithArgs<(Foo foo, __)>()
-                .ForEach(call =>
+                .Spy(async call => new
                 {
-                    response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{call.Args.foo.Id}");
-                    call.Args.foo.Name.ShouldBe(createFooRequest.Name);
-                    response.Content.ShouldBeEquivalentTo(call.Args.foo);
-                    
-                    call.Returned!.Value.Result.ShouldBe(true);
-                }).Count().ShouldBe(1);
+                    Foo = call.Args.foo,
+                    Result = await call.Returned!.Value
+                });
+
+            // ACT  
+            var response = await _fooClient.InsertFoo(createFooRequest);
+
+            // ASSERT
+            response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+            (await insertCalls.ScanAsync(call =>
+            {
+                response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{call.Foo.Id}");
+                response.Content.ShouldBeEquivalentTo(call.Foo);
+                call.Foo.Name.ShouldBe(createFooRequest.Name);
+                call.Result.ShouldBe(true);
+            })).ShouldBe(1);
         }
         
         [Fact]
@@ -146,7 +176,7 @@ namespace DivertR.WebAppTests
             var testException = new Exception("test");
 
             var recordedCalls = _fooRepositoryVia
-                .To(x => x.TryInsertFoo(Is<Foo>.Any))
+                .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
                 .Redirect(() => throw testException)
                 .Record();
 
@@ -155,10 +185,9 @@ namespace DivertR.WebAppTests
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
-            
             recordedCalls
-                .ForEach(call => call.Returned!.Exception.ShouldBeSameAs(testException))
-                .Count().ShouldBe(1);
+                .Scan(call => call.Returned!.Exception.ShouldBeSameAs(testException))
+                .ShouldBe(1);
         }
     }
 }

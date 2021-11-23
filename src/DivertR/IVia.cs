@@ -127,12 +127,11 @@ namespace DivertR
         new IVia<TTarget> Strict();
         
         /// <summary>
-        /// Intercepts matching calls and diverts them through the a newly created <see cref="IVia{TReturn}"/> instance that is returned.
+        /// Returns a builder that can be used to create a new <see cref="IVia{TReturn}"/> instance that intercepts matching calls on the parent. 
         /// </summary>
         /// <param name="constraintExpression">The call constraint expression.</param>
-        /// <param name="optionsAction">A delegate for setting redirect options.</param>
-        /// <typeparam name="TReturn">The return type of the call constraint expression that is also the <see cref="IVia{TReturn}"/> generic type argument.</typeparam>
-        /// <returns></returns>
-        IVia<TReturn> Divert<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TReturn : class;
+        /// <typeparam name="TReturn">The return type taken from call constraint expression that will be used to build <see cref="IVia{TReturn}"/> generic type argument.</typeparam>
+        /// <returns>The Redirect builder instance.</returns>
+        IDivertRedirectBuilder<TTarget, TReturn> Divert<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : class;
     }
 }

@@ -46,7 +46,7 @@ namespace DivertR.UnitTests
             
             echoCalls.Select(call => call.Args.input).ShouldBe(inputs);
             echoCalls.Select(call => call.Returned!.Value).ShouldBe(outputs);
-            echoCalls.ForEach((call, i) => call.Args.input.ShouldBe(inputs[i]));
+            echoCalls.Scan((call, i) => call.Args.input.ShouldBe(inputs[i])).ShouldBe(inputs.Count);
         }
         
         [Fact]
@@ -74,11 +74,11 @@ namespace DivertR.UnitTests
             calls.Single().CallInfo.Arguments.Count.ShouldBe(1);
             calls.Single().CallInfo.Proxy.ShouldBeSameAs(fooProxy);
 
-            calls.ForEach(call =>
+            calls.Scan(call =>
             {
                 call.Args.input.ShouldBe(inputs[0]);
                 call.Returned!.Value.ShouldBe(outputs[0]);
-            });
+            }).ShouldBe(1);
         }
         
         [Fact]
@@ -105,12 +105,11 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.Echo("test"))
                 .WithArgs<(string input, __)>()
-                .ForEach(call =>
+                .Scan(call =>
                 {
                     call.Args.input.ShouldBe("test");
                     call.Returned?.Exception.ShouldBeSameAs(caughtException);
-                })
-                .Count().ShouldBe(1);
+                }).ShouldBe(1);
         }
         
         [Fact]
@@ -171,12 +170,11 @@ namespace DivertR.UnitTests
             
             _recordStream
                 .To(x => x.EchoAsync("test"))
-                .ForEach(call =>
+                .Scan(call =>
                 {
                     call.CallInfo.Arguments[0].ShouldBe("test");
                     call.Returned!.Exception.ShouldBeOfType<StrictNotSatisfiedException>();
-                })
-                .Count().ShouldBe(1);
+                }).ShouldBe(1);
         }
         
         [Fact]
@@ -197,12 +195,11 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.EchoAsync("test"))
                 .WithArgs<(string input, __)>()
-                .ForEach(call =>
+                .Scan(call =>
                 {
                     call.Args.input.ShouldBe("test");
                     call.Returned!.Value.Result.ShouldBe(result);
-                })
-                .Count().ShouldBe(1);
+                }).ShouldBe(1);
         }
         
         [Fact]
@@ -249,17 +246,18 @@ namespace DivertR.UnitTests
             // ACT
             var outputs = Enumerable
                 .Range(0, 20)
-                .Select(x => fooProxy.Name).ToList();
+                .Select(_ => fooProxy.Name).ToList();
 
             // ASSERT
-            _recordStream
-                .To(x => x.Name)
-                .ForEach(call =>
-                {
-                    outputs.ShouldContain(call.Returned!.Value);
-                })
+            var recordedCalls = _recordStream.To(x => x.Name);
+            recordedCalls
                 .Select(call => call.Returned!.Value)
                 .ShouldBe(outputs);
+
+            recordedCalls.Scan(call =>
+            {
+                outputs.ShouldContain(call.Returned!.Value);
+            }).ShouldBe(outputs.Count);
         }
         
         [Fact]
@@ -280,16 +278,19 @@ namespace DivertR.UnitTests
             inputs.ForEach(x => fooProxy.Name = x);
 
             // ASSERT
-            _recordStream
+            var recordedCalls = _recordStream
                 .ToSet(x => x.Name, () => Is<string>.Any)
-                .WithArgs<(string name, __)>()
-                .ForEach((call, i) =>
-                {
-                    call.Args.name.ShouldBe(inputs[i]);
-                    call.Returned!.Value.ShouldBeNull();
-                })
+                .WithArgs<(string name, __)>();
+                
+            recordedCalls
                 .Select(call => call.Args.name)
                 .ShouldBe(inputs);
+                
+            recordedCalls.Scan((call, i) =>
+            {
+                call.Args.name.ShouldBe(inputs[i]);
+                call.Returned!.Value.ShouldBeNull();
+            }).ShouldBe(inputs.Count);
         }
         
         [Fact]
@@ -308,14 +309,11 @@ namespace DivertR.UnitTests
 
             var fooProxy = _via.Proxy();
 
-            var recordedOutputs = _recordStream
+            var recordedCalls = _recordStream
                 .To(x => x.Echo(Is<string>.Any))
-                .WithArgs<(string input, __)>()
-                .ForEach((call, i) =>
-                {
-                    call.Args.input.ShouldBe(inputs[i]);
-                })
-                .Select(call => call.Returned!.Value);
+                .WithArgs<(string input, __)>();
+            
+            var recordedOutputs = recordedCalls.Select(call => call.Returned!.Value);
 
             // ACT
             var beforeCount = recordedOutputs.Count();
@@ -323,6 +321,7 @@ namespace DivertR.UnitTests
 
             // ASSERT
             beforeCount.ShouldBe(0);
+            recordedCalls.Scan((call, i) => call.Args.input.ShouldBe(inputs[i])).ShouldBe(inputs.Count);
             recordedOutputs.Count().ShouldBe(inputs.Count);
             recordedOutputs.ShouldBe(outputs);
         }

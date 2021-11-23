@@ -6,23 +6,23 @@ using DivertR.Internal;
 
 namespace DivertR.Record.Internal
 {
-    internal class ActionRecordStream<TTarget> : IActionRecordStream<TTarget> where TTarget : class
+    internal class ActionRecordEnumerable<TTarget> : IActionRecordEnumerable<TTarget> where TTarget : class
     {
         private readonly IEnumerable<IRecordedCall<TTarget>> _recordedCalls;
         private readonly ParsedCallExpression _parsedCallExpression;
 
-        public ActionRecordStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ParsedCallExpression parsedCallExpression)
+        public ActionRecordEnumerable(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ParsedCallExpression parsedCallExpression)
         {
             _recordedCalls = recordedCalls;
             _parsedCallExpression = parsedCallExpression;
         }
         
-        public IActionRecordStream<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IActionRecordEnumerable<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleFactory = ValueTupleMapperFactory.Create<TArgs>();
             _parsedCallExpression.Validate(typeof(void), valueTupleFactory.ArgumentTypes, false);
             
-            return new ActionRecordStream<TTarget, TArgs>(_recordedCalls, _parsedCallExpression, valueTupleFactory);
+            return new ActionRecordEnumerable<TTarget, TArgs>(_recordedCalls, _parsedCallExpression, valueTupleFactory);
         }
 
         public IEnumerator<IActionRecordedCall<TTarget>> GetEnumerator()
@@ -36,7 +36,7 @@ namespace DivertR.Record.Internal
         }
     }
 
-    internal class ActionRecordStream<TTarget, TArgs> : IActionRecordStream<TTarget, TArgs>
+    internal class ActionRecordEnumerable<TTarget, TArgs> : IActionRecordEnumerable<TTarget, TArgs>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
@@ -44,16 +44,16 @@ namespace DivertR.Record.Internal
         private readonly ParsedCallExpression _parsedCallExpression;
         private readonly IValueTupleMapper _valueTupleMapper;
 
-        public ActionRecordStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ParsedCallExpression parsedCallExpression, IValueTupleMapper valueTupleMapper)
+        public ActionRecordEnumerable(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ParsedCallExpression parsedCallExpression, IValueTupleMapper valueTupleMapper)
         {
             _recordedCalls = recordedCalls;
             _parsedCallExpression = parsedCallExpression;
             _valueTupleMapper = valueTupleMapper;
         }
         
-        public IActionRecordStream<TTarget, TNewArgs> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IActionRecordEnumerable<TTarget, TNewArgs> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new ActionRecordStream<TTarget, TNewArgs>(_recordedCalls, _parsedCallExpression, _valueTupleMapper);
+            return new ActionRecordEnumerable<TTarget, TNewArgs>(_recordedCalls, _parsedCallExpression, _valueTupleMapper);
         }
 
         public IEnumerator<IActionRecordedCall<TTarget, TArgs>> GetEnumerator()
