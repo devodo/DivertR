@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using DivertR.Record;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -105,6 +108,90 @@ namespace DivertR.UnitTests
             inputs.Select(x => x * 10).ShouldBe(outputs);
             results.Select(x => x.input).ShouldBe(inputs);
             results.Select(x => x.output).ShouldBe(outputs);
+        }
+        
+        [Fact]
+        public async Task GivenTaskSpyRedirect_ShouldScanAsync()
+        {
+            // ARRANGE
+            var inputs = Enumerable
+                .Range(0, 20).Select(i => i)
+                .ToList();
+            
+            var spy = _via
+                .To(x => x.EchoAsync(Is<string>.Any))
+                .Redirect<(string input, __)>(call => Task.FromResult(call.Args.input + " diverted"))
+                .Spy(async call => new
+                {
+                    Input = call.Args.input,
+                    Result = await call.Returned!.Value
+                });
+
+            // ACT
+            var results = new List<string>(inputs.Count);
+            foreach (var input in inputs)
+            {
+                results.Add(await _proxy.EchoAsync("test" + input));
+            }
+            
+            // ASSERT
+            results.ShouldBe(inputs.Select(x => $"test{x} diverted"));
+            spy.Count.ShouldBe(inputs.Count);
+
+            var count = 0;
+            (await spy.ScanAsync(call =>
+            {
+                call.Input.ShouldBe($"test{count}");
+                call.Result.ShouldBe($"test{count++} diverted");
+            })).ShouldBe(inputs.Count);
+            
+            (await spy.ScanAsync((call, i) =>
+            {
+                call.Input.ShouldBe($"test{i}");
+                call.Result.ShouldBe($"test{i} diverted");
+            })).ShouldBe(inputs.Count);
+        }
+        
+        [Fact]
+        public async Task GivenSpyRedirect_ShouldScanAsync()
+        {
+            // ARRANGE
+            var inputs = Enumerable
+                .Range(0, 20).Select(i => i)
+                .ToList();
+            
+            var spy = _via
+                .To(x => x.EchoAsync(Is<string>.Any))
+                .Redirect<(string input, __)>(call => Task.FromResult(call.Args.input + " diverted"))
+                .Spy(call => new
+                {
+                    Input = call.Args.input,
+                    Result = call.Returned!.Value
+                });
+
+            // ACT
+            var results = new List<string>(inputs.Count);
+            foreach (var input in inputs)
+            {
+                results.Add(await _proxy.EchoAsync("test" + input));
+            }
+            
+            // ASSERT
+            results.ShouldBe(inputs.Select(x => $"test{x} diverted"));
+            spy.Count.ShouldBe(inputs.Count);
+
+            var count = 0;
+            (await spy.ScanAsync(async call =>
+            {
+                call.Input.ShouldBe($"test{count}");
+                (await call.Result).ShouldBe($"test{count++} diverted");
+            })).ShouldBe(inputs.Count);
+            
+            (await spy.ScanAsync(async (call, i) =>
+            {
+                call.Input.ShouldBe($"test{i}");
+                (await call.Result).ShouldBe($"test{i} diverted");
+            })).ShouldBe(inputs.Count);
         }
     }
 }

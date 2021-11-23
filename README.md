@@ -99,8 +99,8 @@ The `Via` intercepts calls to the resolved `IFoo` instances.
 By default calls are simply forwarded to the original registration, in this case instances of the `Foo` class.
 However, after adding the redirect any calls that match the lambda expression (1) are redirected to the delegate (2).
 
-Call arguments can be accessed by the redirect delegate from the `call.Args` property. As C# does not provide a way to extract the argument types from the lambda expression
-by default the `call.Args` is and `object[]`. However DivertR lets you optionally provide strong argument types using a named ValueTuple as follows:
+The call's arguments can be accessed from the `call.Args` property as an `object[]`.
+However DivertR lets you optionally provide strongly typed named arguments using a ValueTuple type as follows:
 
 ```csharp
 IVia<IFoo> fooVia = diverter.Via<IFoo>();
@@ -111,9 +111,10 @@ fooVia
 Console.WriteLine(foo.Echo("Hello")); // "Hello DivertR"
 ```
 
-The `call.Args` property is replaced with an instance of the given ValueTuple type e.g. `(string intput, __)`. C# requires named ValueTuples to have at least two
-parameters. If the call only has a single parameter, as in the example above, then the special Diverter type `__` can be used to ignore the second parameter.
+> The `call.Args` property is replaced with an instance of the given ValueTuple type `(string intput, __)`.
 
+C# requires named ValueTuples to have at least two parameters. If the call only has a single parameter, as in the example above,
+then a dummy second parameter must be provided using the special Diverter type `__`.
 
 Once a redirect is added it will be applied to all existing and future resolved `IFoo` instances. For example if a second `IFoo` instance is resolved:
 
