@@ -21,11 +21,12 @@ namespace DivertR.Internal
             return Build(redirect, optionsAction);
         }
 
-        public IVia<TTarget> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IDelegateRedirectBuilder<TTarget> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var redirect = Build(redirectDelegate, optionsAction);
-            
-            return Via.InsertRedirect(redirect);
+            Via.InsertRedirect(redirect);
+
+            return this;
         }
         
         protected Redirect<TTarget> Build(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)

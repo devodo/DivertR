@@ -5,12 +5,16 @@ namespace DivertR
 {
     public class Redirect<TTarget> where TTarget : class
     {
-        public Redirect(ICallHandler<TTarget> callHandler, ICallConstraint<TTarget>? callConstraint = null, int? orderWeight = null, bool? disableSatisfyStrict = null)
+        public Redirect(ICallHandler<TTarget> callHandler, ICallConstraint<TTarget> callConstraint, RedirectOptions<TTarget>? redirectOptions = null)
         {
-            CallHandler = callHandler ?? throw new ArgumentNullException(nameof(callHandler));
-            CallConstraint = callConstraint ?? TrueCallConstraint<TTarget>.Instance;
-            OrderWeight = orderWeight ?? 0;
-            DisableSatisfyStrict = disableSatisfyStrict ?? false;
+            if (callHandler == null) throw new ArgumentNullException(nameof(callHandler));
+            CallConstraint = callConstraint ?? throw new ArgumentNullException(nameof(callConstraint));
+            
+            redirectOptions ??= RedirectOptions<TTarget>.Default;
+            CallHandler = redirectOptions.CallHandlerDecorator?.Invoke(callHandler) ?? callHandler;
+            
+            OrderWeight = redirectOptions.OrderWeight ?? 0;
+            DisableSatisfyStrict = redirectOptions.DisableSatisfyStrict ?? false;
         }
 
         public ICallHandler<TTarget> CallHandler

@@ -18,7 +18,7 @@ namespace DivertR.UnitTests
         public void GivenDivert_ShouldDefaultToOriginal()
         {
             // ARRANGE
-            _via.Divert(x => x.GetFoo());
+            _via.To(x => x.GetFoo()).Divert();
 
             // ACT
             var result = _proxy.GetFoo().Name;
@@ -32,8 +32,8 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var fooVia = _via
-                .Divert(x => x.GetFoo())
-                .Via();
+                .To(x => x.GetFoo())
+                .Divert();
             
             fooVia.To(x => x.Name).Redirect("Diverted");
 

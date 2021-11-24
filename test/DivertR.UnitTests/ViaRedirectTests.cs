@@ -363,7 +363,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _via.To(x => x.Echo(GetMethodValue()))
-                .Redirect<(string, __)>(args => "matched");
+                .Redirect<(string, __)>(_ => "matched");
             
             // ACT
             var result = _via.Proxy().Echo(GetMethodValue());
@@ -726,13 +726,29 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public void GivenRelayRedirect_ShouldRedirect()
+        public void GivenFuncRelayRedirect_ShouldRedirect()
         {
             var proxy = _via.Proxy(new Foo("foo"));
             
             _via
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect<(string input, __)>(call => $"{_via.Relay.Next.Echo(call.Args.input)} diverted");
+                .Redirect<(string input, __)>(call => $"{call.Next.Echo(call.Args.input)} diverted");
+            
+            // ACT
+            var result = proxy.Echo("test");
+            
+            // ASSERT
+            result.ShouldBe("foo: test diverted");
+        }
+        
+        [Fact]
+        public void GivenRelayFuncArgsRedirect_ShouldRedirect()
+        {
+            var proxy = _via.Proxy(new Foo("foo"));
+            
+            _via
+                .To(x => x.Echo(Is<string>.Any))
+                .Redirect<(string input, __)>((call, args) => $"{call.Next.Echo(args.input)} diverted");
             
             // ACT
             var result = proxy.Echo("test");
@@ -750,7 +766,7 @@ namespace DivertR.UnitTests
                 .To(x => x.Echo(Is<string>.Any))
                 .Redirect<(string input, __)>(call =>
                 {
-                    var echo = _via.Relay.Next.Echo(call.Args.input);
+                    var echo = call.Next.Echo(call.Args.input);
                     return $"{echo} diverted";
                 }, options => options.Repeat(10));
 
@@ -776,6 +792,40 @@ namespace DivertR.UnitTests
 
             // ASSERT
             result.ShouldBe(15);
+        }
+        
+        [Fact]
+        public void GivenActionRelayRedirect_ShouldRedirect()
+        {
+            // ARRANGE
+            var via = new Via<INumber>();
+            via
+                .To(x => x.GetNumber(Is<int>.Any))
+                .Redirect<(int input, __)>(call => call.Next.GetNumber(call.Args.input) + 5);
+
+            // ACT
+            var proxy = via.Proxy(new Number(x => x * 2));
+            var result = proxy.GetNumber(10);
+
+            // ASSERT
+            result.ShouldBe(25);
+        }
+        
+        [Fact]
+        public void GivenActionRelayArgsRedirect_ShouldRedirect()
+        {
+            // ARRANGE
+            var via = new Via<INumber>();
+            via
+                .To(x => x.GetNumber(Is<int>.Any))
+                .Redirect<(int input, __)>((call, args) => call.Next.GetNumber(args.input) + 5);
+
+            // ACT
+            var proxy = via.Proxy(new Number(x => x * 2));
+            var result = proxy.GetNumber(10);
+
+            // ASSERT
+            result.ShouldBe(25);
         }
     }
 }

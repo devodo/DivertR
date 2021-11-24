@@ -102,8 +102,19 @@ namespace DivertR
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <typeparam name="TReturn">The Expression return type</typeparam>
         /// <returns>The Redirect builder instance.</returns>
-        IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression);
-
+        IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : struct;
+        
+        // Delegate required to coerce C# to allow the To overload below
+        delegate TResult ClassReturnMatch<in T, out TResult>(T args) where TResult : class;
+        
+        /// <summary>
+        /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning <typeparam name="TReturn" />.
+        /// </summary>
+        /// <param name="constraintExpression">The call constraint expression.</param>
+        /// <typeparam name="TReturn">The Expression return type</typeparam>
+        /// <returns>The Redirect builder instance.</returns>
+        IClassFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<ClassReturnMatch<TTarget, TReturn>> constraintExpression) where TReturn : class;
+        
         /// <summary>
         /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning void />.
         /// </summary>
@@ -125,13 +136,5 @@ namespace DivertR
         /// </summary>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
         new IVia<TTarget> Strict();
-        
-        /// <summary>
-        /// Returns a builder that can be used to create a new <see cref="IVia{TReturn}"/> instance that intercepts matching calls on the parent. 
-        /// </summary>
-        /// <param name="constraintExpression">The call constraint expression.</param>
-        /// <typeparam name="TReturn">The return type taken from call constraint expression that will be used to build <see cref="IVia{TReturn}"/> generic type argument.</typeparam>
-        /// <returns>The Redirect builder instance.</returns>
-        IDivertRedirectBuilder<TTarget, TReturn> Divert<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : class;
     }
 }

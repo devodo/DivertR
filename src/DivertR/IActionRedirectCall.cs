@@ -8,6 +8,8 @@ namespace DivertR
         CallInfo<TTarget> CallInfo { get; }
         CallArguments Args { get; }
         IRelay<TTarget> Relay { get; }
+        TTarget Next { get; }
+        TTarget Root { get; }
     }
     
     public interface IActionRedirectCall<TTarget, out TArgs> : IActionRedirectCall<TTarget>

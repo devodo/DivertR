@@ -44,7 +44,7 @@ namespace DivertR.Internal
         public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordHandler = new RecordCallHandler<TTarget>(Via.Relay);
-            var redirectOptions = optionsAction.Create();
+            var redirectOptions = optionsAction.Create(Via);
 
             if (CallConstraint == CompositeCallConstraint<TTarget>.Empty)
             {
@@ -59,21 +59,19 @@ namespace DivertR.Internal
         public ISpyCollection<TMap> Spy<TMap>(Func<IRecordedCall<TTarget>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var spyCallHandler = new SpyCallHandler<TTarget, TMap>(Via.Relay, mapper);
-            InsertRedirect(spyCallHandler, optionsAction.Create());
+            InsertRedirect(spyCallHandler, optionsAction.Create(Via));
 
             return spyCallHandler.MappedCalls;
         }
 
         protected Redirect<TTarget> Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            return Build(callHandler, optionsAction.Create());
+            return Build(callHandler, optionsAction.Create(Via));
         }
 
         private Redirect<TTarget> Build(ICallHandler<TTarget> callHandler, RedirectOptions<TTarget> redirectOptions)
         {
-            callHandler = redirectOptions.CallHandlerDecorator?.Invoke(Via, callHandler) ?? callHandler;
-
-            return new Redirect<TTarget>(callHandler, CallConstraint, redirectOptions.OrderWeight, redirectOptions.DisableSatisfyStrict);
+            return new Redirect<TTarget>(callHandler, CallConstraint, redirectOptions);
         }
 
         private void InsertRedirect(ICallHandler<TTarget> callHandler, RedirectOptions<TTarget> redirectOptions)

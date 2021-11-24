@@ -30,6 +30,18 @@ namespace DivertR.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
+        
+        public TTarget Next
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Relay.Next;
+        }
+
+        public TTarget Root
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Relay.Root;
+        }
     }
     
     internal class FuncRedirectCall<TTarget, TReturn, TArgs> : FuncRedirectCall<TTarget, TReturn>, IFuncRedirectCall<TTarget, TReturn, TArgs>

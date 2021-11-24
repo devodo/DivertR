@@ -87,7 +87,7 @@ namespace DivertR
         /// <summary>
         /// Reset registered <see cref="IVia" /> group.
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">The Via group name.</param>
         /// <returns>The current <see cref="IDiverter"/> instance.</returns>
         IDiverter Reset(string? name = null);
     }

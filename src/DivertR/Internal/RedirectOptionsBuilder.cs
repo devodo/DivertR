@@ -6,11 +6,17 @@ namespace DivertR.Internal
 {
     internal class RedirectOptionsBuilder<TTarget> : IRedirectOptionsBuilder<TTarget> where TTarget : class
     {
+        private readonly IVia<TTarget> _via;
         private int? _orderWeight;
         private bool? _disableSatisfyStrict;
         
-        private readonly List<Func<IVia<TTarget>, ICallHandler<TTarget>, ICallHandler<TTarget>>> _callHandlerChain =
-            new List<Func<IVia<TTarget>, ICallHandler<TTarget>, ICallHandler<TTarget>>>();
+        private readonly List<Func<ICallHandler<TTarget>, ICallHandler<TTarget>>> _callHandlerChain =
+            new List<Func<ICallHandler<TTarget>, ICallHandler<TTarget>>>();
+
+        public RedirectOptionsBuilder(IVia<TTarget> via)
+        {
+            _via = via;
+        }
 
         public IRedirectOptionsBuilder<TTarget> OrderWeight(int orderWeight)
         {
@@ -26,7 +32,7 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IRedirectOptionsBuilder<TTarget> ChainCallHandler(Func<IVia<TTarget>, ICallHandler<TTarget>, ICallHandler<TTarget>> chainLink)
+        public IRedirectOptionsBuilder<TTarget> ChainCallHandler(Func<ICallHandler<TTarget>, ICallHandler<TTarget>> chainLink)
         {
             _callHandlerChain.Add(chainLink);
 
@@ -35,12 +41,12 @@ namespace DivertR.Internal
         
         public IRedirectOptionsBuilder<TTarget> Repeat(int repeatCount)
         {
-            return ChainCallHandler((via, redirect) => new RepeatCallHandler<TTarget>(via, redirect, repeatCount));
+            return ChainCallHandler(callHandler => new RepeatCallHandler<TTarget>(_via, callHandler, repeatCount));
         }
         
         public IRedirectOptionsBuilder<TTarget> Skip(int skipCount)
         {
-            return ChainCallHandler((via, redirect) => new SkipCallHandler<TTarget>(via, redirect, skipCount));
+            return ChainCallHandler(callHandler => new SkipCallHandler<TTarget>(_via, callHandler, skipCount));
         }
 
         public RedirectOptions<TTarget> Build()
@@ -53,7 +59,7 @@ namespace DivertR.Internal
             };
         }
         
-        private ICallHandler<TTarget> GetCallHandlerDecorator(IVia<TTarget> via, ICallHandler<TTarget> callHandler)
+        private ICallHandler<TTarget> GetCallHandlerDecorator(ICallHandler<TTarget> callHandler)
         {
             if (!_callHandlerChain.Any())
             {
@@ -62,7 +68,7 @@ namespace DivertR.Internal
             
             foreach (var chainLink in _callHandlerChain)
             {
-                callHandler = chainLink.Invoke(via, callHandler);
+                callHandler = chainLink.Invoke(callHandler);
             }
 
             return callHandler;

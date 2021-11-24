@@ -91,7 +91,7 @@ namespace DivertR
             return new RedirectBuilder<TTarget>(this, callConstraint);
         }
         
-        public IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
+        public IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : struct
         {
             if (constraintExpression?.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
@@ -99,7 +99,16 @@ namespace DivertR
             
             return new FuncRedirectBuilder<TTarget, TReturn>(this, parsedCall);
         }
-        
+
+        public IClassFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<IVia<TTarget>.ClassReturnMatch<TTarget, TReturn>> constraintExpression) where TReturn : class
+        {
+            if (constraintExpression?.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
+
+            var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
+            
+            return new ClassFuncRedirectBuilder<TTarget, TReturn>(this, parsedCall);
+        }
+
         public IActionRedirectBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
         {
             if (constraintExpression?.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
@@ -135,15 +144,7 @@ namespace DivertR
         {
             return Strict();
         }
-        
-        public IDivertRedirectBuilder<TTarget, TReturn> Divert<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : class
-        {
-            if (constraintExpression?.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
-            var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
-            return new DivertRedirectBuilder<TTarget, TReturn>(this, parsedCall);
-        }
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IProxyCall<TTarget>? GetProxyCall()
         {

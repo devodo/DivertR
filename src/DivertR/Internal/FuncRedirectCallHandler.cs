@@ -60,4 +60,39 @@ namespace DivertR.Internal
             }
         }
     }
+    
+    internal class FuncArgsRedirectCallHandler<TTarget, TReturn, TArgs> : ICallHandler<TTarget>
+        where TTarget : class
+        where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+    {
+        private readonly IValueTupleMapper _valueTupleMapper;
+        private readonly IRelay<TTarget, TReturn> _relay;
+        private readonly Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> _redirectDelegate;
+
+        public FuncArgsRedirectCallHandler(
+            IValueTupleMapper valueTupleMapper,
+            IRelay<TTarget, TReturn> relay,
+            Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate)
+        {
+            _valueTupleMapper = valueTupleMapper;
+            _relay = relay;
+            _redirectDelegate = redirectDelegate;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Call(CallInfo<TTarget> callInfo)
+        {
+            var valueTupleArgs = (TArgs) _valueTupleMapper.ToTuple(callInfo.Arguments.InternalArgs);
+            var redirectCall = new FuncRedirectCall<TTarget, TReturn, TArgs>(callInfo, _relay, valueTupleArgs);
+
+            try
+            {
+                return _redirectDelegate.Invoke(redirectCall, valueTupleArgs);
+            }
+            finally
+            {
+                _valueTupleMapper.WriteBackReferences(callInfo.Arguments.InternalArgs, valueTupleArgs);
+            }
+        }
+    }
 }
