@@ -61,6 +61,29 @@ namespace DivertR.Internal
         }
     }
     
+    internal class FuncArgsRedirectCallHandler<TTarget, TReturn> : ICallHandler<TTarget>
+        where TTarget : class
+    {
+        private readonly IRelay<TTarget, TReturn> _relay;
+        private readonly Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> _redirectDelegate;
+
+        public FuncArgsRedirectCallHandler(
+            IRelay<TTarget, TReturn> relay,
+            Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> redirectDelegate)
+        {
+            _relay = relay;
+            _redirectDelegate = redirectDelegate;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Call(CallInfo<TTarget> callInfo)
+        {
+            var redirectCall = new FuncRedirectCall<TTarget, TReturn>(callInfo, _relay);
+
+            return _redirectDelegate.Invoke(redirectCall, redirectCall.Args);
+        }
+    }
+    
     internal class FuncArgsRedirectCallHandler<TTarget, TReturn, TArgs> : ICallHandler<TTarget>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable

@@ -44,6 +44,13 @@ namespace DivertR.Internal
             return base.Build(callHandler, optionsAction);
         }
 
+        public Redirect<TTarget> Build(Action<IActionRedirectCall<TTarget>, CallArguments> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var callHandler = new ActionArgsRedirectCallHandler<TTarget>(Via.Relay, redirectDelegate);
+
+            return base.Build(callHandler, optionsAction);
+        }
+
         public Redirect<TTarget> Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Build(redirectDelegate, optionsAction);
@@ -77,6 +84,29 @@ namespace DivertR.Internal
             return this;
         }
 
+        public IActionRedirectBuilder<TTarget> Redirect(Action<IActionRedirectCall<TTarget>, CallArguments> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var redirect = Build(redirectDelegate, optionsAction);
+            Via.InsertRedirect(redirect);
+            
+            return this;
+        }
+
+        public IActionRedirectBuilder<TTarget, TArgs> Redirect<TArgs>(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        {
+            return WithArgs<TArgs>().Redirect(redirectDelegate, optionsAction);
+        }
+
+        public IActionRedirectBuilder<TTarget, TArgs> Redirect<TArgs>(Action redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        {
+            return WithArgs<TArgs>().Redirect(redirectDelegate, optionsAction);
+        }
+
+        public IActionRedirectBuilder<TTarget, TArgs> Redirect<TArgs>(Action<IActionRedirectCall<TTarget>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        {
+            return WithArgs<TArgs>().Redirect(redirectDelegate, optionsAction);
+        }
+
         public IActionRedirectBuilder<TTarget, TArgs> Redirect<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Redirect(redirectDelegate, optionsAction);
@@ -107,6 +137,13 @@ namespace DivertR.Internal
         public ISpyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var spyMapper = new SpyActionMapper<TTarget, TMap>(mapper);
+
+            return base.Spy(spyMapper.Map, optionsAction);
+        }
+
+        public ISpyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget>, CallArguments, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var spyMapper = new SpyArgsActionMapper<TTarget, TMap>(mapper);
 
             return base.Spy(spyMapper.Map, optionsAction);
         }
@@ -146,6 +183,20 @@ namespace DivertR.Internal
             return this;
         }
 
+        public new IActionRedirectBuilder<TTarget, TArgs> Redirect(Action redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            base.Redirect(redirectDelegate, optionsAction);
+
+            return this;
+        }
+
+        public new IActionRedirectBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            base.Redirect(redirectDelegate, optionsAction);
+
+            return this;
+        }
+
         public IActionRedirectBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var redirect = Build(redirectDelegate, optionsAction);
@@ -172,6 +223,13 @@ namespace DivertR.Internal
         public ISpyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget, TArgs>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var spyMapper = new SpyActionMapper<TTarget, TArgs, TMap>(_valueTupleMapper, mapper);
+
+            return base.Spy(spyMapper.Map, optionsAction);
+        }
+
+        public ISpyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget, TArgs>, TArgs, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var spyMapper = new SpyArgsActionMapper<TTarget, TArgs, TMap>(_valueTupleMapper, mapper);
 
             return base.Spy(spyMapper.Map, optionsAction);
         }
