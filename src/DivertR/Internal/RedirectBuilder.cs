@@ -64,6 +64,13 @@ namespace DivertR.Internal
             return spyCallHandler.MappedCalls;
         }
 
+        public ISpyCollection<TMap> Spy<TMap>(Func<IRecordedCall<TTarget>, CallArguments, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var spyMapper = new SpyArgsActionMapper<TTarget, TMap>(mapper);
+
+            return Spy(spyMapper.Map, optionsAction);
+        }
+
         protected Redirect<TTarget> Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             return Build(callHandler, optionsAction.Create(Via));

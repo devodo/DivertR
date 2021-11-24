@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using DivertR.Record;
@@ -33,9 +32,10 @@ namespace DivertR.WebAppTests
                 Name = Guid.NewGuid().ToString()
             };
 
-            _fooRepositoryVia
+            var getFooCalls = _fooRepositoryVia
                 .To(x => x.GetFooAsync(foo.Id))
-                .Redirect(Task.FromResult(foo));
+                .Redirect(Task.FromResult(foo))
+                .Record();
             
             // ACT
             var response = await _fooClient.GetFoo(foo.Id);
@@ -43,6 +43,7 @@ namespace DivertR.WebAppTests
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
             response.Content.ShouldBeEquivalentTo(foo);
+            getFooCalls.Count.ShouldBe(1);
         }
         
         [Fact]
@@ -51,14 +52,13 @@ namespace DivertR.WebAppTests
             // ARRANGE
             var foo = new Foo
             {
-                Id = Guid.NewGuid(),
-                Name = Guid.NewGuid().ToString()
+                Id = Guid.NewGuid()
             };
-            
-            var fooRepoCalls = _fooRepositoryVia.Record(options => options.OrderWeight(int.MaxValue));
-            _fooRepositoryVia
+
+            var getFooCalls = _fooRepositoryVia
                 .To(x => x.GetFooAsync(Is<Guid>.Any))
-                .Redirect(Task.FromResult<Foo>(null));
+                .Redirect<(Guid fooId, __)>(Task.FromResult<Foo>(null))
+                .Record();
             
             // ACT
             var response = await _fooClient.GetFoo(foo.Id);
@@ -66,8 +66,13 @@ namespace DivertR.WebAppTests
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
             response.Content.ShouldBeNull();
-            fooRepoCalls.Count.ShouldBe(1);
-            fooRepoCalls.To(x => x.GetFooAsync(foo.Id)).Count().ShouldBe(1);
+
+            (await getFooCalls.ScanAsync(async call =>
+            {
+                call.Args.fooId.ShouldBe(foo.Id);
+                call.Returned?.IsException.ShouldBeFalse();
+                (await call.Returned!.Value).ShouldBeNull();
+            })).ShouldBe(1);
         }
 
         [Fact]
@@ -126,7 +131,8 @@ namespace DivertR.WebAppTests
                 response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{call.Args.foo.Id}");
                 call.Args.foo.Name.ShouldBe(createFooRequest.Name);
                 response.Content.ShouldBeEquivalentTo(call.Args.foo);
-
+                
+                call.Returned?.IsValue.ShouldBeTrue();
                 (await call.Returned!.Value).ShouldBe(true);
             })).ShouldBe(1);
         }
@@ -143,10 +149,10 @@ namespace DivertR.WebAppTests
             var insertCalls = _fooRepositoryVia
                 .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
                 .WithArgs<(Foo foo, __)>()
-                .Spy(async call => new
+                .Spy((call, args) => new
                 {
-                    Foo = call.Args.foo,
-                    Result = await call.Returned!.Value
+                    Foo = args.foo,
+                    Result = call.Returned
                 });
 
             // ACT  
@@ -155,12 +161,14 @@ namespace DivertR.WebAppTests
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
 
-            (await insertCalls.ScanAsync(call =>
+            (await insertCalls.ScanAsync(async call =>
             {
                 response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{call.Foo.Id}");
                 response.Content.ShouldBeEquivalentTo(call.Foo);
                 call.Foo.Name.ShouldBe(createFooRequest.Name);
-                call.Result.ShouldBe(true);
+                
+                call.Result?.IsValue.ShouldBeTrue();
+                (await call.Result!.Value).ShouldBe(true);
             })).ShouldBe(1);
         }
         

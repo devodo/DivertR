@@ -16,7 +16,7 @@ namespace DivertR.UnitTests
 
         public SpyTests()
         {
-            _proxy = _via.Proxy();
+            _proxy = _via.Proxy(new Foo());
         }
 
         [Fact]
@@ -192,6 +192,27 @@ namespace DivertR.UnitTests
                 call.Input.ShouldBe($"test{i}");
                 (await call.Result).ShouldBe($"test{i} diverted");
             })).ShouldBe(inputs.Count);
+        }
+        
+        [Fact]
+        public void GivenCallConstraintSpy_ShouldRecordAndMapCalls()
+        {
+            // ARRANGE
+            var inputs = Enumerable
+                .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
+                .ToList();
+
+            var echoes = _via
+                .To(new CallConstraint<IFoo>(call => call.Method.Name == nameof(IFoo.Echo)))
+                .Spy((call, args) => new { Input = args[0] });
+
+            // ACT
+            var outputs = inputs.Select(x => _proxy.Echo(x)).ToList();
+
+            // ASSERT
+            outputs.ShouldBe(inputs.Select(x => $"{_proxy.Name}: {x}"));
+            echoes.Count.ShouldBe(inputs.Count);
+            echoes.Select(x => x.Input).ShouldBe(inputs);
         }
     }
 }
