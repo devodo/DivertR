@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using DivertR.DependencyInjection;
 using DivertR.SampleWebApp;
@@ -29,6 +30,8 @@ namespace DivertR.WebAppTests
                 });
             });
         }
+
+        public IServiceProvider Services => _webApplicationFactory.Services;
 
         public IDiverter InitDiverter(ITestOutputHelper output = null)
         {

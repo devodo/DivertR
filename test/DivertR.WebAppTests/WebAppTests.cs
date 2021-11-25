@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using DivertR.Record;
 using DivertR.SampleWebApp.Model;
 using DivertR.SampleWebApp.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -14,12 +15,14 @@ namespace DivertR.WebAppTests
     {
         private readonly IVia<IFooRepository> _fooRepositoryVia;
         private readonly IFooClient _fooClient;
+        private readonly IServiceProvider _services;
 
         public WebAppTests(WebAppFixture webAppFixture, ITestOutputHelper output)
         {
             var diverter = webAppFixture.InitDiverter(output);
             _fooRepositoryVia = diverter.Via<IFooRepository>();
             _fooClient = webAppFixture.CreateFooClient();
+            _services = webAppFixture.Services;
         }
 
         [Fact]
@@ -32,18 +35,50 @@ namespace DivertR.WebAppTests
                 Name = Guid.NewGuid().ToString()
             };
 
-            var getFooCalls = _fooRepositoryVia
+            _fooRepositoryVia
                 .To(x => x.GetFooAsync(foo.Id))
-                .Redirect(Task.FromResult(foo))
-                .Record();
-            
+                .Redirect(Task.FromResult(foo));
+
             // ACT
-            var response = await _fooClient.GetFoo(foo.Id);
+            var response = await _fooClient.GetFooAsync(foo.Id);
             
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
             response.Content.ShouldBeEquivalentTo(foo);
-            getFooCalls.Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public async Task GivenFooExists_WhenGetFoo_ThenReadsFromFooRepository()
+        {
+            // ARRANGE
+            var foo = new Foo
+            {
+                Id = Guid.NewGuid(),
+                Name = Guid.NewGuid().ToString()
+            };
+            
+            var fooRepository = _services.GetRequiredService<IFooRepository>();
+            (await fooRepository.TryInsertFooAsync(foo)).ShouldBeTrue();
+
+            (Guid fooId, Foo foo) fooRepoCall = default;
+
+            _fooRepositoryVia
+                .To(x => x.GetFooAsync(Is<Guid>.Any))
+                .Redirect<(Guid fooId, __)>(async (call, args) =>
+                {
+                    var getFoo = await call.Root.GetFooAsync(args.fooId);
+                    fooRepoCall = (args.fooId, getFoo);
+
+                    return getFoo;
+                });
+            
+            // ACT
+            var response = await _fooClient.GetFooAsync(foo.Id);
+            
+            // ASSERT
+            response.Content.ShouldBeEquivalentTo(foo);
+            fooRepoCall.foo.ShouldBeEquivalentTo(foo);
+            fooRepoCall.fooId.ShouldBe(foo.Id);
         }
         
         [Fact]
@@ -61,7 +96,7 @@ namespace DivertR.WebAppTests
                 .Record();
             
             // ACT
-            var response = await _fooClient.GetFoo(foo.Id);
+            var response = await _fooClient.GetFooAsync(foo.Id);
             
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
@@ -98,7 +133,7 @@ namespace DivertR.WebAppTests
                 });
 
             // ACT
-            var response = await _fooClient.InsertFoo(createFooRequest);
+            var response = await _fooClient.InsertFooAsync(createFooRequest);
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
@@ -122,7 +157,7 @@ namespace DivertR.WebAppTests
                 .Record<(Foo foo, __)>();
 
             // ACT  
-            var response = await _fooClient.InsertFoo(createFooRequest);
+            var response = await _fooClient.InsertFooAsync(createFooRequest);
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
@@ -156,7 +191,7 @@ namespace DivertR.WebAppTests
                 });
 
             // ACT  
-            var response = await _fooClient.InsertFoo(createFooRequest);
+            var response = await _fooClient.InsertFooAsync(createFooRequest);
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
@@ -189,7 +224,7 @@ namespace DivertR.WebAppTests
                 .Record();
 
             // ACT
-            var response = await _fooClient.InsertFoo(createFooRequest);
+            var response = await _fooClient.InsertFooAsync(createFooRequest);
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
