@@ -1,6 +1,6 @@
 ﻿using DivertR.DispatchProxy;
 
-namespace DivertR.Setup
+namespace DivertR
 {
     public class DiverterSettings
     {

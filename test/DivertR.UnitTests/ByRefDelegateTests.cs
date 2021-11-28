@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using DivertR.DynamicProxy;
 using DivertR.Record;
-using DivertR.Setup;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;

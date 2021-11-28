@@ -29,12 +29,13 @@ namespace DivertR
         /// </summary>
         /// <returns>The current <see cref="IVia"/> instance.</returns>
         IVia Reset();
-        
+
         /// <summary>
-        /// Enable strict mode.
+        /// Set strict mode. If no argument, strict mode is enabled by default.
         /// </summary>
+        /// <param name="isStrict">Optional bool to specify enable/disable of strict mode.</param>
         /// <returns>The current <see cref="IVia"/> instance.</returns>
-        IVia Strict();
+        IVia Strict(bool? isStrict = true);
     }
     
     /// <summary>
@@ -136,7 +137,8 @@ namespace DivertR
         /// <summary>
         /// Enable strict mode.
         /// </summary>
+        /// <param name="isStrict">Optional bool to specify enable/disable of strict mode.</param>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
-        new IVia<TTarget> Strict();
+        new IVia<TTarget> Strict(bool? isStrict = true);
     }
 }

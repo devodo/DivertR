@@ -38,7 +38,7 @@ namespace DivertR
     /// <inheritdoc />
     public class Via<TTarget> : IVia<TTarget> where TTarget : class
     {
-        private readonly RedirectRepository _redirectRepository = new RedirectRepository();
+        private readonly RedirectRepository<TTarget> _redirectRepository = new RedirectRepository<TTarget>();
         private readonly IProxyFactory _proxyFactory;
         private readonly Relay<TTarget> _relay;
 
@@ -61,8 +61,7 @@ namespace DivertR
             get => _relay;
         }
 
-        public RedirectPlan<TTarget> RedirectPlan =>
-            _redirectRepository.Get<TTarget>(ViaId) ?? RedirectPlan<TTarget>.Empty;
+        public RedirectPlan<TTarget> RedirectPlan => _redirectRepository.RedirectPlan ?? RedirectPlan<TTarget>.Empty;
 
         public TTarget Proxy(TTarget? original = null)
         {
@@ -81,7 +80,7 @@ namespace DivertR
         
         public IVia<TTarget> InsertRedirect(Redirect<TTarget> redirect)
         {
-            _redirectRepository.InsertRedirect(ViaId, redirect);
+            _redirectRepository.InsertRedirect(redirect);
 
             return this;
         }
@@ -93,7 +92,7 @@ namespace DivertR
 
         public IVia<TTarget> Reset()
         {
-            _redirectRepository.Reset(ViaId);
+            _redirectRepository.Reset();
 
             return this;
         }
@@ -155,22 +154,22 @@ namespace DivertR
             return new ActionRedirectBuilder<TTarget>(this, parsedCall);
         }
 
-        public IVia<TTarget> Strict()
+        public IVia<TTarget> Strict(bool? isStrict = true)
         {
-            _redirectRepository.SetStrictMode<TTarget>(ViaId);
+            _redirectRepository.SetStrictMode(isStrict ?? true);
 
             return this;
         }
 
-        IVia IVia.Strict()
+        IVia IVia.Strict(bool? isStrict)
         {
-            return Strict();
+            return Strict(isStrict ?? true);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IProxyCall<TTarget>? GetProxyCall()
         {
-            var redirectPlan = _redirectRepository.Get<TTarget>(ViaId);
+            var redirectPlan = _redirectRepository.RedirectPlan;
 
             return redirectPlan == null
                 ? null

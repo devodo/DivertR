@@ -1,5 +1,4 @@
 ﻿using DivertR.DynamicProxy;
-using DivertR.Setup;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;

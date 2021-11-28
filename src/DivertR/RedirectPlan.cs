@@ -8,7 +8,7 @@ namespace DivertR
     {
         public static readonly RedirectPlan<TTarget> Empty = new RedirectPlan<TTarget>(Array.Empty<Redirect<TTarget>>(), false);
         
-        public RedirectPlan(IReadOnlyList<Redirect<TTarget>> redirects, bool isStrictMode)
+        internal RedirectPlan(IReadOnlyList<Redirect<TTarget>> redirects, bool isStrictMode)
         {
             Redirects = redirects;
             IsStrictMode = isStrictMode;
