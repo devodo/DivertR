@@ -13,10 +13,15 @@ namespace DivertR.Internal
         protected ClassFuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint, Relay<TTarget, TReturn> relay) : base(via, parsedCallExpression, callConstraint, relay)
         {
         }
-
+        
         public IVia<TReturn> Divert(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var via = new Via<TReturn>();
+            return Divert(null!, optionsAction);
+        }
+
+        public IVia<TReturn> Divert(string name, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var via = Via.ViaSet.Via<TReturn>(name);
             ICallHandler<TTarget> callHandler = new DelegateCallHandler<TTarget>(callInfo => via.Proxy((TReturn) Via.Relay.CallNext()!));
             base.InsertRedirect(callHandler, optionsAction);
 

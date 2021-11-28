@@ -7,7 +7,7 @@ namespace DivertR.UnitTests
 {
     public class ValueTupleValidationTests
     {
-        private readonly IVia<IFoo> _via = new Via<IFoo>();
+        private readonly IVia<IFoo> _via = Via.For<IFoo>();
         
         [Fact]
         public void GivenInvalidRedirectParameterType_ShouldThrowException()

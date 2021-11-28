@@ -9,7 +9,7 @@ namespace DivertR.UnitTests
 {
     public class ViaRetargetTests
     {
-        private readonly Via<IFoo> _via = new();
+        private readonly IVia<IFoo> _via = Via.For<IFoo>();
 
         [Fact]
         public void GivenRedirectRetarget_ShouldRedirect()

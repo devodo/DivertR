@@ -11,7 +11,7 @@ namespace DivertR.UnitTests
 {
     public class SpyTests
     {
-        private readonly IVia<IFoo> _via = new Via<IFoo>();
+        private readonly IVia<IFoo> _via = Via.For<IFoo>();
         private readonly IFoo _proxy;
 
         public SpyTests()
@@ -89,7 +89,7 @@ namespace DivertR.UnitTests
                 .Range(0, 20).Select(i => i)
                 .ToList();
 
-            var numberVia = new Via<INumber>();
+            var numberVia = Via.For<INumber>();
             var numberProxy = numberVia.Proxy(new Number(x => x * 10));
 
             var results = numberVia

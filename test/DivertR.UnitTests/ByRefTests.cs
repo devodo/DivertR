@@ -14,7 +14,7 @@ namespace DivertR.UnitTests
         private static readonly DiverterSettings DiverterSettings = new(new DynamicProxyFactory());
 
         public ByRefTestsDynamicProxy()
-            : base(new Via<INumber>(DiverterSettings))
+            : base(new ViaSet(DiverterSettings))
         {
         }
         
@@ -22,7 +22,7 @@ namespace DivertR.UnitTests
         public void GivenOutRedirect_WhenException_ShouldWriteBackRefs()
         {
             // ARRANGE
-            var via = new Via<INumber>(DiverterSettings);
+            var via = ViaSet.Via<INumber>();
             via
                 .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
                 .Redirect<(int input, Ref<int> output)>(call =>
@@ -46,22 +46,25 @@ namespace DivertR.UnitTests
     
     public class ByRefTests
     {
+        protected readonly IViaSet ViaSet;
+
         private delegate int RefCall(ref int input);
         
         private delegate void RefArrayCall(ref int[] input);
         
         private delegate void OutCall(int input, out int output);
 
-        private readonly Via<INumber> _via;
+        private readonly IVia<INumber> _via;
         private readonly INumber _proxy;
 
-        public ByRefTests() : this(new Via<INumber>())
+        public ByRefTests() : this(new ViaSet())
         {
         }
 
-        protected ByRefTests(Via<INumber> via)
+        protected ByRefTests(IViaSet viaSet)
         {
-            _via = via;
+            ViaSet = viaSet;
+            _via = viaSet.Via<INumber>();
             _proxy = _via.Proxy(new Number(i => i + 100));
         }
         
@@ -296,7 +299,7 @@ namespace DivertR.UnitTests
         public void GivenRefRedirect_ShouldRedirect()
         {
             // ARRANGE
-            var via = new Via<INumber>();
+            var via = Via.For<INumber>();
             int input = 5;
             via
                 .To(x => x.RefNumber(ref input))
@@ -322,7 +325,7 @@ namespace DivertR.UnitTests
         public void GivenRefDelegate_ShouldRedirect()
         {
             // ARRANGE
-            var via = new Via<INumber>();
+            var via = Via.For<INumber>();
             int input = 5;
             via
                 .To(x => x.RefNumber(ref input))
@@ -348,7 +351,7 @@ namespace DivertR.UnitTests
         public void GivenRefParameter_WhenParameterlessRedirect_ShouldRedirect()
         {
             // ARRANGE
-            var via = new Via<INumber>();
+            var via = Via.For<INumber>();
             via
                 .To(x => x.RefNumber(ref IsRef<int>.Any))
                 .Redirect(_ => 10);
@@ -367,7 +370,7 @@ namespace DivertR.UnitTests
         public void GivenRefParameter_WhenParameterlessDelegateRedirect_ShouldRedirect()
         {
             // ARRANGE
-            var via = new Via<INumber>();
+            var via = Via.For<INumber>();
             via
                 .To(x => x.RefNumber(ref IsRef<int>.Any))
                 .Redirect(() => 10);

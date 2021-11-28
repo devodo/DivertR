@@ -14,7 +14,7 @@ namespace DivertR.UnitTests
         
         private delegate int InCall(in int input);
 
-        private readonly Via<INumberIn> _via = new(DiverterSettings);
+        private readonly IVia<INumberIn> _via = new ViaSet(DiverterSettings).Via<INumberIn>();
 
         [Fact]
         public void GivenInRedirect_ShouldRedirect()

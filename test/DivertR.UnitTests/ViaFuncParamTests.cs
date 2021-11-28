@@ -10,7 +10,7 @@ namespace DivertR.UnitTests
 {
     public class ViaFuncParamTests
     {
-        private readonly IVia<IFoo> _via = new Via<IFoo>();
+        private readonly IVia<IFoo> _via = Via.For<IFoo>();
         private readonly IFoo _original = new Foo();
         private readonly IFoo _proxy;
         private readonly IRecordStream<IFoo> _recordStream;

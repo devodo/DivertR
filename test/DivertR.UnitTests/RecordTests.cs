@@ -11,7 +11,7 @@ namespace DivertR.UnitTests
 {
     public class RecordTests
     {
-        private readonly IVia<IFoo> _via = new Via<IFoo>();
+        private readonly IVia<IFoo> _via = Via.For<IFoo>();
         private readonly IRecordStream<IFoo> _recordStream;
 
         public RecordTests()

@@ -7,5 +7,6 @@ namespace DivertR
         where TReturn : class
     {
         IVia<TReturn> Divert(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        IVia<TReturn> Divert(string name, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
     }
 }

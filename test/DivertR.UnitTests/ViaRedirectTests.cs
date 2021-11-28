@@ -7,7 +7,7 @@ namespace DivertR.UnitTests
 {
     public class ViaRedirectTests
     {
-        private readonly IVia<IFoo> _via = new Via<IFoo>();
+        private readonly IVia<IFoo> _via = Via.For<IFoo>();
         
         [Fact]
         public void GivenNoRedirects_ShouldDefaultToOriginal()
@@ -217,7 +217,7 @@ namespace DivertR.UnitTests
         public void GivenConstantExpressionRedirect_WhenCallMatches_ShouldRedirect()
         {
             // ARRANGE
-            var via = new Via<IFoo>();
+            var via = Via.For<IFoo>();
             via
                 .To(x => x.Echo("test"))
                 .Redirect<(string input, __)>(call => $"{call.Relay.Root.Name} {call.Args.input}");
@@ -234,7 +234,7 @@ namespace DivertR.UnitTests
         public void GivenConstantExpressionRedirect_WhenCallDoesNotMatch_ShouldDefaultToOriginal()
         {
             // ARRANGE
-            var via = new Via<IFoo>();
+            var via = Via.For<IFoo>();
             via
                 .To(x => x.Echo("test"))
                 .Redirect<(string input, __)>(call => $"redirect {call.Relay.Root.Name} {call.Args.input}");
@@ -251,7 +251,7 @@ namespace DivertR.UnitTests
         public void GivenVariableExpressionRedirect_WhenCallMatches_ShouldRedirect()
         {
             // ARRANGE
-            var via = new Via<IFoo>();
+            var via = Via.For<IFoo>();
             var match = "test";
             via
                 .To(x => x.Echo(match))
@@ -269,7 +269,7 @@ namespace DivertR.UnitTests
         public void GivenVariableExpressionCallConstraint_WhenCallDoesNotMatch_ShouldDefaultToOriginal()
         {
             // ARRANGE
-            var via = new Via<IFoo>();
+            var via = Via.For<IFoo>();
             var input = new Wrapper<string>("test");
             via
                 .To(x => x.Echo(input.Item))
@@ -288,7 +288,7 @@ namespace DivertR.UnitTests
         public void GivenMatchExpressionRedirect_WhenCallMatches_ShouldRedirect()
         {
             // ARRANGE
-            var via = new Via<IFoo>();
+            var via = Via.For<IFoo>();
             var input = new Wrapper<string>("test");
             via
                 .To(x => x.Echo(Is<string>.Match(p => p == input.Item)))
@@ -307,7 +307,7 @@ namespace DivertR.UnitTests
         public void GivenMatchExpressionRedirect_WhenCallDoesNotMatch_ShouldDefaultToOriginal()
         {
             // ARRANGE
-            var via = new Via<IFoo>();
+            var via = Via.For<IFoo>();
             via
                 .To(x => x.Echo(Is<string>.Match(p => p == "test")))
                 .Redirect<(string i, __)>(call => $"redirect {call.Relay.Root.Name} {call.Args.i}");
@@ -324,7 +324,7 @@ namespace DivertR.UnitTests
         public void GivenIsAnyExpressionRedirect_WhenCallMatches_ShouldRedirect()
         {
             // ARRANGE
-            var via = new Via<IFoo>();
+            var via = Via.For<IFoo>();
             via
                 .To(x => x.Echo(Is<string>.Any))
                 .Redirect<(string input, __)>(call => $"{call.Relay.Root.Name} {call.Args.input}");
@@ -537,7 +537,7 @@ namespace DivertR.UnitTests
         public void GivenRedirectWithArrayParameter_WhenIsAny_ShouldRedirect()
         {
             // ARRANGE
-            var via = new Via<INumber>();
+            var via = Via.For<INumber>();
             
             via.Retarget(new Number(x => x * 2));
             via
@@ -781,7 +781,7 @@ namespace DivertR.UnitTests
         public void TestNumber()
         {
             // ARRANGE
-            var via = new Via<INumber>();
+            var via = Via.For<INumber>();
             via
                 .To(x => x.GetNumber(Is<int>.Any))
                 .Redirect<(int input, __)>(call => call.Args.input + 5);
@@ -798,7 +798,7 @@ namespace DivertR.UnitTests
         public void GivenActionRelayRedirect_ShouldRedirect()
         {
             // ARRANGE
-            var via = new Via<INumber>();
+            var via = Via.For<INumber>();
             via
                 .To(x => x.GetNumber(Is<int>.Any))
                 .Redirect<(int input, __)>(call => call.Next.GetNumber(call.Args.input) + 5);
@@ -815,7 +815,7 @@ namespace DivertR.UnitTests
         public void GivenActionRelayArgsRedirect_ShouldRedirect()
         {
             // ARRANGE
-            var via = new Via<INumber>();
+            var via = Via.For<INumber>();
             via
                 .To(x => x.GetNumber(Is<int>.Any))
                 .Redirect<(int input, __)>((call, args) => call.Next.GetNumber(args.input) + 5);

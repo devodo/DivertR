@@ -3,35 +3,57 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using DivertR.Internal;
 using DivertR.Record;
-using DivertR.Setup;
 
 namespace DivertR
 {
+    public static class Via
+    {
+        /// <summary>
+        /// Retrieve the specified <see cref="IVia{TTarget}"/> instance.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <typeparam name="TTarget"></typeparam>
+        /// <returns></returns>
+        public static IVia<TTarget> For<TTarget>(string? name = null) where TTarget : class
+        {
+            var viaSet = new ViaSet();
+            
+            return viaSet.Via<TTarget>(name);
+        }
+
+        /// <summary>
+        /// Retrieve the specified <see cref="IVia{TTarget}"/> instance.
+        /// </summary>
+        /// <param name="targetType"></param>
+        /// <param name="name">Optional Via group name.</param>
+        /// <returns>A new <see cref="IVia{TTarget}"/> instance.</returns>
+        public static IVia For(Type targetType, string? name = null) 
+        {
+            var viaSet = new ViaSet();
+            
+            return viaSet.Via(targetType, name);
+        }
+    }
+    
     /// <inheritdoc />
     public class Via<TTarget> : IVia<TTarget> where TTarget : class
     {
-        private readonly RedirectRepository _redirectRepository;
+        private readonly RedirectRepository _redirectRepository = new RedirectRepository();
         private readonly IProxyFactory _proxyFactory;
         private readonly Relay<TTarget> _relay;
-        
-        /// <summary>
-        /// Create a <see cref="Via{TTarget}"/> instance for type <typeparamref name="TTarget"/>.
-        /// </summary>
-        /// <param name="diverterSettings">Optionally override default DivertR settings.</param>
-        public Via(IDiverterSettings? diverterSettings = null) : this(ViaId.From<TTarget>(), new RedirectRepository(), diverterSettings ?? DiverterSettings.Default)
+
+        internal Via(ViaId viaId, IViaSet viaSet, IProxyFactory proxyFactory)
         {
-        }
-        
-        internal Via(ViaId viaId, RedirectRepository redirectRepository, IDiverterSettings diverterSettings)
-        {
-            _proxyFactory = diverterSettings.ProxyFactory;
-            _proxyFactory.ValidateProxyTarget<TTarget>();
             ViaId = viaId;
-            _redirectRepository = redirectRepository;
+            ViaSet = viaSet;
+            _proxyFactory = proxyFactory;
+            _proxyFactory.ValidateProxyTarget<TTarget>();
+            
             _relay = new Relay<TTarget>(_proxyFactory);
         }
 
         public ViaId ViaId { get; }
+        public IViaSet ViaSet { get; }
 
         public IRelay<TTarget> Relay
         {
@@ -139,7 +161,7 @@ namespace DivertR
 
             return this;
         }
-        
+
         IVia IVia.Strict()
         {
             return Strict();

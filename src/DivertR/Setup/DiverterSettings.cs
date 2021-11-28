@@ -2,9 +2,29 @@
 
 namespace DivertR.Setup
 {
-    public class DiverterSettings : IDiverterSettings
+    public class DiverterSettings
     {
-        public static readonly DiverterSettings Default = new DiverterSettings();
+        private static DiverterSettings Settings = new DiverterSettings();
+        private static readonly object SettingsLock = new object();
+
+        public static DiverterSettings Global
+        {
+            get
+            {
+                lock (SettingsLock)
+                {
+                    return Settings;
+                }
+            }
+
+            set
+            {
+                lock (SettingsLock)
+                {
+                    Settings = value;
+                }
+            }
+        }
 
         public DiverterSettings(IProxyFactory? proxyFactory = null)
         {

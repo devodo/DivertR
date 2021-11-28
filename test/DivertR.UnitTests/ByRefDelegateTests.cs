@@ -13,7 +13,7 @@ namespace DivertR.UnitTests
         private static readonly DiverterSettings DiverterSettings = new(new DynamicProxyFactory());
 
         public ByRefDelegateTestsDynamicProxy()
-            : base(new Via<INumber>(DiverterSettings))
+            : base(new ViaSet(DiverterSettings))
         {
         }
     }
@@ -26,14 +26,14 @@ namespace DivertR.UnitTests
         
         private delegate void OutCall(int input, out int output);
 
-        private readonly Via<INumber> _via;
+        private readonly IVia<INumber> _via;
         private readonly IRecordStream<INumber> _recordStream;
 
-        public ByRefDelegateTests() : this(new Via<INumber>())
+        public ByRefDelegateTests() : this(Via.For<INumber>())
         {
         }
 
-        protected ByRefDelegateTests(Via<INumber> via)
+        protected ByRefDelegateTests(IVia<INumber> via)
         {
             _via = via;
             _recordStream = _via.Record();
@@ -189,7 +189,7 @@ namespace DivertR.UnitTests
         public void GivenRefDelegate_ShouldRedirect()
         {
             // ARRANGE
-            var via = new Via<INumber>();
+            var via = Via.For<INumber>();
             int input = 5;
             via
                 .To(x => x.RefNumber(ref input))
@@ -215,7 +215,7 @@ namespace DivertR.UnitTests
         public void GivenRefParameter_WhenParameterlessDelegateRedirect_ShouldRedirect()
         {
             // ARRANGE
-            var via = new Via<INumber>();
+            var via = Via.For<INumber>();
             via
                 .To(x => x.RefNumber(ref IsRef<int>.Any))
                 .Redirect(() => 10);

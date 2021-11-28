@@ -13,6 +13,8 @@ namespace DivertR
         /// The Via identifier consisting of its type and optional name label.
         /// </summary>
         ViaId ViaId { get; }
+
+        public IViaSet ViaSet { get; }
         
         /// <summary>
         /// Create a Via proxy object without needing to specify the compile time Via type.
