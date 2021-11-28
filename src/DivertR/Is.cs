@@ -18,7 +18,7 @@ namespace DivertR
 
         private RefValue() { }
         
-        // ReSharper disable once InconsistentNaming
+        // ReSharper disable once InconsistentNaming (Used for call match Expression consistency)
         public T Value = default!;
     }
 }

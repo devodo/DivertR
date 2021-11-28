@@ -149,7 +149,7 @@ namespace DivertR.UnitTests
             _via.Retarget(test);
 
             // ACT
-            int[] inputOriginal = {5, 8};
+            int[] inputOriginal = { 5, 8 };
             var input = inputOriginal;
             var proxy = _via.Proxy(new Number());
             proxy.RefArrayNumber(ref input);
@@ -175,7 +175,7 @@ namespace DivertR.UnitTests
                 }));
 
             // ACT
-            int[] inputOriginal = {5, 8};
+            int[] inputOriginal = { 5, 8 };
             var input = inputOriginal;
             var proxy = _via.Proxy(new Number());
             proxy.RefArrayNumber(ref input);

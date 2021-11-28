@@ -31,7 +31,7 @@ namespace DivertR.UnitTests
 
             for (var i = 1; i <= MaxParams; i++)
             {
-                _inputs.Add(Enumerable.Range(0, i).Select(x =>
+                _inputs.Add(Enumerable.Range(0, i).Select(_ =>
                 {
                     var arg = random.Next();
                     var redirectArg = random.Next();

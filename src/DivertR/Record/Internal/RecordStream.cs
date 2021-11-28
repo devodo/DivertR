@@ -25,7 +25,7 @@ namespace DivertR.Record.Internal
         
         public IFuncRecordEnumerable<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
+            if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
@@ -36,7 +36,7 @@ namespace DivertR.Record.Internal
 
         public IActionRecordEnumerable<TTarget> To(Expression<Action<TTarget>> lambdaExpression)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
+            if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
@@ -47,8 +47,8 @@ namespace DivertR.Record.Internal
 
         public IActionRecordEnumerable<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
-            if (valueExpression?.Body == null) throw new ArgumentNullException(nameof(valueExpression));
+            if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
+            if (valueExpression.Body == null) throw new ArgumentNullException(nameof(valueExpression));
 
             if (!(lambdaExpression.Body is MemberExpression propertyExpression))
             {

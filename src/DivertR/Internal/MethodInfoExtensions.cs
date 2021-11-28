@@ -63,7 +63,7 @@ namespace DivertR.Internal
                     );
                     // It's not possible to cast ref parameters so we need to use a variable
                     var elementType = methodParameters[i].ParameterType.GetElementType()!;
-                    var variable = Expression.Variable(elementType!);
+                    var variable = Expression.Variable(elementType);
                     byRefState.Variables.Add(variable);
                     
                     // Assign the ref parameter to the variable (only if it is initialised i.e. not null)

@@ -114,7 +114,7 @@ namespace DivertR
         
         public IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : struct
         {
-            if (constraintExpression?.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
+            if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
             
@@ -123,7 +123,7 @@ namespace DivertR
 
         public IClassFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<IVia<TTarget>.ClassReturnMatch<TTarget, TReturn>> constraintExpression) where TReturn : class
         {
-            if (constraintExpression?.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
+            if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
             
@@ -132,7 +132,7 @@ namespace DivertR
 
         public IActionRedirectBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
         {
-            if (constraintExpression?.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
+            if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
             
@@ -141,8 +141,8 @@ namespace DivertR
         
         public IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression)
         {
-            if (memberExpression?.Body == null) throw new ArgumentNullException(nameof(memberExpression));
-            if (constraintExpression?.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
+            if (memberExpression.Body == null) throw new ArgumentNullException(nameof(memberExpression));
+            if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
             if (!(memberExpression.Body is MemberExpression propertyExpression))
             {

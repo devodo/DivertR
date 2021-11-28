@@ -16,7 +16,7 @@ namespace DivertR.UnitTests
             var builder = _via.To(x => x.Echo(Is<string>.Any));
 
             // ACT
-            Action testAction = () => builder.Redirect(new Func<string, int, string>((input, i) => input));
+            Action testAction = () => builder.Redirect(new Func<string, int, string>((input, _) => input));
 
             // ASSERT
             testAction.ShouldThrow<InvalidRedirectException>();
@@ -42,7 +42,7 @@ namespace DivertR.UnitTests
             var builder = _via.To(x => x.Echo(Is<string>.Any));
 
             // ACT
-            Action testAction = () => builder.Redirect(new Func<string, int>(input => 0));
+            Action testAction = () => builder.Redirect(new Func<string, int>(_ => 0));
 
             // ASSERT
             testAction.ShouldThrow<InvalidRedirectException>();

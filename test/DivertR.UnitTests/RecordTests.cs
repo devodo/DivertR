@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DivertR.Record;
@@ -305,8 +304,6 @@ namespace DivertR.UnitTests
                 .To(x => x.Echo(Is<string>.Any))
                 .Redirect(() => Guid.NewGuid().ToString());
 
-            List<string> outputs = null;
-
             var fooProxy = _via.Proxy();
 
             var recordedCalls = _recordStream
@@ -316,50 +313,17 @@ namespace DivertR.UnitTests
             var recordedOutputs = recordedCalls.Select(call => call.Returned!.Value);
 
             // ACT
+            // ReSharper disable once PossibleMultipleEnumeration (Testing deferred enumeration)
             var beforeCount = recordedOutputs.Count();
-            outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
+            var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
 
             // ASSERT
             beforeCount.ShouldBe(0);
             recordedCalls.Scan((call, i) => call.Args.input.ShouldBe(inputs[i])).ShouldBe(inputs.Count);
+            // ReSharper disable once PossibleMultipleEnumeration (Testing deferred enumeration)
             recordedOutputs.Count().ShouldBe(inputs.Count);
+            // ReSharper disable once PossibleMultipleEnumeration (Testing deferred enumeration)
             recordedOutputs.ShouldBe(outputs);
-        }
-        
-        [Fact]
-        public void GivenProxyCalls_ShouldRecord2()
-        {
-            // ARRANGE
-            var inputs = Enumerable
-                .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
-                .ToList();
-
-            var recordStream = _via
-                .To(x => x.Echo(Is<string>.Any))
-                .Redirect<(string input, __)>(call => call.Args.input)
-                .Record()
-                .Select(call => new
-                {
-                    call.Args.input,
-                    call.Returned!.Value
-                });
-            
-            var d = _via
-                .To(x => x.Echo(Is<string>.Any))
-                .Record();
-
-            var fooProxy = _via.Proxy();
-
-            // ACT
-            var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
-
-            // ASSERT
-            _recordStream.Select(x => x.CallInfo.Arguments[0]).ShouldBe(inputs);
-            _recordStream.Select(x => x.Returned?.Value).ShouldBe(outputs);
-            
-            recordStream.Select(x => x.input).ShouldBe(inputs);
-            recordStream.Select(x => x.Value).ShouldBe(outputs);
-            recordStream.Count().ShouldBe(inputs.Count);
         }
     }
 }

@@ -228,10 +228,10 @@ namespace DivertR.Internal
     
     internal class ValueTupleMapper<T1, T2, T3, T4, T5, T6, T7, TRest> : IValueTupleMapper where TRest : struct
     {
-        // ReSharper disable once StaticMemberInGenericType
+        // ReSharper disable once StaticMemberInGenericType (Static instance per generic type is intended here)
         private static readonly Type[] ArgTypes;
         
-        // ReSharper disable once StaticMemberInGenericType
+        // ReSharper disable once StaticMemberInGenericType (Static instance per generic type is intended here)
         private static readonly IValueTupleMapper NestedMapper;
         
         static ValueTupleMapper()

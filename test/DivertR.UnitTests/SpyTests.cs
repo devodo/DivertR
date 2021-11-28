@@ -204,7 +204,7 @@ namespace DivertR.UnitTests
 
             var echoes = _via
                 .To(new CallConstraint<IFoo>(call => call.Method.Name == nameof(IFoo.Echo)))
-                .Spy((call, args) => new { Input = args[0] });
+                .Spy((_, args) => new { Input = args[0] });
 
             // ACT
             var outputs = inputs.Select(x => _proxy.Echo(x)).ToList();
