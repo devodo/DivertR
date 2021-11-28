@@ -20,7 +20,7 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public void GivenSpyRedirect_ShouldRecordAndMapCalls()
+        public void GivenStructSpyRedirect_ShouldRecordAndMapCalls()
         {
             // ARRANGE
             var inputs = Enumerable
@@ -42,7 +42,50 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenSpyRedirect_WhenException_ShouldRecordAndMapException()
+        public void GivenStructSpyWithNoRedirect_ShouldRecordAndMapCalls()
+        {
+            // ARRANGE
+            var inputs = Enumerable
+                .Range(0, 20).Select(_ => Guid.NewGuid())
+                .ToList();
+
+            var echoes = _via
+                .To(x => x.EchoGeneric(Is<Guid>.Any))
+                .WithArgs<(Guid input, __)>()
+                .Spy(call => new { Input = call.Args.input, Returned = call.Returned?.IsValue == true ? call.Returned.Value : Guid.Empty });
+
+            // ACT
+            var outputs = inputs.Select(x => _proxy.EchoGeneric(x)).ToList();
+
+            // ASSERT
+            echoes.Count.ShouldBe(inputs.Count);
+            echoes.Select(x => x.Input).ShouldBe(inputs);
+            echoes.Select(x => x.Returned).ShouldBe(outputs);
+        }
+        
+        [Fact]
+        public void GivenStructSpyWithNoRedirectAndNoArgs_ShouldRecordAndMapCalls()
+        {
+            // ARRANGE
+            var inputs = Enumerable
+                .Range(0, 20).Select(_ => Guid.NewGuid())
+                .ToList();
+
+            var echoes = _via
+                .To(x => x.EchoGeneric(Is<Guid>.Any))
+                .Spy(call => new { Input = (Guid) call.Args[0], Returned = call.Returned?.IsValue == true ? call.Returned.Value : Guid.Empty });
+
+            // ACT
+            var outputs = inputs.Select(x => _proxy.EchoGeneric(x)).ToList();
+
+            // ASSERT
+            echoes.Count.ShouldBe(inputs.Count);
+            echoes.Select(x => x.Input).ShouldBe(inputs);
+            echoes.Select(x => x.Returned).ShouldBe(outputs);
+        }
+        
+        [Fact]
+        public void GivenStructSpyRedirect_WhenException_ShouldRecordAndMapException()
         {
             // ARRANGE
             var inputs = Enumerable
@@ -213,6 +256,30 @@ namespace DivertR.UnitTests
             outputs.ShouldBe(inputs.Select(x => $"{_proxy.Name}: {x}"));
             echoes.Count.ShouldBe(inputs.Count);
             echoes.Select(x => x.Input).ShouldBe(inputs);
+        }
+        
+        [Fact]
+        public async Task GivenClassRedirectBuilderWithNoArgs_ShouldSpy()
+        {
+            // ARRANGE
+            var spy = _via
+                .To(x => x.EchoAsync(Is<string>.Any))
+                .Spy(async call => new
+                {
+                    Input = (string) call.Args[0],
+                    Result = await call.Returned!.Value
+                });
+
+            // ACT
+            var result = await _proxy.EchoAsync("test");
+            
+            // ASSERT
+            await spy.ScanAsync(call =>
+            {
+                result.ShouldBe("original: test");
+                call.Input.ShouldBe("test");
+                call.Result.ShouldBe(result);
+            });
         }
     }
 }

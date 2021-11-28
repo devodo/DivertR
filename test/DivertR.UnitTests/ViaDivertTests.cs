@@ -1,4 +1,6 @@
-﻿using DivertR.UnitTests.Model;
+﻿using System.Collections.Generic;
+using System.Linq;
+using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
 
@@ -99,6 +101,33 @@ namespace DivertR.UnitTests
             
             // ASSERT
             result.ShouldBe("original");
+        }
+        
+        [Fact]
+        public void GivenRedirectDivert_ShouldRedirectAndDivert()
+        {
+            // ARRANGE
+            var divertedVia = _via
+                .To(x => x.EchoGeneric(Is<IList<string>>.Any))
+                .Redirect<(IList<string> input, __)>((_, args) => args.input.Select(x => $"redirect: {x}").ToList())
+                .Divert();
+            
+            divertedVia
+                .To(x => x[Is<int>.Any])
+                .Redirect<(int index, __)>((call, args) => call.Next[args.index] + " diverted");
+
+            IList<string> input = Enumerable.Range(0, 10).Select(x => $"test{x}").ToList();
+            var divertedList = _proxy.EchoGeneric(input);
+            
+            // ACT
+            var results = new List<string>();
+            for (var i = 0; i < divertedList.Count; i++)
+            {
+                results.Add(divertedList[i]);
+            }
+            
+            // ASSERT
+            results.ShouldBe(input.Select(x => $"redirect: {x} diverted"));
         }
     }
 }
