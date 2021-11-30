@@ -6,21 +6,21 @@ namespace DivertR
 {
     public class ViaSet : IViaSet
     {
-        private readonly DiverterSettings _settings;
-        
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<Type, IVia>> _viaGroups =
             new ConcurrentDictionary<string, ConcurrentDictionary<Type, IVia>>();
         
         public ViaSet(DiverterSettings? settings = null)
         {
-            _settings = settings ?? DiverterSettings.Global;
+            Settings = settings ?? DiverterSettings.Global;
         }
+
+        public DiverterSettings Settings { get; }
 
         public IVia<TTarget> Via<TTarget>(string? name = null) where TTarget : class
         {
             var viaId = ViaId.From<TTarget>(name);
             var viaGroup = GetViaGroup(viaId.Name);
-            var via = viaGroup.GetOrAdd(viaId.Type, _ => new Via<TTarget>(viaId, this, _settings.ProxyFactory));
+            var via = viaGroup.GetOrAdd(viaId.Type, _ => new Via<TTarget>(viaId, this));
 
             return (IVia<TTarget>) via;
         }
@@ -34,7 +34,7 @@ namespace DivertR
                 const BindingFlags ActivatorFlags = BindingFlags.NonPublic | BindingFlags.Instance;
                 
                 var diverterType = typeof(Via<>).MakeGenericType(type);
-                var constructorParams = new object[] { viaId, this, _settings.ProxyFactory };
+                var constructorParams = new object[] { viaId, this };
                 var via = (IVia) Activator.CreateInstance(diverterType, ActivatorFlags, null, constructorParams,
                     default);
 
@@ -99,6 +99,15 @@ namespace DivertR
             }
 
             return this;
+        }
+
+        internal void AddVia(IVia via)
+        {
+            var viaGroup = GetViaGroup(via.ViaId.Name);
+            if (!viaGroup.TryAdd(via.ViaId.Type, via))
+            {
+                throw new DiverterException("Via already exists in ViaSet");
+            }
         }
 
         private ConcurrentDictionary<Type, IVia> GetViaGroup(string? name = null)

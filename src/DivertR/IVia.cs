@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using DivertR.Internal;
 using DivertR.Record;
 
 namespace DivertR
@@ -52,7 +53,7 @@ namespace DivertR
         /// <summary>
         /// Retrieve the current proxy redirect configuration.
         /// </summary>
-        RedirectPlan<TTarget> RedirectPlan { get; }
+        IRedirectPlan<TTarget> RedirectPlan { get; }
         
         /// <summary>
         /// Create a Via proxy instance.

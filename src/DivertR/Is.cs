@@ -11,14 +11,4 @@ namespace DivertR
             return default!;
         }
     }
-
-    public class RefValue<T>
-    {
-        internal static readonly RefValue<T> Instance = new RefValue<T>();
-
-        private RefValue() { }
-        
-        // ReSharper disable once InconsistentNaming (Used for call match Expression consistency)
-        public T Value = default!;
-    }
 }

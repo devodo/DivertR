@@ -61,7 +61,6 @@ namespace DivertR.DemoApp
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello"
             
-            IFoo next = fooVia.Relay.Next;
             fooVia
                 .To(x => x.Echo(Is<string>.Any))
                 .Redirect<(string input, __)>(call =>
@@ -70,7 +69,7 @@ namespace DivertR.DemoApp
                     // ...
 
                     // call original instance
-                    var message = next.Echo(call.Args.input);
+                    var message = call.Next.Echo(call.Args.input);
     
                     // run test code after
                     // ...
@@ -84,7 +83,7 @@ namespace DivertR.DemoApp
             var mock = new Mock<IFoo>();
             mock
                 .Setup(x => x.Echo(It.IsAny<string>()))
-                .Returns((string input) => $"{next.Echo(input)} - Mocked");
+                .Returns((string input) => $"{fooVia.Relay.Next.Echo(input)} - Mocked");
 
             fooVia
                 .To() // Default matches all calls
@@ -100,10 +99,9 @@ namespace DivertR.DemoApp
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Mocked"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Mocked"
             
-            IFoo original = fooVia.Relay.Root;
             fooVia
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect<(string input, __)>(call => $"{original.Echo(call.Args.input)} - Skipped");
+                .Redirect<(string input, __)>(call => $"{call.Root.Echo(call.Args.input)} - Skipped");
   
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Skipped"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Skipped"
@@ -112,7 +110,7 @@ namespace DivertR.DemoApp
 
             fooVia
                 .To(x => x.EchoAsync(Is<string>.Any))
-                .Redirect<(string input, __)>(async call => $"{await next.EchoAsync(call.Args.input)} - Async");
+                .Redirect<(string input, __)>(async call => $"{await call.Next.EchoAsync(call.Args.input)} - Async");
             
             Console.WriteLine(await foo.EchoAsync("Hello")); // "Foo1: Hello - Async"
             Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello - Async"

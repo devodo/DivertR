@@ -7,8 +7,8 @@ namespace DivertR.UnitTests
 {
     public class ViaRedirectTests
     {
-        private readonly IVia<IFoo> _via = Via.For<IFoo>();
-        
+        private readonly IVia<IFoo> _via = new Via<IFoo>();
+
         [Fact]
         public void GivenNoRedirects_ShouldDefaultToOriginal()
         {

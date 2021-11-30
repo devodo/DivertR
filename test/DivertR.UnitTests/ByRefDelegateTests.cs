@@ -26,7 +26,6 @@ namespace DivertR.UnitTests
         private delegate void OutCall(int input, out int output);
 
         private readonly IVia<INumber> _via;
-        private readonly IRecordStream<INumber> _recordStream;
 
         public ByRefDelegateTests() : this(Via.For<INumber>())
         {
@@ -35,11 +34,10 @@ namespace DivertR.UnitTests
         protected ByRefDelegateTests(IVia<INumber> via)
         {
             _via = via;
-            _recordStream = _via.Record();
         }
         
         [Fact]
-        public void GivenRefParameterRedirect_ShouldUpdateRefInput()
+        public void GivenRefParameterDelegateRedirect_ShouldUpdateRefInput()
         {
             // ARRANGE
             _via
@@ -51,6 +49,31 @@ namespace DivertR.UnitTests
 
                     return refIn;
                 }));
+            
+            var viaProxy = _via.Proxy(new Number(i => i * 2));
+            
+            // ACT
+            int input = 3;
+            var result = viaProxy.RefNumber(ref input);
+
+            // ASSERT
+            result.ShouldBe(3);
+            input.ShouldBe(16);
+        }
+        
+        [Fact]
+        public void GivenRefParameterRedirect_ShouldUpdateRefInput()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.RefNumber(ref IsRef<int>.Match(m => m == 3).Value))
+                .Redirect<(Ref<int> i, __)>((call, args) =>
+                {
+                    var refIn = call.Next.RefNumber(ref args.i.Value);
+                    args.i.Value += 10;
+
+                    return refIn;
+                });
             
             var viaProxy = _via.Proxy(new Number(i => i * 2));
             
@@ -85,10 +108,30 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
+                .Redirect<(int i, Ref<int> o)>((call, args) =>
+                {
+                    call.Next.OutNumber(args.i, out args.o.Value);
+                    args.o.Value += 10;
+                });
+            
+            var viaProxy = _via.Proxy(new Number());
+
+            // ACT
+            viaProxy.OutNumber(3, out var output);
+
+            // ASSERT
+            output.ShouldBe(13);
+        }
+        
+        [Fact]
+        public void GivenOutParameterDelegateRedirect_ShouldUpdateOutParameter()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
                 .Redirect(new OutCall((int i, out int o) =>
                 {
                     _via.Relay.Next.OutNumber(i, out o);
-
                     o += 10;
                 }));
             
@@ -118,17 +161,17 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenOutParameterRedirect_ShouldLogCallArguments()
+        public void GivenOutParameterDelegateRedirect_ShouldRecord()
         {
             // ARRANGE
-            _via
+            var recordStream = _via
                 .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
                 .Redirect(new OutCall((int i, out int o) =>
                 {
                     _via.Relay.Next.OutNumber(i, out o);
-
                     o += 10;
-                }));
+                }))
+                .Record();
             
             var viaProxy = _via.Proxy(new Number());
 
@@ -137,8 +180,40 @@ namespace DivertR.UnitTests
 
             // ASSERT
             output.ShouldBe(13);
-            _recordStream.Count.ShouldBe(1);
-            _recordStream.First().CallInfo.Arguments[0].ShouldBe(3);
+            recordStream.Count.ShouldBe(1);
+            recordStream.Scan(call =>
+            {
+                call.Args[0].ShouldBe(3);
+                call.Args[1].ShouldBe(13);
+            }).ShouldBe(1);
+        }
+        
+        [Fact]
+        public void GivenOutParameterRedirect_ShouldRecord()
+        {
+            // ARRANGE
+            var recordStream = _via
+                .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
+                .Redirect<(int i, Ref<int> o)>((call, args) =>
+                {
+                    call.Next.OutNumber(args.i, out args.o.Value);
+                    args.o.Value += 10;
+                })
+                .Record();
+            
+            var viaProxy = _via.Proxy(new Number());
+
+            // ACT
+            viaProxy.OutNumber(3, out var output);
+
+            // ASSERT
+            output.ShouldBe(13);
+            recordStream.Count.ShouldBe(1);
+            recordStream.Scan(call =>
+            {
+                call.Args.i.ShouldBe(3);
+                call.Args.o.Value.ShouldBe(13);
+            }).ShouldBe(1);
         }
 
         [Fact]

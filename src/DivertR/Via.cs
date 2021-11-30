@@ -42,11 +42,16 @@ namespace DivertR
         private readonly IProxyFactory _proxyFactory;
         private readonly Relay<TTarget> _relay;
 
-        internal Via(ViaId viaId, IViaSet viaSet, IProxyFactory proxyFactory)
+        public Via(string? name = null) : this(ViaId.From<TTarget>(name), new ViaSet())
+        {
+            ((ViaSet) ViaSet).AddVia(this);
+        }
+
+        internal Via(ViaId viaId, IViaSet viaSet)
         {
             ViaId = viaId;
             ViaSet = viaSet;
-            _proxyFactory = proxyFactory;
+            _proxyFactory = viaSet.Settings.ProxyFactory;
             _proxyFactory.ValidateProxyTarget<TTarget>();
             
             _relay = new Relay<TTarget>(_proxyFactory);
@@ -61,7 +66,7 @@ namespace DivertR
             get => _relay;
         }
 
-        public RedirectPlan<TTarget> RedirectPlan => _redirectRepository.RedirectPlan ?? RedirectPlan<TTarget>.Empty;
+        public IRedirectPlan<TTarget> RedirectPlan => _redirectRepository.RedirectPlan;
 
         public TTarget Proxy(TTarget? original = null)
         {
@@ -171,7 +176,7 @@ namespace DivertR
         {
             var redirectPlan = _redirectRepository.RedirectPlan;
 
-            return redirectPlan == null
+            return redirectPlan == RedirectPlan<TTarget>.Empty
                 ? null
                 : new ViaProxyCall<TTarget>(_relay, redirectPlan);
         }

@@ -19,7 +19,7 @@ namespace DivertR.Internal
         public IVia<TReturn> Divert(string name, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var via = Via.ViaSet.Via<TReturn>(name);
-            ICallHandler<TTarget> callHandler = new DelegateCallHandler<TTarget>(callInfo => via.Proxy((TReturn) Via.Relay.CallNext()!));
+            ICallHandler<TTarget> callHandler = new DelegateCallHandler<TTarget>(callInfo => via.Proxy((TReturn?) Via.Relay.CallNext()));
             base.InsertRedirect(callHandler, optionsAction);
 
             return via;
@@ -114,7 +114,7 @@ namespace DivertR.Internal
         public IVia<TReturn> Divert(string name, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var via = Via.ViaSet.Via<TReturn>(name);
-            ICallHandler<TTarget> callHandler = new DelegateCallHandler<TTarget>(callInfo => via.Proxy((TReturn) Via.Relay.CallNext()!));
+            ICallHandler<TTarget> callHandler = new DelegateCallHandler<TTarget>(callInfo => via.Proxy((TReturn?) Via.Relay.CallNext()));
             base.InsertRedirect(callHandler, optionsAction);
 
             return via;

@@ -138,7 +138,7 @@ namespace DivertR.UnitTests
             var results = numberVia
                 .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
                 .Redirect<(int input, Ref<int> output)>(call => call.Relay.Next.OutNumber(call.Args.input, out call.Args.output.Value))
-                .Spy(call => new { call.Args.input, output = call.Args.output.Value });
+                .Spy((_, args) => new { args.input, output = args.output.Value });
 
             // ACT
             var outputs = inputs.Select(i =>
@@ -164,9 +164,9 @@ namespace DivertR.UnitTests
             var spy = _via
                 .To(x => x.EchoAsync(Is<string>.Any))
                 .Redirect<(string input, __)>(call => Task.FromResult(call.Args.input + " diverted"))
-                .Spy(async call => new
+                .Spy(async (call, args) => new
                 {
-                    Input = call.Args.input,
+                    Input = args.input,
                     Result = await call.Returned!.Value
                 });
 

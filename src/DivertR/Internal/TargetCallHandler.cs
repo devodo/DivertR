@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
@@ -8,17 +9,12 @@ namespace DivertR.Internal
 
         public TargetCallHandler(TTarget target)
         {
-            _target = target;
+            _target = target ?? throw new ArgumentNullException(nameof(target));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Call(CallInfo<TTarget> callInfo)
         {
-            if (_target == null)
-            {
-                throw new DiverterException("The redirect instance reference is null");
-            }
-            
             return callInfo.Invoke(_target);
         }
     }
