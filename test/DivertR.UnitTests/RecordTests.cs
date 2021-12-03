@@ -10,7 +10,7 @@ namespace DivertR.UnitTests
 {
     public class RecordTests
     {
-        private readonly IVia<IFoo> _via = Via.For<IFoo>();
+        private readonly IVia<IFoo> _via = new Via<IFoo>();
         private readonly IRecordStream<IFoo> _recordStream;
 
         public RecordTests()
@@ -45,7 +45,7 @@ namespace DivertR.UnitTests
             
             echoCalls.Select(call => call.Args.input).ShouldBe(inputs);
             echoCalls.Select(call => call.Returned!.Value).ShouldBe(outputs);
-            echoCalls.Scan((call, i) => call.Args.input.ShouldBe(inputs[i])).ShouldBe(inputs.Count);
+            echoCalls.Replay((_, args, i) => args.input.ShouldBe(inputs[i])).ShouldBe(inputs.Count);
         }
         
         [Fact]
@@ -73,7 +73,7 @@ namespace DivertR.UnitTests
             calls.Single().CallInfo.Arguments.Count.ShouldBe(1);
             calls.Single().CallInfo.Proxy.ShouldBeSameAs(fooProxy);
 
-            calls.Scan(call =>
+            calls.Replay(call =>
             {
                 call.Args.input.ShouldBe(inputs[0]);
                 call.Returned!.Value.ShouldBe(outputs[0]);
@@ -104,7 +104,7 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.Echo("test"))
                 .WithArgs<(string input, __)>()
-                .Scan(call =>
+                .Replay(call =>
                 {
                     call.Args.input.ShouldBe("test");
                     call.Returned?.Exception.ShouldBeSameAs(caughtException);
@@ -169,7 +169,7 @@ namespace DivertR.UnitTests
             
             _recordStream
                 .To(x => x.EchoAsync("test"))
-                .Scan(call =>
+                .Replay(call =>
                 {
                     call.CallInfo.Arguments[0].ShouldBe("test");
                     call.Returned!.Exception.ShouldBeOfType<StrictNotSatisfiedException>();
@@ -194,7 +194,7 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.EchoAsync("test"))
                 .WithArgs<(string input, __)>()
-                .Scan(call =>
+                .Replay(call =>
                 {
                     call.Args.input.ShouldBe("test");
                     call.Returned!.Value.Result.ShouldBe(result);
@@ -253,7 +253,7 @@ namespace DivertR.UnitTests
                 .Select(call => call.Returned!.Value)
                 .ShouldBe(outputs);
 
-            recordedCalls.Scan(call =>
+            recordedCalls.Replay(call =>
             {
                 outputs.ShouldContain(call.Returned!.Value);
             }).ShouldBe(outputs.Count);
@@ -285,9 +285,9 @@ namespace DivertR.UnitTests
                 .Select(call => call.Args.name)
                 .ShouldBe(inputs);
                 
-            recordedCalls.Scan((call, i) =>
+            recordedCalls.Replay((call, args, i) =>
             {
-                call.Args.name.ShouldBe(inputs[i]);
+                args.name.ShouldBe(inputs[i]);
                 call.Returned!.Value.ShouldBeNull();
             }).ShouldBe(inputs.Count);
         }
@@ -319,7 +319,7 @@ namespace DivertR.UnitTests
 
             // ASSERT
             beforeCount.ShouldBe(0);
-            recordedCalls.Scan((call, i) => call.Args.input.ShouldBe(inputs[i])).ShouldBe(inputs.Count);
+            recordedCalls.Replay((call, i) => call.Args.input.ShouldBe(inputs[i])).ShouldBe(inputs.Count);
             // ReSharper disable once PossibleMultipleEnumeration (Testing deferred enumeration)
             recordedOutputs.Count().ShouldBe(inputs.Count);
             // ReSharper disable once PossibleMultipleEnumeration (Testing deferred enumeration)

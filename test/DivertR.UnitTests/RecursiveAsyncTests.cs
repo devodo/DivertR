@@ -8,7 +8,7 @@ namespace DivertR.UnitTests
 {
     public class RecursiveAsyncTests
     {
-        private readonly IVia<IAsyncNumber> _via = Via.For<IAsyncNumber>();
+        private readonly IVia<IAsyncNumber> _via = new Via<IAsyncNumber>();
 
         [Fact]
         public async Task TestRecursiveAsync()

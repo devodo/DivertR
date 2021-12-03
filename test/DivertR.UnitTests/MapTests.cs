@@ -9,18 +9,18 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class SpyTests
+    public class MapTests
     {
-        private readonly IVia<IFoo> _via = Via.For<IFoo>();
+        private readonly IVia<IFoo> _via = new Via<IFoo>();
         private readonly IFoo _proxy;
 
-        public SpyTests()
+        public MapTests()
         {
             _proxy = _via.Proxy(new Foo());
         }
 
         [Fact]
-        public void GivenStructSpyRedirect_ShouldRecordAndMapCalls()
+        public void GivenStructMapRedirect_ShouldRecordAndMapCalls()
         {
             // ARRANGE
             var inputs = Enumerable
@@ -30,7 +30,8 @@ namespace DivertR.UnitTests
             var echoes = _via
                 .To(x => x.EchoGeneric(Is<Guid>.Any))
                 .Redirect<(Guid input, __)>(_ => Guid.NewGuid())
-                .Spy(call => new { Input = call.Args.input, Returned = call.Returned?.IsValue == true ? call.Returned.Value : Guid.Empty });
+                .Record()
+                .Map(call => new { Input = call.Args.input, Returned = call.Returned?.IsValue == true ? call.Returned.Value : Guid.Empty });
 
             // ACT
             var outputs = inputs.Select(x => _proxy.EchoGeneric(x)).ToList();
@@ -42,7 +43,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenStructSpyWithNoRedirect_ShouldRecordAndMapCalls()
+        public void GivenStructMapWithNoRedirect_ShouldRecordAndMapCalls()
         {
             // ARRANGE
             var inputs = Enumerable
@@ -51,8 +52,8 @@ namespace DivertR.UnitTests
 
             var echoes = _via
                 .To(x => x.EchoGeneric(Is<Guid>.Any))
-                .WithArgs<(Guid input, __)>()
-                .Spy(call => new { Input = call.Args.input, Returned = call.Returned?.IsValue == true ? call.Returned.Value : Guid.Empty });
+                .Record<(Guid input, __)>()
+                .Map(call => new { Input = call.Args.input, Returned = call.Returned?.IsValue == true ? call.Returned.Value : Guid.Empty });
 
             // ACT
             var outputs = inputs.Select(x => _proxy.EchoGeneric(x)).ToList();
@@ -64,7 +65,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenStructSpyWithNoRedirectAndNoArgs_ShouldRecordAndMapCalls()
+        public void GivenStructMapWithNoRedirectAndNoArgs_ShouldRecordAndMapCalls()
         {
             // ARRANGE
             var inputs = Enumerable
@@ -73,7 +74,8 @@ namespace DivertR.UnitTests
 
             var echoes = _via
                 .To(x => x.EchoGeneric(Is<Guid>.Any))
-                .Spy(call => new { Input = (Guid) call.Args[0], Returned = call.Returned?.IsValue == true ? call.Returned.Value : Guid.Empty });
+                .Record()
+                .Map(call => new { Input = (Guid) call.Args[0], Returned = call.Returned?.IsValue == true ? call.Returned.Value : Guid.Empty });
 
             // ACT
             var outputs = inputs.Select(x => _proxy.EchoGeneric(x)).ToList();
@@ -85,7 +87,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenStructSpyRedirect_WhenException_ShouldRecordAndMapException()
+        public void GivenStructMapRedirect_WhenException_ShouldRecordAndMapException()
         {
             // ARRANGE
             var inputs = Enumerable
@@ -95,7 +97,8 @@ namespace DivertR.UnitTests
             var builder = _via.To(x => x.EchoGeneric(Is<Guid>.Any));
             var echoes = builder
                 .Redirect<(Guid input, __)>(call => throw new Exception($"{call.Args.input}"))
-                .Spy(call => new
+                .Record()
+                .Map(call => new
                 {
                     Input = call.Args.input,
                     Returned = call.Returned?.IsValue == true ? call.Returned.Value : Guid.Empty,
@@ -125,20 +128,21 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenSpyRedirect_WhenOutCall_ShouldRecordAndMap()
+        public void GivenMapRedirect_WhenOutCall_ShouldRecordAndMap()
         {
             // ARRANGE
             var inputs = Enumerable
                 .Range(0, 20).Select(i => i)
                 .ToList();
 
-            var numberVia = Via.For<INumber>();
+            var numberVia = new Via<INumber>();
             var numberProxy = numberVia.Proxy(new Number(x => x * 10));
 
             var results = numberVia
                 .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
                 .Redirect<(int input, Ref<int> output)>(call => call.Relay.Next.OutNumber(call.Args.input, out call.Args.output.Value))
-                .Spy((_, args) => new { args.input, output = args.output.Value });
+                .Record()
+                .Map((_, args) => new { args.input, output = args.output.Value });
 
             // ACT
             var outputs = inputs.Select(i =>
@@ -154,17 +158,18 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenTaskSpyRedirect_ShouldScanAsync()
+        public async Task GivenTaskMapRedirect_ShouldReplayAsync()
         {
             // ARRANGE
             var inputs = Enumerable
                 .Range(0, 20).Select(i => i)
                 .ToList();
             
-            var spy = _via
+            var calls = _via
                 .To(x => x.EchoAsync(Is<string>.Any))
                 .Redirect<(string input, __)>(call => Task.FromResult(call.Args.input + " diverted"))
-                .Spy(async (call, args) => new
+                .Record()
+                .Map(async (call, args) => new
                 {
                     Input = args.input,
                     Result = await call.Returned!.Value
@@ -179,34 +184,48 @@ namespace DivertR.UnitTests
             
             // ASSERT
             results.ShouldBe(inputs.Select(x => $"test{x} diverted"));
-            spy.Count.ShouldBe(inputs.Count);
+            calls.Count.ShouldBe(inputs.Count);
 
             var count = 0;
-            (await spy.ScanAsync(call =>
+            (await calls.ReplayAsync(call =>
             {
                 call.Input.ShouldBe($"test{count}");
                 call.Result.ShouldBe($"test{count++} diverted");
             })).ShouldBe(inputs.Count);
             
-            (await spy.ScanAsync((call, i) =>
+            (await calls.ReplayAsync((call, i) =>
             {
                 call.Input.ShouldBe($"test{i}");
                 call.Result.ShouldBe($"test{i} diverted");
             })).ShouldBe(inputs.Count);
+
+            count = 0;
+            (await calls.Replay(async call =>
+            {
+                (await call).Input.ShouldBe($"test{count}");
+                (await call).Result.ShouldBe($"test{count++} diverted");
+            })).ShouldBe(inputs.Count);
+            
+            (await calls.Replay(async (call, i) =>
+            {
+                (await call).Input.ShouldBe($"test{i}");
+                (await call).Result.ShouldBe($"test{i} diverted");
+            })).ShouldBe(inputs.Count);
         }
         
         [Fact]
-        public async Task GivenSpyRedirect_ShouldScanAsync()
+        public async Task GivenMapRedirect_ShouldReplayAsync()
         {
             // ARRANGE
             var inputs = Enumerable
                 .Range(0, 20).Select(i => i)
                 .ToList();
             
-            var spy = _via
+            var calls = _via
                 .To(x => x.EchoAsync(Is<string>.Any))
                 .Redirect<(string input, __)>(call => Task.FromResult(call.Args.input + " diverted"))
-                .Spy(call => new
+                .Record()
+                .Map(call => new
                 {
                     Input = call.Args.input,
                     Result = call.Returned!.Value
@@ -221,16 +240,16 @@ namespace DivertR.UnitTests
             
             // ASSERT
             results.ShouldBe(inputs.Select(x => $"test{x} diverted"));
-            spy.Count.ShouldBe(inputs.Count);
+            calls.Count.ShouldBe(inputs.Count);
 
             var count = 0;
-            (await spy.ScanAsync(async call =>
+            (await calls.Replay(async call =>
             {
                 call.Input.ShouldBe($"test{count}");
                 (await call.Result).ShouldBe($"test{count++} diverted");
             })).ShouldBe(inputs.Count);
             
-            (await spy.ScanAsync(async (call, i) =>
+            (await calls.Replay(async (call, i) =>
             {
                 call.Input.ShouldBe($"test{i}");
                 (await call.Result).ShouldBe($"test{i} diverted");
@@ -238,7 +257,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenCallConstraintSpy_ShouldRecordAndMapCalls()
+        public void GivenCallConstraintMap_ShouldRecordAndMapCalls()
         {
             // ARRANGE
             var inputs = Enumerable
@@ -247,7 +266,8 @@ namespace DivertR.UnitTests
 
             var echoes = _via
                 .To(new CallConstraint<IFoo>(call => call.Method.Name == nameof(IFoo.Echo)))
-                .Spy((_, args) => new { Input = args[0] });
+                .Record()
+                .Map((_, args) => new { Input = args[0] });
 
             // ACT
             var outputs = inputs.Select(x => _proxy.Echo(x)).ToList();
@@ -256,15 +276,20 @@ namespace DivertR.UnitTests
             outputs.ShouldBe(inputs.Select(x => $"{_proxy.Name}: {x}"));
             echoes.Count.ShouldBe(inputs.Count);
             echoes.Select(x => x.Input).ShouldBe(inputs);
+            echoes.Replay((call, i) =>
+            {
+                call.Input.ShouldBe(inputs[i]);
+            }).ShouldBe(inputs.Count);
         }
         
         [Fact]
-        public async Task GivenClassRedirectBuilderWithNoArgs_ShouldSpy()
+        public async Task GivenClassRedirectBuilderWithNoArgs_ShouldMap()
         {
             // ARRANGE
-            var spy = _via
+            var calls = _via
                 .To(x => x.EchoAsync(Is<string>.Any))
-                .Spy(async call => new
+                .Record()
+                .Map(async call => new
                 {
                     Input = (string) call.Args[0],
                     Result = await call.Returned!.Value
@@ -274,7 +299,7 @@ namespace DivertR.UnitTests
             var result = await _proxy.EchoAsync("test");
             
             // ASSERT
-            await spy.ScanAsync(call =>
+            await calls.ReplayAsync(call =>
             {
                 result.ShouldBe("original: test");
                 call.Input.ShouldBe("test");

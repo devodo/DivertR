@@ -9,7 +9,7 @@ namespace DivertR.UnitTests
 {
     public class ViaValueTaskTests
     {
-        private readonly IVia<IFoo> _via = Via.For<IFoo>();
+        private readonly IVia<IFoo> _via = new Via<IFoo>();
         private readonly IFoo _original = new Foo("foo");
         private readonly IFoo _proxy;
 

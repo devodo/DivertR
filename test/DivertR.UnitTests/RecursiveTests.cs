@@ -8,7 +8,7 @@ namespace DivertR.UnitTests
 {
     public class RecursiveTests
     {
-        private readonly IVia<INumber> _via = Via.For<INumber>();
+        private readonly IVia<INumber> _via = new Via<INumber>();
 
         [Fact]
         public void TestRecursiveSync()

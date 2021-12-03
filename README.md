@@ -176,7 +176,7 @@ Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello Redirect"
 
 ### Retarget
 
-As well as redirecting to delegates you can also retarget to substitutes that implement the target interface (in this case `IFoo`).
+As well as redirecting to delegates you can also *retarget* to substitutes that implement the target interface (in this case `IFoo`).
 This includes, for example, Mock objects:
 
 ```csharp
@@ -223,7 +223,7 @@ public class Foo : IFoo
 
 fooVia
     .To(x => x.EchoAsync(Is<string>.Any))
-    .Redirect<(string input, __)>(async call => $"{await call.Relay.Root.EchoAsync(call.Args.input)} Async");
+    .Redirect<(string input, __)>(async (call, args) => $"{await call.Root.EchoAsync(args.input)} Async");
 
 Console.WriteLine(await foo.EchoAsync("Hello"));  // "Foo: Hello Async"
 Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello Async"

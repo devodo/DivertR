@@ -23,7 +23,7 @@ namespace DivertR.Record.Internal
             return _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
         }
         
-        public IFuncRecordEnumerable<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
+        public IFuncCallStream<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
         {
             if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
@@ -31,10 +31,10 @@ namespace DivertR.Record.Internal
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
             var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
-            return new FuncRecordEnumerable<TTarget, TReturn>(calls, parsedCall);
+            return new FuncCallStream<TTarget, TReturn>(calls, parsedCall);
         }
 
-        public IActionRecordEnumerable<TTarget> To(Expression<Action<TTarget>> lambdaExpression)
+        public IActionCallStream<TTarget> To(Expression<Action<TTarget>> lambdaExpression)
         {
             if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
@@ -42,10 +42,10 @@ namespace DivertR.Record.Internal
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
             var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
-            return new ActionRecordEnumerable<TTarget>(calls, parsedCall);
+            return new ActionCallStream<TTarget>(calls, parsedCall);
         }
 
-        public IActionRecordEnumerable<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
+        public IActionCallStream<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
         {
             if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
             if (valueExpression.Body == null) throw new ArgumentNullException(nameof(valueExpression));
@@ -59,9 +59,21 @@ namespace DivertR.Record.Internal
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
             var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
-            return new ActionRecordEnumerable<TTarget>(calls, parsedCall);
+            return new ActionCallStream<TTarget>(calls, parsedCall);
         }
-        
+
+        public ICallLog<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, TMap> mapper)
+        {
+            var mappedCalls = new MappedCollection<IRecordedCall<TTarget>, TMap>(this, mapper);
+            return new CallLog<TMap>(mappedCalls);
+        }
+
+        public ICallLog<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, CallArguments, TMap> mapper)
+        {
+            var mappedCalls = new MappedCollection<IRecordedCall<TTarget>, TMap>(this, call => mapper.Invoke(call, call.Args));
+            return new CallLog<TMap>(mappedCalls);
+        }
+
         public int Count => _recordedCalls.Count;
 
         public IEnumerator<IRecordedCall<TTarget>> GetEnumerator()

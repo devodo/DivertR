@@ -1,26 +1,23 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace DivertR.Record.Internal
 {
-    internal class SpyCollection<TMap> : ISpyCollection<TMap>
+    internal class CallStream<TMap> : ICallStream<TMap>
     {
-        private readonly ConcurrentQueue<TMap> _mappedCalls;
+        protected readonly IEnumerable<TMap> Calls;
 
-        public SpyCollection(ConcurrentQueue<TMap> mappedCalls)
+        public CallStream(IEnumerable<TMap> calls)
         {
-            _mappedCalls = mappedCalls;
+            Calls = calls;
         }
-
-        public int Count => _mappedCalls.Count;
         
         public IEnumerator<TMap> GetEnumerator()
         {
-            return _mappedCalls.GetEnumerator();
+            return Calls.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -28,9 +25,9 @@ namespace DivertR.Record.Internal
             return GetEnumerator();
         }
 
-        public int Scan(Action<TMap> visitor)
+        public int Replay(Action<TMap> visitor)
         {
-            return _mappedCalls.Select(call =>
+            return this.Select(call =>
             {
                 visitor.Invoke(call);
 
@@ -38,9 +35,9 @@ namespace DivertR.Record.Internal
             }).Count();
         }
 
-        public int Scan(Action<TMap, int> visitor)
+        public int Replay(Action<TMap, int> visitor)
         {
-            return _mappedCalls.Select((call, i) =>
+            return this.Select((call, i) =>
             {
                 visitor.Invoke(call, i);
 
@@ -48,11 +45,11 @@ namespace DivertR.Record.Internal
             }).Count();
         }
         
-        public async Task<int> ScanAsync(Func<TMap, Task> visitor)
+        public async Task<int> Replay(Func<TMap, Task> visitor)
         {
             var count = 0;
             
-            foreach (var call in _mappedCalls)
+            foreach (var call in this)
             {
                 await visitor.Invoke(call).ConfigureAwait(false);
                 count++;
@@ -61,11 +58,11 @@ namespace DivertR.Record.Internal
             return count;
         }
 
-        public async Task<int> ScanAsync(Func<TMap, int, Task> visitor)
+        public async Task<int> Replay(Func<TMap, int, Task> visitor)
         {
             var count = 0;
             
-            foreach (var call in _mappedCalls)
+            foreach (var call in this)
             {
                 await visitor.Invoke(call, count++).ConfigureAwait(false);
             }

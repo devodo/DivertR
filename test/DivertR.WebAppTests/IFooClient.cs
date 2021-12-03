@@ -11,6 +11,6 @@ namespace DivertR.WebAppTests
         Task<ApiResponse<Foo>> GetFooAsync(Guid id);
         
         [Post("/foo")]
-        Task<ApiResponse<Foo>> InsertFooAsync(CreateFooRequest request);
+        Task<ApiResponse<Foo>> CreateFooAsync(CreateFooRequest request);
     }
 }

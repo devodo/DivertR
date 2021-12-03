@@ -132,30 +132,18 @@ namespace DivertR.Internal
             return new FuncRedirectBuilder<TTarget, TReturn, TArgs>(Via, ParsedCallExpression, CallConstraint, Relay);
         }
         
-        public new IFuncRecordCollection<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IFuncCallLog<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
+            var mappedCollection = new MappedCollection<IRecordedCall<TTarget>, IFuncRecordedCall<TTarget, TReturn>>(recordStream,
+                call => new FuncRecordedCall<TTarget, TReturn>(call));
 
-            return new FuncRecordCollection<TTarget, TReturn>(recordStream, ParsedCallExpression);
+            return new FuncCallLog<TTarget, TReturn>(mappedCollection);
         }
 
-        public IFuncRecordCollection<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IFuncCallLog<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Record(optionsAction);
-        }
-
-        public ISpyCollection<TMap> Spy<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            var spyMapper = new SpyFuncMapper<TTarget, TReturn, TMap>(mapper);
-
-            return base.Spy(spyMapper.Map, optionsAction);
-        }
-
-        public ISpyCollection<TMap> Spy<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            var spyMapper = new SpyArgsFuncMapper<TTarget, TReturn, TMap>(mapper);
-
-            return base.Spy(spyMapper.Map, optionsAction);
         }
     }
 
@@ -237,25 +225,13 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IFuncRecordCollection<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IFuncCallLog<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
+            var mappedCollection = new MappedCollection<IRecordedCall<TTarget>, IFuncRecordedCall<TTarget, TReturn, TArgs>>(recordStream,
+                call => new FuncRecordedCall<TTarget, TReturn, TArgs>(call, (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs)));
 
-            return new FuncRecordCollection<TTarget, TReturn, TArgs>(recordStream, ParsedCallExpression, _valueTupleMapper);
-        }
-
-        public ISpyCollection<TMap> Spy<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            var spyMapper = new SpyFuncMapper<TTarget, TReturn, TArgs, TMap>(_valueTupleMapper, mapper);
-
-            return base.Spy(spyMapper.Map, optionsAction);
-        }
-
-        public ISpyCollection<TMap> Spy<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            var spyMapper = new SpyArgsFuncMapper<TTarget, TReturn, TArgs, TMap>(_valueTupleMapper, mapper);
-
-            return base.Spy(spyMapper.Map, optionsAction);
+            return new FuncCallLog<TTarget, TReturn, TArgs>(mappedCollection);
         }
     }
 }

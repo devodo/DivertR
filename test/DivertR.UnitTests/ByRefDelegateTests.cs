@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using DivertR.DynamicProxy;
-using DivertR.Record;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -27,7 +26,7 @@ namespace DivertR.UnitTests
 
         private readonly IVia<INumber> _via;
 
-        public ByRefDelegateTests() : this(Via.For<INumber>())
+        public ByRefDelegateTests() : this(new Via<INumber>())
         {
         }
 
@@ -181,7 +180,7 @@ namespace DivertR.UnitTests
             // ASSERT
             output.ShouldBe(13);
             recordStream.Count.ShouldBe(1);
-            recordStream.Scan(call =>
+            recordStream.Replay(call =>
             {
                 call.Args[0].ShouldBe(3);
                 call.Args[1].ShouldBe(13);
@@ -209,7 +208,7 @@ namespace DivertR.UnitTests
             // ASSERT
             output.ShouldBe(13);
             recordStream.Count.ShouldBe(1);
-            recordStream.Scan(call =>
+            recordStream.Replay(call =>
             {
                 call.Args.i.ShouldBe(3);
                 call.Args.o.Value.ShouldBe(13);
@@ -263,7 +262,7 @@ namespace DivertR.UnitTests
         public void GivenRefDelegate_ShouldRedirect()
         {
             // ARRANGE
-            var via = Via.For<INumber>();
+            var via = new Via<INumber>();
             int input = 5;
             via
                 .To(x => x.RefNumber(ref input))
@@ -289,7 +288,7 @@ namespace DivertR.UnitTests
         public void GivenRefParameter_WhenParameterlessDelegateRedirect_ShouldRedirect()
         {
             // ARRANGE
-            var via = Via.For<INumber>();
+            var via = new Via<INumber>();
             via
                 .To(x => x.RefNumber(ref IsRef<int>.Any))
                 .Redirect(() => 10);

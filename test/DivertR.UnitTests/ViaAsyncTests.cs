@@ -10,7 +10,7 @@ namespace DivertR.UnitTests
 {
     public class ViaAsyncTests
     {
-        private readonly IVia<IFoo> _via = Via.For<IFoo>();
+        private readonly IVia<IFoo> _via = new Via<IFoo>();
         
         [Fact]
         public async Task GivenProxy_ShouldDefaultToOriginal()

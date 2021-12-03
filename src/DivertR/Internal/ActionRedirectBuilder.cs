@@ -122,30 +122,16 @@ namespace DivertR.Internal
             return new ActionRedirectBuilder<TTarget, TArgs>(Via, ParsedCallExpression, CallConstraint);
         }
 
-        public new IActionRecordCollection<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IActionCallLog<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
 
-            return new ActionRecordCollection<TTarget>(recordStream, ParsedCallExpression);
+            return new ActionCallLog<TTarget>(recordStream);
         }
 
-        public IActionRecordCollection<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IActionCallLog<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Record(optionsAction);
-        }
-
-        public ISpyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            var spyMapper = new SpyActionMapper<TTarget, TMap>(mapper);
-
-            return base.Spy(spyMapper.Map, optionsAction);
-        }
-
-        public ISpyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget>, CallArguments, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            var spyMapper = new SpyArgsActionMapper<TTarget, TMap>(mapper);
-
-            return base.Spy(spyMapper.Map, optionsAction);
         }
     }
 
@@ -213,25 +199,13 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IActionRecordCollection<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IActionCallLog<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
+            var mappedCollection = new MappedCollection<IRecordedCall<TTarget>, IRecordedCall<TTarget, TArgs>>(recordStream,
+                call => new RecordedCall<TTarget, TArgs>(call, (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs)));
 
-            return new ActionRecordCollection<TTarget, TArgs>(recordStream, ParsedCallExpression, _valueTupleMapper);
-        }
-
-        public ISpyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget, TArgs>, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            var spyMapper = new SpyActionMapper<TTarget, TArgs, TMap>(_valueTupleMapper, mapper);
-
-            return base.Spy(spyMapper.Map, optionsAction);
-        }
-
-        public ISpyCollection<TMap> Spy<TMap>(Func<IActionRecordedCall<TTarget, TArgs>, TArgs, TMap> mapper, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            var spyMapper = new SpyArgsActionMapper<TTarget, TArgs, TMap>(_valueTupleMapper, mapper);
-
-            return base.Spy(spyMapper.Map, optionsAction);
+            return new ActionCallLog<TTarget, TArgs>(mappedCollection);
         }
     }
 }

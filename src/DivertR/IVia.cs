@@ -14,7 +14,10 @@ namespace DivertR
         /// The Via identifier consisting of its type and optional name label.
         /// </summary>
         ViaId ViaId { get; }
-
+        
+        /// <summary>
+        /// The <see cref="IViaSet"/> of this Via
+        /// </summary>
         public IViaSet ViaSet { get; }
         
         /// <summary>

@@ -33,7 +33,7 @@ namespace DivertR.SampleWebApp.Controllers
         }
         
         [HttpPost]
-        public async Task<ActionResult<Foo>> Insert([FromBody] CreateFooRequest request)
+        public async Task<ActionResult<Foo>> Create([FromBody] CreateFooRequest request)
         {
             var foo = new Foo
             {

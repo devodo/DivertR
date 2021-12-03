@@ -1,7 +1,6 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using DivertR.Record;
 using DivertR.SampleWebApp.Model;
 using DivertR.SampleWebApp.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -102,7 +101,7 @@ namespace DivertR.WebAppTests
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
             response.Content.ShouldBeNull();
 
-            (await getFooCalls.ScanAsync(async call =>
+            (await getFooCalls.Replay(async call =>
             {
                 call.Args.fooId.ShouldBe(foo.Id);
                 call.Returned?.IsException.ShouldBeFalse();
@@ -111,7 +110,7 @@ namespace DivertR.WebAppTests
         }
 
         [Fact]
-        public async Task WhenInsertFoo_ThenReturn201Created_WithGetLocation()
+        public async Task GiveFooNotExists_WhenCreateFooRequest_ThenInsertsFooAndReturn201CreatedWithLocationHeader()
         {
             // ARRANGE
             var createFooRequest = new CreateFooRequest
@@ -133,7 +132,7 @@ namespace DivertR.WebAppTests
                 });
 
             // ACT
-            var response = await _fooClient.InsertFooAsync(createFooRequest);
+            var response = await _fooClient.CreateFooAsync(createFooRequest);
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
@@ -144,7 +143,7 @@ namespace DivertR.WebAppTests
         }
         
         [Fact]
-        public async Task Record_WhenInsertFoo_ThenReturn201Created_WithGetLocation()
+        public async Task GiveFooNotExists_WhenCreateFooRequest_ThenInsertsFoo_RecordExample()
         {
             // ARRANGE
             var createFooRequest = new CreateFooRequest
@@ -157,23 +156,19 @@ namespace DivertR.WebAppTests
                 .Record<(Foo foo, __)>();
 
             // ACT  
-            var response = await _fooClient.InsertFooAsync(createFooRequest);
+            await _fooClient.CreateFooAsync(createFooRequest);
 
             // ASSERT
-            response.StatusCode.ShouldBe(HttpStatusCode.Created);
-            (await insertCalls.ScanAsync(async call =>
+            (await insertCalls.Replay(async call =>
             {
-                response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{call.Args.foo.Id}");
                 call.Args.foo.Name.ShouldBe(createFooRequest.Name);
-                response.Content.ShouldBeEquivalentTo(call.Args.foo);
-                
                 call.Returned?.IsValue.ShouldBeTrue();
                 (await call.Returned!.Value).ShouldBe(true);
             })).ShouldBe(1);
         }
         
         [Fact]
-        public async Task Spy_WhenInsertFoo_ThenReturn201Created_WithGetLocation()
+        public async Task GiveFooNotExists_WhenCreateFooRequest_ThenInsertsFoo_RecordMapExample()
         {
             // ARRANGE
             var createFooRequest = new CreateFooRequest
@@ -183,32 +178,27 @@ namespace DivertR.WebAppTests
             
             var insertCalls = _fooRepositoryVia
                 .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
-                .WithArgs<(Foo foo, __)>()
-                .Spy((call, args) => new
+                .Record<(Foo foo, __)>()
+                .Map((call, args) => new
                 {
                     Foo = args.foo,
                     Result = call.Returned
                 });
 
             // ACT  
-            var response = await _fooClient.InsertFooAsync(createFooRequest);
+            await _fooClient.CreateFooAsync(createFooRequest);
 
             // ASSERT
-            response.StatusCode.ShouldBe(HttpStatusCode.Created);
-
-            (await insertCalls.ScanAsync(async call =>
+            (await insertCalls.Replay(async call =>
             {
-                response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{call.Foo.Id}");
-                response.Content.ShouldBeEquivalentTo(call.Foo);
                 call.Foo.Name.ShouldBe(createFooRequest.Name);
-                
                 call.Result?.IsValue.ShouldBeTrue();
                 (await call.Result!.Value).ShouldBe(true);
             })).ShouldBe(1);
         }
         
         [Fact]
-        public async Task GivenFooRepositoryThrowsException_WhenInsertFoo_ThenReturns500InternalServerError()
+        public async Task GivenFooRepositoryThrowsException_WhenCreateFooRequest_ThenReturns500InternalServerError()
         {
             // ARRANGE
             var createFooRequest = new CreateFooRequest
@@ -221,15 +211,19 @@ namespace DivertR.WebAppTests
             var recordedCalls = _fooRepositoryVia
                 .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
                 .Redirect(() => throw testException)
-                .Record();
+                .Record<(Foo foo, __)>();
 
             // ACT
-            var response = await _fooClient.InsertFooAsync(createFooRequest);
+            var response = await _fooClient.CreateFooAsync(createFooRequest);
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
             recordedCalls
-                .Scan(call => call.Returned!.Exception.ShouldBeSameAs(testException))
+                .Replay((call, args) =>
+                {
+                    args.foo.Name.ShouldBe(createFooRequest.Name);
+                    call.Returned!.Exception.ShouldBeSameAs(testException);
+                })
                 .ShouldBe(1);
         }
     }
