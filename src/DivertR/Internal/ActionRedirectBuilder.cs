@@ -126,7 +126,7 @@ namespace DivertR.Internal
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
 
-            return new ActionCallLog<TTarget>(recordStream);
+            return new ActionCallLog<TTarget>(recordStream, ParsedCallExpression);
         }
 
         public IActionCallLog<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -202,10 +202,9 @@ namespace DivertR.Internal
         public new IActionCallLog<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
-            var mappedCollection = new MappedCollection<IRecordedCall<TTarget>, IRecordedCall<TTarget, TArgs>>(recordStream,
-                call => new RecordedCall<TTarget, TArgs>(call, (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs)));
+            var mappedCollection = ActionCallLog<TTarget>.MapCalls<TArgs>(recordStream, _valueTupleMapper);
 
-            return new ActionCallLog<TTarget, TArgs>(mappedCollection);
+            return new ActionCallLog<TTarget, TArgs>(mappedCollection, ParsedCallExpression);
         }
     }
 }

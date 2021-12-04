@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using DivertR.Internal;
 
 namespace DivertR.Record.Internal
 {
-    internal class ActionCallLog<TTarget> : CallLog<IRecordedCall<TTarget>>, IActionCallLog<TTarget> where TTarget : class
+    internal class ActionCallLog<TTarget> : ActionCallStream<TTarget>, IActionCallLog<TTarget> where TTarget : class
     {
-        public ActionCallLog(IReadOnlyCollection<IRecordedCall<TTarget>> calls) : base(calls)
+        public ActionCallLog(IReadOnlyCollection<IRecordedCall<TTarget>> calls, ParsedCallExpression parsedCallExpression)
+            : base(calls, parsedCallExpression)
         {
         }
         
@@ -24,58 +24,33 @@ namespace DivertR.Record.Internal
             return new CallLog<TMap>(mappedCalls);
         }
         
-        public int Replay(Action<IRecordedCall<TTarget>, CallArguments> visitor)
+        public new IActionCallLog<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return Calls.Select(call =>
-            {
-                visitor.Invoke(call, call.Args);
+            var valueTupleFactory = ValueTupleMapperFactory.Create<TArgs>();
+            ParsedCallExpression.Validate(typeof(void), valueTupleFactory.ArgumentTypes, false);
+            var mappedCall = MapCalls<TArgs>(Calls, valueTupleFactory);
 
-                return call;
-            }).Count();
+            return new ActionCallLog<TTarget, TArgs>(mappedCall, ParsedCallExpression);
+        }
+        
+        public int Count => Calls.Count;
+        
+        internal static IReadOnlyCollection<IRecordedCall<TTarget, TArgs>> MapCalls<TArgs>(IReadOnlyCollection<IRecordedCall<TTarget>> calls, IValueTupleMapper valueTupleMapper)
+            where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        {
+            return new MappedCollection<IRecordedCall<TTarget>, IRecordedCall<TTarget, TArgs>>(calls, call =>
+                new RecordedCall<TTarget, TArgs>(call, (TArgs) valueTupleMapper.ToTuple(call.Args.InternalArgs)));
         }
 
-        public int Replay(Action<IRecordedCall<TTarget>, CallArguments, int> visitor)
-        {
-            return Calls.Select((call, i) =>
-            {
-                visitor.Invoke(call, call.Args, i);
-
-                return call;
-            }).Count();
-        }
-
-        public async Task<int> Replay(Func<IRecordedCall<TTarget>, CallArguments, Task> visitor)
-        {
-            var count = 0;
-            
-            foreach (var call in Calls)
-            {
-                await visitor.Invoke(call, call.Args);
-                count++;
-            }
-
-            return count;
-        }
-
-        public async Task<int> Replay(Func<IRecordedCall<TTarget>, CallArguments, int, Task> visitor)
-        {
-            var count = 0;
-            
-            foreach (var call in Calls)
-            {
-                await visitor.Invoke(call, call.Args, count++);
-            }
-
-            return count;
-        }
+        private new IReadOnlyCollection<IRecordedCall<TTarget>> Calls => (IReadOnlyCollection<IRecordedCall<TTarget>>) base.Calls;
     }
 
-    internal class ActionCallLog<TTarget, TArgs> : CallLog<IRecordedCall<TTarget, TArgs>>, IActionCallLog<TTarget, TArgs>
+    internal class ActionCallLog<TTarget, TArgs> : ActionCallStream<TTarget, TArgs>, IActionCallLog<TTarget, TArgs>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        public ActionCallLog(IReadOnlyCollection<IRecordedCall<TTarget, TArgs>> recordedCalls)
-            : base(recordedCalls)
+        public ActionCallLog(IReadOnlyCollection<IRecordedCall<TTarget, TArgs>> recordedCalls, ParsedCallExpression parsedCallExpression)
+            : base(recordedCalls, parsedCallExpression)
         {
         }
 
@@ -91,49 +66,18 @@ namespace DivertR.Record.Internal
             return new CallLog<TMap>(mappedCollection);
         }
         
-        public int Replay(Action<IRecordedCall<TTarget>, TArgs> visitor)
+        public new IActionCallLog<TTarget, TNewArgs> WithArgs<TNewArgs>()
+            where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return Calls.Select(call =>
-            {
-                visitor.Invoke(call, call.Args);
+            var valueTupleFactory = ValueTupleMapperFactory.Create<TNewArgs>();
+            ParsedCallExpression.Validate(typeof(void), valueTupleFactory.ArgumentTypes, false);
+            var mappedCall = ActionCallLog<TTarget>.MapCalls<TNewArgs>(Calls, valueTupleFactory);
 
-                return call;
-            }).Count();
+            return new ActionCallLog<TTarget, TNewArgs>(mappedCall, ParsedCallExpression);
         }
+        
+        public int Count => Calls.Count;
 
-        public int Replay(Action<IRecordedCall<TTarget, TArgs>, TArgs, int> visitor)
-        {
-            return Calls.Select((call, i) =>
-            {
-                visitor.Invoke(call, call.Args, i);
-
-                return call;
-            }).Count();
-        }
-
-        public async Task<int> Replay(Func<IRecordedCall<TTarget>, TArgs, Task> visitor)
-        {
-            var count = 0;
-            
-            foreach (var call in Calls)
-            {
-                await visitor.Invoke(call, call.Args);
-                count++;
-            }
-
-            return count;
-        }
-
-        public async Task<int> Replay(Func<IRecordedCall<TTarget, TArgs>, TArgs, int, Task> visitor)
-        {
-            var count = 0;
-            
-            foreach (var call in Calls)
-            {
-                await visitor.Invoke(call, call.Args, count++);
-            }
-
-            return count;
-        }
+        private new IReadOnlyCollection<IRecordedCall<TTarget, TArgs>> Calls => (IReadOnlyCollection<IRecordedCall<TTarget, TArgs>>) base.Calls;
     }
 }

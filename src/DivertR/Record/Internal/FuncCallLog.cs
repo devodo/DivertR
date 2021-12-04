@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using DivertR.Internal;
 
 namespace DivertR.Record.Internal
 {
-    internal class FuncCallLog<TTarget, TReturn> : CallLog<IFuncRecordedCall<TTarget, TReturn>>, IFuncCallLog<TTarget, TReturn> where TTarget : class
+    internal class FuncCallLog<TTarget, TReturn> : FuncCallStream<TTarget, TReturn>, IFuncCallLog<TTarget, TReturn> where TTarget : class
     {
-        public FuncCallLog(IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn>> recordedCalls) : base(recordedCalls)
+        public FuncCallLog(IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn>> recordedCalls, ParsedCallExpression parsedCallExpression)
+            : base(recordedCalls, parsedCallExpression)
         {
         }
 
@@ -26,57 +26,32 @@ namespace DivertR.Record.Internal
             return new CallLog<TMap>(mappedCollection);
         }
         
-        public int Replay(Action<IFuncRecordedCall<TTarget, TReturn>, CallArguments> visitor)
+        public new IFuncCallLog<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return Calls.Select(call =>
-            {
-                visitor.Invoke(call, call.Args);
-
-                return call;
-            }).Count();
-        }
-
-        public int Replay(Action<IFuncRecordedCall<TTarget, TReturn>, CallArguments, int> visitor)
-        {
-            return Calls.Select((call, i) =>
-            {
-                visitor.Invoke(call, call.Args, i);
-
-                return call;
-            }).Count();
-        }
-
-        public async Task<int> Replay(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, Task> visitor)
-        {
-            var count = 0;
+            var valueTupleFactory = ValueTupleMapperFactory.Create<TArgs>();
+            ParsedCallExpression.Validate(typeof(TReturn), valueTupleFactory.ArgumentTypes, false);
+            var mappedCall = MapCalls<TArgs>(Calls, valueTupleFactory);
             
-            foreach (var call in Calls)
-            {
-                await visitor.Invoke(call, call.Args);
-                count++;
-            }
-
-            return count;
+            return new FuncCallLog<TTarget, TReturn, TArgs>(mappedCall, ParsedCallExpression);
         }
-
-        public async Task<int> Replay(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, int, Task> visitor)
+        
+        public int Count => Calls.Count;
+        
+        internal static IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn, TArgs>> MapCalls<TArgs>(IReadOnlyCollection<IRecordedCall<TTarget>> calls, IValueTupleMapper valueTupleMapper)
         {
-            var count = 0;
-            
-            foreach (var call in Calls)
-            {
-                await visitor.Invoke(call, call.Args, count++);
-            }
-
-            return count;
+            return new MappedCollection<IRecordedCall<TTarget>, IFuncRecordedCall<TTarget, TReturn, TArgs>>(calls, call => 
+                new FuncRecordedCall<TTarget, TReturn, TArgs>(call, (TArgs) valueTupleMapper.ToTuple(call.Args.InternalArgs)));
         }
+
+        private new IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn>> Calls => (IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn>>) base.Calls;
     }
 
-    internal class FuncCallLog<TTarget, TReturn, TArgs> : CallLog<IFuncRecordedCall<TTarget, TReturn, TArgs>>, IFuncCallLog<TTarget, TReturn, TArgs>
+    internal class FuncCallLog<TTarget, TReturn, TArgs> : FuncCallStream<TTarget, TReturn, TArgs>, IFuncCallLog<TTarget, TReturn, TArgs>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        public FuncCallLog(IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn, TArgs>> recordedCalls) : base(recordedCalls)
+        public FuncCallLog(IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn, TArgs>> recordedCalls, ParsedCallExpression parsedCallExpression)
+            : base(recordedCalls, parsedCallExpression)
         {
         }
 
@@ -95,49 +70,18 @@ namespace DivertR.Record.Internal
             return new CallLog<TMap>(mappedCollection);
         }
         
-        public int Replay(Action<IFuncRecordedCall<TTarget, TReturn>, TArgs> visitor)
+        public new IFuncCallLog<TTarget, TReturn, TNewArgs> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return Calls.Select(call =>
-            {
-                visitor.Invoke(call, call.Args);
-
-                return call;
-            }).Count();
-        }
-
-        public int Replay(Action<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, int> visitor)
-        {
-            return Calls.Select((call, i) =>
-            {
-                visitor.Invoke(call, call.Args, i);
-
-                return call;
-            }).Count();
-        }
-
-        public async Task<int> Replay(Func<IFuncRecordedCall<TTarget, TReturn>, TArgs, Task> visitor)
-        {
-            var count = 0;
+            var valueTupleFactory = ValueTupleMapperFactory.Create<TNewArgs>();
+            ParsedCallExpression.Validate(typeof(TReturn), valueTupleFactory.ArgumentTypes, false);
+            var mappedCall = FuncCallLog<TTarget, TReturn>.MapCalls<TNewArgs>(Calls, valueTupleFactory);
             
-            foreach (var call in Calls)
-            {
-                await visitor.Invoke(call, call.Args);
-                count++;
-            }
-
-            return count;
+            return new FuncCallLog<TTarget, TReturn, TNewArgs>(mappedCall, ParsedCallExpression);
         }
-
-        public async Task<int> Replay(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, int, Task> visitor)
-        {
-            var count = 0;
-            
-            foreach (var call in Calls)
-            {
-                await visitor.Invoke(call, call.Args, count++);
-            }
-
-            return count;
-        }
+        
+        public int Count => Calls.Count;
+        
+        private new IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn, TArgs>> Calls => 
+            (IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn, TArgs>>) base.Calls;
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -830,7 +829,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirectsInserts_ShouldReturnRedirectPlan()
+        public void GivenInsertedRedirects_ShouldReturnRedirectPlan()
         {
             // ARRANGE
             const int Num = 20;

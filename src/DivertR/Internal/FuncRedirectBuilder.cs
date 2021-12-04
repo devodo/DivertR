@@ -138,7 +138,7 @@ namespace DivertR.Internal
             var mappedCollection = new MappedCollection<IRecordedCall<TTarget>, IFuncRecordedCall<TTarget, TReturn>>(recordStream,
                 call => new FuncRecordedCall<TTarget, TReturn>(call));
 
-            return new FuncCallLog<TTarget, TReturn>(mappedCollection);
+            return new FuncCallLog<TTarget, TReturn>(mappedCollection, ParsedCallExpression);
         }
 
         public IFuncCallLog<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -231,7 +231,7 @@ namespace DivertR.Internal
             var mappedCollection = new MappedCollection<IRecordedCall<TTarget>, IFuncRecordedCall<TTarget, TReturn, TArgs>>(recordStream,
                 call => new FuncRecordedCall<TTarget, TReturn, TArgs>(call, (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs)));
 
-            return new FuncCallLog<TTarget, TReturn, TArgs>(mappedCollection);
+            return new FuncCallLog<TTarget, TReturn, TArgs>(mappedCollection, ParsedCallExpression);
         }
     }
 }

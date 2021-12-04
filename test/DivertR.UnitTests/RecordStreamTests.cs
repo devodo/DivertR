@@ -8,12 +8,12 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class RecordTests
+    public class RecordStreamTests
     {
         private readonly IVia<IFoo> _via = new Via<IFoo>();
         private readonly IRecordStream<IFoo> _recordStream;
 
-        public RecordTests()
+        public RecordStreamTests()
         {
             _recordStream = _via.Record(options => options.OrderWeight(int.MaxValue));
         }

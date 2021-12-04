@@ -9,20 +9,21 @@ namespace DivertR.Record.Internal
 {
     internal class ActionCallStream<TTarget> : CallStream<IRecordedCall<TTarget>>, IActionCallStream<TTarget> where TTarget : class
     {
-        private readonly ParsedCallExpression _parsedCallExpression;
+        protected readonly ParsedCallExpression ParsedCallExpression;
 
         public ActionCallStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ParsedCallExpression parsedCallExpression)
             : base(recordedCalls)
         {
-            _parsedCallExpression = parsedCallExpression;
+            ParsedCallExpression = parsedCallExpression;
         }
         
         public IActionCallStream<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleFactory = ValueTupleMapperFactory.Create<TArgs>();
-            _parsedCallExpression.Validate(typeof(void), valueTupleFactory.ArgumentTypes, false);
-            
-            return new ActionCallStream<TTarget, TArgs>(Calls, _parsedCallExpression, valueTupleFactory);
+            ParsedCallExpression.Validate(typeof(void), valueTupleFactory.ArgumentTypes, false);
+            var mappedCall = MapCalls<TArgs>(Calls, valueTupleFactory);
+
+            return new ActionCallStream<TTarget, TArgs>(mappedCall, ParsedCallExpression);
         }
 
         public int Replay(Action<IRecordedCall<TTarget>, CallArguments> visitor)
@@ -69,26 +70,35 @@ namespace DivertR.Record.Internal
 
             return count;
         }
+
+        internal static IEnumerable<IRecordedCall<TTarget, TArgs>> MapCalls<TArgs>(IEnumerable<IRecordedCall<TTarget>> calls, IValueTupleMapper valueTupleMapper)
+            where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        {
+            return calls.Select(call =>
+                new RecordedCall<TTarget, TArgs>(call, (TArgs) valueTupleMapper.ToTuple(call.Args.InternalArgs)));
+        }
     }
 
     internal class ActionCallStream<TTarget, TArgs> : CallStream<IRecordedCall<TTarget, TArgs>>, IActionCallStream<TTarget, TArgs>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        private readonly ParsedCallExpression _parsedCallExpression;
+        protected readonly ParsedCallExpression ParsedCallExpression;
 
-        public ActionCallStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ParsedCallExpression parsedCallExpression, IValueTupleMapper valueTupleMapper)
-            : base(MapCalls(recordedCalls, valueTupleMapper))
+        public ActionCallStream(IEnumerable<IRecordedCall<TTarget, TArgs>> recordedCalls, ParsedCallExpression parsedCallExpression)
+            : base(recordedCalls)
         {
-            _parsedCallExpression = parsedCallExpression;
+            ParsedCallExpression = parsedCallExpression;
         }
         
-        public IActionCallStream<TTarget, TNewArgs> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IActionCallStream<TTarget, TNewArgs> WithArgs<TNewArgs>()
+            where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleFactory = ValueTupleMapperFactory.Create<TNewArgs>();
-            _parsedCallExpression.Validate(typeof(void), valueTupleFactory.ArgumentTypes, false);
-            
-            return new ActionCallStream<TTarget, TNewArgs>(Calls, _parsedCallExpression, valueTupleFactory);
+            ParsedCallExpression.Validate(typeof(void), valueTupleFactory.ArgumentTypes, false);
+            var mappedCall = ActionCallStream<TTarget>.MapCalls<TNewArgs>(Calls, valueTupleFactory);
+
+            return new ActionCallStream<TTarget, TNewArgs>(mappedCall, ParsedCallExpression);
         }
 
         public int Replay(Action<IRecordedCall<TTarget>, TArgs> visitor)
@@ -134,13 +144,6 @@ namespace DivertR.Record.Internal
             }
 
             return count;
-        }
-
-        private static IEnumerable<IRecordedCall<TTarget, TArgs>> MapCalls(
-            IEnumerable<IRecordedCall<TTarget>> calls, IValueTupleMapper valueTupleMapper)
-        {
-            return calls.Select(call =>
-                new RecordedCall<TTarget, TArgs>(call, (TArgs) valueTupleMapper.ToTuple(call.Args.InternalArgs)));
         }
     }
 }

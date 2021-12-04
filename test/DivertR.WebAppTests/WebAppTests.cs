@@ -159,9 +159,9 @@ namespace DivertR.WebAppTests
             await _fooClient.CreateFooAsync(createFooRequest);
 
             // ASSERT
-            (await insertCalls.Replay(async call =>
+            (await insertCalls.Replay(async (call, args) =>
             {
-                call.Args.foo.Name.ShouldBe(createFooRequest.Name);
+                args.foo.Name.ShouldBe(createFooRequest.Name);
                 call.Returned?.IsValue.ShouldBeTrue();
                 (await call.Returned!.Value).ShouldBe(true);
             })).ShouldBe(1);
@@ -223,8 +223,7 @@ namespace DivertR.WebAppTests
                 {
                     args.foo.Name.ShouldBe(createFooRequest.Name);
                     call.Returned!.Exception.ShouldBeSameAs(testException);
-                })
-                .ShouldBe(1);
+                }).ShouldBe(1);
         }
     }
 }

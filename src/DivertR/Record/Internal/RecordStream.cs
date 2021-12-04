@@ -29,7 +29,9 @@ namespace DivertR.Record.Internal
 
             var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
             var callConstraint = parsedCall.ToCallConstraint<TTarget>();
-            var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
+            var calls = _recordedCalls
+                .Where(x => callConstraint.IsMatch(x.CallInfo))
+                .Select(call => new FuncRecordedCall<TTarget, TReturn>(call));
 
             return new FuncCallStream<TTarget, TReturn>(calls, parsedCall);
         }
