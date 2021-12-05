@@ -6,46 +6,41 @@ using System.Threading.Tasks;
 
 namespace DivertR.Record.Internal
 {
-    internal class CallStream<TMap> : ICallStream<TMap>
+    internal class CallStream<T> : ICallStream<T>
     {
-        protected readonly IEnumerable<TMap> Calls;
+        protected readonly IEnumerable<T> Calls;
 
-        public CallStream(IEnumerable<TMap> calls)
+        public CallStream(IEnumerable<T> calls)
         {
             Calls = calls;
         }
-        
-        public IEnumerator<TMap> GetEnumerator()
+
+        public ICallStream<TMap> Map<TMap>(Func<T, TMap> mapper)
         {
-            return Calls.GetEnumerator();
+            return new CallStream<TMap>(Calls.Select(mapper.Invoke));
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public IReplayResult Replay(Action<T> visitor)
         {
-            return GetEnumerator();
-        }
-
-        public int Replay(Action<TMap> visitor)
-        {
-            return this.Select(call =>
+            return new ReplayResult(this.Select(call =>
             {
                 visitor.Invoke(call);
 
                 return call;
-            }).Count();
+            }).Count());
         }
 
-        public int Replay(Action<TMap, int> visitor)
+        public IReplayResult Replay(Action<T, int> visitor)
         {
-            return this.Select((call, i) =>
+            return new ReplayResult(this.Select((call, i) =>
             {
                 visitor.Invoke(call, i);
 
                 return call;
-            }).Count();
+            }).Count());
         }
         
-        public async Task<int> Replay(Func<TMap, Task> visitor)
+        public async Task<IReplayResult> Replay(Func<T, Task> visitor)
         {
             var count = 0;
             
@@ -55,10 +50,10 @@ namespace DivertR.Record.Internal
                 count++;
             }
 
-            return count;
+            return new ReplayResult(count);
         }
 
-        public async Task<int> Replay(Func<TMap, int, Task> visitor)
+        public async Task<IReplayResult> Replay(Func<T, int, Task> visitor)
         {
             var count = 0;
             
@@ -67,7 +62,17 @@ namespace DivertR.Record.Internal
                 await visitor.Invoke(call, count++).ConfigureAwait(false);
             }
 
-            return count;
+            return new ReplayResult(count);
+        }
+        
+        public IEnumerator<T> GetEnumerator()
+        {
+            return Calls.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

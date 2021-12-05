@@ -62,6 +62,11 @@ namespace DivertR.UnitTests
             echoes.Count.ShouldBe(inputs.Count);
             echoes.Select(x => x.Input).ShouldBe(inputs);
             echoes.Select(x => x.Returned).ShouldBe(outputs);
+            echoes.Replay((call, i) =>
+            {
+                call.Input.ShouldBe(inputs[i]);
+                call.Returned.ShouldBe(outputs[i]);
+            }).Count.ShouldBe(outputs.Count);
         }
         
         [Fact]
@@ -191,26 +196,26 @@ namespace DivertR.UnitTests
             {
                 call.Input.ShouldBe($"test{count}");
                 call.Result.ShouldBe($"test{count++} diverted");
-            })).ShouldBe(inputs.Count);
+            })).Count.ShouldBe(inputs.Count);
             
             (await calls.ReplayAsync((call, i) =>
             {
                 call.Input.ShouldBe($"test{i}");
                 call.Result.ShouldBe($"test{i} diverted");
-            })).ShouldBe(inputs.Count);
+            })).Count.ShouldBe(inputs.Count);
 
             count = 0;
             (await calls.Replay(async call =>
             {
                 (await call).Input.ShouldBe($"test{count}");
                 (await call).Result.ShouldBe($"test{count++} diverted");
-            })).ShouldBe(inputs.Count);
+            })).Count.ShouldBe(inputs.Count);
             
             (await calls.Replay(async (call, i) =>
             {
                 (await call).Input.ShouldBe($"test{i}");
                 (await call).Result.ShouldBe($"test{i} diverted");
-            })).ShouldBe(inputs.Count);
+            })).Count.ShouldBe(inputs.Count);
         }
         
         [Fact]
@@ -247,13 +252,13 @@ namespace DivertR.UnitTests
             {
                 call.Input.ShouldBe($"test{count}");
                 (await call.Result).ShouldBe($"test{count++} diverted");
-            })).ShouldBe(inputs.Count);
+            })).Count.ShouldBe(inputs.Count);
             
             (await calls.Replay(async (call, i) =>
             {
                 call.Input.ShouldBe($"test{i}");
                 (await call.Result).ShouldBe($"test{i} diverted");
-            })).ShouldBe(inputs.Count);
+            })).Count.ShouldBe(inputs.Count);
         }
         
         [Fact]
@@ -279,7 +284,7 @@ namespace DivertR.UnitTests
             echoes.Replay((call, i) =>
             {
                 call.Input.ShouldBe(inputs[i]);
-            }).ShouldBe(inputs.Count);
+            }).Count.ShouldBe(inputs.Count);
         }
         
         [Fact]

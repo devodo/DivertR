@@ -9,10 +9,12 @@ namespace DivertR.Record
         IActionCallStream<TTarget, TArgs> WithArgs<TArgs>()
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
-        int Replay(Action<IRecordedCall<TTarget>, CallArguments> visitor);
-        int Replay(Action<IRecordedCall<TTarget>, CallArguments, int> visitor);
-        Task<int> Replay(Func<IRecordedCall<TTarget>, CallArguments, Task> visitor);
-        Task<int> Replay(Func<IRecordedCall<TTarget>, CallArguments, int, Task> visitor);
+        ICallStream<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, CallArguments, TMap> mapper);
+        
+        IReplayResult Replay(Action<IRecordedCall<TTarget>, CallArguments> visitor);
+        IReplayResult Replay(Action<IRecordedCall<TTarget>, CallArguments, int> visitor);
+        Task<IReplayResult> Replay(Func<IRecordedCall<TTarget>, CallArguments, Task> visitor);
+        Task<IReplayResult> Replay(Func<IRecordedCall<TTarget>, CallArguments, int, Task> visitor);
     }
 
     public interface IActionCallStream<TTarget, out TArgs> : ICallStream<IRecordedCall<TTarget, TArgs>>
@@ -22,9 +24,11 @@ namespace DivertR.Record
         IActionCallStream<TTarget, TNewArgs> WithArgs<TNewArgs>()
             where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
-        int Replay(Action<IRecordedCall<TTarget>, TArgs> visitor);
-        int Replay(Action<IRecordedCall<TTarget, TArgs>, TArgs, int> visitor);
-        Task<int> Replay(Func<IRecordedCall<TTarget>, TArgs, Task> visitor);
-        Task<int> Replay(Func<IRecordedCall<TTarget, TArgs>, TArgs, int, Task> visitor);
+        ICallStream<TMap> Map<TMap>(Func<IRecordedCall<TTarget, TArgs>, TArgs, TMap> mapper);
+        
+        IReplayResult Replay(Action<IRecordedCall<TTarget>, TArgs> visitor);
+        IReplayResult Replay(Action<IRecordedCall<TTarget, TArgs>, TArgs, int> visitor);
+        Task<IReplayResult> Replay(Func<IRecordedCall<TTarget>, TArgs, Task> visitor);
+        Task<IReplayResult> Replay(Func<IRecordedCall<TTarget, TArgs>, TArgs, int, Task> visitor);
     }
 }

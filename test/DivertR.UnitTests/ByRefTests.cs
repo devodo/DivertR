@@ -196,7 +196,7 @@ namespace DivertR.UnitTests
             {
                 call.Args.input.ShouldBe(3);
                 call.Args.output.Value.ShouldBe(13);
-            }).ShouldBe(1);
+            }).Count.ShouldBe(1);
         }
         
         [Fact]

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DivertR.Record.Internal;
 
 namespace DivertR.Record
 {
-    public static class RecordExtensions
+    public static class ReplayAsyncExtensions
     {
-        public static async Task<int> ReplayAsync<TMap>(this ICallStream<Task<TMap>> recordedCalls, Action<TMap> visitor)
+        public static async Task<IReplayResult> ReplayAsync<TMap>(this ICallStream<Task<TMap>> recordedCalls, Action<TMap> visitor)
         {
             var count = 0;
             
@@ -15,10 +16,10 @@ namespace DivertR.Record
                 count++;
             }
 
-            return count;
+            return new ReplayResult(count);
         }
 
-        public static async Task<int> ReplayAsync<TMap>(this ICallStream<Task<TMap>> recordedCalls, Action<TMap, int> visitor)
+        public static async Task<IReplayResult> ReplayAsync<TMap>(this ICallStream<Task<TMap>> recordedCalls, Action<TMap, int> visitor)
         {
             var count = 0;
             
@@ -27,10 +28,10 @@ namespace DivertR.Record
                 visitor.Invoke(await call, count++);
             }
 
-            return count;
+            return new ReplayResult(count);
         }
         
-        public static async Task<int> ReplayAsync<TMap>(this ICallStream<Task<TMap>> recordedCalls, Func<TMap, Task> visitor)
+        public static async Task<IReplayResult> ReplayAsync<TMap>(this ICallStream<Task<TMap>> recordedCalls, Func<TMap, Task> visitor)
         {
             var count = 0;
             
@@ -41,10 +42,10 @@ namespace DivertR.Record
                 count++;
             }
 
-            return count;
+            return new ReplayResult(count);
         }
 
-        public static async Task<int> ReplayAsync<TMap>(this ICallStream<Task<TMap>> recordedCalls, Func<TMap, int, Task> visitor)
+        public static async Task<IReplayResult> ReplayAsync<TMap>(this ICallStream<Task<TMap>> recordedCalls, Func<TMap, int, Task> visitor)
         {
             var count = 0;
             
@@ -54,7 +55,7 @@ namespace DivertR.Record
                 await visitor.Invoke(call, count++).ConfigureAwait(false);
             }
 
-            return count;
+            return new ReplayResult(count);
         }
     }
 }

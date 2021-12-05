@@ -4,11 +4,13 @@ using System.Threading.Tasks;
 
 namespace DivertR.Record
 {
-    public interface ICallStream<out TMap> : IEnumerable<TMap>
+    public interface ICallStream<out T> : IEnumerable<T>
     {
-        int Replay(Action<TMap> visitor);
-        int Replay(Action<TMap, int> visitor);
-        Task<int> Replay(Func<TMap, Task> visitor);
-        Task<int> Replay(Func<TMap, int, Task> visitor);
+        ICallStream<TMap> Map<TMap>(Func<T, TMap> mapper);
+        
+        IReplayResult Replay(Action<T> visitor);
+        IReplayResult Replay(Action<T, int> visitor);
+        Task<IReplayResult> Replay(Func<T, Task> visitor);
+        Task<IReplayResult> Replay(Func<T, int, Task> visitor);
     }
 }

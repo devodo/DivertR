@@ -12,14 +12,14 @@ namespace DivertR.Record.Internal
         {
         }
 
-        public ICallLog<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, TMap> mapper)
+        public new ICallLog<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, TMap> mapper)
         {
             var mappedCollection = new MappedCollection<IFuncRecordedCall<TTarget, TReturn>, TMap>(Calls, mapper);
             
             return new CallLog<TMap>(mappedCollection);
         }
 
-        public ICallLog<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, TMap> mapper)
+        public new ICallLog<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, TMap> mapper)
         {
             var mappedCollection = new MappedCollection<IFuncRecordedCall<TTarget, TReturn>, TMap>(Calls, call => mapper.Invoke(call, call.Args));
             
@@ -55,14 +55,14 @@ namespace DivertR.Record.Internal
         {
         }
 
-        public ICallLog<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TMap> mapper)
+        public new ICallLog<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TMap> mapper)
         {
             var mappedCollection = new MappedCollection<IFuncRecordedCall<TTarget, TReturn, TArgs>, TMap>(Calls, mapper);
             
             return new CallLog<TMap>(mappedCollection);
         }
 
-        public ICallLog<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, TMap> mapper)
+        public new ICallLog<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, TMap> mapper)
         {
             var mappedCollection = new MappedCollection<IFuncRecordedCall<TTarget, TReturn, TArgs>, TMap>(Calls,
                 call => mapper.Invoke(call, call.Args));

@@ -45,7 +45,7 @@ namespace DivertR.UnitTests
             
             echoCalls.Select(call => call.Args.input).ShouldBe(inputs);
             echoCalls.Select(call => call.Returned!.Value).ShouldBe(outputs);
-            echoCalls.Replay((_, args, i) => args.input.ShouldBe(inputs[i])).ShouldBe(inputs.Count);
+            echoCalls.Replay((_, args, i) => args.input.ShouldBe(inputs[i])).Count.ShouldBe(inputs.Count);
         }
         
         [Fact]
@@ -77,7 +77,7 @@ namespace DivertR.UnitTests
             {
                 call.Args.input.ShouldBe(inputs[0]);
                 call.Returned!.Value.ShouldBe(outputs[0]);
-            }).ShouldBe(1);
+            }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -108,7 +108,7 @@ namespace DivertR.UnitTests
                 {
                     call.Args.input.ShouldBe("test");
                     call.Returned?.Exception.ShouldBeSameAs(caughtException);
-                }).ShouldBe(1);
+                }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -173,7 +173,7 @@ namespace DivertR.UnitTests
                 {
                     call.CallInfo.Arguments[0].ShouldBe("test");
                     call.Returned!.Exception.ShouldBeOfType<StrictNotSatisfiedException>();
-                }).ShouldBe(1);
+                }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -198,7 +198,7 @@ namespace DivertR.UnitTests
                 {
                     call.Args.input.ShouldBe("test");
                     call.Returned!.Value.Result.ShouldBe(result);
-                }).ShouldBe(1);
+                }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -256,7 +256,7 @@ namespace DivertR.UnitTests
             recordedCalls.Replay(call =>
             {
                 outputs.ShouldContain(call.Returned!.Value);
-            }).ShouldBe(outputs.Count);
+            }).Count.ShouldBe(outputs.Count);
         }
         
         [Fact]
@@ -289,7 +289,7 @@ namespace DivertR.UnitTests
             {
                 args.name.ShouldBe(inputs[i]);
                 call.Returned!.Value.ShouldBeNull();
-            }).ShouldBe(inputs.Count);
+            }).Count.ShouldBe(inputs.Count);
         }
         
         [Fact]
@@ -319,11 +319,71 @@ namespace DivertR.UnitTests
 
             // ASSERT
             beforeCount.ShouldBe(0);
-            recordedCalls.Replay((call, i) => call.Args.input.ShouldBe(inputs[i])).ShouldBe(inputs.Count);
+            recordedCalls.Replay((call, i) => call.Args.input.ShouldBe(inputs[i])).Count.ShouldBe(inputs.Count);
             // ReSharper disable once PossibleMultipleEnumeration (Testing deferred enumeration)
             recordedOutputs.Count().ShouldBe(inputs.Count);
             // ReSharper disable once PossibleMultipleEnumeration (Testing deferred enumeration)
             recordedOutputs.ShouldBe(outputs);
+        }
+        
+        [Fact]
+        public void GivenRecordMap_ShouldRecordAndMap()
+        {
+            // ARRANGE
+            var inputs = Enumerable
+                .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
+                .ToList();
+            
+            _via
+                .To(x => x.Echo(Is<string>.Any))
+                .Redirect(() => Guid.NewGuid().ToString());
+
+            var mappedCalls = _recordStream
+                .To(x => x.Echo(Is<string>.Any))
+                .WithArgs<(string input, __)>()
+                .Map((call, args) => new { Input = args.input, Result = call.Returned });
+
+            var fooProxy = _via.Proxy();
+
+            // ACT
+            var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
+
+            // ASSERT
+            mappedCalls.Replay((call, i) =>
+            {
+                call.Input.ShouldBe(inputs[i]);
+                call.Result?.Value.ShouldBe(outputs[i]);
+            }).Count.ShouldBe(inputs.Count);
+        }
+        
+        [Fact]
+        public async Task GivenRecordMapTask_ShouldRecordAndMap()
+        {
+            // ARRANGE
+            var inputs = Enumerable
+                .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
+                .ToList();
+            
+            _via
+                .To(x => x.EchoAsync(Is<string>.Any))
+                .Redirect(() => Task.FromResult(Guid.NewGuid().ToString()));
+
+            var mappedCalls = _recordStream
+                .To(x => x.EchoAsync(Is<string>.Any))
+                .WithArgs<(string input, __)>()
+                .Map((call, args) => new { Input = args.input, Result = call.Returned });
+
+            var fooProxy = _via.Proxy();
+
+            // ACT
+            var outputs = inputs.Select(x => fooProxy.EchoAsync(x)).ToList();
+
+            // ASSERT
+            (await mappedCalls.Replay(async (call, i) =>
+            {
+                call.Input.ShouldBe(inputs[i]);
+                (await call.Result!.Value).ShouldBe((await outputs[i]));
+            })).Count.ShouldBe(inputs.Count);
         }
     }
 }

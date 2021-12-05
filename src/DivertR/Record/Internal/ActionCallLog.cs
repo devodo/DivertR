@@ -12,13 +12,13 @@ namespace DivertR.Record.Internal
         {
         }
         
-        public ICallLog<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, TMap> mapper)
+        public new ICallLog<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, TMap> mapper)
         {
             var mappedCalls = new MappedCollection<IRecordedCall<TTarget>, TMap>(this, mapper);
             return new CallLog<TMap>(mappedCalls);
         }
 
-        public ICallLog<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, CallArguments, TMap> mapper)
+        public new ICallLog<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, CallArguments, TMap> mapper)
         {
             var mappedCalls = new MappedCollection<IRecordedCall<TTarget>, TMap>(this, call => mapper.Invoke(call, call.Args));
             return new CallLog<TMap>(mappedCalls);
@@ -54,13 +54,13 @@ namespace DivertR.Record.Internal
         {
         }
 
-        public ICallLog<TMap> Map<TMap>(Func<IRecordedCall<TTarget, TArgs>, TMap> mapper)
+        public new ICallLog<TMap> Map<TMap>(Func<IRecordedCall<TTarget, TArgs>, TMap> mapper)
         {
             var mappedCollection = new MappedCollection<IRecordedCall<TTarget, TArgs>, TMap>(Calls, mapper);
             return new CallLog<TMap>(mappedCollection);
         }
 
-        public ICallLog<TMap> Map<TMap>(Func<IRecordedCall<TTarget, TArgs>, TArgs, TMap> mapper)
+        public new ICallLog<TMap> Map<TMap>(Func<IRecordedCall<TTarget, TArgs>, TArgs, TMap> mapper)
         {
             var mappedCollection = new MappedCollection<IRecordedCall<TTarget, TArgs>, TMap>(Calls, call => mapper.Invoke(call, call.Args));
             return new CallLog<TMap>(mappedCollection);

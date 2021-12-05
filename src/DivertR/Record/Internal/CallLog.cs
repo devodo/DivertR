@@ -1,14 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace DivertR.Record.Internal
 {
-    internal class CallLog<TMap> : CallStream<TMap>, ICallLog<TMap>
+    internal class CallLog<T> : CallStream<T>, ICallLog<T>
     {
-        public CallLog(IReadOnlyCollection<TMap> calls) : base(calls)
+        public CallLog(IReadOnlyCollection<T> calls) : base(calls)
         {
         }
+        
+        public new ICallLog<TMap> Map<TMap>(Func<T, TMap> mapper)
+        {
+            var mappedCollection = new MappedCollection<T, TMap>(Calls, mapper);
+            
+            return new CallLog<TMap>(mappedCollection);
+        }
 
-        protected new IReadOnlyCollection<TMap> Calls => (IReadOnlyCollection<TMap>) base.Calls;
+        private new IReadOnlyCollection<T> Calls => (IReadOnlyCollection<T>) base.Calls;
 
         public int Count => Calls.Count;
     }

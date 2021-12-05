@@ -106,7 +106,7 @@ namespace DivertR.WebAppTests
                 call.Args.fooId.ShouldBe(foo.Id);
                 call.Returned?.IsException.ShouldBeFalse();
                 (await call.Returned!.Value).ShouldBeNull();
-            })).ShouldBe(1);
+            })).Count.ShouldBe(1);
         }
 
         [Fact]
@@ -164,7 +164,7 @@ namespace DivertR.WebAppTests
                 args.foo.Name.ShouldBe(createFooRequest.Name);
                 call.Returned?.IsValue.ShouldBeTrue();
                 (await call.Returned!.Value).ShouldBe(true);
-            })).ShouldBe(1);
+            })).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -194,7 +194,7 @@ namespace DivertR.WebAppTests
                 call.Foo.Name.ShouldBe(createFooRequest.Name);
                 call.Result?.IsValue.ShouldBeTrue();
                 (await call.Result!.Value).ShouldBe(true);
-            })).ShouldBe(1);
+            })).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -218,12 +218,11 @@ namespace DivertR.WebAppTests
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
-            recordedCalls
-                .Replay((call, args) =>
-                {
-                    args.foo.Name.ShouldBe(createFooRequest.Name);
-                    call.Returned!.Exception.ShouldBeSameAs(testException);
-                }).ShouldBe(1);
+            recordedCalls.Replay((call, args) =>
+            {
+                args.foo.Name.ShouldBe(createFooRequest.Name);
+                call.Returned!.Exception.ShouldBeSameAs(testException);
+            }).Count.ShouldBe(1);
         }
     }
 }

@@ -140,7 +140,7 @@ namespace DivertR.UnitTests
                 {
                     call.Returned!.Value.ShouldBeNull();
                     call.Args.i1.ShouldBe(_inputs[0][0].Arg);
-                }).ShouldBe(1);
+                }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -163,7 +163,7 @@ namespace DivertR.UnitTests
                     call.Returned!.Value.ShouldBeNull();
                     call.Args.i1.ShouldBe(_inputs[1][0].Arg);
                     call.Args.i2.ShouldBe(_inputs[1][1].Arg);
-                }).ShouldBe(1);
+                }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -187,7 +187,7 @@ namespace DivertR.UnitTests
                     call.Args.i1.ShouldBe(_inputs[2][0].Arg);
                     call.Args.i2.ShouldBe(_inputs[2][1].Arg);
                     call.Args.i3.ShouldBe(_inputs[2][2].Arg);
-                }).ShouldBe(1);
+                }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -212,7 +212,7 @@ namespace DivertR.UnitTests
                     call.Args.i2.ShouldBe(_inputs[3][1].Arg);
                     call.Args.i3.ShouldBe(_inputs[3][2].Arg);
                     call.Args.i4.ShouldBe(_inputs[3][3].Arg);
-                }).ShouldBe(1);
+                }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -241,7 +241,7 @@ namespace DivertR.UnitTests
                     call.Args.i3.ShouldBe(_inputs[4][2].Arg);
                     call.Args.i4.ShouldBe(_inputs[4][3].Arg);
                     call.Args.i5.ShouldBe(_inputs[4][4].Arg);
-                }).ShouldBe(1);
+                }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -271,7 +271,7 @@ namespace DivertR.UnitTests
                     call.Args.i4.ShouldBe(_inputs[5][3].Arg);
                     call.Args.i5.ShouldBe(_inputs[5][4].Arg);
                     call.Args.i6.ShouldBe(_inputs[5][5].Arg);
-                }).ShouldBe(1);
+                }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -302,7 +302,7 @@ namespace DivertR.UnitTests
                     call.Args.i5.ShouldBe(_inputs[6][4].Arg);
                     call.Args.i6.ShouldBe(_inputs[6][5].Arg);
                     call.Args.i7.ShouldBe(_inputs[6][6].Arg);
-                }).ShouldBe(1);
+                }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -334,7 +334,7 @@ namespace DivertR.UnitTests
                     call.Args.i6.ShouldBe(_inputs[7][5].Arg);
                     call.Args.i7.ShouldBe(_inputs[7][6].Arg);
                     call.Args.i8.ShouldBe(_inputs[7][7].Arg);
-                }).ShouldBe(1);
+                }).Count.ShouldBe(1);
         }
     }
 }

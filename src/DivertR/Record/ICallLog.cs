@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace DivertR.Record
 {
-    public interface ICallLog<out TMap> : ICallStream<TMap>, IReadOnlyCollection<TMap>
+    public interface ICallLog<out T> : ICallStream<T>, IReadOnlyCollection<T>
     {
+        new ICallLog<TMap> Map<TMap>(Func<T, TMap> mapper);
     }
 }

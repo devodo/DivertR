@@ -26,28 +26,33 @@ namespace DivertR.Record.Internal
             
             return new FuncCallStream<TTarget, TReturn, TArgs>(mappedCall, ParsedCallExpression);
         }
-        
-        public int Replay(Action<IFuncRecordedCall<TTarget, TReturn>, CallArguments> visitor)
+
+        public ICallStream<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, TMap> mapper)
         {
-            return Calls.Select(call =>
+            return new CallStream<TMap>(Calls.Select(call => mapper.Invoke(call, call.Args)));
+        }
+
+        public IReplayResult Replay(Action<IFuncRecordedCall<TTarget, TReturn>, CallArguments> visitor)
+        {
+            return new ReplayResult(Calls.Select(call =>
             {
                 visitor.Invoke(call, call.Args);
 
                 return call;
-            }).Count();
+            }).Count());
         }
 
-        public int Replay(Action<IFuncRecordedCall<TTarget, TReturn>, CallArguments, int> visitor)
+        public IReplayResult Replay(Action<IFuncRecordedCall<TTarget, TReturn>, CallArguments, int> visitor)
         {
-            return Calls.Select((call, i) =>
+            return new ReplayResult(Calls.Select((call, i) =>
             {
                 visitor.Invoke(call, call.Args, i);
 
                 return call;
-            }).Count();
+            }).Count());
         }
 
-        public async Task<int> Replay(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, Task> visitor)
+        public async Task<IReplayResult> Replay(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, Task> visitor)
         {
             var count = 0;
             
@@ -57,10 +62,10 @@ namespace DivertR.Record.Internal
                 count++;
             }
 
-            return count;
+            return new ReplayResult(count);
         }
 
-        public async Task<int> Replay(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, int, Task> visitor)
+        public async Task<IReplayResult> Replay(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, int, Task> visitor)
         {
             var count = 0;
             
@@ -69,7 +74,7 @@ namespace DivertR.Record.Internal
                 await visitor.Invoke(call, call.Args, count++);
             }
 
-            return count;
+            return new ReplayResult(count);
         }
 
         internal static IEnumerable<IFuncRecordedCall<TTarget, TReturn, TArgs>> MapCalls<TArgs>(IEnumerable<IRecordedCall<TTarget>> calls, IValueTupleMapper valueTupleMapper)
@@ -100,27 +105,32 @@ namespace DivertR.Record.Internal
             return new FuncCallStream<TTarget, TReturn, TNewArgs>(mappedCall, ParsedCallExpression);
         }
 
-        public int Replay(Action<IFuncRecordedCall<TTarget, TReturn>, TArgs> visitor)
+        public ICallStream<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, TMap> mapper)
         {
-            return Calls.Select(call =>
+            return new CallStream<TMap>(Calls.Select(call => mapper.Invoke(call, call.Args)));
+        }
+
+        public IReplayResult Replay(Action<IFuncRecordedCall<TTarget, TReturn>, TArgs> visitor)
+        {
+            return new ReplayResult(Calls.Select(call =>
             {
                 visitor.Invoke(call, call.Args);
 
                 return call;
-            }).Count();
+            }).Count());
         }
 
-        public int Replay(Action<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, int> visitor)
+        public IReplayResult Replay(Action<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, int> visitor)
         {
-            return Calls.Select((call, i) =>
+            return new ReplayResult(Calls.Select((call, i) =>
             {
                 visitor.Invoke(call, call.Args, i);
 
                 return call;
-            }).Count();
+            }).Count());
         }
 
-        public async Task<int> Replay(Func<IFuncRecordedCall<TTarget, TReturn>, TArgs, Task> visitor)
+        public async Task<IReplayResult> Replay(Func<IFuncRecordedCall<TTarget, TReturn>, TArgs, Task> visitor)
         {
             var count = 0;
             
@@ -130,10 +140,10 @@ namespace DivertR.Record.Internal
                 count++;
             }
 
-            return count;
+            return new ReplayResult(count);
         }
 
-        public async Task<int> Replay(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, int, Task> visitor)
+        public async Task<IReplayResult> Replay(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, int, Task> visitor)
         {
             var count = 0;
             
@@ -142,7 +152,7 @@ namespace DivertR.Record.Internal
                 await visitor.Invoke(call, call.Args, count++);
             }
 
-            return count;
+            return new ReplayResult(count);
         }
     }
 }

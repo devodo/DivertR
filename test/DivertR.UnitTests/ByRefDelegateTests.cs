@@ -184,7 +184,7 @@ namespace DivertR.UnitTests
             {
                 call.Args[0].ShouldBe(3);
                 call.Args[1].ShouldBe(13);
-            }).ShouldBe(1);
+            }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -212,7 +212,7 @@ namespace DivertR.UnitTests
             {
                 call.Args.i.ShouldBe(3);
                 call.Args.o.Value.ShouldBe(13);
-            }).ShouldBe(1);
+            }).Count.ShouldBe(1);
         }
 
         [Fact]
