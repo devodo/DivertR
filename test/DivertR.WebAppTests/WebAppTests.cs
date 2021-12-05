@@ -104,7 +104,6 @@ namespace DivertR.WebAppTests
             (await getFooCalls.Replay(async call =>
             {
                 call.Args.fooId.ShouldBe(foo.Id);
-                call.Returned?.IsException.ShouldBeFalse();
                 (await call.Returned!.Value).ShouldBeNull();
             })).Count.ShouldBe(1);
         }
@@ -162,8 +161,8 @@ namespace DivertR.WebAppTests
             (await insertCalls.Replay(async (call, args) =>
             {
                 args.foo.Name.ShouldBe(createFooRequest.Name);
-                call.Returned?.IsValue.ShouldBeTrue();
-                (await call.Returned!.Value).ShouldBe(true);
+                call.Returned.ShouldNotBeNull();
+                (await call.Returned.Value).ShouldBe(true);
             })).Count.ShouldBe(1);
         }
         
@@ -192,8 +191,7 @@ namespace DivertR.WebAppTests
             (await insertCalls.Replay(async call =>
             {
                 call.Foo.Name.ShouldBe(createFooRequest.Name);
-                call.Result?.IsValue.ShouldBeTrue();
-                (await call.Result!.Value).ShouldBe(true);
+                (await call.Result.Value).ShouldBe(true);
             })).Count.ShouldBe(1);
         }
         

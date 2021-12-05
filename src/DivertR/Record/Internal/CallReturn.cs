@@ -7,19 +7,7 @@ namespace DivertR.Record.Internal
     internal class CallReturn : ICallReturn
     {
         private readonly Exception? _exception;
-
-        public bool IsValue
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => !IsException;
-        }
-
-        public bool IsException
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-        }
-
+        
         public object? Value
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -30,7 +18,6 @@ namespace DivertR.Record.Internal
         {
             _exception = exception;
             Value = returnValue;
-            IsException = exception != null;
         }
 
         public Exception? Exception
@@ -63,23 +50,19 @@ namespace DivertR.Record.Internal
         {
             _callReturn = callReturn;
         }
-
-        public bool IsValue
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _callReturn.IsValue;
-        }
-
-        public bool IsException
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _callReturn.IsException;
-        }
-
+        
         public TReturn Value
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => (TReturn) _callReturn.Value!;
+            get
+            {
+                if (_callReturn.Value == null && typeof(TReturn).IsValueType)
+                {
+                    throw new DiverterException($"ValueType {typeof(TReturn)} cannot be unboxed from null return value. The call probably did not return a value due to an exception being thrown.");
+                }
+
+                return (TReturn) _callReturn.Value!;
+            }
         }
 
         object? ICallReturn.Value

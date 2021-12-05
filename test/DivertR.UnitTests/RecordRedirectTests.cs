@@ -226,8 +226,9 @@ namespace DivertR.UnitTests
             calls.Replay(call =>
             {
                 call.Args.input.ShouldBe(inputs[count++]);
-                call.Returned?.IsValue.ShouldBeTrue();
-                call.Returned?.Value.ShouldBeNull();
+                call.Returned.ShouldNotBeNull();
+                call.Returned!.Exception.ShouldBeNull();
+                call.Returned!.Value.ShouldBeNull();
             }).Count.ShouldBe(inputs.Length);
             
             var count2 = 0;

@@ -31,7 +31,7 @@ namespace DivertR.UnitTests
                 .To(x => x.EchoGeneric(Is<Guid>.Any))
                 .Redirect<(Guid input, __)>(_ => Guid.NewGuid())
                 .Record()
-                .Map(call => new { Input = call.Args.input, Returned = call.Returned?.IsValue == true ? call.Returned.Value : Guid.Empty });
+                .Map(call => new { Input = call.Args.input, Returned = call.Returned?.Value ?? Guid.Empty });
 
             // ACT
             var outputs = inputs.Select(x => _proxy.EchoGeneric(x)).ToList();
@@ -53,7 +53,7 @@ namespace DivertR.UnitTests
             var echoes = _via
                 .To(x => x.EchoGeneric(Is<Guid>.Any))
                 .Record<(Guid input, __)>()
-                .Map(call => new { Input = call.Args.input, Returned = call.Returned?.IsValue == true ? call.Returned.Value : Guid.Empty });
+                .Map(call => new { Input = call.Args.input, Returned = call.Returned?.Value ?? Guid.Empty });
 
             // ACT
             var outputs = inputs.Select(x => _proxy.EchoGeneric(x)).ToList();
@@ -80,7 +80,7 @@ namespace DivertR.UnitTests
             var echoes = _via
                 .To(x => x.EchoGeneric(Is<Guid>.Any))
                 .Record()
-                .Map(call => new { Input = (Guid) call.Args[0], Returned = call.Returned?.IsValue == true ? call.Returned.Value : Guid.Empty });
+                .Map(call => new { Input = (Guid) call.Args[0], Returned = call.Returned?.Value ?? Guid.Empty });
 
             // ACT
             var outputs = inputs.Select(x => _proxy.EchoGeneric(x)).ToList();
@@ -106,30 +106,32 @@ namespace DivertR.UnitTests
                 .Map(call => new
                 {
                     Input = call.Args.input,
-                    Returned = call.Returned?.IsValue == true ? call.Returned.Value : Guid.Empty,
-                    Exception = call.Returned?.IsException == true ? call.Returned.Exception : null
+                    call.Returned,
+                    call.Returned?.Exception
                 });
 
-            builder.Redirect(call =>
+            // ACT
+            var outputs = inputs.Select(x =>
             {
                 try
                 {
-                    return call.Relay.CallNext();
+                    _proxy.EchoGeneric(x);
+                    return null;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    return Guid.Empty;
+                    return ex;
                 }
-            });
-
-            // ACT
-            var outputs = inputs.Select(x => _proxy.EchoGeneric(x)).ToList();
+            }).ToList();
 
             // ASSERT
             echoes.Count.ShouldBe(inputs.Count);
             echoes.Select(x => x.Input).ShouldBe(inputs);
-            echoes.Count(x => x.Exception.Message == $"{x.Input}").ShouldBe(inputs.Count);
-            echoes.Select(x => x.Returned).ShouldBe(outputs);
+            echoes.Select(x => x.Exception).ShouldBe(outputs);
+            echoes.Replay(call =>
+            {
+                Should.Throw<DiverterException>(() => call.Returned!.Value);
+            });
         }
         
         [Fact]
