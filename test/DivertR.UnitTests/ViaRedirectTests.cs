@@ -851,7 +851,7 @@ namespace DivertR.UnitTests
         public void GivenSwitchCallConstraint_ShouldEnableAndDisable()
         {
             // ARRANGE
-            var redirectSwitch = new RedirectSwitch();
+            var redirectSwitch = new RedirectSwitch(false);
 
             _via
                 .To(x => x.Name)
@@ -861,9 +861,9 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(new Foo("disabled"));
 
             // ACT
-            var enabledResult = proxy.Name;
-            redirectSwitch.Disable();
             var disabledResult = proxy.Name;
+            redirectSwitch.Enable();
+            var enabledResult = proxy.Name;
 
             // ASSERT
             enabledResult.ShouldBe("enabled");
