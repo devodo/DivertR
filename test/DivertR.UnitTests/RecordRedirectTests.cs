@@ -296,7 +296,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenWeightedRecordBeforeRelayRootRedirect_WhenCalled_ThenRecordsCall()
+        public void GivenOrderFirstRecordBeforeRelayRootRedirect_WhenCalled_ThenRecordsCall()
         {
             // ARRANGE
             var inputs = Enumerable.Range(0, 10)
@@ -304,7 +304,7 @@ namespace DivertR.UnitTests
                 .ToArray();
 
             var redirectBuilder = _fooVia.To(x => x.Echo(Is<string>.Any));
-            var calls = redirectBuilder.Record<(string input, __)>(opt => opt.OrderWeight(1));
+            var recordedCalls = redirectBuilder.Record<(string input, __)>(opt => opt.OrderFirst());
             redirectBuilder
                 .Redirect<(string input, __)>((call, args) =>
                 {
@@ -317,11 +317,35 @@ namespace DivertR.UnitTests
 
             // ASSERT
             results.ShouldBe(inputs.Select(input => $"{_foo.Echo(input)} modified redirected"));
-            calls.Replay((call, args, i) =>
+            recordedCalls.Replay((call, args, i) =>
             {
                 args.input.ShouldBe($"{inputs[i]}");
                 call.Returned?.Value.ShouldBe($"{results[i]}");
             }).Count.ShouldBe(inputs.Length);
+        }
+        
+        [Fact]
+        public void GivenOrderLastRedirectAfterRecord_WhenCalled_ThenRecordsCall()
+        {
+            // ARRANGE
+            var inputs = Enumerable.Range(0, 10)
+                .Select(_ => Guid.NewGuid().ToString())
+                .ToArray();
+
+            var redirectBuilder = _fooVia.To(x => x.Echo(Is<string>.Any));
+            var recordedCalls = redirectBuilder.Record<(string input, __)>();
+            redirectBuilder
+                .Redirect<(string input, __)>((call, args) =>
+                {
+                    var modifiedInput = $"{args.input} modified";
+                    return $"{call.Next.Echo(modifiedInput)} redirected";
+                }, opt => opt.OrderLast());
+
+            // ACT
+            var result = inputs.Select(input => _proxy.Echo(input)).Count();
+
+            // ASSERT
+            recordedCalls.Count.ShouldBe(result);
         }
     }
 }

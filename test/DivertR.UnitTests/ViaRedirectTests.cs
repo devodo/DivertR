@@ -595,7 +595,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithInsertMultipleOrderedRedirects_ShouldChain()
+        public void GivenMultipleOrderedRedirects_ShouldChain()
         {
             // ARRANGE
             var proxy = _via.Proxy(new Foo("foo"));
@@ -845,6 +845,29 @@ namespace DivertR.UnitTests
             // ASSERT
             redirectPlan.IsStrictMode.ShouldBe(false);
             redirectPlan.Redirects.Count.ShouldBe(Num);
+        }
+        
+        [Fact]
+        public void GivenSwitchCallConstraint_ShouldEnableAndDisable()
+        {
+            // ARRANGE
+            var redirectSwitch = new RedirectSwitch();
+
+            _via
+                .To(x => x.Name)
+                .AddConstraint(new SwitchCallConstraint<IFoo>(redirectSwitch))
+                .Redirect(() => "enabled");
+
+            var proxy = _via.Proxy(new Foo("disabled"));
+
+            // ACT
+            var enabledResult = proxy.Name;
+            redirectSwitch.Disable();
+            var disabledResult = proxy.Name;
+
+            // ASSERT
+            enabledResult.ShouldBe("enabled");
+            disabledResult.ShouldBe("disabled");
         }
     }
 }

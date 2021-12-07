@@ -69,7 +69,8 @@ namespace DivertR.DemoApp
                     // ...
 
                     // call original instance
-                    var message = call.Next.Echo(call.Args.input);
+                    IFoo root = call.Relay.Root;
+                    var message = root.Echo(call.Args.input);
     
                     // run test code after
                     // ...

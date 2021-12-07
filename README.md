@@ -158,7 +158,7 @@ fooVia
         // ...
 
         // call root instance
-        var root = call.Relay.Root;
+        IFoo root = call.Relay.Root;
         var message = root.Echo(call.Args.input);
     
         // run test code after

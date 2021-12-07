@@ -26,18 +26,30 @@ namespace DivertR.Internal
 
         public void Reset()
         {
+            if (ReferenceEquals(_redirectPlan, RedirectPlan<TTarget>.Empty))
+            {
+                return;
+            }
+            
             Interlocked.Exchange(ref _redirectPlan, RedirectPlan<TTarget>.Empty);
         }
 
         private void MutateRedirectPlan(Func<RedirectPlan<TTarget>, RedirectPlan<TTarget>> mutateAction)
         {
-            RedirectPlan<TTarget> original, mutated;
-            
-            do
+            var lastRead = _redirectPlan;
+
+            while (true)
             {
-                original = _redirectPlan;
-                mutated = mutateAction(original);
-            } while (original != Interlocked.CompareExchange(ref _redirectPlan, mutated, original));
+                var mutated = mutateAction(lastRead);
+                var actual = Interlocked.CompareExchange(ref _redirectPlan, mutated, lastRead);
+
+                if (ReferenceEquals(actual, lastRead))
+                {
+                    break;
+                }
+
+                lastRead = actual;
+            }
         }
     }
 }

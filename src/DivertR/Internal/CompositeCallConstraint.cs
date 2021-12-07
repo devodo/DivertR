@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -18,6 +19,11 @@ namespace DivertR.Internal
         public CompositeCallConstraint<T> AddCallConstraint(ICallConstraint<T> callConstraint)
         {
             return new CompositeCallConstraint<T>(_callConstraints.Add(callConstraint));
+        }
+        
+        public CompositeCallConstraint<T> AddCallConstraints(IEnumerable<ICallConstraint<T>> callConstraints)
+        {
+            return new CompositeCallConstraint<T>(_callConstraints.AddRange(callConstraints));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

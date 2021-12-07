@@ -8,10 +8,11 @@ namespace DivertR
         public Redirect(ICallHandler<TTarget> callHandler, ICallConstraint<TTarget> callConstraint, RedirectOptions<TTarget>? redirectOptions = null)
         {
             if (callHandler == null) throw new ArgumentNullException(nameof(callHandler));
-            CallConstraint = callConstraint ?? throw new ArgumentNullException(nameof(callConstraint));
+            if (callConstraint == null) throw new ArgumentNullException(nameof(callConstraint));
             
             redirectOptions ??= RedirectOptions<TTarget>.Default;
             CallHandler = redirectOptions.CallHandlerDecorator?.Invoke(callHandler) ?? callHandler;
+            CallConstraint = redirectOptions.CallConstraintDecorator?.Invoke(callConstraint) ?? callConstraint;
             
             OrderWeight = redirectOptions.OrderWeight ?? 0;
             DisableSatisfyStrict = redirectOptions.DisableSatisfyStrict ?? false;

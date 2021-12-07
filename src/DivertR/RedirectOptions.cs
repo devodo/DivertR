@@ -11,5 +11,7 @@ namespace DivertR
         public bool? DisableSatisfyStrict { get; set; }
 
         public Func<ICallHandler<TTarget>, ICallHandler<TTarget>>? CallHandlerDecorator { get; set; }
+        
+        public Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>>? CallConstraintDecorator { get; set; }
     }
 }
