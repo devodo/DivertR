@@ -22,7 +22,7 @@ namespace DivertR.UnitTests
         public async Task GivenTargetRedirectWithOriginalRelay_ShouldDivert()
         {
             // ARRANGE
-            _via.Retarget(new FooAlt(() => $"alt {_via.Relay.Original.Name}"));
+            _via.Retarget(new FooAlt(() => $"alt {_via.Relay.Root.Name}"));
 
             // ACT
             var nameAsync = await _proxy.GetNameValueAsync();
@@ -39,7 +39,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoValueAsync(Is<string>.Any))
-                .Redirect(async (string input) => await _via.Relay.Next.EchoValueAsync(input) + " redirect");
+                .Redirect<(string input, __)>(async call => await call.Relay.Next.EchoValueAsync(call.Args.input) + " redirect");
 
             // ACT
             var message = await _proxy.EchoValueAsync("test");
@@ -54,7 +54,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoValueSync(Is<string>.Any))
-                .Redirect((string input) => _via.Relay.Next.EchoValueSync($"{input} redirect"));
+                .Redirect<(string input, __)>(call => call.Relay.Next.EchoValueSync($"{call.Args.input} redirect"));
 
             // ACT
             var message = await _proxy.EchoValueSync("test");
@@ -69,7 +69,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoValueAsync(Is<string>.Any))
-                .Redirect((string input) => _via.Relay.CallInfo.Original!.EchoValueAsync($"{input} redirect"));
+                .Redirect<(string input, __)>(call => call.CallInfo.Original!.EchoValueAsync($"{call.Args.input} redirect"));
 
             // ACT
             var message = await _proxy.EchoValueAsync("test");
@@ -84,7 +84,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             const int NumRedirects = 100;
             var next = _via.Relay.Next;
-            var orig = _via.Relay.Original;
+            var orig = _via.Relay.Root;
 
             for (var i = 0; i < NumRedirects; i++)
             {
@@ -107,7 +107,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var next = _via.Relay.Next;
-            var orig = _via.Relay.Original;
+            var orig = _via.Relay.Root;
             int count = 4;
 
             async ValueTask<string> Recursive()
@@ -125,7 +125,6 @@ namespace DivertR.UnitTests
             _via
                 .To(x => x.GetNameValueAsync())
                 .Redirect(async () => (await next.GetNameValueAsync()).Replace(await orig.GetNameValueAsync(), "bar"))
-                .To(x => x.GetNameValueAsync())
                 .Redirect(Recursive);
             // ACT
             var message = await _proxy.GetNameValueAsync();

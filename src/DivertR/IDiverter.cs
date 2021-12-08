@@ -42,7 +42,7 @@ namespace DivertR
         /// <summary>
         /// Retrieve a registered <see cref="IVia{TTarget}" /> instance.
         /// </summary>
-        /// <param name="name">The Via group name.</param>
+        /// <param name="name">Optional Via group name.</param>
         /// <typeparam name="TTarget">The Via type.</typeparam>
         /// <returns>The registered <see cref="IVia{TTarget}" /> instance.</returns>
         /// <exception cref="DiverterException">If the <see cref="IVia{TTarget}" /> has not been registered.</exception>
@@ -59,11 +59,11 @@ namespace DivertR
         /// <summary>
         /// Retrieve a registered <see cref="IVia" /> instance.
         /// </summary>
-        /// <param name="type">The <see cref="IVia" /> type.</param>
+        /// <param name="targetType">The <see cref="IVia" /> type.</param>
         /// <param name="name">The Via group name.</param>
         /// <returns>The registered <see cref="IVia" /> instance.</returns>
         /// <exception cref="DiverterException">If the <see cref="IVia" /> has not been registered.</exception>
-        IVia Via(Type type, string? name = null);
+        IVia Via(Type targetType, string? name = null);
         
         /// <summary>
         /// Enable strict mode on all registered <see cref="IVia" />s.
@@ -87,7 +87,7 @@ namespace DivertR
         /// <summary>
         /// Reset registered <see cref="IVia" /> group.
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">The Via group name.</param>
         /// <returns>The current <see cref="IDiverter"/> instance.</returns>
         IDiverter Reset(string? name = null);
     }

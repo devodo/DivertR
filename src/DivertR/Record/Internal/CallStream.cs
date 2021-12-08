@@ -2,80 +2,72 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using DivertR.Internal;
+using System.Threading.Tasks;
 
 namespace DivertR.Record.Internal
 {
-    internal class CallStream<TTarget> : ICallStream<TTarget> where TTarget : class
+    internal class CallStream<T> : ICallStream<T>
     {
-        private readonly IReadOnlyCollection<RecordedCall<TTarget>> _recordedCalls;
+        protected readonly IEnumerable<T> Calls;
 
-        public CallStream(IReadOnlyCollection<RecordedCall<TTarget>> recordedCalls)
+        public CallStream(IEnumerable<T> calls)
         {
-            _recordedCalls = recordedCalls ?? throw new ArgumentNullException(nameof(recordedCalls));
-        }
-        
-        public IReadOnlyList<IRecordedCall<TTarget>> To(ICallConstraint<TTarget>? callConstraint = null)
-        {
-            callConstraint ??= TrueCallConstraint<TTarget>.Instance;
-            
-            return Array.AsReadOnly(_recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo)).ToArray());
-        }
-        
-        public IFuncCallStream<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
-        {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
-
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
-            var callConstraint = parsedCall.ToCallConstraint<TTarget>();
-            var calls = _recordedCalls
-                .Where(x => callConstraint.IsMatch(x.CallInfo))
-                .Select(x => new FuncRecordedCall<TTarget, TReturn>(x, parsedCall))
-                .ToArray();
-
-            return new FuncCallStream<TTarget, TReturn>(calls);
+            Calls = calls;
         }
 
-        public IActionCallStream<TTarget> To(Expression<Action<TTarget>> lambdaExpression)
+        public ICallStream<TMap> Map<TMap>(Func<T, TMap> mapper)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
-
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
-            var callConstraint = parsedCall.ToCallConstraint<TTarget>();
-            var calls = _recordedCalls
-                .Where(x => callConstraint.IsMatch(x.CallInfo))
-                .Select(x => new ActionRecordedCall<TTarget>(x, parsedCall))
-                .ToArray();
-
-            return new ActionCallStream<TTarget>(calls);
+            return new CallStream<TMap>(Calls.Select(mapper.Invoke));
         }
 
-        public IActionCallStream<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
+        public IReplayResult Replay(Action<T> visitor)
         {
-            if (lambdaExpression?.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
-            if (valueExpression?.Body == null) throw new ArgumentNullException(nameof(valueExpression));
-
-            if (!(lambdaExpression.Body is MemberExpression propertyExpression))
+            return new ReplayResult(this.Select(call =>
             {
-                throw new ArgumentException("Must be a property member expression", nameof(propertyExpression));
+                visitor.Invoke(call);
+
+                return call;
+            }).Count());
+        }
+
+        public IReplayResult Replay(Action<T, int> visitor)
+        {
+            return new ReplayResult(this.Select((call, i) =>
+            {
+                visitor.Invoke(call, i);
+
+                return call;
+            }).Count());
+        }
+        
+        public async Task<IReplayResult> Replay(Func<T, Task> visitor)
+        {
+            var count = 0;
+            
+            foreach (var call in this)
+            {
+                await visitor.Invoke(call).ConfigureAwait(false);
+                count++;
             }
 
-            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
-            var callConstraint = parsedCall.ToCallConstraint<TTarget>();
-            var calls = _recordedCalls
-                .Where(x => callConstraint.IsMatch(x.CallInfo))
-                .Select(x => new ActionRecordedCall<TTarget>(x, parsedCall))
-                .ToArray();
+            return new ReplayResult(count);
+        }
 
-            return new ActionCallStream<TTarget>(calls);
+        public async Task<IReplayResult> Replay(Func<T, int, Task> visitor)
+        {
+            var count = 0;
+            
+            foreach (var call in this)
+            {
+                await visitor.Invoke(call, count++).ConfigureAwait(false);
+            }
+
+            return new ReplayResult(count);
         }
         
-        public int Count => _recordedCalls.Count;
-
-        public IEnumerator<IRecordedCall<TTarget>> GetEnumerator()
+        public IEnumerator<T> GetEnumerator()
         {
-            return _recordedCalls.GetEnumerator();
+            return Calls.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

@@ -26,6 +26,7 @@ namespace DivertR.UnitTests.Model
 
         public override int GetHashCode()
         {
+            // ReSharper disable once NonReadonlyMemberInGetHashCode (Used for testing)
             return EqualityComparer<T>.Default.GetHashCode(Item);
         }
     }

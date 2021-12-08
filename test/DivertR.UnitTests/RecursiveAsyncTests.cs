@@ -53,7 +53,7 @@ namespace DivertR.UnitTests
             });
 
             var times2 = new AsyncNumber(async i =>
-                await _via.Relay.Original.GetNumber(i) + await _via.Relay.Next.GetNumber(i));
+                await _via.Relay.Root.GetNumber(i) + await _via.Relay.Next.GetNumber(i));
 
             _via
                 .Retarget(times2)

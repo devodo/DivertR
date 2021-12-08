@@ -14,7 +14,7 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Call(CallInfo<TTarget> callInfo)
         {
-            return _relay.CallOriginal(callInfo.Method, callInfo.Arguments);
+            return _relay.CallRoot(callInfo.Method, callInfo.Arguments);
         }
     }
 }

@@ -52,7 +52,7 @@ namespace DivertR.DemoApp
     
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task Main()
         {
             IServiceCollection services = new ServiceCollection();
             services.AddTransient<IFoo, Foo>();
@@ -69,7 +69,7 @@ namespace DivertR.DemoApp
             IVia<IFoo> fooVia = diverter.Via<IFoo>();
             fooVia
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect((string input) => $"{input} DivertR");
+                .Redirect<(string input, __)>(call => $"{call.Args.input} DivertR");
   
             Console.WriteLine(foo.Echo("Hello")); // "Hello DivertR"
             
@@ -82,16 +82,16 @@ namespace DivertR.DemoApp
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello"
             
-            IFoo next = fooVia.Relay.Next;
             fooVia
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect((string input) =>
+                .Redirect<(string input, __)>(call =>
                 {
                     // run test code before
                     // ...
 
                     // call original instance
-                    var message = next.Echo(input);
+                    IFoo root = call.Relay.Root;
+                    var message = root.Echo(call.Args.input);
     
                     // run test code after
                     // ...
@@ -105,7 +105,7 @@ namespace DivertR.DemoApp
             var mock = new Mock<IFoo>();
             mock
                 .Setup(x => x.Echo(It.IsAny<string>()))
-                .Returns((string input) => $"{next.Echo(input)} - Mocked");
+                .Returns((string input) => $"{fooVia.Relay.Next.Echo(input)} - Mocked");
 
             fooVia
                 .To() // Default matches all calls
@@ -121,10 +121,9 @@ namespace DivertR.DemoApp
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Mocked"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Mocked"
             
-            IFoo original = fooVia.Relay.Original;
             fooVia
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect((string input) => $"{original.Echo(input)} - Skipped");
+                .Redirect<(string input, __)>(call => $"{call.Root.Echo(call.Args.input)} - Skipped");
   
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Skipped"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Skipped"
@@ -133,7 +132,7 @@ namespace DivertR.DemoApp
 
             fooVia
                 .To(x => x.EchoAsync(Is<string>.Any))
-                .Redirect(async (string input) => $"{await next.EchoAsync(input)} - Async");
+                .Redirect<(string input, __)>(async call => $"{await call.Next.EchoAsync(call.Args.input)} - Async");
             
             Console.WriteLine(await foo.EchoAsync("Hello")); // "Foo1: Hello - Async"
             Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello - Async"

@@ -89,8 +89,8 @@ a DivertR entity called a `Via` to configure a *redirect*:
 ```csharp
 IVia<IFoo> fooVia = diverter.Via<IFoo>();
 fooVia
-    .To(x => x.Echo(Is<string>.Any))                   // (1)
-    .Redirect((string input) => $"{input} DivertR");   // (2)
+    .To(x => x.Echo(Is<string>.Any))                // (1)
+    .Redirect(call => $"{call.Args[0]} DivertR");   // (2)
   
 Console.WriteLine(foo.Echo("Hello")); // "Hello DivertR"
 ```
@@ -99,7 +99,24 @@ The `Via` intercepts calls to the resolved `IFoo` instances.
 By default calls are simply forwarded to the original registration, in this case instances of the `Foo` class.
 However, after adding the redirect any calls that match the lambda expression (1) are redirected to the delegate (2).
 
-The redirect is applied to all existing and future resolved `IFoo` instances:
+The call's arguments can be accessed from the `call.Args` property as an `object[]`.
+However DivertR lets you optionally provide strongly typed named arguments using a ValueTuple type as follows:
+
+```csharp
+IVia<IFoo> fooVia = diverter.Via<IFoo>();
+fooVia
+    .To(x => x.Echo(Is<string>.Any))                                      // (1)
+    .Redirect<(string input, __)>(call => $"{call.Args.input} DivertR");  // (2)
+  
+Console.WriteLine(foo.Echo("Hello")); // "Hello DivertR"
+```
+
+> The `call.Args` property is replaced with an instance of the given ValueTuple type `(string intput, __)`.
+
+C# requires named ValueTuples to have at least two parameters. If the call only has a single parameter, as in the example above,
+then a dummy second parameter must be provided using the special Diverter type `__`.
+
+Once a redirect is added it will be applied to all existing and future resolved `IFoo` instances. For example if a second `IFoo` instance is resolved:
 
 ```csharp
 IFoo foo2 = provider.GetService<IFoo>();
@@ -129,20 +146,20 @@ diverter.ResetAll();
 
 ### Relay
 
-The `Via` also lets you *relay* back to the original registration
-by providing the `Relay.Original` property that can be called from the body of the redirect:
+The `Via` also lets you *relay* back to the original or *root* registration
+by providing the `Relay.Root` property that can be called from the body of the redirect:
 
 ```csharp
-IFoo original = fooVia.Relay.Original;
 fooVia
     .To(x => x.Echo(Is<string>.Any))
-    .Redirect((string input) =>
+    .Redirect<(string input, __)>(call =>
     {
         // run test code before
         // ...
 
-        // call original instance
-        var message = original.Echo(input);
+        // call root instance
+        IFoo root = call.Relay.Root;
+        var message = root.Echo(call.Args.input);
     
         // run test code after
         // ...
@@ -154,19 +171,20 @@ Console.WriteLine(foo.Echo("Hello"));  // "Foo: Hello Redirect"
 Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello Redirect"
 ```
 
-> The `Relay.Original` property is a proxy that the `Via` connects to the current intercepted call.
-> Its members can only be accessed within the context of an intercepted call otherwise a `DiverterException` is thrown.
+> The `Relay.Root` property is a proxy that the `Via` connects to the current intercepted call.
+> Its members can only be accessed within the context of the intercepted call otherwise a `DiverterException` is thrown.
 
 ### Retarget
 
-As well as redirecting to delegates you can also retarget to substitutes that implement the target interface (in this case `IFoo`).
+As well as redirecting to delegates you can also *retarget* to substitutes that implement the target interface (in this case `IFoo`).
 This includes, for example, Mock objects:
 
 ```csharp
+IFoo root = fooVia.Relay.Root;
 var mock = new Mock<IFoo>();
 mock
     .Setup(x => x.Echo(It.IsAny<string>()))
-    .Returns((string input) => $"{original.Echo(input)} Mock");
+    .Returns((string input) => $"{root.Echo(input)} Mock");
 
 fooVia
     .To() // No parameter defaults to match all calls
@@ -175,7 +193,9 @@ fooVia
 Console.WriteLine(foo.Echo("Hello"));  // "Foo: Hello Mock"
 Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello Mock"
 ```
-> The substitute/mock can also use the `Relay.Original` proxy to call the original.
+
+Note the substitute/mock can also use the `Relay.Root` proxy to call the original by conveniently accessing it as a property directly from the `Via` instance.
+DivertR uses an ambient `AsyncLocal` context for this so it always points to the *root* of the current call.
 
 ### Interfaces only
 
@@ -203,7 +223,7 @@ public class Foo : IFoo
 
 fooVia
     .To(x => x.EchoAsync(Is<string>.Any))
-    .Redirect(async (string input) => $"{await original.EchoAsync(input)} Async");
+    .Redirect<(string input, __)>(async (call, args) => $"{await call.Root.EchoAsync(args.input)} Async");
 
 Console.WriteLine(await foo.EchoAsync("Hello"));  // "Foo: Hello Async"
 Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello Async"

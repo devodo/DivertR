@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace DivertR.Record.Internal
@@ -6,8 +7,13 @@ namespace DivertR.Record.Internal
     internal class CallReturn : ICallReturn
     {
         private readonly Exception? _exception;
-        public object? Value { get; }
         
+        public object? Value
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+
         public CallReturn(object? returnValue, Exception? exception)
         {
             _exception = exception;
@@ -16,6 +22,7 @@ namespace DivertR.Record.Internal
 
         public Exception? Exception
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if (_exception != null)
@@ -43,9 +50,31 @@ namespace DivertR.Record.Internal
         {
             _callReturn = callReturn;
         }
+        
+        public TReturn Value
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                if (_callReturn.Value == null && typeof(TReturn).IsValueType)
+                {
+                    throw new DiverterException($"ValueType {typeof(TReturn)} cannot be unboxed from null return value. The call probably did not return a value due to an exception being thrown.");
+                }
 
-        public TReturn Value => (TReturn) _callReturn.Value!;
-        object? ICallReturn.Value => Value;
-        public Exception? Exception => _callReturn.Exception;
+                return (TReturn) _callReturn.Value!;
+            }
+        }
+
+        object? ICallReturn.Value
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Value;
+        }
+
+        public Exception? Exception
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _callReturn.Exception;
+        }
     }
 }

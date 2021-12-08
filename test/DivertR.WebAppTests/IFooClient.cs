@@ -8,9 +8,9 @@ namespace DivertR.WebAppTests
     public interface IFooClient
     {
         [Get("/foo/{id}")]
-        Task<ApiResponse<Foo>> GetFoo(Guid id);
+        Task<ApiResponse<Foo>> GetFooAsync(Guid id);
         
         [Post("/foo")]
-        Task<ApiResponse<Foo>> InsertFoo(CreateFooRequest request);
+        Task<ApiResponse<Foo>> CreateFooAsync(CreateFooRequest request);
     }
 }

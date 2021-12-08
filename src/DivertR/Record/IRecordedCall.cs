@@ -1,14 +1,19 @@
 ﻿namespace DivertR.Record
 {
-    public interface IRecordedCall<TTarget> where TTarget : class
+    public interface IRecordedCall
     {
-        CallInfo<TTarget> CallInfo { get; }
         CallArguments Args { get; }
         ICallReturn? Returned { get; }
     }
-
-    public interface IRecordedCall<TTarget, out TReturn> : IRecordedCall<TTarget> where TTarget : class
+    
+    public interface IRecordedCall<TTarget> : IRecordedCall where TTarget : class
     {
-        public new ICallReturn<TReturn>? Returned { get; }
+        CallInfo<TTarget> CallInfo { get; }
+    }
+    
+    public interface IRecordedCall<TTarget, out TArgs> : IRecordedCall<TTarget>
+        where TTarget : class
+    {
+        new TArgs Args { get; }
     }
 }

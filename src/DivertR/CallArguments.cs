@@ -1,16 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
     public class CallArguments : IReadOnlyList<object>
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CallArguments(object[] args)
         {
             InternalArgs = args;
         }
-        
-        internal object[] InternalArgs { get; }
+
+        internal object[] InternalArgs
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
         
         public IEnumerator<object> GetEnumerator()
         {
@@ -22,10 +28,19 @@ namespace DivertR
             return GetEnumerator();
         }
 
-        public int Count => InternalArgs.Length;
+        public int Count
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => InternalArgs.Length;
+        }
 
-        public object this[int index] => InternalArgs[index];
-
+        public object this[int index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => InternalArgs[index];
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator CallArguments(object[] args) => new CallArguments(args);
     }
 }

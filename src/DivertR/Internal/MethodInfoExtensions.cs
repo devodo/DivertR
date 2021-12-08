@@ -63,7 +63,7 @@ namespace DivertR.Internal
                     );
                     // It's not possible to cast ref parameters so we need to use a variable
                     var elementType = methodParameters[i].ParameterType.GetElementType()!;
-                    var variable = Expression.Variable(elementType!);
+                    var variable = Expression.Variable(elementType);
                     byRefState.Variables.Add(variable);
                     
                     // Assign the ref parameter to the variable (only if it is initialised i.e. not null)
@@ -112,9 +112,11 @@ namespace DivertR.Internal
                 var resultVariable = Expression.Variable(typeof(object));
                 byRefState.Variables.Add(resultVariable);
                 var assignExpression = Expression.Assign(resultVariable, callCastExpr);
+                var tryFinallyExpression = byRefState.PostCall.Count > 0
+                    ? (Expression) Expression.TryFinally(assignExpression, Expression.Block(byRefState.PostCall))
+                    : assignExpression;
                 var blockExpressions = byRefState.PreCall
-                    .Append(assignExpression)
-                    .Concat(byRefState.PostCall)
+                    .Append(tryFinallyExpression)
                     .Append(resultVariable);
 
                 lambdaBodyExpr = Expression.Block(byRefState.Variables, blockExpressions);

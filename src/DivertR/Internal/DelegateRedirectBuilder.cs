@@ -4,33 +4,34 @@ namespace DivertR.Internal
 {
     internal abstract class DelegateRedirectBuilder<TTarget> : RedirectBuilder<TTarget>, IDelegateRedirectBuilder<TTarget> where TTarget : class
     {
-        private readonly ParsedCallExpression _parsedCallExpression;
+        protected readonly ParsedCallExpression ParsedCallExpression;
 
-        protected DelegateRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression)
-            : base(via, parsedCallExpression.ToCallConstraint<TTarget>())
+        protected DelegateRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
+            : base(via, callConstraint)
         {
-            _parsedCallExpression = parsedCallExpression ?? throw new ArgumentNullException(nameof(parsedCallExpression));
+            ParsedCallExpression = parsedCallExpression ?? throw new ArgumentNullException(nameof(parsedCallExpression));
         }
 
-        public Redirect<TTarget> Build(Delegate redirectDelegate)
+        public Redirect<TTarget> Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            _parsedCallExpression.Validate(redirectDelegate);
+            ParsedCallExpression.Validate(redirectDelegate);
             var fastDelegate = redirectDelegate.ToDelegate();
             var redirect = new DelegateCallHandler<TTarget>(callInfo => fastDelegate.Invoke(callInfo.Arguments.InternalArgs));
 
-            return Build(redirect);
+            return Build(redirect, optionsAction);
         }
 
-        public IVia<TTarget> Redirect(Delegate redirectDelegate)
+        public IDelegateRedirectBuilder<TTarget> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = Build(redirectDelegate);
-            
-            return InsertRedirect(redirect);
+            var redirect = Build(redirectDelegate, optionsAction);
+            Via.InsertRedirect(redirect);
+
+            return this;
         }
         
         protected Redirect<TTarget> Build(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
         {
-            _parsedCallExpression.Validate(inputDelegate);
+            ParsedCallExpression.Validate(inputDelegate);
             var redirect = new DelegateCallHandler<TTarget>(mappedRedirect);
 
             return Build(redirect);
@@ -40,7 +41,14 @@ namespace DivertR.Internal
         {
             var redirect = Build(inputDelegate, mappedRedirect);
 
-            return InsertRedirect(redirect);
+            return Via.InsertRedirect(redirect);
+        }
+
+        protected IVia<TTarget> InsertRedirect(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction)
+        {
+            var redirect = Build(callHandler, optionsAction);
+
+            return Via.InsertRedirect(redirect);
         }
     }
 }

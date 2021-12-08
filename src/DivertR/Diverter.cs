@@ -2,52 +2,43 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using DivertR.Internal;
-using DivertR.Setup;
 
 namespace DivertR
 {
     /// <inheritdoc />
     public class Diverter : IDiverter
     {
-        private readonly RedirectRepository _redirectRepository = new RedirectRepository();
-        private readonly ConcurrentDictionary<ViaId, IVia> _vias = new ConcurrentDictionary<ViaId, IVia>();
-        private readonly IDiverterSettings _diverterSettings;
-        
+        private readonly ConcurrentDictionary<ViaId, IVia> _registeredVias = new ConcurrentDictionary<ViaId, IVia>();
+        private readonly IViaSet _viaSet;
+
         /// <summary>
         /// Create a <see cref="Diverter"/> instance.
         /// </summary>
-        /// <param name="diverterSettings">Optionally override default DivertR settings.</param>
-        public Diverter(IDiverterSettings? diverterSettings = null)
+        /// <param name="settings">Optionally override default DivertR settings.</param>
+        public Diverter(DiverterSettings? settings = null)
         {
-            _diverterSettings = diverterSettings ?? DiverterSettings.Default;
+            _viaSet = new ViaSet(settings);
         }
 
         public IDiverter Register<TTarget>(string? name = null) where TTarget : class
         {
-            var id = ViaId.From<TTarget>(name);
-            
-            if (!_vias.TryAdd(id, new Via<TTarget>(id, _redirectRepository, _diverterSettings)))
+            var via = _viaSet.Via<TTarget>(name);
+
+            if (!_registeredVias.TryAdd(via.ViaId, via))
             {
-                throw new DiverterException($"Via already registered for {id}");
+                throw new DiverterException($"Via already registered for {via.ViaId}");
             }
 
             return this;
         }
         
-        public IDiverter Register(Type type, string? name = null)
+        public IDiverter Register(Type targetType, string? name = null)
         {
-            const BindingFlags ActivatorFlags = BindingFlags.NonPublic | BindingFlags.Instance;
-
-            var id = ViaId.From(type, name);
-            var diverterType = typeof(Via<>).MakeGenericType(type);
-            var constructorParams = new object[] {id, _redirectRepository, _diverterSettings};
-            var via = (IVia) Activator.CreateInstance(diverterType, ActivatorFlags, null, constructorParams, default);
-
-            if (!_vias.TryAdd(id, via))
+            var via = _viaSet.Via(targetType, name);
+            
+            if (!_registeredVias.TryAdd(via.ViaId, via))
             {
-                throw new DiverterException($"Via already registered for {id}");
+                throw new DiverterException($"Via already registered for {via.ViaId}");
             }
 
             return this;
@@ -65,7 +56,9 @@ namespace DivertR
         
         public IEnumerable<IVia> RegisteredVias(string? name = null)
         {
-            return _vias
+            name ??= string.Empty;
+            
+            return _registeredVias
                 .Where(x => x.Key.Name == name)
                 .Select(x => x.Value);
         }
@@ -75,14 +68,14 @@ namespace DivertR
             return (IVia<TTarget>) Via(ViaId.From<TTarget>(name));
         }
 
-        public IVia Via(Type type, string? name = null)
+        public IVia Via(Type targetType, string? name = null)
         {
-            return Via(ViaId.From(type, name));
+            return Via(ViaId.From(targetType, name));
         }
         
         public IVia Via(ViaId id)
         {
-            if (!_vias.TryGetValue(id, out var via))
+            if (!_registeredVias.TryGetValue(id, out var via))
             {
                 throw new DiverterException($"Via not registered for {id}");
             }
@@ -92,10 +85,7 @@ namespace DivertR
         
         public IDiverter StrictAll()
         {
-            foreach (var via in _vias)
-            {
-                via.Value.Strict();
-            }
+            _viaSet.StrictAll();
             
             return this;
         }
@@ -103,26 +93,21 @@ namespace DivertR
 
         public IDiverter Strict(string? name = null)
         {
-            foreach (var via in RegisteredVias(name))
-            {
-                via.Strict();
-            }
+            _viaSet.Strict(name);
 
             return this;
         }
         
         public IDiverter ResetAll()
         {
-            _redirectRepository.ResetAll();
+            _viaSet.ResetAll();
+            
             return this;
         }
 
         public IDiverter Reset(string? name = null)
         {
-            foreach (var via in RegisteredVias(name))
-            {
-                via.Reset();
-            }
+            _viaSet.Reset(name);
 
             return this;
         }

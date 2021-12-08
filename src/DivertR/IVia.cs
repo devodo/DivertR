@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using DivertR.Internal;
 using DivertR.Record;
 
 namespace DivertR
@@ -15,6 +16,11 @@ namespace DivertR
         ViaId ViaId { get; }
         
         /// <summary>
+        /// The <see cref="IViaSet"/> of this Via
+        /// </summary>
+        public IViaSet ViaSet { get; }
+        
+        /// <summary>
         /// Create a Via proxy object without needing to specify the compile time Via type.
         /// </summary>
         /// <param name="original">Optional original instance to proxy calls to.</param>
@@ -27,12 +33,13 @@ namespace DivertR
         /// </summary>
         /// <returns>The current <see cref="IVia"/> instance.</returns>
         IVia Reset();
-        
+
         /// <summary>
-        /// Enable strict mode.
+        /// Set strict mode. If no argument, strict mode is enabled by default.
         /// </summary>
+        /// <param name="isStrict">Optional bool to specify enable/disable of strict mode.</param>
         /// <returns>The current <see cref="IVia"/> instance.</returns>
-        IVia Strict();
+        IVia Strict(bool? isStrict = true);
     }
     
     /// <summary>
@@ -49,7 +56,7 @@ namespace DivertR
         /// <summary>
         /// Retrieve the current proxy redirect configuration.
         /// </summary>
-        RedirectPlan<TTarget> RedirectPlan { get; }
+        IRedirectPlan<TTarget> RedirectPlan { get; }
         
         /// <summary>
         /// Create a Via proxy instance.
@@ -70,14 +77,23 @@ namespace DivertR
         /// </summary>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
         new IVia<TTarget> Reset();
-        
+
         /// <summary>
         /// Create and insert a redirect (with no <see cref="ICallConstraint{TTarget}"/>) to the given <paramref name="target"/>
         /// into the Via <see cref="RedirectPlan{TTarget}" />.
         /// </summary>
         /// <param name="target">The target instance to redirect call to.</param>
+        /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
-        IVia<TTarget> Retarget(TTarget target);
+        IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        
+        /// <summary>
+        /// Inserts a redirect that captures incoming calls from all proxies.
+        /// By default record redirects are configured to not satisfy strict calls if strict mode is enabled.
+        /// </summary>
+        /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
+        /// <returns>An <see cref="IRecordStream{TTarget}"/> reference for retrieving and iterating the recorded calls.</returns>
+        IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         
         /// <summary>
         /// Creates a Redirect builder. />
@@ -86,6 +102,17 @@ namespace DivertR
         /// <returns>The Redirect builder.</returns>
         /// 
         IRedirectBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null);
+
+        /// <summary>
+        /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning <typeparam name="TReturn" />.
+        /// </summary>
+        /// <param name="constraintExpression">The call constraint expression.</param>
+        /// <typeparam name="TReturn">The Expression return type</typeparam>
+        /// <returns>The Redirect builder instance.</returns>
+        IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : struct;
+        
+        // Delegate required to coerce C# to allow the To overload below
+        delegate TResult ClassReturnMatch<in T, out TResult>(T args) where TResult : class;
         
         /// <summary>
         /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning <typeparam name="TReturn" />.
@@ -93,7 +120,7 @@ namespace DivertR
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <typeparam name="TReturn">The Expression return type</typeparam>
         /// <returns>The Redirect builder instance.</returns>
-        IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression);
+        IClassFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<ClassReturnMatch<TTarget, TReturn>> constraintExpression) where TReturn : class;
         
         /// <summary>
         /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning void />.
@@ -114,16 +141,8 @@ namespace DivertR
         /// <summary>
         /// Enable strict mode.
         /// </summary>
+        /// <param name="isStrict">Optional bool to specify enable/disable of strict mode.</param>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
-        new IVia<TTarget> Strict();
-        
-        /// <summary>
-        /// Inserts a redirect that captures incoming calls from all proxies.
-        /// The redirect is created with maximum order weighting so it is always at the top of the redirect stack and therefore
-        /// first to handle the call. The redirect is also configured to not satisfy strict calls if strict mode is enabled.
-        /// </summary>
-        /// <param name="callConstraint">Optional constraint to filter calls captured.</param>
-        /// <returns>An <see cref="ICallStream{TTarget}"/> reference for retrieving and iterating the recorded calls.</returns>
-        ICallStream<TTarget> Record(ICallConstraint<TTarget>? callConstraint = null);
+        new IVia<TTarget> Strict(bool? isStrict = true);
     }
 }

@@ -10,7 +10,7 @@ namespace DivertR.UnitTests
 {
     public class ViaAsyncTests
     {
-        private readonly Via<IFoo> _via = new();
+        private readonly IVia<IFoo> _via = new Via<IFoo>();
         
         [Fact]
         public async Task GivenProxy_ShouldDefaultToOriginal()
@@ -49,7 +49,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy(original);
             _via
                 .To(x => x.GetNameAsync())
-                .Redirect(async () => $"Diverted {await _via.Relay.Original.GetNameAsync()}");
+                .Redirect(async () => $"Diverted {await _via.Relay.Root.GetNameAsync()}");
 
             // ACT
             var name = await proxy.GetNameAsync();
@@ -84,9 +84,9 @@ namespace DivertR.UnitTests
             IFoo originalReference = null;
             _via
                 .To(x => x.GetNameAsync())
-                .Redirect(async () =>
+                .Redirect(async call =>
                 {
-                    originalReference = _via.Relay.CallInfo.Original;
+                    originalReference = call.CallInfo.Original;
                     return $"hello {await originalReference!.GetNameAsync()}";
                 });
 
@@ -108,7 +108,7 @@ namespace DivertR.UnitTests
 
             _via
                 .To(x => x.GetNameAsync())
-                .Redirect(async () => $"diverted {await _via.Relay.Original.GetNameAsync()}");
+                .Redirect(async () => $"diverted {await _via.Relay.Root.GetNameAsync()}");
 
             // ACT
             var names = proxies.Select(p => p.GetNameAsync()).ToList();
@@ -154,7 +154,7 @@ namespace DivertR.UnitTests
             var mock = new Mock<IFoo>();
             mock
                 .Setup(x => x.GetNameAsync())
-                .Returns(async () => $"{await _via.Relay.Original.GetNameAsync()} world");
+                .Returns(async () => $"{await _via.Relay.Root.GetNameAsync()} world");
 
             _via.Retarget(mock.Object);
 
@@ -171,9 +171,10 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
             var next = _via.Relay.Next;
-            _via.To(x => x.GetNameAsync()).Redirect(async () => $"again {await next.GetNameAsync()} 3")
-                .To(x => x.GetNameAsync()).Redirect(async () => $"here {await next.GetNameAsync()} 2")
-                .To(x => x.GetNameAsync()).Redirect(async () => $"DivertR {await next.GetNameAsync()} 1");
+            _via.To(x => x.GetNameAsync())
+                .Redirect(async () => $"again {await next.GetNameAsync()} 3")
+                .Redirect(async () => $"here {await next.GetNameAsync()} 2")
+                .Redirect(async () => $"DivertR {await next.GetNameAsync()} 1");
 
             // ACT
             var name = await proxy.GetNameAsync();
@@ -189,7 +190,7 @@ namespace DivertR.UnitTests
             const int numRedirects = 100;
             var proxy = _via.Proxy(new Foo("foo"));
             var next = _via.Relay.Next;
-            var orig = _via.Relay.Original;
+            var orig = _via.Relay.Root;
 
             for (var i = 0; i < numRedirects; i++)
             {
@@ -212,7 +213,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("foo"));
             var next = _via.Relay.Next;
-            var orig = _via.Relay.Original;
+            var orig = _via.Relay.Root;
             var count = 4;
 
             async Task<string> Recursive()
@@ -231,7 +232,7 @@ namespace DivertR.UnitTests
                 .To(x => x.GetNameAsync())
                 .Redirect(async () =>
                     (await next.GetNameAsync()).Replace(await orig.GetNameAsync(), "bar"))
-                .To(x => x.GetNameAsync()).Redirect(Recursive);
+                .Redirect(Recursive);
 
             // ACT
             var name = await proxy.GetNameAsync();
@@ -252,9 +253,10 @@ namespace DivertR.UnitTests
             }
 
             _via
-                .To(x => x.GetNameAsync()).WithOrderWeight(30).Redirect(() => WriteMessage(1))
-                .To(x => x.GetNameAsync()).WithOrderWeight(20).Redirect(() => WriteMessage(2))
-                .To(x => x.GetNameAsync()).WithOrderWeight(10).Redirect(() => WriteMessage(3));
+                .To(x => x.GetNameAsync())
+                .Redirect(() => WriteMessage(1), options => options.OrderWeight(30))
+                .Redirect(() => WriteMessage(2), options => options.OrderWeight(20))
+                .Redirect(() => WriteMessage(3), options => options.OrderWeight(10));
 
             // ACT
             var name = await proxy.GetNameAsync();

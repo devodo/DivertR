@@ -13,7 +13,7 @@ namespace DivertR.SampleWebApp.Services
             _logger = logger;
         }
         
-        public Task Publish(FooEvent fooEvent)
+        public Task PublishAsync(FooEvent fooEvent)
         {
             _logger.LogInformation("Publishing foo event {EventId}", fooEvent.EventId);
 

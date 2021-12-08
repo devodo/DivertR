@@ -2,13 +2,11 @@
 
 namespace DivertR
 {
-    public static class Is<TTarget>
+    public static class Is<T>
     {
-        public static TTarget Any => default!;
+        public static T Any => default!;
 
-        public static TTarget AnyRef = default!;
-
-        public static TTarget Match(Func<TTarget, bool> match)
+        public static T Match(Func<T, bool> match)
         {
             return default!;
         }

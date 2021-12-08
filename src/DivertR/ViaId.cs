@@ -5,9 +5,9 @@ namespace DivertR
     public readonly struct ViaId : IEquatable<ViaId>
     {
         public Type Type { get; }
-        public string? Name { get; }
+        public string Name { get; }
 
-        public ViaId(Type type, string? name)
+        public ViaId(Type type, string name)
         {
             Type = type;
             Name = name;
@@ -29,29 +29,25 @@ namespace DivertR
             {
                 var hash = 17;
                 hash = hash * 31 + Type.GetHashCode();
+                hash = hash * 31 + Name.GetHashCode();
 
-                if (Name != null)
-                {
-                    hash = hash * 31 + Name.GetHashCode();
-                }
-                
                 return hash;
             }
         }
 
         public override string ToString()
         {
-            return $"Type:{Type.Name}" + (Name != null ? $" Name:{Name}" : string.Empty);
+            return $"Type:{Type.Name}" + (string.IsNullOrEmpty(Name) ? $" Name:<empty>" : $"Name: {Name}");
         }
 
         public static ViaId From(Type type, string? name = null)
         {
-            return new ViaId(type, name);
+            return new ViaId(type, name ?? string.Empty);
         }
 
         public static ViaId From<TTarget>(string? name = null)
         {
-            return new ViaId(typeof(TTarget), name);
+            return new ViaId(typeof(TTarget), name ?? string.Empty);
         }
     }
 }

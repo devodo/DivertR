@@ -63,7 +63,7 @@ namespace DivertR.UnitTests
         public void ShouldReplaceMultipleRegistrations()
         {
             var fooRegistrations = Enumerable.Range(0, 10)
-                .Select((_, i) => new Foo("Foo{i}")).ToList();
+                .Select((_, i) => new Foo($"Foo{i}")).ToList();
             fooRegistrations.ForEach(foo => _services.AddSingleton<IFoo>(foo));
             _services.Divert(_diverter);
             var provider = _services.BuildServiceProvider();

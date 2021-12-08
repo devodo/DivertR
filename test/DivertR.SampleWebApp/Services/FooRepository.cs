@@ -19,14 +19,14 @@ namespace DivertR.SampleWebApp.Services
         
         private static readonly ConcurrentDictionary<Guid, Foo> FooStore = new();
         
-        public Task<Foo> GetFoo(Guid id)
+        public Task<Foo> GetFooAsync(Guid id)
         {
             return FooStore.TryGetValue(id, out var foo) 
                 ? Task.FromResult(foo)
                 : Task.FromResult((Foo) null);
         }
 
-        public async Task<bool> TryInsertFoo(Foo foo)
+        public async Task<bool> TryInsertFooAsync(Foo foo)
         {
             _logger.LogInformation("Inserting foo {FooId}", foo.Id);
             
@@ -34,7 +34,7 @@ namespace DivertR.SampleWebApp.Services
 
             if (inserted)
             {
-                await _fooPublisher.Publish(new FooEvent
+                await _fooPublisher.PublishAsync(new FooEvent
                 {
                     EventId = Guid.NewGuid(),
                     EventType = FooEventType.Created,

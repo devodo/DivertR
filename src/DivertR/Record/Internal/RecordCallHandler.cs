@@ -9,12 +9,12 @@ namespace DivertR.Record.Internal
         private readonly IRelay<TTarget> _relay;
         private readonly ConcurrentQueue<RecordedCall<TTarget>> _recordedCalls = new ConcurrentQueue<RecordedCall<TTarget>>();
 
-        public ICallStream<TTarget> CallStream { get; }
+        public IRecordStream<TTarget> RecordStream { get; }
 
         public RecordCallHandler(IRelay<TTarget> relay)
         {
             _relay = relay ?? throw new ArgumentNullException(nameof(relay));
-            CallStream = new CallStream<TTarget>(_recordedCalls);
+            RecordStream = new RecordStream<TTarget>(_recordedCalls);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

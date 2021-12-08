@@ -8,10 +8,23 @@ namespace DivertR.Internal
         private readonly RedirectPlan<TTarget> _redirectPlan;
         private readonly int _index;
 
-        public bool StrictSatisfied { get; }
+        public bool StrictSatisfied
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
 
-        public CallInfo<TTarget> CallInfo { get; }
-        public Redirect<TTarget> Redirect => _redirectPlan.Redirects[_index];
+        public CallInfo<TTarget> CallInfo
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+
+        public Redirect<TTarget> Redirect
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _redirectPlan.Redirects[_index];
+        }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RelayStep<TTarget>? Create(RedirectPlan<TTarget> redirectPlan, CallInfo<TTarget> callInfo)
@@ -27,7 +40,8 @@ namespace DivertR.Internal
             
             return new RelayStep<TTarget>(redirectPlan, index, callInfo, strictSatisfied);
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private RelayStep(RedirectPlan<TTarget> redirectPlan, int index, CallInfo<TTarget> callInfo, bool strictSatisfied)
         {
             _redirectPlan = redirectPlan;

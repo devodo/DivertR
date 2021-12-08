@@ -1,5 +1,4 @@
 ﻿using DivertR.DynamicProxy;
-using DivertR.Setup;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -10,11 +9,11 @@ namespace DivertR.UnitTests
     {
         private static readonly DiverterSettings DiverterSettings = new(new DynamicProxyFactory());
 
-        private readonly Via<Foo> _via;
+        private readonly IVia<Foo> _via;
 
         public ViaClassTests()
         {
-            _via = new Via<Foo>(DiverterSettings);
+            _via = new ViaSet(DiverterSettings).Via<Foo>();
         }
         
         [Fact]

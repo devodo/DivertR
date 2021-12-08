@@ -22,9 +22,11 @@ namespace DivertR.Internal
 
         public void Validate(Delegate redirectDelegate)
         {
-            if (!ReturnTypeValid(redirectDelegate))
+            var returnType = redirectDelegate.Method.ReturnType;
+            
+            if (!ReturnTypeValid(returnType))
             {
-                throw new InvalidRedirectException($"Redirect return type '{redirectDelegate.Method.ReturnType.FullName}' invalid for To method '{Method}'");
+                throw new InvalidRedirectException($"'{redirectDelegate.Method.ReturnType.FullName}' invalid redirect return type To method '{Method}'");
             }
             
             if (DelegateParametersValid(redirectDelegate))
@@ -34,6 +36,27 @@ namespace DivertR.Internal
             
             var delegateParameters = redirectDelegate.Method.GetParameters();
             var parameterTypes = delegateParameters.Select(x => $"{x.ParameterType.FullName} {x.Name}");
+            var delegateSignature = $"Redirect({string.Join(", ", parameterTypes)})";
+            
+            throw new InvalidRedirectException($"'{delegateSignature}' parameters invalid for To method '{Method}'");
+        }
+
+        public void Validate(Type returnType, Type[] argumentTypes, bool isStrict = true)
+        {
+            if (!ReturnTypeValid(returnType))
+            {
+                throw new InvalidRedirectException($"'{returnType.FullName}' invalid return type for To method '{Method}'");
+            }
+
+            var checkArguments =
+                isStrict ? (Func<Type[], ParameterInfo[], bool>) ArgumentTypesValidStrict : ArgumentTypesValid;
+            
+            if (checkArguments(argumentTypes, ParameterInfos))
+            {
+                return;
+            }
+            
+            var parameterTypes = argumentTypes.Select(x => $"{x.FullName} {x.Name}");
             var delegateSignature = $"Redirect({string.Join(", ", parameterTypes)})";
             
             throw new InvalidRedirectException($"'{delegateSignature}' parameters invalid for To method '{Method}'");
@@ -62,10 +85,8 @@ namespace DivertR.Internal
             return ParametersValidStrict(delegateParameters, ParameterInfos);
         }
 
-        private bool ReturnTypeValid(Delegate redirectDelegate)
+        private bool ReturnTypeValid(Type returnType)
         {
-            var returnType = redirectDelegate.Method.ReturnType;
-
             if (ReferenceEquals(returnType, Method.ReturnType))
             {
                 return true;
@@ -107,6 +128,29 @@ namespace DivertR.Internal
             return true;
         }
         
+        private static bool ArgumentTypesValidStrict(Type[] testTypes, ParameterInfo[] callParams)
+        {
+            if (testTypes.Length == 0)
+            {
+                return true;
+            }
+            
+            if (testTypes.Length != callParams.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < testTypes.Length; i++)
+            {
+                if (!IsArgumentTypeValid(testTypes[i], callParams[i].ParameterType))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         private static bool ArgumentTypesValid(Type[] testTypes, ParameterInfo[] callParams)
         {
             if (testTypes.Length > callParams.Length)
@@ -116,18 +160,59 @@ namespace DivertR.Internal
 
             for (var i = 0; i < testTypes.Length; i++)
             {
-                if (ReferenceEquals(testTypes[i], callParams[i].ParameterType))
-                {
-                    continue;
-                }
-                
-                if (!testTypes[i].IsAssignableFrom(callParams[i].ParameterType))
+                if (!IsArgumentTypeValid(testTypes[i], callParams[i].ParameterType))
                 {
                     return false;
                 }
             }
 
             return true;
+        }
+
+        private static bool IsArgumentTypeValid(Type testType, Type parameterType)
+        {
+            return !parameterType.IsByRef 
+                ? IsTypeValid(testType, parameterType)
+                : IsRefTypeValid(testType, parameterType);
+        }
+        
+        private static bool IsTypeValid(Type testType, Type parameterType)
+        {
+            if (ReferenceEquals(testType, parameterType))
+            {
+                return true;
+            }
+                
+            if (testType.IsAssignableFrom(parameterType))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsRefTypeValid(Type refType, Type parameterType)
+        {
+            if (!refType.IsGenericType ||
+                refType.GenericTypeArguments.Length != 1 ||
+                refType.GetGenericTypeDefinition() != typeof(Ref<>))
+            {
+                return false;
+            }
+
+            var elementType = parameterType.GetElementType();
+            
+            if (ReferenceEquals(refType.GenericTypeArguments[0], elementType))
+            {
+                return true;
+            }
+                
+            if (!refType.GenericTypeArguments[0].IsAssignableFrom(elementType))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

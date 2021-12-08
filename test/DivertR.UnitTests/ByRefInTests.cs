@@ -1,5 +1,4 @@
 ﻿using DivertR.DynamicProxy;
-using DivertR.Setup;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -14,14 +13,14 @@ namespace DivertR.UnitTests
         
         private delegate int InCall(in int input);
 
-        private readonly Via<INumberIn> _via = new(DiverterSettings);
+        private readonly IVia<INumberIn> _via = new ViaSet(DiverterSettings).Via<INumberIn>();
 
         [Fact]
         public void GivenInRedirect_ShouldRedirect()
         {
             // ARRANGE
             _via
-                .To(x => x.GetNumber(in Is<int>.AnyRef))
+                .To(x => x.GetNumber(in IsRef<int>.Any))
                 .Redirect(new InCall((in int i) => _via.Relay.Next.GetNumber(i) + 10));
             
             var viaProxy = _via.Proxy(new NumberIn());

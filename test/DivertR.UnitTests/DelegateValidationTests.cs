@@ -8,20 +8,7 @@ namespace DivertR.UnitTests
     public class DelegateValidationTests
     {
         private readonly IVia<IFoo> _via = new Via<IFoo>();
-        
-        [Fact]
-        public void GivenInvalidRedirectParameterType_ShouldThrowException()
-        {
-            // ARRANGE
-            var builder = _via.To(x => x.Echo(Is<string>.Any));
 
-            // ACT
-            Action testAction = () => builder.Redirect((int input) => input.ToString());
-
-            // ASSERT
-            testAction.ShouldThrow<InvalidRedirectException>();
-        }
-        
         [Fact]
         public void GivenTooManyRedirectParameters_ShouldThrowException()
         {
@@ -29,7 +16,7 @@ namespace DivertR.UnitTests
             var builder = _via.To(x => x.Echo(Is<string>.Any));
 
             // ACT
-            Action testAction = () => builder.Redirect((string input, int i) => input);
+            Action testAction = () => builder.Redirect(new Func<string, int, string>((input, _) => input));
 
             // ASSERT
             testAction.ShouldThrow<InvalidRedirectException>();
@@ -55,7 +42,7 @@ namespace DivertR.UnitTests
             var builder = _via.To(x => x.Echo(Is<string>.Any));
 
             // ACT
-            Action testAction = () => builder.Redirect(new Func<string, int>(input => 0));
+            Action testAction = () => builder.Redirect(new Func<string, int>(_ => 0));
 
             // ASSERT
             testAction.ShouldThrow<InvalidRedirectException>();

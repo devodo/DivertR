@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
 
-namespace DivertR.Extensions
+namespace DivertR.Internal
 {
-    public class SkipCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
+    internal class SkipCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
         private readonly IVia<TTarget> _via;
         private readonly ICallHandler<TTarget> _innerCallHandler;

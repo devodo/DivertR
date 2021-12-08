@@ -1,12 +1,11 @@
 using System.Linq;
-using DivertR.Extensions;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class RedirectBuilderExtensionsTests
+    public class RedirectOptionsBuilderTests
     {
         private readonly IVia<IFoo> _via = new Via<IFoo>();
 
@@ -15,11 +14,13 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             const int Count = 5;
-            var proxy = _via
-                .To(x => x.Name).Redirect("hello")
-                .To(x => x.Name).Repeat(1).Redirect(() => $"{_via.Relay.Next.Name} first")
-                .To(x => x.Name).Repeat(Count + 1).Redirect(() => $"{_via.Relay.Next.Name} diverted")
-                .Proxy();
+            _via
+                .To(x => x.Name)
+                .Redirect("hello")
+                .Redirect(() => $"{_via.Relay.Next.Name} first", options => options.Repeat(1))
+                .Redirect(() => $"{_via.Relay.Next.Name} diverted", options => options.Repeat(Count + 1));
+
+            var proxy = _via.Proxy();
 
             // ACT
             var results = Enumerable.Range(0, Count + 2).Select(_ => proxy.Name).ToList();
@@ -35,11 +36,13 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             const int Count = 5;
-            var proxy = _via
-                .To(x => x.Name).Redirect("hello")
-                .To(x => x.Name).Skip(1).Redirect(() => $"{_via.Relay.Next.Name} after")
-                .To(x => x.Name).Skip(Count).Redirect(() => $"{_via.Relay.Next.Name} diverted")
-                .Proxy();
+            _via
+                .To(x => x.Name)
+                .Redirect("hello")
+                .Redirect(() => $"{_via.Relay.Next.Name} after", options => options.Skip(1))
+                .Redirect(() => $"{_via.Relay.Next.Name} diverted", options => options.Skip(Count));
+            
+            var proxy = _via.Proxy();
 
             // ACT
             var results = Enumerable.Range(0, Count + 1).Select(_ => proxy.Name).ToList();
@@ -55,11 +58,13 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             const int Count = 5;
-            var proxy = _via
-                .To(x => x.Name).Redirect("hello")
-                .To(x => x.Name).Repeat(1).Skip(1).Redirect(() => $"{_via.Relay.Next.Name} after")
-                .To(x => x.Name).Skip(Count).Redirect(() => $"{_via.Relay.Next.Name} diverted")
-                .Proxy();
+            _via
+                .To(x => x.Name)
+                .Redirect("hello")
+                .Redirect(() => $"{_via.Relay.Next.Name} after", options => options.Repeat(1).Skip(1))
+                .Redirect(() => $"{_via.Relay.Next.Name} diverted", options => options.Skip(Count));
+            
+            var proxy = _via.Proxy();
 
             // ACT
             var results = Enumerable.Range(0, Count + 1).Select(_ => proxy.Name).ToList();
@@ -69,6 +74,29 @@ namespace DivertR.UnitTests
             results.Skip(1).First().ShouldBe("hello after");
             results.Skip(2).Take(Count - 2).ShouldAllBe(x => x == "hello");
             results.Last().ShouldBe("hello diverted");
+        }
+        
+        [Fact]
+        public void GivenRedirectSwitch_ShouldEnableAndDisable()
+        {
+            // ARRANGE
+            var redirectSwitch = new RedirectSwitch();
+
+            _via
+                .To(x => x.Name)
+                .Redirect(() => "disabled")
+                .Redirect(() => "enabled", opt => opt.AddSwitch(redirectSwitch));
+
+            var proxy = _via.Proxy();
+
+            // ACT
+            var enabledResult = proxy.Name;
+            redirectSwitch.Disable();
+            var disabledResult = proxy.Name;
+
+            // ASSERT
+            enabledResult.ShouldBe("enabled");
+            disabledResult.ShouldBe("disabled");
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using DivertR.DependencyInjection;
 using DivertR.SampleWebApp;
@@ -30,6 +31,8 @@ namespace DivertR.WebAppTests
             });
         }
 
+        public IServiceProvider Services => _webApplicationFactory.Services;
+
         public IDiverter InitDiverter(ITestOutputHelper output = null)
         {
             _diverter.ResetAll();
@@ -46,14 +49,14 @@ namespace DivertR.WebAppTests
         {
             _diverter.Via<ILoggerFactory>()
                 .To(x => x.CreateLogger(Is<string>.Any))
-                .Redirect((string name) =>
+                .Redirect<(string name, __)>(call =>
                 {
-                    if (name.StartsWith("Microsoft"))
+                    if (call.Args.name.StartsWith("Microsoft"))
                     {
-                        return output.BuildLogger(LogLevel.Warning, name);
+                        return output.BuildLogger(LogLevel.Warning, call.Args.name);
                     }
                     
-                    return output.BuildLogger(name);
+                    return output.BuildLogger(call.Args.name);
                 });
         }
 
