@@ -44,14 +44,8 @@ namespace DivertR.Internal
         public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordHandler = new RecordCallHandler<TTarget>(Via.Relay);
-            var redirectOptions = optionsAction.Create(Via);
-
-            if (CallConstraint == CompositeCallConstraint<TTarget>.Empty)
-            {
-                redirectOptions.DisableSatisfyStrict ??= true;
-            }
-            
-            InsertRedirect(recordHandler, redirectOptions);
+            var redirect = Build(recordHandler, optionsAction);
+            Via.InsertRedirect(redirect);
 
             return recordHandler.RecordStream;
         }
@@ -64,12 +58,6 @@ namespace DivertR.Internal
         private Redirect<TTarget> Build(ICallHandler<TTarget> callHandler, RedirectOptions<TTarget> redirectOptions)
         {
             return new Redirect<TTarget>(callHandler, CallConstraint, redirectOptions);
-        }
-
-        private void InsertRedirect(ICallHandler<TTarget> callHandler, RedirectOptions<TTarget> redirectOptions)
-        {
-            var redirect = Build(callHandler, redirectOptions);
-            Via.InsertRedirect(redirect);
         }
     }
 }

@@ -15,7 +15,9 @@ namespace DivertR.UnitTests
 
         public RecordStreamTests()
         {
-            _recordStream = _via.Record(options => options.OrderWeight(int.MaxValue));
+            _recordStream = _via.Record(opt => opt
+                .OrderWeight(int.MaxValue)
+                .DisableSatisfyStrict());
         }
         
         [Fact]
