@@ -1,17 +1,32 @@
 # Developer guide
 
-DivertR is a testing framework that can be used to dynamically manipulate your dependency injection services.
-It works by decorating existing DI registrations to instead resolve proxies that wrap the original instances.
-Calls are then intercepted by these proxies and they can be configured to divert them to test doubles such as substitutes, mocks or delegates.
-The test doubles are also able to conveniently call back into the original instances.
+DivertR is a testing framework that can be used to dynamically manipulate your dependency injection services at runtime.
+
+It works by replacing existing DI registrations with decorators that instead resolve proxy instances that relay to the originals.
+These proxies are then injected into your app by the by DI service provider as usual but now any calls to dependencies will go via the proxies.
+The proxies intercept calls but their default behaviour is to simply forward to the their wrapped instances (the original resolved instances).
+Therefore, by default, the behaviour of the app is unchanged. However DivertR lets you configure proxies so they redirect calls to test doubles such as
+substitutes, mocks or delegates. DivertR also provides a way for the test doubles to conveniently relay calls back to the original instances.
+
+A rich, fluent interface is provided for configuring proxies and this can be done at any time allowing you to modify the
+behaviour of the app while the process is running. The process does not need to be restarted between configuration changes and
+this can greatly speeds up the execution time of tests. For example the WebApplicationFactory (TestServer) test harness lets you run your
+ASP.NET app in process and it allows you to modify the DI configuration but each configuration customisation requires a process restart
+which can be slow.
 
 ![DivertR Via](./assets/images/DivertR_Via.svg)
 
-The proxies are created and controlled by a DivertR entity called a `Via`. The default proxy behaviour
+The proxies are created and configured by a DivertR entity called a `Via`. The default proxy behaviour
 is to simply relay all intercepted calls directly through to the original instances. This means that
 by default DivertR does not change the behaviour of the system.
 
-To modify the proxy behaviour the `Via` is used to add a `Redirect` that can intercept the call and pass
+To modify the proxy behaviour the `Via` is used to add a `Redirect`. The proxy intercepts calls and forwards them to
+the `Redirect` for handling. A `Redirect` is a test double that can be a delegate or any substitute that implements
+the proxy interface (including Mock objects).
+
+
+Calls are intercepted by the proxy and then passed on to the
+`Redirect`s. If there a multiple `Redirect`s configured they form a stack. 
 it on to a test double that is any substitute that implements the original interface (including Mock objects) or a delegate.
 
 The `Via` provides a `Relay` interface that can be used by test doubles to conveniently call back into the original instances.
