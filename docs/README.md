@@ -14,6 +14,11 @@ this can greatly speeds up the execution time of tests. For example the WebAppli
 ASP.NET app in process and it allows you to modify the DI configuration but each configuration customisation requires a process restart
 which can be slow.
 
+This facilitates an integrated approach to testing by making it easy to hotswap test code in and out at the DI layer.
+
+DivertR allows you to modify your DI services at runtime by redirecting calls to test doubles, such as substitute instances, mocks or delegates, and then optionally relaying back to the original services.
+Update and reset redirect configurations, on the fly, while the process is running.
+
 ![DivertR Via](./assets/images/DivertR_Via.svg)
 
 The proxies are created and configured by a DivertR entity called a `Via`. The default proxy behaviour
