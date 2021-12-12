@@ -5,14 +5,19 @@
 [![nuget](https://img.shields.io/nuget/v/DivertR.svg)](https://www.nuget.org/packages/DivertR)
 [![build](https://github.com/devodo/DivertR/actions/workflows/build.yml/badge.svg)](https://github.com/devodo/DivertR/actions/workflows/build.yml)
 
-DivertR is similar to well known mocking frameworks like Moq or FakeItEasy but provides additional features for directly manipulating your registered dependency injection services.
-This facilitates an integrated approach to testing by making it easy to hotswap test code in and out at the DI layer.
+DivertR is similar to well known mocking frameworks like Moq or FakeItEasy but provides additional features for dynamically manipulating the dependency injection (DI) layer at runtime.
+You can redirect dependency calls to test doubles, such as substitute instances, mocks or delegates, and then optionally relaying them back to the original services.
 
 ![DivertR Via](./docs/assets/images/DivertR_Via.svg)
 
-With DivertR you can modify your DI services at runtime by replacing them with configurable proxies.
-These can redirect calls to test doubles, such as substitute instances, mocks or delegates, and then optionally relay back to the original services.
-Update and reset proxy configurations, on the fly, while the process is running.
+Many developers are already enjoying the benefits of in-process component/integration testing using Microsoft's [WebApplicationFactory (TestServer)](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) 
+which also lets you customise the DI configuration, e.g. to substitute test doubles, but this can only be done once (per TestServer instantiation).
+
+DivertR was born out of the need to efficiently modify DI configurations between tests running against the same TestServer instance. It has grown into a framework that brings a familiar
+unit/mocking testing style into the realm of component and integration testing. DivertR can be used to simulate external dependency behaviour (including error conditions) and it
+facilitates the verification of system inputs and outputs through call interception. This technique is demonstrated by the following [WebApp Testing Sample](https://github.com/devodo/DivertR/tree/main/test/DivertR.WebAppTests).
+
+# Quickstart
 
 ## Installing
 
@@ -24,7 +29,7 @@ Or via the .NET command line interface:
 
     dotnet add package DivertR
 
-## Code overview
+## Code Overview
 
 ### Start with a Foo
 
@@ -33,7 +38,7 @@ Given an `IFoo` interface and a `Foo` implementation:
 ```csharp
 public interface IFoo
 {
-    public string Name { get; set; }
+    string Name { get; set; }
     string Echo(string input);
 }
 
@@ -56,7 +61,7 @@ services.AddTransient<IFoo, Foo>();
 services.AddSingleton<IExample, Example>(); // some other example registration
 ```
 
-### Instantiate DivertR
+### Register
 
 Create a DivertR instance and register one or more DI service types of interest:
 
@@ -197,12 +202,16 @@ Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello Mock"
 Note the substitute/mock can also use the `Relay.Root` proxy to call the original by conveniently accessing it as a property directly from the `Via` instance.
 DivertR uses an ambient `AsyncLocal` context for this so it always points to the *root* of the current call.
 
-### Interfaces only
+### Record
+
+### Replay
+
+## Interfaces only
 
 By default DivertR can only be used on interface types. Classes are not supported as calls to non-virtual members
 cannot be intercepted, causing inconsistent and confusing behaviour.
 
-### Async support
+## Async support
 
 Task and ValueTask async calls are fully supported, e.g. if `IFoo` is extended to include an async method:
 
@@ -228,12 +237,3 @@ fooVia
 Console.WriteLine(await foo.EchoAsync("Hello"));  // "Foo: Hello Async"
 Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello Async"
 ```
-
-### WebApplicationFactory example
-
-DivertR was originally created to facilitate in-process integration/component testing using the excellent
-[WebApplicationFactory framework](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) in-memory ASP.NET test server.
-WebApplicationFactory allows DI service customisation but this can only be done once at startup per server instance.
-
-With DivertR it is easy and efficient to modify DI customisations between tests running against the same test server instance
-as illustrated by the following [WebApp Testing Sample](https://github.com/devodo/DivertR/tree/main/test/DivertR.WebAppTests).

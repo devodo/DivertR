@@ -8,25 +8,46 @@ namespace DivertR.DemoApp
 {
     public interface IFoo
     {
+        string Name { get; set; }
         string Echo(string input);
         Task<string> EchoAsync(string input);
-        public string Name { get; set; }
+        T EchoGeneric<T>(T input);
+    }
+
+    public interface IBar
+    {
+        IFoo Foo { get; }
     }
 
     public class Foo : IFoo
     {
+        public string Name { get; set; } = "original";
+    
         public string Echo(string input)
         {
             return $"{Name}: {input}";
         }
-        
+    
         public async Task<string> EchoAsync(string input)
         {
             await Task.Yield();
             return $"{Name}: {input}";
         }
 
-        public string Name { get; set; } = "original";
+        public T EchoGeneric<T>(T input)
+        {
+            return input;
+        }
+    }
+
+    public class Bar : IBar
+    {
+        public Bar(IFoo foo)
+        {
+            Foo = foo;
+        }
+        
+        public IFoo Foo { get; }
     }
     
     class Program
