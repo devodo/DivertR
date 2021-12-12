@@ -101,9 +101,9 @@ namespace DivertR.WebAppTests
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
             response.Content.ShouldBeNull();
 
-            (await getFooCalls.Replay(async call =>
+            (await getFooCalls.Replay(async (call, args) =>
             {
-                call.Args.fooId.ShouldBe(foo.Id);
+                args.fooId.ShouldBe(foo.Id);
                 (await call.Returned!.Value).ShouldBeNull();
             })).Count.ShouldBe(1);
         }
@@ -125,7 +125,7 @@ namespace DivertR.WebAppTests
                 .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
                 .Redirect<(Foo foo, __)>(async (call, args) =>
                 {
-                    insertedFoo = call.Args.foo;
+                    insertedFoo = args.foo;
                     insertResult = await call.Next.TryInsertFooAsync(args.foo);
                     return insertResult.Value;
                 });
@@ -219,7 +219,7 @@ namespace DivertR.WebAppTests
             recordedCalls.Replay((call, args) =>
             {
                 args.foo.Name.ShouldBe(createFooRequest.Name);
-                call.Returned!.Exception.ShouldBeSameAs(testException);
+                call.Returned?.Exception.ShouldBeSameAs(testException);
             }).Count.ShouldBe(1);
         }
     }
