@@ -6,16 +6,16 @@
 [![build](https://github.com/devodo/DivertR/actions/workflows/build.yml/badge.svg)](https://github.com/devodo/DivertR/actions/workflows/build.yml)
 
 DivertR is similar to well known mocking frameworks like Moq or FakeItEasy but provides additional features for dynamically manipulating the dependency injection (DI) layer at runtime.
-You can redirect dependency calls to test doubles, such as substitute instances, mocks or delegates, and then optionally relaying them back to the original services.
-
-![DivertR Via](./docs/assets/images/DivertR_Via.svg)
+You can redirect dependency calls to test doubles, such as substitute instances, mocks or delegates, and then optionally relay them back to the original services.
 
 Many developers are already enjoying the benefits of in-process component/integration testing using Microsoft's [WebApplicationFactory (TestServer)](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) 
 which also lets you customise the DI configuration, e.g. to substitute test doubles, but this can only be done once (per TestServer instantiation).
 
-DivertR was born out of the need to efficiently modify DI configurations between tests running against the same TestServer instance. It has grown into a framework that brings a familiar
-unit/mocking testing style into the realm of component and integration testing. DivertR can be used to simulate external dependency behaviour (including error conditions) and it
-facilitates the verification of system inputs and outputs through call interception. This technique is demonstrated by the following [WebApp Testing Sample](https://github.com/devodo/DivertR/tree/main/test/DivertR.WebAppTests).
+DivertR was born out of the need to efficiently modify DI configurations between tests running against the same TestServer instance.
+It has grown into a framework that facilitates testing of wired up systems, bringing a familiar unit/mocking testing style into the realm of component and integration testing,
+by providing features to conveniently substitute dependency behaviour (including error conditions) and verify inputs and outputs from recorded call information.
+For a demonstration of usage view this [WebApp Testing Sample](https://github.com/devodo/DivertR/tree/main/test/DivertR.WebAppTests) or continue below
+for a quickstart and code overview.
 
 # Quickstart
 
@@ -30,6 +30,8 @@ Or via the .NET command line interface:
     dotnet add package DivertR
 
 ## Code Overview
+
+![DivertR Via](./docs/assets/images/DivertR_Via.svg)
 
 ### Start with a Foo
 
@@ -63,7 +65,7 @@ services.AddSingleton<IExample, Example>(); // some other example registration
 
 ### Register
 
-Create a DivertR instance and register one or more DI service types of interest:
+Create a DivertR instance and *register* one or more DI service types of interest:
 
 ```csharp
 var diverter = new Diverter()
@@ -132,7 +134,7 @@ Console.WriteLine(foo2.Echo("Hello")); // "Hello DivertR"
 
 ### Reset
 
-To reset resolved instances back to their original behaviour simply discard all redirects on the `Via` with the following call:
+To *reset* resolved instances back to their original behaviour simply discard all redirects on the `Via` with the following call:
 
 ```csharp
 fooVia.Reset();
@@ -201,10 +203,6 @@ Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello Mock"
 
 Note the substitute/mock can also use the `Relay.Root` proxy to call the original by conveniently accessing it as a property directly from the `Via` instance.
 DivertR uses an ambient `AsyncLocal` context for this so it always points to the *root* of the current call.
-
-### Record
-
-### Replay
 
 ## Interfaces only
 

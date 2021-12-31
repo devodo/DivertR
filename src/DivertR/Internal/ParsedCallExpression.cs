@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -20,57 +21,61 @@ namespace DivertR.Internal
             _argumentConstraints = argumentConstraints;
         }
 
+        public void Validate(IValueTupleMapper valueTupleMapper)
+        {
+            var argumentTypes = valueTupleMapper.ArgumentTypes
+                .Select(x => (x, (ParameterInfo?) null))
+                .ToArray();
+            
+            var validations = ValidateArgumentTypes(argumentTypes, false).ToArray();
+
+            if (validations.All(x => x.isValid))
+            {
+                return;
+            }
+
+            var valueTupleArguments = string.Join(", ", valueTupleMapper.ArgumentTypes.Select(x => x.Name));
+            var details = $"{string.Join(Environment.NewLine, validations.Select(x => x.message))}";
+
+            throw new DiverterValidationException(
+                $"ValueTuple ({valueTupleArguments}) arguments invalid for call to {GetMethodParameterSignature()}" +
+                $"{Environment.NewLine}{details}");
+        }
+        
         public void Validate(Delegate redirectDelegate)
         {
             var returnType = redirectDelegate.Method.ReturnType;
             
             if (!ReturnTypeValid(returnType))
             {
-                throw new InvalidRedirectException($"'{redirectDelegate.Method.ReturnType.FullName}' invalid redirect return type To method '{Method}'");
+                var redirectReturnName = Method.ReturnType.Name;
+                var returnTypeName = redirectDelegate.Method.ReturnType.Name;
+
+                if (returnTypeName == redirectReturnName)
+                {
+                    returnTypeName = redirectDelegate.Method.ReturnType.FullName;
+                    redirectReturnName = Method.ReturnType.FullName;
+                }
+                
+                throw new DiverterValidationException($"Delegate return type ({returnTypeName}) invalid for redirect call returning type ({redirectReturnName})");
             }
             
-            if (DelegateParametersValid(redirectDelegate))
+            var delegateParameterTypes = redirectDelegate.Method.GetParameters()
+                .Select(x => (x.ParameterType, (ParameterInfo?) x))
+                .ToArray();
+            
+            var validations = ValidateArgumentTypes(delegateParameterTypes, true).ToArray();
+
+            if (validations.All(x => x.isValid))
             {
                 return;
             }
             
-            var delegateParameters = redirectDelegate.Method.GetParameters();
-            var parameterTypes = delegateParameters.Select(x => $"{x.ParameterType.FullName} {x.Name}");
-            var delegateSignature = $"Redirect({string.Join(", ", parameterTypes)})";
-            
-            throw new InvalidRedirectException($"'{delegateSignature}' parameters invalid for To method '{Method}'");
-        }
+            var details = $"{string.Join(Environment.NewLine, validations.Select(x => x.message))}";
 
-        public void Validate(Type returnType, Type[] argumentTypes, bool isStrict = true)
-        {
-            if (!ReturnTypeValid(returnType))
-            {
-                throw new InvalidRedirectException($"'{returnType.FullName}' invalid return type for To method '{Method}'");
-            }
-
-            var checkArguments =
-                isStrict ? (Func<Type[], ParameterInfo[], bool>) ArgumentTypesValidStrict : ArgumentTypesValid;
-            
-            if (checkArguments(argumentTypes, ParameterInfos))
-            {
-                return;
-            }
-            
-            var parameterTypes = argumentTypes.Select(x => $"{x.FullName} {x.Name}");
-            var delegateSignature = $"Redirect({string.Join(", ", parameterTypes)})";
-            
-            throw new InvalidRedirectException($"'{delegateSignature}' parameters invalid for To method '{Method}'");
-        }
-
-        public void ValidateArgumentTypes(params Type[] types)
-        {
-            if (ArgumentTypesValid(types, ParameterInfos))
-            {
-                return;
-            }
-            
-            var errorMessage = $"Parameter types invalid for To method '{Method}'";
-            throw new DiverterException(errorMessage);
+            throw new DiverterValidationException(
+                $"Delegate {redirectDelegate.Method} parameters invalid for call to {GetMethodParameterSignature()}" +
+                $"{Environment.NewLine}{details}");
         }
 
         public ICallConstraint<TTarget> ToCallConstraint<TTarget>() where TTarget : class
@@ -78,11 +83,19 @@ namespace DivertR.Internal
             return new MethodCallConstraint<TTarget>(_methodConstraint, _argumentConstraints);
         }
         
-        private bool DelegateParametersValid(Delegate redirectDelegate)
+        private string GetMethodParameterSignature()
         {
-            var delegateParameters = redirectDelegate.Method.GetParameters();
+            var methodParameters = string.Join(", ", ParameterInfos.Select(x => x.ParameterType.Name));
 
-            return ParametersValidStrict(delegateParameters, ParameterInfos);
+            string? genericArguments = null;
+            
+            if (Method.IsGenericMethod)
+            {
+                var joinedArgs = string.Join(", ", Method.GetGenericArguments().Select(x => x.Name));
+                genericArguments = $"<{joinedArgs}>";
+            }
+            
+            return $"{Method.Name}{genericArguments}({methodParameters})";
         }
 
         private bool ReturnTypeValid(Type returnType)
@@ -99,81 +112,82 @@ namespace DivertR.Internal
 
             return false;
         }
-        
-        private static bool ParametersValidStrict(ParameterInfo[] testParams, ParameterInfo[] callParams)
-        {
-            if (testParams.Length == 0)
-            {
-                return true;
-            }
-            
-            if (testParams.Length != callParams.Length)
-            {
-                return false;
-            }
 
-            for (var i = 0; i < testParams.Length; i++)
+        private IEnumerable<(bool isValid, string? message)> ValidateArgumentTypes((Type type, ParameterInfo? parameter)[] argumentTypes, bool isStrict)
+        {
+            var parameterTypes = ParameterInfos
+                .Select(x => x)
+                .Concat(Enumerable
+                    .Range(0, Math.Max(0, argumentTypes.Length - ParameterInfos.Length))
+                    .Select(_ => (ParameterInfo?) null));
+            
+            var argTypes = argumentTypes
+                .Select(x => x)
+                .Concat(Enumerable
+                    .Range(0, Math.Max(0, ParameterInfos.Length - argumentTypes.Length))
+                    .Select(_ => ((Type type, ParameterInfo? parameter)) default));
+
+            var zip = parameterTypes
+                .Zip(argTypes, (parameterType, argumentType) => (parameterType, argumentType))
+                .Select((x, i) => (x.parameterType, x.argumentType, i));
+
+            foreach (var (parameter, argumentType, index) in zip)
             {
-                if (ReferenceEquals(testParams[i].ParameterType, callParams[i].ParameterType))
-                {
-                    continue;
-                }
+                var isValid = IsArgumentTypeValid(argumentType, parameter, isStrict);
                 
-                if (!testParams[i].ParameterType.IsAssignableFrom(callParams[i].ParameterType))
-                {
-                    return false;
-                }
-            }
+                var parameterTypeName = parameter?.ParameterType.Name;
+                var argumentTypeName = argumentType.type?.Name;
+                
+                string message;
 
-            return true;
+                if (isValid)
+                {
+                    message = $"valid";
+                }
+                else
+                {
+                    if (parameterTypeName == argumentTypeName)
+                    {
+                        parameterTypeName = parameter?.ParameterType.FullName;
+                        argumentTypeName = argumentType.type?.FullName;
+                    }
+                    
+                    if (parameter != null && argumentType.type != null)
+                    {
+                        message = $"invalid assignment from ({argumentTypeName})";
+                    }
+                    else if (parameter == null)
+                    {
+                        message = $"parameter index out of range";
+                    }
+                    else
+                    {
+                        message = $"method parameter required";
+                    }
+                }
+
+                yield return (isValid, $"{(isValid ? "---" : "***")} [{index}:{parameterTypeName ?? "???"}] {message}");
+            }
         }
-        
-        private static bool ArgumentTypesValidStrict(Type[] testTypes, ParameterInfo[] callParams)
+
+        private static bool IsArgumentTypeValid((Type type, ParameterInfo? parameter) test, ParameterInfo? parameter, bool isStrict = true)
         {
-            if (testTypes.Length == 0)
+            if (parameter == null)
             {
-                return true;
+                return false;
             }
             
-            if (testTypes.Length != callParams.Length)
+            if (test.type == null)
             {
-                return false;
+                return !isStrict;
             }
 
-            for (var i = 0; i < testTypes.Length; i++)
+            if (!parameter.ParameterType.IsByRef)
             {
-                if (!IsArgumentTypeValid(testTypes[i], callParams[i].ParameterType))
-                {
-                    return false;
-                }
+                return IsTypeValid(test.type, parameter.ParameterType);
             }
 
-            return true;
-        }
-
-        private static bool ArgumentTypesValid(Type[] testTypes, ParameterInfo[] callParams)
-        {
-            if (testTypes.Length > callParams.Length)
-            {
-                return false;
-            }
-
-            for (var i = 0; i < testTypes.Length; i++)
-            {
-                if (!IsArgumentTypeValid(testTypes[i], callParams[i].ParameterType))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool IsArgumentTypeValid(Type testType, Type parameterType)
-        {
-            return !parameterType.IsByRef 
-                ? IsTypeValid(testType, parameterType)
-                : IsRefTypeValid(testType, parameterType);
+            return IsRefTypeValid(test, parameter);
         }
         
         private static bool IsTypeValid(Type testType, Type parameterType)
@@ -191,28 +205,38 @@ namespace DivertR.Internal
             return false;
         }
 
-        private static bool IsRefTypeValid(Type refType, Type parameterType)
+        private static bool IsRefTypeValid((Type type, ParameterInfo? parameter) test, ParameterInfo parameter)
         {
-            if (!refType.IsGenericType ||
-                refType.GenericTypeArguments.Length != 1 ||
-                refType.GetGenericTypeDefinition() != typeof(Ref<>))
+            if (!parameter.ParameterType.IsByRef)
             {
                 return false;
             }
 
-            var elementType = parameterType.GetElementType();
-            
-            if (ReferenceEquals(refType.GenericTypeArguments[0], elementType))
+            if (test.parameter != null)
             {
-                return true;
+                if (!test.type.IsByRef)
+                {
+                    return false;
+                }
+
+                return test.parameter.IsOut == parameter.IsOut && test.parameter.IsIn == parameter.IsIn;
             }
-                
-            if (!refType.GenericTypeArguments[0].IsAssignableFrom(elementType))
+            
+            if (!test.type.IsGenericType ||
+                test.type.GenericTypeArguments.Length != 1 ||
+                test.type.GetGenericTypeDefinition() != typeof(Ref<>))
             {
-                return true;
+                return false;
             }
 
-            return false;
+            var elementType = parameter.ParameterType.GetElementType();
+
+            if (elementType == null)
+            {
+                return false;
+            }
+            
+            return IsTypeValid(test.type.GenericTypeArguments[0], elementType);
         }
     }
 }

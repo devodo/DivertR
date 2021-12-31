@@ -27,7 +27,7 @@ namespace DivertR.Record.Internal
         public new IActionCallLog<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleFactory = ValueTupleMapperFactory.Create<TArgs>();
-            ParsedCallExpression.Validate(typeof(void), valueTupleFactory.ArgumentTypes, false);
+            ParsedCallExpression.Validate(valueTupleFactory);
             var mappedCall = MapCalls<TArgs>(Calls, valueTupleFactory);
 
             return new ActionCallLog<TTarget, TArgs>(mappedCall, ParsedCallExpression);
@@ -70,7 +70,7 @@ namespace DivertR.Record.Internal
             where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleFactory = ValueTupleMapperFactory.Create<TNewArgs>();
-            ParsedCallExpression.Validate(typeof(void), valueTupleFactory.ArgumentTypes, false);
+            ParsedCallExpression.Validate(valueTupleFactory);
             var mappedCall = ActionCallLog<TTarget>.MapCalls<TNewArgs>(Calls, valueTupleFactory);
 
             return new ActionCallLog<TTarget, TNewArgs>(mappedCall, ParsedCallExpression);

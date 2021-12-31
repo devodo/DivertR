@@ -26,15 +26,7 @@ namespace DivertR.Internal
         
         public Redirect<TTarget> Build(Action redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            ParsedCallExpression.Validate(redirectDelegate);
-            var callHandler = new DelegateCallHandler<TTarget>(callInfo =>
-            {
-                redirectDelegate.Invoke();
-
-                return default;
-            });
-
-            return base.Build(callHandler, optionsAction);
+            return Build(call => redirectDelegate.Invoke(), optionsAction);
         }
 
         public Redirect<TTarget> Build(Action<IActionRedirectCall<TTarget>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -145,7 +137,7 @@ namespace DivertR.Internal
             : base(via, parsedCallExpression, callConstraint)
         {
             _valueTupleMapper = ValueTupleMapperFactory.Create<TArgs>();
-            ParsedCallExpression.Validate(typeof(void), _valueTupleMapper.ArgumentTypes);
+            ParsedCallExpression.Validate(_valueTupleMapper);
         }
 
         public Redirect<TTarget> Build(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)

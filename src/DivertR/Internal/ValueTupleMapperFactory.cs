@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace DivertR.Internal
 {
-    internal class ValueTupleMapperFactory
+    internal static class ValueTupleMapperFactory
     {
         private static readonly Type[] ValueTupleTypes =
         {

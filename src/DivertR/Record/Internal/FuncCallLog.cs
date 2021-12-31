@@ -29,7 +29,7 @@ namespace DivertR.Record.Internal
         public new IFuncCallLog<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleFactory = ValueTupleMapperFactory.Create<TArgs>();
-            ParsedCallExpression.Validate(typeof(TReturn), valueTupleFactory.ArgumentTypes, false);
+            ParsedCallExpression.Validate(valueTupleFactory);
             var mappedCall = MapCalls<TArgs>(Calls, valueTupleFactory);
             
             return new FuncCallLog<TTarget, TReturn, TArgs>(mappedCall, ParsedCallExpression);
@@ -73,7 +73,7 @@ namespace DivertR.Record.Internal
         public new IFuncCallLog<TTarget, TReturn, TNewArgs> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleFactory = ValueTupleMapperFactory.Create<TNewArgs>();
-            ParsedCallExpression.Validate(typeof(TReturn), valueTupleFactory.ArgumentTypes, false);
+            ParsedCallExpression.Validate(valueTupleFactory);
             var mappedCall = FuncCallLog<TTarget, TReturn>.MapCalls<TNewArgs>(Calls, valueTupleFactory);
             
             return new FuncCallLog<TTarget, TReturn, TNewArgs>(mappedCall, ParsedCallExpression);

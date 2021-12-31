@@ -28,21 +28,6 @@ namespace DivertR.Internal
 
             return this;
         }
-        
-        protected Redirect<TTarget> Build(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
-        {
-            ParsedCallExpression.Validate(inputDelegate);
-            var redirect = new DelegateCallHandler<TTarget>(mappedRedirect);
-
-            return Build(redirect);
-        }
-
-        protected IVia<TTarget> InsertRedirect(Delegate inputDelegate, Func<CallInfo<TTarget>, object?> mappedRedirect)
-        {
-            var redirect = Build(inputDelegate, mappedRedirect);
-
-            return Via.InsertRedirect(redirect);
-        }
 
         protected IVia<TTarget> InsertRedirect(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction)
         {
