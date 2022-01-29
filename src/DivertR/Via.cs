@@ -39,19 +39,19 @@ namespace DivertR
 
         public IRedirectPlan<TTarget> RedirectPlan => _redirectRepository.RedirectPlan;
 
-        public TTarget Proxy(TTarget? original = null)
+        public TTarget Proxy(TTarget? root = null)
         {
-            return _proxyFactory.CreateProxy(original, GetProxyCall);
+            return _proxyFactory.CreateProxy(root, GetProxyCall);
         }
 
-        public object ProxyObject(object? original = null)
+        public object ProxyObject(object? root = null)
         {
-            if (original != null && !(original is TTarget))
+            if (root != null && !(root is TTarget))
             {
-                throw new ArgumentException($"Not assignable to {typeof(TTarget).Name}", nameof(original));
+                throw new ArgumentException($"Not assignable to {typeof(TTarget).Name}", nameof(root));
             }
 
-            return Proxy(original as TTarget);
+            return Proxy(root as TTarget);
         }
         
         public IVia<TTarget> InsertRedirect(Redirect<TTarget> redirect)

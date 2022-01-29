@@ -19,7 +19,7 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public async Task GivenTargetRedirectWithOriginalRelay_ShouldDivert()
+        public async Task GivenTargetRedirectWithRootRelay_ShouldDivert()
         {
             // ARRANGE
             _via.Retarget(new FooAlt(() => $"alt {_via.Relay.Root.Name}"));
@@ -64,12 +64,12 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenRedirectWithOriginalInstanceRelay_ShouldDivert()
+        public async Task GivenRedirectWithRootInstanceRelay_ShouldDivert()
         {
             // ARRANGE
             _via
                 .To(x => x.EchoValueAsync(Is<string>.Any))
-                .Redirect<(string input, __)>(call => call.CallInfo.Original!.EchoValueAsync($"{call.Args.input} redirect"));
+                .Redirect<(string input, __)>(call => call.CallInfo.Root!.EchoValueAsync($"{call.Args.input} redirect"));
 
             // ACT
             var message = await _proxy.EchoValueAsync("test");
@@ -79,7 +79,7 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public async Task GivenMultipleRedirectsWithNextAndOriginalRelays_ShouldChain()
+        public async Task GivenMultipleRedirectsWithNextAndRootRelays_ShouldChain()
         {
             // ARRANGE
             const int NumRedirects = 100;

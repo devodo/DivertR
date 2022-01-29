@@ -4,13 +4,13 @@ namespace DivertR.DispatchProxy
 {
     public class DispatchProxyFactory : IProxyFactory
     {
-        public TTarget CreateProxy<TTarget>(TTarget? original, Func<IProxyCall<TTarget>?> getProxyCall) where TTarget : class
+        public TTarget CreateProxy<TTarget>(TTarget? root, Func<IProxyCall<TTarget>?> getProxyCall) where TTarget : class
         {
             ValidateProxyTarget<TTarget>();
 
             IProxyInvoker CreateProxyInvoker(TTarget proxy)
             {
-                return new ProxyWithDefaultInvoker<TTarget>(proxy, original, getProxyCall);
+                return new ProxyWithDefaultInvoker<TTarget>(proxy, root, getProxyCall);
             }
             
             return DiverterDispatchProxy.Create<TTarget>(CreateProxyInvoker);

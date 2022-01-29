@@ -5,7 +5,7 @@ namespace DivertR.DynamicProxy
 {
     public class ProxyWithDefaultInterceptor<TTarget> : IInterceptor where TTarget : class
     {
-        private readonly TTarget? _original;
+        private readonly TTarget? _root;
         private readonly Func<IProxyCall<TTarget>?> _getProxyCall;
         
         public ProxyWithDefaultInterceptor(Func<IProxyCall<TTarget>?> getProxyCall)
@@ -13,9 +13,9 @@ namespace DivertR.DynamicProxy
         {
         }
 
-        public ProxyWithDefaultInterceptor(TTarget? original, Func<IProxyCall<TTarget>?> getProxyCall)
+        public ProxyWithDefaultInterceptor(TTarget? root, Func<IProxyCall<TTarget>?> getProxyCall)
         {
-            _original = original;
+            _root = root;
             _getProxyCall = getProxyCall;
         }
 
@@ -29,15 +29,15 @@ namespace DivertR.DynamicProxy
                 return;
             }
             
-            var callInfo = new CallInfo<TTarget>((TTarget) invocation.Proxy, _original, invocation.Method, invocation.Arguments);
+            var callInfo = new CallInfo<TTarget>((TTarget) invocation.Proxy, _root, invocation.Method, invocation.Arguments);
             invocation.ReturnValue = proxyCall.Call(callInfo);
         }
 
         private void DefaultProceed(IInvocation invocation)
         {
-            if (_original == null)
+            if (_root == null)
             {
-                throw new DiverterException("The original instance reference is null");
+                throw new DiverterException("The root instance reference is null");
             }
 
             invocation.Proceed();

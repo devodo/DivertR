@@ -6,10 +6,10 @@ namespace DivertR
     public class CallInfo<TTarget> where TTarget : class
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CallInfo(TTarget proxy, TTarget? original, MethodInfo method, CallArguments args)
+        public CallInfo(TTarget proxy, TTarget? root, MethodInfo method, CallArguments args)
         {
             Proxy = proxy;
-            Original = original;
+            Root = root;
             Method = method;
             Arguments = args;
         }
@@ -20,7 +20,7 @@ namespace DivertR
             get;
         }
 
-        public TTarget? Original
+        public TTarget? Root
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;

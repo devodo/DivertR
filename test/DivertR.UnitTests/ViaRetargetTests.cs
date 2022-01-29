@@ -42,7 +42,7 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public void GivenRetarget_WhenReset_ShouldDefaultToOriginal()
+        public void GivenRetarget_WhenReset_ShouldDefaultToRoot()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -57,7 +57,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenMultipleRetargets_WhenReset_ShouldDefaultToOriginal()
+        public void GivenMultipleRetargets_WhenReset_ShouldDefaultToRoot()
         {
             // ARRANGE
             var original = new Foo("hello foo");
@@ -73,7 +73,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRetargetWithRelayToOriginal_ShouldRedirect()
+        public void GivenRetargetWithRelayToRoot_ShouldRedirect()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -103,7 +103,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRetargetWithRelayToOriginalInstance_ShouldRedirect()
+        public void GivenRetargetWithRelayToRootInstance_ShouldRedirect()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -111,7 +111,7 @@ namespace DivertR.UnitTests
             IFoo originalReference = null;
             _via.Retarget(new FooAlt(() =>
             {
-                originalReference = _via.Relay.GetCurrentCall().CallInfo.Original;
+                originalReference = _via.Relay.GetCurrentCall().CallInfo.Root;
                 return $"hello {originalReference!.Name}";
             }));
 
@@ -124,7 +124,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenMultipleProxiesWithRelayToOriginalRetarget_ShouldRedirect()
+        public void GivenMultipleProxiesWithRelayToRootRetarget_ShouldRedirect()
         {
             // ARRANGE
             var proxies = Enumerable.Range(0, 10)
@@ -222,7 +222,7 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public void GivenMultipleRetargetsWithNextAndOriginalRelays_ShouldChain()
+        public void GivenMultipleRetargetsWithNextAndRootRelays_ShouldChain()
         {
             // ARRANGE
             const int NumRedirects = 2;

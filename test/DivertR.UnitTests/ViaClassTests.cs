@@ -17,7 +17,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenClassProxy_ShouldDefaultToOriginal()
+        public void GivenClassProxy_ShouldDefaultToRoot()
         {
             // ARRANGE
             var original = new Foo("hello foo");

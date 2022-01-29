@@ -23,10 +23,10 @@ namespace DivertR
         /// <summary>
         /// Create a Via proxy object without needing to specify the compile time Via type.
         /// </summary>
-        /// <param name="original">Optional original instance to proxy calls to.</param>
-        /// <exception cref="System.ArgumentException">Thrown if <paramref name="original"/> is not the Via type.</exception>
+        /// <param name="root">Optional root instance to proxy calls to.</param>
+        /// <exception cref="System.ArgumentException">Thrown if <paramref name="root"/> is not the Via type.</exception>
         /// <returns>The proxy instance.</returns>
-        object ProxyObject(object? original = null);
+        object ProxyObject(object? root = null);
         
         /// <summary>
         /// Reset the Via.
@@ -61,9 +61,9 @@ namespace DivertR
         /// <summary>
         /// Create a Via proxy instance.
         /// </summary>
-        /// <param name="original">Optional original instance to proxy calls to.</param>
+        /// <param name="root">Optional root instance to proxy calls to.</param>
         /// <returns>The proxy instance.</returns>
-        TTarget Proxy(TTarget? original = null);
+        TTarget Proxy(TTarget? root = null);
         
         /// <summary>
         /// Insert a <see cref="Redirect{TTarget}"/> instance into the Via <see cref="RedirectPlan{TTarget}" />.

@@ -8,13 +8,13 @@ namespace DivertR.DispatchProxy
     public class ProxyWithDefaultInvoker<TTarget> : IProxyInvoker where TTarget : class
     {
         private readonly TTarget _proxy;
-        private readonly TTarget? _original;
+        private readonly TTarget? _root;
         private readonly Func<IProxyCall<TTarget>?> _getProxyCall;
         
-        public ProxyWithDefaultInvoker(TTarget proxy, TTarget? original, Func<IProxyCall<TTarget>?> getProxyCall)
+        public ProxyWithDefaultInvoker(TTarget proxy, TTarget? root, Func<IProxyCall<TTarget>?> getProxyCall)
         {
             _proxy = proxy;
-            _original = original;
+            _root = root;
             _getProxyCall = getProxyCall;
         }
         
@@ -28,7 +28,7 @@ namespace DivertR.DispatchProxy
                 return DefaultProceed(targetMethod, args);
             }
             
-            var callInfo = new CallInfo<TTarget>(_proxy, _original, targetMethod, args);
+            var callInfo = new CallInfo<TTarget>(_proxy, _root, targetMethod, args);
 
             return proxyCall.Call(callInfo)!;
         }
@@ -36,12 +36,12 @@ namespace DivertR.DispatchProxy
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private object DefaultProceed(MethodInfo targetMethod, object[] args)
         {
-            if (_original == null)
+            if (_root == null)
             {
-                throw new DiverterException("The original instance reference is null");
+                throw new DiverterException("The root instance reference is null");
             }
 
-            return targetMethod.ToDelegate<TTarget>().Invoke(_original, args);
+            return targetMethod.ToDelegate<TTarget>().Invoke(_root, args);
         }
     }
 }

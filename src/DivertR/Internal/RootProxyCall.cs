@@ -2,11 +2,11 @@
 
 namespace DivertR.Internal
 {
-    internal class OriginalProxyCall<TTarget> : IProxyCall<TTarget> where TTarget : class
+    internal class RootProxyCall<TTarget> : IProxyCall<TTarget> where TTarget : class
     {
         private readonly IRelay<TTarget> _relay;
 
-        public OriginalProxyCall(IRelay<TTarget> relay)
+        public RootProxyCall(IRelay<TTarget> relay)
         {
             _relay = relay;
         }

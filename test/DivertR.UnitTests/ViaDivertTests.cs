@@ -17,7 +17,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDivert_ShouldDefaultToOriginal()
+        public void GivenDivert_ShouldDefaultToRoot()
         {
             // ARRANGE
             _via.To(x => x.GetFoo()).Divert();

@@ -10,7 +10,7 @@ namespace DivertR.UnitTests
         private readonly IVia<IFoo> _via = new Via<IFoo>();
 
         [Fact]
-        public void GivenNoRedirects_ShouldDefaultToOriginal()
+        public void GivenNoRedirects_ShouldDefaultToRoot()
         {
             // ARRANGE
             var original = new Foo("hello foo");
@@ -24,7 +24,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenValidOriginalObjectType_WhenCreateProxyObject_ShouldCreateProxy()
+        public void GivenValidRootObjectType_WhenCreateProxyObject_ShouldCreateProxy()
         {
             // ARRANGE
             var original = new Foo();
@@ -37,7 +37,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenInvalidOriginalObjectType_WhenCreateProxyObject_ShouldThrowArgumentException()
+        public void GivenInvalidRootObjectType_WhenCreateProxyObject_ShouldThrowArgumentException()
         {
             // ARRANGE
             var invalidOriginal = new object();
@@ -110,7 +110,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirect_WhenReset_ShouldDefaultToOriginal()
+        public void GivenRedirect_WhenReset_ShouldDefaultToRoot()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -125,7 +125,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirectWithCallNextRelay_ShouldRelayToOriginal()
+        public void GivenRedirectWithCallNextRelay_ShouldRelayToRoot()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -157,7 +157,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithRedirectWithRelayToOriginal_ShouldRedirect()
+        public void GivenProxyWithRedirectWithRelayToRoot_ShouldRedirect()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -191,7 +191,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenProxyWithRedirectWithRelayToOriginalInstance_ShouldRedirect()
+        public void GivenProxyWithRedirectWithRelayToRootInstance_ShouldRedirect()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -201,7 +201,7 @@ namespace DivertR.UnitTests
                 .To(x => x.Name)
                 .Redirect(call =>
                 {
-                    originalReference = call.CallInfo.Original;
+                    originalReference = call.CallInfo.Root;
                     return $"hello {originalReference!.Name}";
                 });
 
@@ -231,7 +231,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenConstantExpressionRedirect_WhenCallDoesNotMatch_ShouldDefaultToOriginal()
+        public void GivenConstantExpressionRedirect_WhenCallDoesNotMatch_ShouldDefaultToRoot()
         {
             // ARRANGE
             var via = new Via<IFoo>();
@@ -266,7 +266,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenVariableExpressionCallConstraint_WhenCallDoesNotMatch_ShouldDefaultToOriginal()
+        public void GivenVariableExpressionCallConstraint_WhenCallDoesNotMatch_ShouldDefaultToRoot()
         {
             // ARRANGE
             var via = new Via<IFoo>();
@@ -304,7 +304,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenMatchExpressionRedirect_WhenCallDoesNotMatch_ShouldDefaultToOriginal()
+        public void GivenMatchExpressionRedirect_WhenCallDoesNotMatch_ShouldDefaultToRoot()
         {
             // ARRANGE
             var via = new Via<IFoo>();
@@ -389,7 +389,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenSetPropertyRedirect_WhenValueDoesNotMatch_ShouldDefaultToOriginal()
+        public void GivenSetPropertyRedirect_WhenValueDoesNotMatch_ShouldDefaultToRoot()
         {
             // ARRANGE
             _via
@@ -518,7 +518,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenGenericInputRedirect_WhenGenericNotAssignable_ShouldDefaultToOriginal()
+        public void GivenGenericInputRedirect_WhenGenericNotAssignable_ShouldDefaultToRoot()
         {
             // ARRANGE
             _via
@@ -619,7 +619,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirect_WithCallOriginalRelay_ShouldRelayToOriginal()
+        public void GivenRedirect_WithCallOriginalRelay_ShouldRelayToRoot()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -636,7 +636,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirect_WithCallNext_ShouldRelayToOriginal()
+        public void GivenRedirect_WithCallNext_ShouldRelayToRoot()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -671,7 +671,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirect_WithCallOriginalRelayWithMethod_ShouldCallOriginal()
+        public void GivenRedirect_WithCallRootRelayWithMethod_ShouldCallRoot()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -691,7 +691,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirect_WithCallOriginalRelayWithArgs_ShouldRelayArgs()
+        public void GivenRedirect_WithCallRootRelayWithArgs_ShouldRelayArgs()
         {
             // ARRANGE
             var original = new Foo();

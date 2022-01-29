@@ -54,7 +54,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenInRedirect_WhenParamValueDoesNotMatches_ShouldDefaultToOriginal()
+        public void GivenInRedirect_WhenParamValueDoesNotMatches_ShouldDefaultToRoot()
         {
             // ARRANGE
             int inParam = 4;

@@ -13,7 +13,7 @@ namespace DivertR.UnitTests
         private readonly IVia<IFoo> _via = new Via<IFoo>();
         
         [Fact]
-        public async Task GivenProxy_ShouldDefaultToOriginal()
+        public async Task GivenProxy_ShouldDefaultToRoot()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -42,7 +42,7 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public async Task GivenRedirectWithOriginalReference_ShouldRelay()
+        public async Task GivenRedirectWithRootReference_ShouldRelay()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -76,7 +76,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenRedirectWithOriginalInstanceReference_ShouldRelay()
+        public async Task GivenRedirectWithRootInstanceReference_ShouldRelay()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -86,7 +86,7 @@ namespace DivertR.UnitTests
                 .To(x => x.GetNameAsync())
                 .Redirect(async call =>
                 {
-                    originalReference = call.CallInfo.Original;
+                    originalReference = call.CallInfo.Root;
                     return $"hello {await originalReference!.GetNameAsync()}";
                 });
 
@@ -99,7 +99,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenMultipleProxiesWithOriginalRelay_ShouldDivert()
+        public async Task GivenMultipleProxiesWithRootRelay_ShouldDivert()
         {
             // ARRANGE
             var proxies = Enumerable.Range(0, 10)
@@ -184,7 +184,7 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public async Task GivenMultipleAddRedirectsWithNextAndOriginalRelays_ShouldChain()
+        public async Task GivenMultipleAddRedirectsWithNextAndRootRelays_ShouldChain()
         {
             // ARRANGE
             const int numRedirects = 100;

@@ -11,7 +11,7 @@ namespace DivertR.Internal
         private readonly AsyncLocal<ImmutableStack<RelayStep<TTarget>>> _redirectStack = new AsyncLocal<ImmutableStack<RelayStep<TTarget>>>();
         
         private readonly Lazy<TTarget> _next;
-        private readonly Lazy<TTarget> _original;
+        private readonly Lazy<TTarget> _root;
         
         public TTarget Next
         {
@@ -22,13 +22,13 @@ namespace DivertR.Internal
         public TTarget Root
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _original.Value;
+            get => _root.Value;
         }
         
         public Relay(IProxyFactory proxyFactory)
         {
             _next = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new NextProxyCall<TTarget>(this)));
-            _original = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new OriginalProxyCall<TTarget>(this)));
+            _root = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new RootProxyCall<TTarget>(this)));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -43,7 +43,7 @@ namespace DivertR.Internal
                     throw new StrictNotSatisfiedException("Strict mode is enabled and the call did not match any redirects");
                 }
                 
-                return CallOriginal(callInfo);
+                return CallRoot(callInfo);
             }
             
             var redirectStack = _redirectStack.Value ?? ImmutableStack<RelayStep<TTarget>>.Empty;
@@ -66,7 +66,7 @@ namespace DivertR.Internal
             var redirectStep = GetCurrentStack().Peek();
             ValidateStrict(redirectStep);
 
-            return CallOriginal(redirectStep.CallInfo);
+            return CallRoot(redirectStep.CallInfo);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -74,9 +74,9 @@ namespace DivertR.Internal
         {
             var redirectStep = GetCurrentStack().Peek();
             ValidateStrict(redirectStep);
-            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, method, args);
+            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Root, method, args);
             
-            return CallOriginal(callInfo);
+            return CallRoot(callInfo);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -84,9 +84,9 @@ namespace DivertR.Internal
         {
             var redirectStep = GetCurrentStack().Peek();
             ValidateStrict(redirectStep);
-            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, redirectStep.CallInfo.Method, args);
+            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Root, redirectStep.CallInfo.Method, args);
             
-            return CallOriginal(callInfo);
+            return CallRoot(callInfo);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -106,7 +106,7 @@ namespace DivertR.Internal
             {
                 ValidateStrict(redirectStep);
 
-                return CallOriginal(redirectStep.CallInfo);
+                return CallRoot(redirectStep.CallInfo);
             }
             
             redirectStack = redirectStack.Push(nextStep);
@@ -127,14 +127,14 @@ namespace DivertR.Internal
         {
             var redirectStack = GetCurrentStack();
             var redirectStep = redirectStack.Peek();
-            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, method, args);
+            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Root, method, args);
             var nextStep = redirectStep.MoveNext(callInfo);
 
             if (nextStep == null)
             {
                 ValidateStrict(redirectStep);
 
-                return CallOriginal(callInfo);
+                return CallRoot(callInfo);
             }
             
             redirectStack = redirectStack.Push(nextStep);
@@ -155,14 +155,14 @@ namespace DivertR.Internal
         {
             var redirectStack = GetCurrentStack();
             var redirectStep = redirectStack.Peek();
-            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Original, redirectStep.CallInfo.Method, args);
+            var callInfo = new CallInfo<TTarget>(redirectStep.CallInfo.Proxy, redirectStep.CallInfo.Root, redirectStep.CallInfo.Method, args);
             var nextStep = redirectStep.MoveNext(callInfo);
 
             if (nextStep == null)
             {
                 ValidateStrict(redirectStep);
 
-                return CallOriginal(callInfo);
+                return CallRoot(callInfo);
             }
             
             redirectStack = redirectStack.Push(nextStep);
@@ -201,14 +201,14 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static object? CallOriginal(CallInfo<TTarget> callInfo)
+        private static object? CallRoot(CallInfo<TTarget> callInfo)
         {
-            if (callInfo.Original == null)
+            if (callInfo.Root == null)
             {
-                throw new DiverterException("Original instance reference is null");
+                throw new DiverterException("Root instance reference is null");
             }
 
-            return callInfo.Invoke(callInfo.Original);
+            return callInfo.Invoke(callInfo.Root);
         }
     }
 
