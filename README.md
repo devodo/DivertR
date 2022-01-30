@@ -14,7 +14,8 @@ which also lets you customise the DI configuration, e.g. to substitute test doub
 DivertR was born out of the need to efficiently modify DI configurations between tests running against the same TestServer instance.
 It has grown into a framework that facilitates testing of wired up systems, bringing a familiar unit/mocking testing style into the realm of component and integration testing,
 by providing features to conveniently substitute dependency behaviour (including error conditions) and verify inputs and outputs from recorded call information.
-For a demonstration of usage view this [WebApp Testing Sample](https://github.com/devodo/DivertR/tree/main/test/DivertR.WebAppTests) or continue below
+
+For a demonstration of usage view this [WebApp Testing Sample](https://github.com/devodo/DivertR/blob/main/test/DivertR.WebAppTests/WebAppTests.cs) or continue below
 for a quickstart and code overview.
 
 # Quickstart

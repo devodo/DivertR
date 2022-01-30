@@ -9,7 +9,7 @@ namespace DivertR
     public class Diverter : IDiverter
     {
         private readonly ConcurrentDictionary<ViaId, IVia> _registeredVias = new ConcurrentDictionary<ViaId, IVia>();
-        private readonly IViaSet _viaSet;
+        public IViaSet ViaSet { get; }
 
         /// <summary>
         /// Create a <see cref="Diverter"/> instance.
@@ -17,12 +17,21 @@ namespace DivertR
         /// <param name="settings">Optionally override default DivertR settings.</param>
         public Diverter(DiverterSettings? settings = null)
         {
-            _viaSet = new ViaSet(settings);
+            ViaSet = new ViaSet(settings);
+        }
+        
+        /// <summary>
+        /// Create a <see cref="Diverter"/> instance using an external <see cref="IViaSet"/>.
+        /// </summary>
+        /// <param name="viaSet">The <see cref="IViaSet"/> instance.</param>
+        public Diverter(IViaSet viaSet)
+        {
+            ViaSet = viaSet;
         }
 
         public IDiverter Register<TTarget>(string? name = null) where TTarget : class
         {
-            var via = _viaSet.Via<TTarget>(name);
+            var via = ViaSet.Via<TTarget>(name);
 
             if (!_registeredVias.TryAdd(via.ViaId, via))
             {
@@ -34,7 +43,7 @@ namespace DivertR
         
         public IDiverter Register(Type targetType, string? name = null)
         {
-            var via = _viaSet.Via(targetType, name);
+            var via = ViaSet.Via(targetType, name);
             
             if (!_registeredVias.TryAdd(via.ViaId, via))
             {
@@ -85,7 +94,7 @@ namespace DivertR
         
         public IDiverter StrictAll()
         {
-            _viaSet.StrictAll();
+            ViaSet.StrictAll();
             
             return this;
         }
@@ -93,21 +102,21 @@ namespace DivertR
 
         public IDiverter Strict(string? name = null)
         {
-            _viaSet.Strict(name);
+            ViaSet.Strict(name);
 
             return this;
         }
         
         public IDiverter ResetAll()
         {
-            _viaSet.ResetAll();
+            ViaSet.ResetAll();
             
             return this;
         }
 
         public IDiverter Reset(string? name = null)
         {
-            _viaSet.Reset(name);
+            ViaSet.Reset(name);
 
             return this;
         }

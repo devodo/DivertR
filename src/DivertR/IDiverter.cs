@@ -9,6 +9,11 @@ namespace DivertR
     public interface IDiverter
     {
         /// <summary>
+        /// The <see cref="IViaSet"/> instance containing all <see cref="IVia"/> instances used by this <see cref="IDiverter"/>.
+        /// </summary>
+        IViaSet ViaSet { get; }
+        
+        /// <summary>
         /// Register an <see cref="IVia{TTarget}"/> for a given type.
         /// </summary>
         /// <param name="name">Optional Via group name.</param>

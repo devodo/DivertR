@@ -33,17 +33,17 @@ namespace DivertR.DependencyInjection
 
         private static Dictionary<Type, IEnumerable<Action>> CreateDecorateActions(IServiceCollection services, IDiverter diverter, string? name)
         {
-            var diverterTypes = new HashSet<Type>(diverter.RegisteredVias(name).Select(x => x.ViaId.Type));
+            var registeredVias = diverter.RegisteredVias(name).ToDictionary(x => x.ViaId.Type);
 
             return services
                 .Select((descriptor, index) =>
                 {
-                    if (!diverterTypes.Contains(descriptor.ServiceType))
+                    if (!registeredVias.TryGetValue(descriptor.ServiceType, out var via))
                     {
                         return null;
                     }
 
-                    var proxyFactory = CreateViaProxyFactory(descriptor, diverter, name);
+                    var proxyFactory = CreateViaProxyFactory(descriptor, via);
                     void DecorateAction() => services[index] = ServiceDescriptor.Describe(descriptor.ServiceType, proxyFactory, descriptor.Lifetime);
 
                     return new
@@ -58,10 +58,8 @@ namespace DivertR.DependencyInjection
                     grp => grp.Select(x => x!.Action));
         }
 
-        private static Func<IServiceProvider, object> CreateViaProxyFactory(ServiceDescriptor descriptor, IDiverter diverter, string? name)
+        private static Func<IServiceProvider, object> CreateViaProxyFactory(ServiceDescriptor descriptor, IVia via)
         {
-            var via = diverter.Via(descriptor.ServiceType, name);
-
             object ProxyFactory(IServiceProvider provider)
             {
                 var instance = GetServiceInstance(provider, descriptor);

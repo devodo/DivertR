@@ -100,7 +100,12 @@ namespace DivertR
 
             return this;
         }
-
+        
+        /// <summary>
+        /// Add a <see cref="IVia{TTarget}"/> to this <see cref="IViaSet"/>. For internal use only to allow empty <see cref="IVia{TTarget}"/> constructor.
+        /// </summary>
+        /// <param name="via">The <see cref="IVia{TTarget}"/> instance to add.</param>
+        /// <exception cref="DiverterException">Thrown if <see cref="IVia{TTarget}"/> already exists in this <see cref="IViaSet"/></exception>
         internal void AddVia(IVia via)
         {
             var viaGroup = GetViaGroup(via.ViaId.Name);

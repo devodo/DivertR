@@ -25,7 +25,7 @@ namespace DivertR.WebAppTests
         }
 
         [Fact]
-        public async Task GivenFooExists_WhenGetFoo_ThenReturnFooContent_WithOk200()
+        public async Task GivenFooExistsInRepo_WhenGetFoo_ThenReturnFooContent_WithOk200()
         {
             // ARRANGE
             var foo = new Foo
@@ -196,7 +196,7 @@ namespace DivertR.WebAppTests
         }
         
         [Fact]
-        public async Task GivenFooRepositoryThrowsException_WhenCreateFooRequest_ThenReturns500InternalServerError()
+        public async Task GivenFooRepositoryInsertFails_WhenCreateFooRequest_ThenReturns500InternalServerError()
         {
             // ARRANGE
             var createFooRequest = new CreateFooRequest
