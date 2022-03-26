@@ -15,11 +15,11 @@ namespace DivertR.DispatchProxy
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Invoke(MethodInfo targetMethod, object[] args)
+        public object? Invoke(MethodInfo targetMethod, object[] args)
         {
             var callInfo = new CallInfo<TTarget>(_proxy, null, targetMethod, args);
 
-            return _proxyCall.Call(callInfo)!;
+            return _proxyCall.Call(callInfo);
         }
     }
 }

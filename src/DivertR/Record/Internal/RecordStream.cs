@@ -16,9 +16,9 @@ namespace DivertR.Record.Internal
             _recordedCalls = recordedCalls ?? throw new ArgumentNullException(nameof(recordedCalls));
         }
         
-        public IEnumerable<IRecordedCall<TTarget>> To(ICallConstraint<TTarget>? callConstraint = null)
+        public IEnumerable<IRecordedCall<TTarget>> To(ICallConstraint? callConstraint = null)
         {
-            callConstraint ??= TrueCallConstraint<TTarget>.Instance;
+            callConstraint ??= TrueCallConstraint.Instance;
             
             return _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
         }
@@ -28,7 +28,7 @@ namespace DivertR.Record.Internal
             if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
-            var callConstraint = parsedCall.ToCallConstraint<TTarget>();
+            var callConstraint = parsedCall.ToCallConstraint();
             var calls = _recordedCalls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
                 .Select(call => new FuncRecordedCall<TTarget, TReturn>(call));
@@ -41,7 +41,7 @@ namespace DivertR.Record.Internal
             if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
-            var callConstraint = parsedCall.ToCallConstraint<TTarget>();
+            var callConstraint = parsedCall.ToCallConstraint();
             var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
             return new ActionCallStream<TTarget>(calls, parsedCall);
@@ -58,7 +58,7 @@ namespace DivertR.Record.Internal
             }
 
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
-            var callConstraint = parsedCall.ToCallConstraint<TTarget>();
+            var callConstraint = parsedCall.ToCallConstraint();
             var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
             return new ActionCallStream<TTarget>(calls, parsedCall);

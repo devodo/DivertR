@@ -5,7 +5,7 @@ namespace DivertR.Internal
 {
     internal class RelayStep<TTarget> where TTarget : class
     {
-        private readonly RedirectPlan<TTarget> _redirectPlan;
+        private readonly RedirectPlan _redirectPlan;
         private readonly int _index;
 
         public bool StrictSatisfied
@@ -20,14 +20,14 @@ namespace DivertR.Internal
             get;
         }
 
-        public Redirect<TTarget> Redirect
+        public Redirect Redirect
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _redirectPlan.Redirects[_index];
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RelayStep<TTarget>? Create(RedirectPlan<TTarget> redirectPlan, CallInfo<TTarget> callInfo)
+        public static RelayStep<TTarget>? Create(RedirectPlan redirectPlan, CallInfo<TTarget> callInfo)
         {
             var index = GetNextIndex(-1, redirectPlan.Redirects, callInfo);
 
@@ -42,7 +42,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private RelayStep(RedirectPlan<TTarget> redirectPlan, int index, CallInfo<TTarget> callInfo, bool strictSatisfied)
+        private RelayStep(RedirectPlan redirectPlan, int index, CallInfo<TTarget> callInfo, bool strictSatisfied)
         {
             _redirectPlan = redirectPlan;
             CallInfo = callInfo;
@@ -66,13 +66,13 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetNextIndex(int index, IReadOnlyList<Redirect<TTarget>> redirectItems, CallInfo<TTarget> callInfo)
+        private static int GetNextIndex(int index, IReadOnlyList<Redirect> redirects, CallInfo callInfo)
         {
             var startIndex = index + 1;
 
-            for (var i = startIndex; i < redirectItems.Count; i++)
+            for (var i = startIndex; i < redirects.Count; i++)
             {
-                if (!redirectItems[i].CallConstraint.IsMatch(callInfo))
+                if (!redirects[i].CallConstraint.IsMatch(callInfo))
                 {
                     continue;
                 }

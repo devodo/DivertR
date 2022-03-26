@@ -6,13 +6,13 @@ namespace DivertR.Internal
     {
         protected readonly ParsedCallExpression ParsedCallExpression;
 
-        protected DelegateRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
+        protected DelegateRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint callConstraint)
             : base(via, callConstraint)
         {
             ParsedCallExpression = parsedCallExpression ?? throw new ArgumentNullException(nameof(parsedCallExpression));
         }
 
-        public Redirect<TTarget> Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public Redirect Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
             ParsedCallExpression.Validate(redirectDelegate);
             var fastDelegate = redirectDelegate.ToDelegate();
@@ -21,7 +21,7 @@ namespace DivertR.Internal
             return Build(redirect, optionsAction);
         }
 
-        public IDelegateRedirectBuilder<TTarget> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IDelegateRedirectBuilder<TTarget> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
             var redirect = Build(redirectDelegate, optionsAction);
             Via.InsertRedirect(redirect);
@@ -29,7 +29,7 @@ namespace DivertR.Internal
             return this;
         }
 
-        protected IVia<TTarget> InsertRedirect(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction)
+        protected IVia<TTarget> InsertRedirect(ICallHandler callHandler, Action<IRedirectOptionsBuilder>? optionsAction)
         {
             var redirect = Build(callHandler, optionsAction);
 

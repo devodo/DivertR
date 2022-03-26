@@ -1,9 +1,14 @@
 ﻿namespace DivertR
 {
-    public interface IRedirectCall<TTarget> where TTarget : class
+    public interface IRedirectCall
     {
-        CallInfo<TTarget> CallInfo { get; }
+        CallInfo CallInfo { get; }
         CallArguments Args { get; }
-        Redirect<TTarget> Redirect { get; }
+        Redirect Redirect { get; }
+    }
+    
+    public interface IRedirectCall<TTarget> : IRedirectCall where TTarget : class
+    {
+        new CallInfo<TTarget> CallInfo { get; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using DivertR.DispatchProxy;
+using DivertR.Internal;
 
 namespace DivertR
 {
@@ -6,6 +7,9 @@ namespace DivertR
     {
         private static DiverterSettings Settings = new DiverterSettings();
         private static readonly object SettingsLock = new object();
+        
+        public IProxyFactory ProxyFactory { get; }
+        public IDefaultRootFactory DefaultRootFactory { get; }
 
         public static DiverterSettings Global
         {
@@ -26,11 +30,10 @@ namespace DivertR
             }
         }
 
-        public DiverterSettings(IProxyFactory? proxyFactory = null)
+        public DiverterSettings(IProxyFactory? proxyFactory = null, IDefaultRootFactory? defaultRootFactory = null)
         {
             ProxyFactory = proxyFactory ?? new DispatchProxyFactory();
+            DefaultRootFactory = defaultRootFactory ?? new DefaultRootFactory(ProxyFactory);
         }
-
-        public IProxyFactory ProxyFactory { get; }
     }
 }

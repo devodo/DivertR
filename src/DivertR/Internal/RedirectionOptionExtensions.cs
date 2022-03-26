@@ -4,9 +4,9 @@ namespace DivertR.Internal
 {
     internal static class RedirectionOptionExtensions
     {
-        public static RedirectOptions<TTarget> Create<TTarget>(this Action<IRedirectOptionsBuilder<TTarget>>? optionsAction, IVia<TTarget> via) where TTarget : class
+        public static RedirectOptions Create(this Action<IRedirectOptionsBuilder>? optionsAction, IVia via)
         {
-            var builder = new RedirectOptionsBuilder<TTarget>(via);
+            var builder = new RedirectOptionsBuilder(via);
             optionsAction?.Invoke(builder);
             
             return builder.Build();

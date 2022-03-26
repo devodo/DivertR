@@ -37,6 +37,19 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenProxyWithNullRoot_WhenProxyMemberCalled_ShouldThrowException()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy(null);
+
+            // ACT
+            Func<object> testAction = () => proxy.Name;
+
+            // ASSERT
+            testAction.ShouldThrow<DiverterNullRootException>();
+        }
+        
+        [Fact]
         public void GivenInvalidRootObjectType_WhenCreateProxyObject_ShouldThrowArgumentException()
         {
             // ARRANGE
@@ -442,7 +455,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoGeneric(Is<object>.Any))
-                .AddConstraint(new CallConstraint<IFoo>(callInfo => callInfo.Method.GetGenericArguments()[0] == typeof(object)))
+                .AddConstraint(new MatchCallConstraint(callInfo => callInfo.Method.GetGenericArguments()[0] == typeof(object)))
                 .Redirect<(object i, __)>(call => $"{call.Args.i} - {_via.Relay.Next.Name}");
 
             // ACT
@@ -855,7 +868,7 @@ namespace DivertR.UnitTests
 
             _via
                 .To(x => x.Name)
-                .AddConstraint(new SwitchCallConstraint<IFoo>(redirectSwitch))
+                .AddConstraint(new SwitchCallConstraint(redirectSwitch))
                 .Redirect(() => "enabled");
 
             var proxy = _via.Proxy(new Foo("disabled"));

@@ -17,6 +17,12 @@ namespace DivertR.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _relayStep.CallInfo;
         }
+        
+        CallInfo IRedirectCall.CallInfo
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _relayStep.CallInfo;
+        }
 
         public CallArguments Args
         {
@@ -24,7 +30,7 @@ namespace DivertR.Internal
             get => CallInfo.Arguments;
         }
 
-        public Redirect<TTarget> Redirect
+        public Redirect Redirect
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _relayStep.Redirect;

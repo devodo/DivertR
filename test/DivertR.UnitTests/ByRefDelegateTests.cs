@@ -8,7 +8,7 @@ namespace DivertR.UnitTests
 {
     public class ByRefDelegateTestsDynamicProxy : ByRefTests
     {
-        private static readonly DiverterSettings DiverterSettings = new(new DynamicProxyFactory());
+        private static readonly DiverterSettings DiverterSettings = new(proxyFactory: new DynamicProxyFactory());
 
         public ByRefDelegateTestsDynamicProxy()
             : base(new ViaSet(DiverterSettings))

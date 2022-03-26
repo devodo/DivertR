@@ -18,8 +18,20 @@ namespace DivertR.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _next.Value;
         }
+        
+        object IRelay.Next
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _next.Value;
+        }
 
         public TTarget Root
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _root.Value;
+        }
+        
+        object IRelay.Root
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _root.Value;
@@ -29,35 +41,6 @@ namespace DivertR.Internal
         {
             _next = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new NextProxyCall<TTarget>(this)));
             _root = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new RootProxyCall<TTarget>(this)));
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? CallBegin(RedirectPlan<TTarget> redirectPlan, CallInfo<TTarget> callInfo)
-        {
-            var redirectStep = RelayStep<TTarget>.Create(redirectPlan, callInfo);
-
-            if (redirectStep == null)
-            {
-                if (redirectPlan.IsStrictMode)
-                {
-                    throw new StrictNotSatisfiedException("Strict mode is enabled and the call did not match any redirects");
-                }
-                
-                return CallRoot(callInfo);
-            }
-            
-            var redirectStack = _redirectStack.Value ?? ImmutableStack<RelayStep<TTarget>>.Empty;
-            redirectStack = redirectStack.Push(redirectStep);
-            _redirectStack.Value = redirectStack;
-            
-            try
-            {
-                return redirectStep.Redirect.CallHandler.Call(callInfo);
-            }
-            finally
-            {
-                _redirectStack.Value = redirectStack.Pop();
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -93,6 +76,12 @@ namespace DivertR.Internal
         public IRedirectCall<TTarget> GetCurrentCall()
         {
             return new RedirectCall<TTarget>(GetCurrentStack().Peek());
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        IRedirectCall IRelay.GetCurrentCall()
+        {
+            return GetCurrentCall();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -179,6 +168,35 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal object? CallBegin(RedirectPlan redirectPlan, CallInfo<TTarget> callInfo)
+        {
+            var redirectStep = RelayStep<TTarget>.Create(redirectPlan, callInfo);
+
+            if (redirectStep == null)
+            {
+                if (redirectPlan.IsStrictMode)
+                {
+                    throw new StrictNotSatisfiedException("Strict mode is enabled and the call did not match any redirects");
+                }
+                
+                return CallRoot(callInfo);
+            }
+            
+            var redirectStack = _redirectStack.Value ?? ImmutableStack<RelayStep<TTarget>>.Empty;
+            redirectStack = redirectStack.Push(redirectStep);
+            _redirectStack.Value = redirectStack;
+            
+            try
+            {
+                return redirectStep.Redirect.CallHandler.Call(callInfo);
+            }
+            finally
+            {
+                _redirectStack.Value = redirectStack.Pop();
+            }
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ImmutableStack<RelayStep<TTarget>> GetCurrentStack()
         {
             var redirectStack = _redirectStack.Value;
@@ -205,7 +223,7 @@ namespace DivertR.Internal
         {
             if (callInfo.Root == null)
             {
-                throw new DiverterException("Root instance reference is null");
+                throw new DiverterNullRootException("Root instance is null");
             }
 
             return callInfo.Invoke(callInfo.Root);
@@ -226,8 +244,20 @@ namespace DivertR.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _relay.Next;
         }
+        
+        object IRelay.Next
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _relay.Next;
+        }
 
         public TTarget Root
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _relay.Root;
+        }
+        
+        object IRelay.Root
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _relay.Root;
@@ -238,9 +268,15 @@ namespace DivertR.Internal
         {
             return _relay.GetCurrentCall();
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        IRedirectCall IRelay.GetCurrentCall()
+        {
+            return GetCurrentCall();
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        object? IRelay<TTarget>.CallNext()
+        object? IRelay.CallNext()
         {
             return _relay.CallNext();
         }
@@ -276,13 +312,13 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        object? IRelay<TTarget>.CallNext(CallArguments args)
+        object? IRelay.CallNext(CallArguments args)
         {
             return _relay.CallNext(args);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        object? IRelay<TTarget>.CallRoot()
+        object? IRelay.CallRoot()
         {
             return _relay.CallRoot();
         }
@@ -294,7 +330,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        object? IRelay<TTarget>.CallRoot(CallArguments args)
+        object? IRelay.CallRoot(CallArguments args)
         {
             return _relay.CallRoot(args);
         }

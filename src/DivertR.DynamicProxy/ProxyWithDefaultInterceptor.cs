@@ -37,7 +37,7 @@ namespace DivertR.DynamicProxy
         {
             if (_root == null)
             {
-                throw new DiverterException("The root instance reference is null");
+                throw new DiverterNullRootException("Root instance is null");
             }
 
             invocation.Proceed();

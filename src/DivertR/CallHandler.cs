@@ -3,20 +3,20 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
-    public abstract class CallConstraint<TTarget> : ICallConstraint where TTarget : class
+    public abstract class CallHandler<TTarget> : ICallHandler where TTarget : class
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsMatch(CallInfo callInfo)
+        public object? Call(CallInfo callInfo)
         {
             if (!(callInfo is CallInfo<TTarget> typedCallInfo))
             {
                 throw new ArgumentException($"Call target type mismatch: {callInfo.GetType()}", nameof(callInfo));
             }
             
-            return IsMatch(typedCallInfo);
+            return Call(typedCallInfo);
         }
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract bool IsMatch(CallInfo<TTarget> callInfo);
+        protected abstract object? Call(CallInfo<TTarget> callInfo);
     }
 }

@@ -1,7 +1,7 @@
 ﻿namespace DivertR
 {
-    public interface ICallHandler<TTarget> where TTarget : class
+    public interface ICallHandler
     {
-        object? Call(CallInfo<TTarget> callInfo);
+        object? Call(CallInfo callInfo);
     }
 }

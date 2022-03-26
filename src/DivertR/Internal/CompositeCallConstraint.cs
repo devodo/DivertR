@@ -5,29 +5,29 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class CompositeCallConstraint<T> : ICallConstraint<T> where T : class
+    internal class CompositeCallConstraint : ICallConstraint
     {
-        private readonly ImmutableArray<ICallConstraint<T>> _callConstraints;
+        private readonly ImmutableArray<ICallConstraint> _callConstraints;
         
-        public static readonly CompositeCallConstraint<T> Empty = new CompositeCallConstraint<T>(ImmutableArray<ICallConstraint<T>>.Empty);
+        public static readonly CompositeCallConstraint Empty = new CompositeCallConstraint(ImmutableArray<ICallConstraint>.Empty);
 
-        private CompositeCallConstraint(ImmutableArray<ICallConstraint<T>> callConstraints)
+        private CompositeCallConstraint(ImmutableArray<ICallConstraint> callConstraints)
         {
             _callConstraints = callConstraints;
         }
 
-        public CompositeCallConstraint<T> AddCallConstraint(ICallConstraint<T> callConstraint)
+        public CompositeCallConstraint AddCallConstraint(ICallConstraint callConstraint)
         {
-            return new CompositeCallConstraint<T>(_callConstraints.Add(callConstraint));
+            return new CompositeCallConstraint(_callConstraints.Add(callConstraint));
         }
         
-        public CompositeCallConstraint<T> AddCallConstraints(IEnumerable<ICallConstraint<T>> callConstraints)
+        public CompositeCallConstraint AddCallConstraints(IEnumerable<ICallConstraint> callConstraints)
         {
-            return new CompositeCallConstraint<T>(_callConstraints.AddRange(callConstraints));
+            return new CompositeCallConstraint(_callConstraints.AddRange(callConstraints));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsMatch(CallInfo<T> callInfo)
+        public bool IsMatch(CallInfo callInfo)
         {
             return _callConstraints.All(callConstraint => callConstraint.IsMatch(callInfo));
         }

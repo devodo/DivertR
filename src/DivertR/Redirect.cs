@@ -3,14 +3,14 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
-    public class Redirect<TTarget> where TTarget : class
+    public class Redirect
     {
-        public Redirect(ICallHandler<TTarget> callHandler, ICallConstraint<TTarget> callConstraint, RedirectOptions<TTarget>? redirectOptions = null)
+        public Redirect(ICallHandler callHandler, ICallConstraint callConstraint, RedirectOptions? redirectOptions = null)
         {
             if (callHandler == null) throw new ArgumentNullException(nameof(callHandler));
             if (callConstraint == null) throw new ArgumentNullException(nameof(callConstraint));
             
-            redirectOptions ??= RedirectOptions<TTarget>.Default;
+            redirectOptions ??= RedirectOptions.Default;
             CallHandler = redirectOptions.CallHandlerDecorator?.Invoke(callHandler) ?? callHandler;
             CallConstraint = redirectOptions.CallConstraintDecorator?.Invoke(callConstraint) ?? callConstraint;
             
@@ -18,13 +18,13 @@ namespace DivertR
             DisableSatisfyStrict = redirectOptions.DisableSatisfyStrict ?? false;
         }
 
-        public ICallHandler<TTarget> CallHandler
+        public ICallHandler CallHandler
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
 
-        public ICallConstraint<TTarget> CallConstraint
+        public ICallConstraint CallConstraint
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;

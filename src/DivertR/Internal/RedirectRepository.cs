@@ -4,17 +4,17 @@ using System.Threading;
 
 namespace DivertR.Internal
 {
-    internal class RedirectRepository<TTarget> where TTarget : class
+    internal class RedirectRepository
     {
-        private volatile RedirectPlan<TTarget> _redirectPlan = RedirectPlan<TTarget>.Empty;
+        private volatile RedirectPlan _redirectPlan = RedirectPlan.Empty;
 
-        public RedirectPlan<TTarget> RedirectPlan
+        public RedirectPlan RedirectPlan
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _redirectPlan;
         }
 
-        public void InsertRedirect(Redirect<TTarget> redirect)
+        public void InsertRedirect(Redirect redirect)
         {
             MutateRedirectPlan(original => original.InsertRedirect(redirect));
         }
@@ -26,15 +26,15 @@ namespace DivertR.Internal
 
         public void Reset()
         {
-            if (ReferenceEquals(_redirectPlan, RedirectPlan<TTarget>.Empty))
+            if (ReferenceEquals(_redirectPlan, RedirectPlan.Empty))
             {
                 return;
             }
             
-            Interlocked.Exchange(ref _redirectPlan, RedirectPlan<TTarget>.Empty);
+            Interlocked.Exchange(ref _redirectPlan, RedirectPlan.Empty);
         }
 
-        private void MutateRedirectPlan(Func<RedirectPlan<TTarget>, RedirectPlan<TTarget>> mutateAction)
+        private void MutateRedirectPlan(Func<RedirectPlan, RedirectPlan> mutateAction)
         {
             var lastRead = _redirectPlan;
 

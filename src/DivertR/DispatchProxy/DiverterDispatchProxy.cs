@@ -22,7 +22,7 @@ namespace DivertR.DispatchProxy
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override object Invoke(MethodInfo targetMethod, object[] args)
+        protected override object? Invoke(MethodInfo targetMethod, object[] args)
         {
             return _invoker.Invoke(targetMethod, args);
         }

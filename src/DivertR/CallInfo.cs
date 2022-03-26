@@ -3,24 +3,23 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
-    public class CallInfo<TTarget> where TTarget : class
+    public class CallInfo
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CallInfo(TTarget proxy, TTarget? root, MethodInfo method, CallArguments args)
+        public CallInfo(object proxy, object? root, MethodInfo method, CallArguments args)
         {
             Proxy = proxy;
             Root = root;
             Method = method;
             Arguments = args;
         }
-
-        public TTarget Proxy
+        
+        public object Proxy
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
 
-        public TTarget? Root
+        public object? Root
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
@@ -36,6 +35,27 @@ namespace DivertR
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
+        }
+    }
+    
+    public class CallInfo<TTarget> : CallInfo where TTarget : class
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public CallInfo(TTarget proxy, TTarget? root, MethodInfo method, CallArguments args)
+            : base(proxy, root, method, args)
+        {
+        }
+
+        public new TTarget Proxy
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => (base.Proxy as TTarget)!;
+        }
+
+        public new TTarget? Root
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => base.Root as TTarget;
         }
     }
 }

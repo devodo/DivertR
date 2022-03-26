@@ -9,21 +9,21 @@ namespace DivertR.Internal
 {
     internal static class MethodInfoExtensions
     {
-        private static readonly ConcurrentDictionary<MethodId, Func<object, object[], object>> DelegateCache =
-            new ConcurrentDictionary<MethodId, Func<object, object[], object>>();
+        private static readonly ConcurrentDictionary<MethodId, Func<object, object[], object?>> DelegateCache =
+            new ConcurrentDictionary<MethodId, Func<object, object[], object?>>();
         
-        public static Func<object, object[], object> ToDelegate<T>(this MethodInfo methodInfo)
+        public static Func<object, object[], object?> ToDelegate<T>(this MethodInfo methodInfo)
         {
             return methodInfo.ToDelegate(typeof(T));
         }
 
-        public static Func<object, object[], object> ToDelegate(this MethodInfo methodInfo, Type targetType)
+        public static Func<object, object[], object?> ToDelegate(this MethodInfo methodInfo, Type targetType)
         {
             var methodId = new MethodId(targetType, methodInfo);
             return DelegateCache.GetOrAdd(methodId, mId => mId.MethodInfo.ToDelegateInternal(mId.TargetType));
         }
         
-        public static Func<object[], object> ToDelegate(this Delegate targetDelegate)
+        public static Func<object[], object?> ToDelegate(this Delegate targetDelegate)
         {
             var methodInfo = targetDelegate.Method;
             var targetType = targetDelegate.GetType();
@@ -35,7 +35,7 @@ namespace DivertR.Internal
             return args => fastDelegate.Invoke(targetDelegate, args);
         }
 
-        private static Func<object, object[], object> ToDelegateInternal(this MethodInfo methodInfo, Type targetType, bool isDelegate = false)
+        private static Func<object, object[], object?> ToDelegateInternal(this MethodInfo methodInfo, Type targetType, bool isDelegate = false)
         {
             var argsParameter = Expression.Parameter(typeof(object[]), "arguments");
             var targetParameter = Expression.Parameter(typeof(object), "target");
@@ -124,7 +124,7 @@ namespace DivertR.Internal
 
             var lambdaExpr = Expression.Lambda(lambdaBodyExpr, targetParameter, argsParameter);
 
-            return (Func<object, object[], object>) lambdaExpr.Compile();
+            return (Func<object, object[], object?>) lambdaExpr.Compile();
         }
 
         private class ByRefState

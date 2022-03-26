@@ -3,14 +3,14 @@ using System.Threading;
 
 namespace DivertR.Internal
 {
-    internal class RepeatCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
+    internal class RepeatCallHandler : ICallHandler
     {
-        private readonly IVia<TTarget> _via;
-        private readonly ICallHandler<TTarget> _innerCallHandler;
+        private readonly IVia _via;
+        private readonly ICallHandler _innerCallHandler;
         private readonly int _repeatCount;
         private long _callCount;
 
-        public RepeatCallHandler(IVia<TTarget> via, ICallHandler<TTarget> innerCallHandler, int repeatCount)
+        public RepeatCallHandler(IVia via, ICallHandler innerCallHandler, int repeatCount)
         {
             if (repeatCount < 0)
             {
@@ -22,7 +22,7 @@ namespace DivertR.Internal
             _repeatCount = repeatCount;
         }
 
-        public object? Call(CallInfo<TTarget> callInfo)
+        public object? Call(CallInfo callInfo)
         {
             var count = Interlocked.Increment(ref _callCount);
 

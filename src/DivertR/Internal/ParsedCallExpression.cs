@@ -78,9 +78,9 @@ namespace DivertR.Internal
                 $"{Environment.NewLine}{details}");
         }
 
-        public ICallConstraint<TTarget> ToCallConstraint<TTarget>() where TTarget : class
+        public ICallConstraint ToCallConstraint()
         {
-            return new MethodCallConstraint<TTarget>(_methodConstraint, _argumentConstraints);
+            return new MethodCallConstraint(_methodConstraint, _argumentConstraints);
         }
         
         private string GetMethodParameterSignature()

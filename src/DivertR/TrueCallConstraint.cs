@@ -2,12 +2,12 @@
 
 namespace DivertR
 {
-    public class TrueCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class
+    public class TrueCallConstraint : ICallConstraint
     {
-        public static readonly TrueCallConstraint<TTarget> Instance = new TrueCallConstraint<TTarget>();
+        public static readonly TrueCallConstraint Instance = new TrueCallConstraint();
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsMatch(CallInfo<TTarget> callInfo)
+        public bool IsMatch(CallInfo callInfo)
         {
             return true;
         }
