@@ -6,6 +6,8 @@ namespace DivertR
     {
         public static readonly TrueCallConstraint Instance = new TrueCallConstraint();
         
+        private TrueCallConstraint() { }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(CallInfo callInfo)
         {

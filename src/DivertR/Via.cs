@@ -62,7 +62,7 @@ namespace DivertR
         
         public TTarget Proxy()
         {
-            var defaultRoot = ViaSet.Settings.DefaultRootFactory.Create<TTarget>();
+            var defaultRoot = ViaSet.Settings.DefaultRootFactory.CreateRoot<TTarget>();
             return _proxyFactory.CreateProxy(defaultRoot, GetProxyCall);
         }
 
