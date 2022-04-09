@@ -1,27 +1,28 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
     internal class RedirectCall<TTarget> : IRedirectCall<TTarget> where TTarget : class
     {
-        private readonly RelayStep<TTarget> _relayStep;
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public RedirectCall(RelayStep<TTarget> relayStep)
+        public RedirectCall(IRelay<TTarget> relay, CallInfo<TTarget> callInfo, Redirect redirect)
         {
-            _relayStep = relayStep;
+            Relay = relay;
+            CallInfo = callInfo;
+            Redirect = redirect;
         }
 
         public CallInfo<TTarget> CallInfo
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _relayStep.CallInfo;
+            get;
         }
-        
+
         CallInfo IRedirectCall.CallInfo
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _relayStep.CallInfo;
+            get => CallInfo;
         }
 
         public CallArguments Args
@@ -29,11 +30,83 @@ namespace DivertR.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => CallInfo.Arguments;
         }
+        
+        public IRelay<TTarget> Relay
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+        
+        IRelay IRedirectCall.Relay
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Relay;
+        }
 
+        public TTarget Next
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Relay.Next;
+        }
+
+        public TTarget Root
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Relay.Root;
+        }
+        
+        object IRedirectCall.Next
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Next;
+        }
+
+        object IRedirectCall.Root
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Root;
+        }
+        
         public Redirect Redirect
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _relayStep.Redirect;
+            get;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? CallNext()
+        {
+            return Relay.CallNext();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? CallNext(MethodInfo method, CallArguments args)
+        {
+            return Relay.CallNext(method, args);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? CallNext(CallArguments args)
+        {
+            return Relay.CallNext(args);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? CallRoot()
+        {
+            return Relay.CallRoot();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? CallRoot(MethodInfo method, CallArguments args)
+        {
+            return Relay.CallRoot(method, args);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? CallRoot(CallArguments args)
+        {
+            return Relay.CallRoot(args);
         }
     }
 }

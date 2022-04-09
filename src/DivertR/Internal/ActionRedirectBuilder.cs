@@ -31,14 +31,14 @@ namespace DivertR.Internal
 
         public Redirect Build(Action<IActionRedirectCall<TTarget>> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var callHandler = new ActionRedirectCallHandler<TTarget>(Via.Relay, redirectDelegate);
+            var callHandler = new ActionRedirectCallHandler<TTarget>(redirectDelegate);
 
             return base.Build(callHandler, optionsAction);
         }
 
         public Redirect Build(Action<IActionRedirectCall<TTarget>, CallArguments> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var callHandler = new ActionArgsRedirectCallHandler<TTarget>(Via.Relay, redirectDelegate);
+            var callHandler = new ActionArgsRedirectCallHandler<TTarget>(redirectDelegate);
 
             return base.Build(callHandler, optionsAction);
         }
@@ -142,14 +142,14 @@ namespace DivertR.Internal
 
         public Redirect Build(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var callHandler = new ActionRedirectCallHandler<TTarget, TArgs>(_valueTupleMapper, Via.Relay, redirectDelegate);
+            var callHandler = new ActionRedirectCallHandler<TTarget, TArgs>(_valueTupleMapper, redirectDelegate);
             
             return base.Build(callHandler, optionsAction);
         }
 
         public Redirect Build(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var callHandler = new ActionArgsRedirectCallHandler<TTarget, TArgs>(_valueTupleMapper, Via.Relay, redirectDelegate);
+            var callHandler = new ActionArgsRedirectCallHandler<TTarget, TArgs>(_valueTupleMapper, redirectDelegate);
             
             return base.Build(callHandler, optionsAction);
         }

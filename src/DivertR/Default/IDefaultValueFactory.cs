@@ -4,6 +4,6 @@ namespace DivertR.Default
 {
     public interface IDefaultValueFactory
     {
-        object? GetDefaultValue(Type type);
+        object? Create(Type type);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -17,6 +18,11 @@ namespace DivertR.Internal
         public void InsertRedirect(Redirect redirect)
         {
             MutateRedirectPlan(original => original.InsertRedirect(redirect));
+        }
+        
+        public void InsertRedirects(IEnumerable<Redirect> redirects)
+        {
+            MutateRedirectPlan(original => original.InsertRedirects(redirects));
         }
         
         public void SetStrictMode(bool isStrict = true)

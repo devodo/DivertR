@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using DivertR.Internal;
 using DivertR.Record;
@@ -48,6 +49,13 @@ namespace DivertR
         IVia InsertRedirect(Redirect redirect);
         
         /// <summary>
+        /// Insert multiple <see cref="Redirect"/> instances into the Via <see cref="RedirectPlan" />.
+        /// </summary>
+        /// <param name="redirects">The redirects.</param>
+        /// <returns>The current <see cref="IVia"/> instance.</returns>
+        IVia InsertRedirects(IEnumerable<Redirect> redirects);
+        
+        /// <summary>
         /// Reset the Via.
         /// </summary>
         /// <returns>The current <see cref="IVia"/> instance.</returns>
@@ -87,6 +95,13 @@ namespace DivertR
         /// <param name="redirect">The redirect.</param>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
         new IVia<TTarget> InsertRedirect(Redirect redirect);
+        
+        /// <summary>
+        /// Insert multiple <see cref="Redirect"/> instances into the Via <see cref="RedirectPlan" />.
+        /// </summary>
+        /// <param name="redirects">The redirects.</param>
+        /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
+        new IVia<TTarget> InsertRedirects(IEnumerable<Redirect> redirects);
         
         /// <summary>
         /// Reset the Via <see cref="RedirectPlan" />.

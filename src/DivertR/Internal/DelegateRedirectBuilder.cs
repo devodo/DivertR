@@ -16,7 +16,7 @@ namespace DivertR.Internal
         {
             ParsedCallExpression.Validate(redirectDelegate);
             var fastDelegate = redirectDelegate.ToDelegate();
-            var redirect = new DelegateCallHandler<TTarget>(callInfo => fastDelegate.Invoke(callInfo.Arguments.InternalArgs));
+            var redirect = new DelegateCallHandler<TTarget>(call => fastDelegate.Invoke(call.Args.InternalArgs));
 
             return Build(redirect, optionsAction);
         }

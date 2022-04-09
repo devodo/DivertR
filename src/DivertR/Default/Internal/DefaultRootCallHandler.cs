@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace DivertR.Default
+namespace DivertR.Default.Internal
 {
     internal class DefaultRootCallHandler : ICallHandler
     {
@@ -12,9 +12,9 @@ namespace DivertR.Default
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(CallInfo callInfo)
+        public object? Call(IRedirectCall call)
         {
-            return _defaultValueFactory.GetDefaultValue(callInfo.Method.ReturnType);
+            return _defaultValueFactory.Create(call.CallInfo.Method.ReturnType);
         }
     }
 }

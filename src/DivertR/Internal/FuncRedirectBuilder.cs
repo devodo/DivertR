@@ -7,18 +7,14 @@ namespace DivertR.Internal
 {
     internal class FuncRedirectBuilder<TTarget, TReturn> : DelegateRedirectBuilder<TTarget>, IFuncRedirectBuilder<TTarget, TReturn> where TTarget : class
     {
-        protected readonly Relay<TTarget, TReturn> Relay;
-        
         public FuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression)
             : base(via, parsedCallExpression, parsedCallExpression.ToCallConstraint())
         {
-            Relay = new Relay<TTarget, TReturn>(via.Relay);
         }
         
-        protected FuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint callConstraint, Relay<TTarget, TReturn> relay)
+        protected FuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint callConstraint)
             : base(via, parsedCallExpression, callConstraint)
         {
-            Relay = relay;
         }
         
         public new IFuncRedirectBuilder<TTarget, TReturn> AddConstraint(ICallConstraint callConstraint)
@@ -40,14 +36,14 @@ namespace DivertR.Internal
 
         public Redirect Build(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var callHandler = new FuncRedirectCallHandler<TTarget, TReturn>(Relay, redirectDelegate);
+            var callHandler = new FuncRedirectCallHandler<TTarget, TReturn>(redirectDelegate);
             
             return base.Build(callHandler, optionsAction);
         }
 
         public Redirect Build(Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var callHandler = new FuncArgsRedirectCallHandler<TTarget, TReturn>(Relay, redirectDelegate);
+            var callHandler = new FuncArgsRedirectCallHandler<TTarget, TReturn>(redirectDelegate);
             
             return base.Build(callHandler, optionsAction);
         }
@@ -126,7 +122,7 @@ namespace DivertR.Internal
 
         public IFuncRedirectBuilder<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new FuncRedirectBuilder<TTarget, TReturn, TArgs>(Via, ParsedCallExpression, CallConstraint, Relay);
+            return new FuncRedirectBuilder<TTarget, TReturn, TArgs>(Via, ParsedCallExpression, CallConstraint);
         }
         
         public new IFuncCallLog<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
@@ -150,8 +146,8 @@ namespace DivertR.Internal
     {
         private readonly IValueTupleMapper _valueTupleMapper;
         
-        public FuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint callConstraint, Relay<TTarget, TReturn> relay)
-            : base(via, parsedCallExpression, callConstraint, relay)
+        public FuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint callConstraint)
+            : base(via, parsedCallExpression, callConstraint)
         {
             _valueTupleMapper = ValueTupleMapperFactory.Create<TArgs>();
             ParsedCallExpression.Validate(_valueTupleMapper);
@@ -159,14 +155,14 @@ namespace DivertR.Internal
 
         public Redirect Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            ICallHandler callHandler = new FuncRedirectCallHandler<TTarget, TReturn, TArgs>(_valueTupleMapper, Relay, redirectDelegate);
+            ICallHandler callHandler = new FuncRedirectCallHandler<TTarget, TReturn, TArgs>(_valueTupleMapper, redirectDelegate);
             
             return base.Build(callHandler, optionsAction);
         }
         
         public Redirect Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            ICallHandler callHandler = new FuncArgsRedirectCallHandler<TTarget, TReturn, TArgs>(_valueTupleMapper, Relay, redirectDelegate);
+            ICallHandler callHandler = new FuncArgsRedirectCallHandler<TTarget, TReturn, TArgs>(_valueTupleMapper, redirectDelegate);
             
             return base.Build(callHandler, optionsAction);
         }

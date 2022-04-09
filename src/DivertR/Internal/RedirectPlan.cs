@@ -51,6 +51,13 @@ namespace DivertR.Internal
             return new RedirectPlan(mutatedStack, IsStrictMode);
         }
         
+        internal RedirectPlan InsertRedirects(IEnumerable<Redirect> redirects)
+        {
+            var mutatedStack = redirects.Aggregate(_redirectStack, (current, redirect) => current.Push(redirect));
+            
+            return new RedirectPlan(mutatedStack, IsStrictMode);
+        }
+        
         internal RedirectPlan SetStrictMode(bool isStrict)
         {
             return new RedirectPlan(_redirectStack, isStrict, Redirects);

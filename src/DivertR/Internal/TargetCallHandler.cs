@@ -13,9 +13,9 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override object? Call(CallInfo<TTarget> callInfo)
+        protected override object? Call(IRedirectCall<TTarget> call)
         {
-            return callInfo.Invoke(_target);
+            return call.CallInfo.Invoke(_target);
         }
     }
 }

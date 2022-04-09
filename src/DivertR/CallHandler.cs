@@ -6,17 +6,17 @@ namespace DivertR
     public abstract class CallHandler<TTarget> : ICallHandler where TTarget : class
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(CallInfo callInfo)
+        public object? Call(IRedirectCall call)
         {
-            if (!(callInfo is CallInfo<TTarget> typedCallInfo))
+            if (!(call is IRedirectCall<TTarget> callOf))
             {
-                throw new ArgumentException($"Call target type mismatch: {callInfo.GetType()}", nameof(callInfo));
+                throw new ArgumentException($"Redirect call target type mismatch: {call.GetType()}", nameof(call));
             }
-            
-            return Call(typedCallInfo);
+
+            return Call(callOf);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract object? Call(CallInfo<TTarget> callInfo);
+        protected abstract object? Call(IRedirectCall<TTarget> call);
     }
 }

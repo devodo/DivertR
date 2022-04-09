@@ -22,7 +22,7 @@ namespace DivertR.Internal
             _repeatCount = repeatCount;
         }
 
-        public object? Call(CallInfo callInfo)
+        public object? Call(IRedirectCall call)
         {
             var count = Interlocked.Increment(ref _callCount);
 
@@ -32,7 +32,7 @@ namespace DivertR.Internal
             }
 
             return count <= _repeatCount 
-                ? _innerCallHandler.Call(callInfo)
+                ? _innerCallHandler.Call(call)
                 : _via.Relay.CallNext();
         }
     }

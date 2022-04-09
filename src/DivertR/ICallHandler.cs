@@ -2,6 +2,6 @@
 {
     public interface ICallHandler
     {
-        object? Call(CallInfo callInfo);
+        object? Call(IRedirectCall call);
     }
 }

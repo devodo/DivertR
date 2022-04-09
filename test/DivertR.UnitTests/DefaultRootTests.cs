@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DivertR.Default;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -13,7 +14,7 @@ namespace DivertR.UnitTests
         private readonly IVia<IFoo> _via = new Via<IFoo>();
 
         [Fact]
-        public void GivenDefaultRootProxy_WhenStringPropertyGetterCalled_ShouldReturnNull()
+        public void GivenDummyRootProxy_WhenStringPropertyGetterCalled_ShouldReturnNull()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -26,7 +27,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasValueTypeReturn_ShouldReturnDefault()
+        public void GivenDummyRootProxy_WhenCallHasValueTypeReturn_ShouldReturnDefault()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -39,7 +40,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasTaskReturn_ShouldReturnCompletedTask()
+        public void GivenDummyRootProxy_WhenCallHasTaskReturn_ShouldReturnCompletedTask()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -52,7 +53,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasNestedTaskReturn_ShouldReturnCompletedNestedTask()
+        public void GivenDummyRootProxy_WhenCallHasNestedTaskReturn_ShouldReturnCompletedNestedTask()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -66,7 +67,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenDefaultRootProxy_WhenCallHasRefTypeTaskReturn_ShouldReturnCompletedTaskWithNullResult()
+        public async Task GivenDummyRootProxy_WhenCallHasRefTypeTaskReturn_ShouldReturnCompletedTaskWithNullResult()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -82,7 +83,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasNestedRefTypeTaskReturn_ShouldReturnCompletedTaskWithNestedNullResult()
+        public void GivenDummyRootProxy_WhenCallHasNestedRefTypeTaskReturn_ShouldReturnCompletedTaskWithNestedNullResult()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -98,7 +99,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenDefaultRootProxy_WhenCallHasValueTypeTaskReturn_ShouldReturnCompletedTaskWithDefaultResult()
+        public async Task GivenDummyRootProxy_WhenCallHasValueTypeTaskReturn_ShouldReturnCompletedTaskWithDefaultResult()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -114,7 +115,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallValueTaskReturn_ShouldReturnCompletedValueTask()
+        public void GivenDummyRootProxy_WhenCallValueTaskReturn_ShouldReturnCompletedValueTask()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -130,7 +131,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenDefaultRootProxy_WhenCallHasRefTypeValueTaskReturn_ShouldReturnCompletedValueTaskWithNullResult()
+        public async Task GivenDummyRootProxy_WhenCallHasRefTypeValueTaskReturn_ShouldReturnCompletedValueTaskWithNullResult()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -146,7 +147,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenDefaultRootProxy_WhenCallHasValueTypeValueTaskReturn_ShouldReturnCompletedValueTaskWithDefaultResult()
+        public async Task GivenDummyRootProxy_WhenCallHasValueTypeValueTaskReturn_ShouldReturnCompletedValueTaskWithDefaultResult()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -162,7 +163,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasNestedRefTypeValueTaskReturn_ShouldReturnCompletedValueTaskWithNestedNullResult()
+        public void GivenDummyRootProxy_WhenCallHasNestedRefTypeValueTaskReturn_ShouldReturnCompletedValueTaskWithNestedNullResult()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -177,7 +178,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasArrayReturn_ShouldReturnEmptyArray()
+        public void GivenDummyRootProxy_WhenCallHasArrayReturn_ShouldReturnEmptyArray()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -190,7 +191,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasMultiDimensionalArrayReturn_ShouldReturnEmptyArray()
+        public void GivenDummyRootProxy_WhenCallHasMultiDimensionalArrayReturn_ShouldReturnEmptyArray()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -203,7 +204,33 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasIEnumerableReturn_ShouldReturnEmptyIEnumerable()
+        public void GivenDummyRootProxy_WhenCallHasListTypeReturn_ShouldReturnEmptyList()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy();
+
+            // ACT
+            var result = proxy.EchoGeneric<List<int>>(default);
+
+            // ASSERT
+            result.ShouldBe(new List<int>());
+        }
+        
+        [Fact]
+        public void GivenDummyRootProxy_WhenCallHasIListTypeReturn_ShouldReturnEmptyList()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy();
+
+            // ACT
+            var result = proxy.EchoGeneric<IList<int>>(default);
+
+            // ASSERT
+            result.ShouldBe(new List<int>());
+        }
+        
+        [Fact]
+        public void GivenDummyRootProxy_WhenCallHasIEnumerableReturn_ShouldReturnEmptyIEnumerable()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -216,7 +243,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasTypedIEnumerableReturn_ShouldReturnEmptyIEnumerable()
+        public void GivenDummyRootProxy_WhenCallHasTypedIEnumerableReturn_ShouldReturnEmptyIEnumerable()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -229,7 +256,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasValueTuple1Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasValueTuple1Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -242,7 +269,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasValueTuple2Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasValueTuple2Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -256,7 +283,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasValueTuple3Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasValueTuple3Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -271,7 +298,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasValueTuple4Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasValueTuple4Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -287,7 +314,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasValueTuple5Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasValueTuple5Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -304,7 +331,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasValueTuple6Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasValueTuple6Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -322,7 +349,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasValueTuple7Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasValueTuple7Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -341,7 +368,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasValueTuple8Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasValueTuple8Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -361,7 +388,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasValueTuple9Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasValueTuple9Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -382,7 +409,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasTuple1Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasTuple1Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -395,7 +422,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasTuple2Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasTuple2Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -409,7 +436,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasTuple3Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasTuple3Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -424,7 +451,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasTuple4Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasTuple4Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -440,7 +467,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasTuple5Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasTuple5Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -457,7 +484,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasTuple6Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasTuple6Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -475,7 +502,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasTuple7Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasTuple7Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -494,7 +521,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDefaultRootProxy_WhenCallHasTuple8Return_ShouldReturnTupleWithDefaults()
+        public void GivenDummyRootProxy_WhenCallHasTuple8Return_ShouldReturnTupleWithDefaults()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -511,6 +538,64 @@ namespace DivertR.UnitTests
             result.Item6.ShouldBe(Task.CompletedTask);
             result.Item7.ShouldBe(Task.CompletedTask);
             result.Rest.Item1.ShouldBe(Task.CompletedTask);
+        }
+        
+
+        [Fact]
+        public void GivenCustomDummyValueFactory_WhenCallCustomTypeReturn_ShouldReturnCustomValue()
+        {
+            // ARRANGE
+            var defaultValue = new List<int> { 1, 2, 3 };
+            var defaultValueFactory = DefaultValueFactory.Default.Customise(x => x
+                .Add(typeof(List<int>), (_, _) => defaultValue));
+            var defaultRootFactory = 
+            var diverterSettings = new DiverterSettings(dummyFactory: defaultValueFactory);
+            var via = new Via<IFoo>(diverterSettings);
+            var proxy = via.Proxy();
+
+            // ACT
+            var result = proxy.EchoGeneric<List<int>>(default);
+
+            // ASSERT
+            result.ShouldBe(defaultValue);
+        }
+        
+        [Fact]
+        public void GivenEmptyDummyValueFactory_WhenDefaultRootCalled_ShouldReturnDefault()
+        {
+            // ARRANGE
+            var diverterSettings = new DiverterSettings(dummyFactory: DefaultValueFactory.Empty);
+            var via = new Via<IFoo>(diverterSettings);
+            var proxy = via.Proxy();
+
+            // ACT
+            var iListResult = proxy.EchoGeneric<List<int>>(default);
+            var valueTypeResult = proxy.EchoGeneric<int>(default);
+            var taskResult = proxy.EchoGeneric<Task>(default);
+
+            // ASSERT
+            iListResult.ShouldBe(null);
+            valueTypeResult.ShouldBe(default);
+            taskResult.ShouldBe(null);
+        }
+        
+        [Fact]
+        public void GivenEmptyDummyValueFactory_WhenDefaultRootCalled_ShouldReturnDefault()
+        {
+            // ARRANGE
+            var diverterSettings = new DiverterSettings(dummyFactory: DefaultValueFactory.Empty);
+            var via = new Via<IFoo>(diverterSettings);
+            var proxy = via.Proxy();
+
+            // ACT
+            var iListResult = proxy.EchoGeneric<List<int>>(default);
+            var valueTypeResult = proxy.EchoGeneric<int>(default);
+            var taskResult = proxy.EchoGeneric<Task>(default);
+
+            // ASSERT
+            iListResult.ShouldBe(null);
+            valueTypeResult.ShouldBe(default);
+            taskResult.ShouldBe(null);
         }
     }
 }

@@ -3,19 +3,35 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class DelegateCallHandler<TTarget> : CallHandler<TTarget> where TTarget : class
+    internal class DelegateCallHandler : ICallHandler
     {
-        private readonly Func<CallInfo<TTarget>, object?> _redirectDelegate;
+        private readonly Func<IRedirectCall, object?> _redirectDelegate;
 
-        public DelegateCallHandler(Func<CallInfo<TTarget>, object?> redirectDelegate)
+        public DelegateCallHandler(Func<IRedirectCall, object?> redirectDelegate)
         {
             _redirectDelegate = redirectDelegate ?? throw new ArgumentNullException(nameof(redirectDelegate));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override object? Call(CallInfo<TTarget> callInfo)
+        public object? Call(IRedirectCall call)
         {
-            return _redirectDelegate.Invoke(callInfo);
+            return _redirectDelegate.Invoke(call);
+        }
+    }
+    
+    internal class DelegateCallHandler<TTarget> : CallHandler<TTarget> where TTarget : class
+    {
+        private readonly Func<IRedirectCall<TTarget>, object?> _redirectDelegate;
+
+        public DelegateCallHandler(Func<IRedirectCall<TTarget>, object?> redirectDelegate)
+        {
+            _redirectDelegate = redirectDelegate ?? throw new ArgumentNullException(nameof(redirectDelegate));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override object? Call(IRedirectCall<TTarget> call)
+        {
+            return _redirectDelegate.Invoke(call);
         }
     }
 }

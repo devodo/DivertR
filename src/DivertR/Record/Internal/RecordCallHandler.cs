@@ -18,9 +18,9 @@ namespace DivertR.Record.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override object? Call(CallInfo<TTarget> callInfo)
+        protected override object? Call(IRedirectCall<TTarget> call)
         {
-            var recordedCall = new RecordedCall<TTarget>(callInfo);
+            var recordedCall = new RecordedCall<TTarget>(call.CallInfo);
             _recordedCalls.Enqueue(recordedCall);
             object? returnValue;
 

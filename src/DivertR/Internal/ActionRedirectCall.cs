@@ -4,43 +4,35 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class ActionRedirectCall<TTarget> : IActionRedirectCall<TTarget> where TTarget : class
+    internal class ActionRedirectCall<TTarget> : RedirectCall<TTarget>, IActionRedirectCall<TTarget> where TTarget : class
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ActionRedirectCall(CallInfo<TTarget> callInfo, IRelay<TTarget> relay)
+        public ActionRedirectCall(IRedirectCall<TTarget> call) : base(call.Relay, call.CallInfo, call.Redirect)
         {
-            CallInfo = callInfo;
-            Relay = relay;
-        }
-
-        public CallInfo<TTarget> CallInfo
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
         }
         
-        public CallArguments Args
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public new void CallNext()
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => CallInfo.Arguments;
+            base.CallNext();
         }
-
-        public IRelay<TTarget> Relay
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public new void CallNext(CallArguments args)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
+            base.CallNext(args);
         }
-
-        public TTarget Next
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public new void CallRoot()
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Relay.Next;
+            base.CallRoot();
         }
-
-        public TTarget Root
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public new void CallRoot(CallArguments args)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Relay.Root;
+            base.CallRoot(args);
         }
     }
     
@@ -49,15 +41,9 @@ namespace DivertR.Internal
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ActionRedirectCall(CallInfo<TTarget> callInfo, IRelay<TTarget> relay, TArgs args) : base(callInfo, relay)
+        public ActionRedirectCall(IRedirectCall<TTarget> redirectCall, TArgs args) : base(redirectCall)
         {
             Args = args;
-        }
-
-        CallArguments IActionRedirectCall<TTarget>.Args
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => base.Args;
         }
 
         public new TArgs Args

@@ -21,12 +21,4 @@ namespace DivertR
         new TTarget Root { get; }
         new IRedirectCall<TTarget> GetCurrentCall();
     }
-
-    public interface IRelay<TTarget, out TReturn> : IRelay<TTarget> where TTarget : class
-    {
-        new TReturn CallNext();
-        new TReturn CallNext(CallArguments args);
-        new TReturn CallRoot();
-        new TReturn CallRoot(CallArguments args);
-    }
 }

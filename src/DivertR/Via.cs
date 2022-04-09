@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using DivertR.Internal;
@@ -7,6 +8,12 @@ using DivertR.Record;
 namespace DivertR
 {
     /// <inheritdoc />
+
+    public class Via : IVia
+    {
+        
+    }
+    
     public class Via<TTarget> : IVia<TTarget> where TTarget : class
     {
         private readonly RedirectRepository _redirectRepository = new RedirectRepository();
@@ -18,12 +25,12 @@ namespace DivertR
             ((ViaSet) ViaSet).AddVia(this);
         }
         
-        public Via(DiverterSettings diverterSettings) : this(ViaId.From<TTarget>(), new ViaSet(diverterSettings))
+        public Via(DiverterSettings? diverterSettings) : this(ViaId.From<TTarget>(), new ViaSet(diverterSettings))
         {
             ((ViaSet) ViaSet).AddVia(this);
         }
         
-        public Via(string name, DiverterSettings diverterSettings) : this(ViaId.From<TTarget>(name), new ViaSet(diverterSettings))
+        public Via(string? name, DiverterSettings? diverterSettings) : this(ViaId.From<TTarget>(name), new ViaSet(diverterSettings))
         {
             ((ViaSet) ViaSet).AddVia(this);
         }
@@ -62,7 +69,7 @@ namespace DivertR
         
         public TTarget Proxy()
         {
-            var defaultRoot = ViaSet.Settings.DefaultRootFactory.CreateRoot<TTarget>();
+            var defaultRoot = ViaSet.Settings.DummyFactory.Create<TTarget>(ViaSet.Settings);
             return _proxyFactory.CreateProxy(defaultRoot, GetProxyCall);
         }
 
@@ -85,14 +92,26 @@ namespace DivertR
         {
             return InsertRedirect(redirect);
         }
-
+        
         public IVia<TTarget> InsertRedirect(Redirect redirect)
         {
             _redirectRepository.InsertRedirect(redirect);
 
             return this;
         }
+        
+        IVia IVia.InsertRedirects(IEnumerable<Redirect> redirects)
+        {
+            return InsertRedirects(redirects);
+        }
 
+        public IVia<TTarget> InsertRedirects(IEnumerable<Redirect> redirects)
+        {
+            _redirectRepository.InsertRedirects(redirects);
+
+            return this;
+        }
+        
         IVia IVia.Reset()
         {
             return Reset();

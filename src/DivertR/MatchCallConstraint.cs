@@ -18,4 +18,20 @@ namespace DivertR
             return _matchFunc.Invoke(callInfo);
         }
     }
+    
+    public class MatchCallConstraint<TTarget> : CallConstraint<TTarget> where TTarget : class
+    {
+        private readonly Func<CallInfo<TTarget>, bool> _matchFunc;
+
+        public MatchCallConstraint(Func<CallInfo<TTarget>, bool> matchFunc)
+        {
+            _matchFunc = matchFunc;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override bool IsMatch(CallInfo<TTarget> callInfo)
+        {
+            return _matchFunc.Invoke(callInfo);
+        }
+    }
 }

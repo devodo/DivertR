@@ -17,6 +17,11 @@ namespace DivertR
             OrderWeight = redirectOptions.OrderWeight ?? 0;
             DisableSatisfyStrict = redirectOptions.DisableSatisfyStrict ?? false;
         }
+        
+        public Redirect(ICallHandler callHandler, RedirectOptions? redirectOptions = null)
+            : this(callHandler, TrueCallConstraint.Instance, redirectOptions)
+        {
+        }
 
         public ICallHandler CallHandler
         {
