@@ -36,6 +36,38 @@ namespace DivertR.Internal
         }
     }
     
+    internal class FuncRedirectCall<TReturn> : RedirectCall, IFuncRedirectCall<TReturn>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public FuncRedirectCall(IRedirectCall call) : base(call.Relay, call.CallInfo, call.Redirect)
+        {
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public new TReturn CallNext()
+        {
+            return (TReturn) base.CallNext()!;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public new TReturn CallNext(CallArguments args)
+        {
+            return (TReturn) base.CallNext(args)!;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public new TReturn CallRoot()
+        {
+            return (TReturn) base.CallRoot()!;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public new TReturn CallRoot(CallArguments args)
+        {
+            return (TReturn) base.CallRoot(args)!;
+        }
+    }
+    
     internal class FuncRedirectCall<TTarget, TReturn, TArgs> : FuncRedirectCall<TTarget, TReturn>, IFuncRedirectCall<TTarget, TReturn, TArgs>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable

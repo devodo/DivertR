@@ -9,7 +9,7 @@ namespace DivertR.DynamicProxy
         
         private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
 
-        public TTarget CreateProxy<TTarget>(TTarget? root, Func<IProxyCall<TTarget>?> getProxyCall) where TTarget : class
+        public TTarget CreateProxy<TTarget>(Func<IProxyCall?> getProxyCall, TTarget? root = null) where TTarget : class
         {
             ValidateProxyTarget<TTarget>();
             var interceptor = new ProxyWithDefaultInterceptor<TTarget>(root, getProxyCall);
@@ -17,7 +17,7 @@ namespace DivertR.DynamicProxy
             return CreateProxy(interceptor, root);
         }
 
-        public TTarget CreateProxy<TTarget>(IProxyCall<TTarget> proxyCall) where TTarget : class
+        public TTarget CreateProxy<TTarget>(IProxyCall proxyCall) where TTarget : class
         {
             ValidateProxyTarget<TTarget>();
             var interceptor = new ProxyInterceptor<TTarget>(proxyCall);

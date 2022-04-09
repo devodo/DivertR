@@ -6,7 +6,6 @@ namespace DivertR.Internal
 {
     internal class RedirectOptionsBuilder : IRedirectOptionsBuilder
     {
-        private readonly IVia _via;
         private int? _orderWeight;
         private bool? _disableSatisfyStrict;
         
@@ -15,11 +14,6 @@ namespace DivertR.Internal
         
         private readonly List<Func<ICallConstraint, ICallConstraint>> _callConstraintDecorators =
             new List<Func<ICallConstraint, ICallConstraint>>();
-
-        public RedirectOptionsBuilder(IVia via)
-        {
-            _via = via;
-        }
 
         public IRedirectOptionsBuilder OrderWeight(int orderWeight)
         {
@@ -61,12 +55,12 @@ namespace DivertR.Internal
 
         public IRedirectOptionsBuilder Repeat(int repeatCount)
         {
-            return DecorateCallHandler(callHandler => new RepeatCallHandler(_via, callHandler, repeatCount));
+            return DecorateCallHandler(callHandler => new RepeatCallHandler(callHandler, repeatCount));
         }
         
         public IRedirectOptionsBuilder Skip(int skipCount)
         {
-            return DecorateCallHandler(callHandler => new SkipCallHandler(_via, callHandler, skipCount));
+            return DecorateCallHandler(callHandler => new SkipCallHandler(callHandler, skipCount));
         }
 
         public IRedirectOptionsBuilder AddSwitch(IRedirectSwitch redirectSwitch)

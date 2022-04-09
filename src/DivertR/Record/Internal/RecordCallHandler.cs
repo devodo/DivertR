@@ -6,14 +6,12 @@ namespace DivertR.Record.Internal
 {
     internal class RecordCallHandler<TTarget> : CallHandler<TTarget> where TTarget : class
     {
-        private readonly IRelay<TTarget> _relay;
         private readonly ConcurrentQueue<RecordedCall<TTarget>> _recordedCalls = new ConcurrentQueue<RecordedCall<TTarget>>();
 
         public IRecordStream<TTarget> RecordStream { get; }
 
-        public RecordCallHandler(IRelay<TTarget> relay)
+        public RecordCallHandler()
         {
-            _relay = relay ?? throw new ArgumentNullException(nameof(relay));
             RecordStream = new RecordStream<TTarget>(_recordedCalls);
         }
 
@@ -26,7 +24,7 @@ namespace DivertR.Record.Internal
 
             try
             {
-                returnValue = _relay.CallNext();
+                returnValue = call.Relay.CallNext();
                 recordedCall.SetReturned(returnValue);
             }
             catch (Exception ex)

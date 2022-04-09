@@ -5,19 +5,17 @@ namespace DivertR.Internal
 {
     internal class SkipCallHandler : ICallHandler
     {
-        private readonly IVia _via;
         private readonly ICallHandler _innerCallHandler;
         private readonly int _skipCount;
         private long _callCount;
 
-        public SkipCallHandler(IVia via, ICallHandler innerCallHandler, int skipCount)
+        public SkipCallHandler(ICallHandler innerCallHandler, int skipCount)
         {
             if (skipCount < 0)
             {
                 throw new ArgumentException("Must be greater than or equal to zero", nameof(skipCount));
             }
             
-            _via = via;
             _innerCallHandler = innerCallHandler;
             _skipCount = skipCount;
         }
@@ -33,7 +31,7 @@ namespace DivertR.Internal
 
             return count > _skipCount 
                 ? _innerCallHandler.Call(call)
-                : _via.Relay.CallNext();
+                : call.Relay.CallNext();
         }
     }
 }

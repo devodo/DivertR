@@ -4,8 +4,6 @@ namespace DivertR
 {
     public interface IRelay
     {
-        object Next { get; }
-        object Root { get; }
         IRedirectCall GetCurrentCall();
         object? CallNext();
         object? CallNext(MethodInfo method, CallArguments args);
@@ -17,8 +15,8 @@ namespace DivertR
     
     public interface IRelay<TTarget> : IRelay where TTarget : class
     {
-        new TTarget Next { get; }
-        new TTarget Root { get; }
+        TTarget Next { get; }
+        TTarget Root { get; }
         new IRedirectCall<TTarget> GetCurrentCall();
     }
 }

@@ -40,7 +40,7 @@ namespace DivertR
         {
             ProxyFactory = proxyFactory ?? new DispatchProxyFactory();
             dummyFactory ??= new DefaultValueFactory();
-            DummyFactory = defaultRootFactory ?? new DummyFactory(dummyFactory);
+            DummyFactory = defaultRootFactory ?? new DummyFactory(dummyFactory, this);
         }
     }
 }

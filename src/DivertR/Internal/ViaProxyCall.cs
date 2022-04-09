@@ -2,19 +2,19 @@
 
 namespace DivertR.Internal
 {
-    internal class ViaProxyCall<TTarget> : IProxyCall<TTarget> where TTarget : class
+    internal class ViaProxyCall : IProxyCall
     {
-        private readonly Relay<TTarget> _relay;
+        private readonly Relay _relay;
         private readonly RedirectPlan _redirectPlan;
 
-        public ViaProxyCall(Relay<TTarget> relay, RedirectPlan redirectPlan)
+        public ViaProxyCall(Relay relay, RedirectPlan redirectPlan)
         {
             _relay = relay;
             _redirectPlan = redirectPlan;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(CallInfo<TTarget> callInfo)
+        public object? Call(CallInfo callInfo)
         {
             return _relay.CallBegin(_redirectPlan, callInfo);
         }

@@ -4,40 +4,6 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class FuncRedirectCallHandler : ICallHandler
-    {
-        private readonly Func<IRedirectCall, object?> _redirectDelegate;
-
-        public FuncRedirectCallHandler(
-            Func<IRedirectCall, object?> redirectDelegate)
-        {
-            _redirectDelegate = redirectDelegate;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(IRedirectCall call)
-        {
-            return _redirectDelegate.Invoke(call);
-        }
-    }
-    
-    internal class FuncArgsRedirectCallHandler : ICallHandler
-    {
-        private readonly Func<IRedirectCall, CallArguments, object?> _redirectDelegate;
-
-        public FuncArgsRedirectCallHandler(
-            Func<IRedirectCall, CallArguments, object?> redirectDelegate)
-        {
-            _redirectDelegate = redirectDelegate;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(IRedirectCall call)
-        {
-            return _redirectDelegate.Invoke(call, call.Args);
-        }
-    }
-    
     internal class FuncRedirectCallHandler<TTarget, TReturn> : CallHandler<TTarget> where TTarget : class
     {
         private readonly Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> _redirectDelegate;
@@ -138,6 +104,25 @@ namespace DivertR.Internal
             {
                 _valueTupleMapper.WriteBackReferences(call.Args.InternalArgs, valueTupleArgs);
             }
+        }
+    }
+    
+    internal class FuncRedirectCallHandler<TReturn> : ICallHandler
+    {
+        private readonly Func<IFuncRedirectCall<TReturn>, TReturn> _redirectDelegate;
+
+        public FuncRedirectCallHandler(
+            Func<IFuncRedirectCall<TReturn>, TReturn> redirectDelegate)
+        {
+            _redirectDelegate = redirectDelegate;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Call(IRedirectCall call)
+        {
+            var redirectCall = new FuncRedirectCall<TReturn>(call);
+            
+            return _redirectDelegate.Invoke(redirectCall);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace DivertR
         /// <summary>
         /// The <see cref="IViaSet"/> of this Via
         /// </summary>
-        public IViaSet ViaSet { get; }
+        IViaSet ViaSet { get; }
         
         /// <summary>
         /// Reference to the Via <see cref="IRelay" /> chain of responsibility call pipeline.
@@ -108,6 +108,13 @@ namespace DivertR
         /// </summary>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
         new IVia<TTarget> Reset();
+        
+        /// <summary>
+        /// Enable strict mode.
+        /// </summary>
+        /// <param name="isStrict">Optional bool to specify enable/disable of strict mode.</param>
+        /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
+        new IVia<TTarget> Strict(bool? isStrict = true);
 
         /// <summary>
         /// Create and insert a redirect (with no <see cref="ICallConstraint"/>) to the given <paramref name="target"/>
@@ -168,12 +175,5 @@ namespace DivertR
         /// <typeparam name="TProperty">The member type of the property setter.</typeparam>
         /// <returns>The Redirect builder instance.</returns>
         IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression);
-
-        /// <summary>
-        /// Enable strict mode.
-        /// </summary>
-        /// <param name="isStrict">Optional bool to specify enable/disable of strict mode.</param>
-        /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
-        new IVia<TTarget> Strict(bool? isStrict = true);
     }
 }

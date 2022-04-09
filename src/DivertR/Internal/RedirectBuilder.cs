@@ -43,7 +43,7 @@ namespace DivertR.Internal
 
         public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var recordHandler = new RecordCallHandler<TTarget>(Via.Relay);
+            var recordHandler = new RecordCallHandler<TTarget>();
             var redirect = Build(recordHandler, optionsAction);
             Via.InsertRedirect(redirect);
 
@@ -52,7 +52,7 @@ namespace DivertR.Internal
 
         protected Redirect Build(ICallHandler callHandler, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            return Build(callHandler, optionsAction.Create(Via));
+            return Build(callHandler, optionsAction.Create());
         }
 
         private Redirect Build(ICallHandler callHandler, RedirectOptions redirectOptions)

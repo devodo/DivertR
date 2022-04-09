@@ -8,9 +8,7 @@ namespace DivertR
         CallInfo CallInfo { get; }
         CallArguments Args { get; }
         Redirect Redirect { get; }
-        object Next { get; }
-        object Root { get; }
-        
+
         object? CallNext();
         object? CallNext(MethodInfo method, CallArguments args);
         object? CallNext(CallArguments args);
@@ -23,7 +21,7 @@ namespace DivertR
     {
         new CallInfo<TTarget> CallInfo { get; }
         new IRelay<TTarget> Relay { get; }
-        new TTarget Next { get; }
-        new TTarget Root { get; }
+        TTarget Next { get; }
+        TTarget Root { get; }
     }
 }

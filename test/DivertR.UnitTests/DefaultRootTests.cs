@@ -540,7 +540,7 @@ namespace DivertR.UnitTests
             result.Rest.Item1.ShouldBe(Task.CompletedTask);
         }
         
-
+/*
         [Fact]
         public void GivenCustomDummyValueFactory_WhenCallCustomTypeReturn_ShouldReturnCustomValue()
         {
@@ -579,6 +579,7 @@ namespace DivertR.UnitTests
             taskResult.ShouldBe(null);
         }
         
+        
         [Fact]
         public void GivenEmptyDummyValueFactory_WhenDefaultRootCalled_ShouldReturnDefault()
         {
@@ -597,5 +598,7 @@ namespace DivertR.UnitTests
             valueTypeResult.ShouldBe(default);
             taskResult.ShouldBe(null);
         }
+        
+        */
     }
 }

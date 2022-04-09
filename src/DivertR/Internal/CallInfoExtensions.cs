@@ -6,11 +6,11 @@ namespace DivertR.Internal
     internal static class CallInfoExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object? Invoke<TTarget>(this CallInfo<TTarget> callInfo, TTarget target) where TTarget : class
+        public static object? Invoke(this CallInfo callInfo, object target)
         {
             if (target == null) throw new ArgumentNullException(nameof(target));
             
-            var delegateInternal = callInfo.Method.ToDelegate(typeof(TTarget));
+            var delegateInternal = callInfo.Method.ToDelegate(target.GetType());
             return delegateInternal.Invoke(target, callInfo.Arguments.InternalArgs);
         }
     }

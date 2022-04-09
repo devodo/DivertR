@@ -3,9 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
-    public class CallInfo
+    public abstract class CallInfo
     {
-        public CallInfo(object proxy, object? root, MethodInfo method, CallArguments args)
+        protected CallInfo(object proxy, object? root, MethodInfo method, CallArguments args)
         {
             Proxy = proxy;
             Root = root;
@@ -36,6 +36,13 @@ namespace DivertR
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
+
+        public CallInfo Create(CallArguments args)
+        {
+            return Create(Method, args);
+        }
+
+        public abstract CallInfo Create(MethodInfo method, CallArguments args);
     }
     
     public class CallInfo<TTarget> : CallInfo where TTarget : class
@@ -56,6 +63,11 @@ namespace DivertR
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => base.Root as TTarget;
+        }
+
+        public override CallInfo Create(MethodInfo method, CallArguments args)
+        {
+            return new CallInfo<TTarget>(Proxy, Root, method, args);
         }
     }
 }

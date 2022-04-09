@@ -2,6 +2,6 @@
 {
     public interface IDummyFactory
     {
-        TTarget Create<TTarget>(DiverterSettings settings) where TTarget : class;
+        TTarget Create<TTarget>() where TTarget : class;
     }
 }

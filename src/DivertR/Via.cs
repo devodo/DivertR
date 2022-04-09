@@ -8,17 +8,69 @@ using DivertR.Record;
 namespace DivertR
 {
     /// <inheritdoc />
-
-    public class Via : IVia
-    {
-        
-    }
-    
-    public class Via<TTarget> : IVia<TTarget> where TTarget : class
+    public abstract class Via : IVia
     {
         private readonly RedirectRepository _redirectRepository = new RedirectRepository();
+        private readonly Relay _relay;
+        
+        private protected Via(ViaId viaId, IViaSet viaSet, Relay relay)
+        {
+            ViaId = viaId;
+            ViaSet = viaSet;
+            _relay = relay;
+        }
+        
+        public ViaId ViaId { get; }
+        public IViaSet ViaSet { get; }
+        public IRelay Relay => _relay;
+        public IRedirectPlan RedirectPlan => _redirectRepository.RedirectPlan;
+
+        public abstract object ProxyObject(object? root);
+        public abstract object ProxyObject();
+
+        public IVia InsertRedirect(Redirect redirect)
+        {
+            _redirectRepository.InsertRedirect(redirect);
+
+            return this;
+        }
+
+        public IVia InsertRedirects(IEnumerable<Redirect> redirects)
+        {
+            _redirectRepository.InsertRedirects(redirects);
+
+            return this;
+        }
+
+        public IVia Reset()
+        {
+            _redirectRepository.Reset();
+
+            return this;
+        }
+
+        public IVia Strict(bool? isStrict)
+        {
+            _redirectRepository.SetStrictMode(isStrict ?? true);
+
+            return this;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private protected IProxyCall? GetProxyCall()
+        {
+            var redirectPlan = _redirectRepository.RedirectPlan;
+
+            return redirectPlan == DivertR.Internal.RedirectPlan.Empty
+                ? null
+                : new ViaProxyCall(_relay, redirectPlan);
+        }
+    }
+
+    /// <inheritdoc cref="DivertR.IVia{TTarget}" />
+    public class Via<TTarget> : Via, IVia<TTarget> where TTarget : class
+    {
         private readonly IProxyFactory _proxyFactory;
-        private readonly Relay<TTarget> _relay;
 
         public Via(string? name = null) : this(ViaId.From<TTarget>(name), new ViaSet())
         {
@@ -35,45 +87,31 @@ namespace DivertR
             ((ViaSet) ViaSet).AddVia(this);
         }
         
-        internal Via(ViaId viaId, IViaSet viaSet)
+        internal Via(ViaId viaId, IViaSet viaSet) : base(viaId, viaSet, new Relay<TTarget>(viaSet.Settings.ProxyFactory))
         {
-            ViaId = viaId;
-            ViaSet = viaSet;
             _proxyFactory = viaSet.Settings.ProxyFactory;
             _proxyFactory.ValidateProxyTarget<TTarget>();
-            
-            _relay = new Relay<TTarget>(_proxyFactory);
         }
-
-        public ViaId ViaId { get; }
-        public IViaSet ViaSet { get; }
-
-        IRelay IVia.Relay
+        
+        public new IRelay<TTarget> Relay
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _relay;
+            get => (IRelay<TTarget>) base.Relay;
         }
-
-        public IRelay<TTarget> Relay
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _relay;
-        }
-
-        public IRedirectPlan RedirectPlan => _redirectRepository.RedirectPlan;
 
         public TTarget Proxy(TTarget? root)
         {
-            return _proxyFactory.CreateProxy(root, GetProxyCall);
+            return _proxyFactory.CreateProxy(GetProxyCall, root);
         }
         
         public TTarget Proxy()
         {
-            var defaultRoot = ViaSet.Settings.DummyFactory.Create<TTarget>(ViaSet.Settings);
-            return _proxyFactory.CreateProxy(defaultRoot, GetProxyCall);
+            var defaultRoot = ViaSet.Settings.DummyFactory.Create<TTarget>();
+            
+            return _proxyFactory.CreateProxy(GetProxyCall, defaultRoot);
         }
 
-        public object ProxyObject(object? root)
+        public override object ProxyObject(object? root)
         {
             if (root != null && !(root is TTarget))
             {
@@ -83,43 +121,35 @@ namespace DivertR
             return Proxy(root as TTarget);
         }
 
-        public object ProxyObject()
+        public override object ProxyObject()
         {
             return Proxy();
         }
-
-        IVia IVia.InsertRedirect(Redirect redirect)
-        {
-            return InsertRedirect(redirect);
-        }
         
-        public IVia<TTarget> InsertRedirect(Redirect redirect)
+        public new IVia<TTarget> InsertRedirect(Redirect redirect)
         {
-            _redirectRepository.InsertRedirect(redirect);
+            base.InsertRedirect(redirect);
 
             return this;
         }
         
-        IVia IVia.InsertRedirects(IEnumerable<Redirect> redirects)
+        public new IVia<TTarget> InsertRedirects(IEnumerable<Redirect> redirects)
         {
-            return InsertRedirects(redirects);
-        }
-
-        public IVia<TTarget> InsertRedirects(IEnumerable<Redirect> redirects)
-        {
-            _redirectRepository.InsertRedirects(redirects);
+            base.InsertRedirects(redirects);
 
             return this;
         }
         
-        IVia IVia.Reset()
+        public new IVia<TTarget> Reset()
         {
-            return Reset();
-        }
+            base.Reset();
 
-        public IVia<TTarget> Reset()
+            return this;
+        }
+        
+        public new IVia<TTarget> Strict(bool? isStrict = true)
         {
-            _redirectRepository.Reset();
+            base.Strict(isStrict ?? true);
 
             return this;
         }
@@ -179,28 +209,6 @@ namespace DivertR
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, constraintExpression.Body);
 
             return new ActionRedirectBuilder<TTarget>(this, parsedCall);
-        }
-
-        public IVia<TTarget> Strict(bool? isStrict = true)
-        {
-            _redirectRepository.SetStrictMode(isStrict ?? true);
-
-            return this;
-        }
-
-        IVia IVia.Strict(bool? isStrict)
-        {
-            return Strict(isStrict ?? true);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IProxyCall<TTarget>? GetProxyCall()
-        {
-            var redirectPlan = _redirectRepository.RedirectPlan;
-
-            return redirectPlan == DivertR.Internal.RedirectPlan.Empty
-                ? null
-                : new ViaProxyCall<TTarget>(_relay, redirectPlan);
         }
     }
 }
