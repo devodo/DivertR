@@ -57,13 +57,13 @@ namespace DivertR
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private protected IProxyCall? GetProxyCall()
+        private protected IProxyCall<TTarget>? GetProxyCall<TTarget>() where TTarget : class
         {
             var redirectPlan = _redirectRepository.RedirectPlan;
 
             return redirectPlan == DivertR.Internal.RedirectPlan.Empty
                 ? null
-                : new ViaProxyCall(_relay, redirectPlan);
+                : new ViaProxyCall<TTarget>(_relay, redirectPlan);
         }
     }
 
@@ -101,14 +101,14 @@ namespace DivertR
 
         public TTarget Proxy(TTarget? root)
         {
-            return _proxyFactory.CreateProxy(GetProxyCall, root);
+            return _proxyFactory.CreateProxy(GetProxyCall<TTarget>, root);
         }
         
         public TTarget Proxy()
         {
             var defaultRoot = ViaSet.Settings.DummyFactory.Create<TTarget>();
             
-            return _proxyFactory.CreateProxy(GetProxyCall, defaultRoot);
+            return _proxyFactory.CreateProxy(GetProxyCall<TTarget>, defaultRoot);
         }
 
         public override object ProxyObject(object? root)

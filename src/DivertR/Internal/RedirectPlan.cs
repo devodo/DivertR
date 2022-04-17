@@ -5,25 +5,25 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class RedirectPlan : IRedirectPlan
+    internal class RedirectPlan<TRedirect> : IRedirectPlan<TRedirect> where TRedirect : IRedirect
     {
-        public static readonly RedirectPlan Empty = new RedirectPlan(ImmutableStack<Redirect>.Empty, false);
+        public static readonly RedirectPlan<TRedirect> Empty = new RedirectPlan<TRedirect>(ImmutableStack<TRedirect>.Empty, false);
         
-        private readonly ImmutableStack<Redirect> _redirectStack;
+        private readonly ImmutableStack<TRedirect> _redirectStack;
 
-        private RedirectPlan(ImmutableStack<Redirect> redirectStack, bool isStrictMode)
+        private RedirectPlan(ImmutableStack<TRedirect> redirectStack, bool isStrictMode)
             : this(redirectStack, isStrictMode, OrderRedirects(redirectStack))
         {
         }
         
-        private RedirectPlan(ImmutableStack<Redirect> redirectStack, bool isStrictMode, IReadOnlyList<Redirect> redirects)
+        private RedirectPlan(ImmutableStack<TRedirect> redirectStack, bool isStrictMode, IReadOnlyList<TRedirect> redirects)
         {
             _redirectStack = redirectStack;
             IsStrictMode = isStrictMode;
             Redirects = redirects;
         }
 
-        public IReadOnlyList<Redirect> Redirects
+        public IReadOnlyList<TRedirect> Redirects
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
@@ -35,7 +35,7 @@ namespace DivertR.Internal
             get;
         }
 
-        private static IReadOnlyList<Redirect> OrderRedirects(ImmutableStack<Redirect> redirectStack)
+        private static IReadOnlyList<TRedirect> OrderRedirects(ImmutableStack<TRedirect> redirectStack)
         {
             return redirectStack
                 .Select((r, i) => (r, i))
@@ -44,30 +44,30 @@ namespace DivertR.Internal
                 .ToArray();
         }
         
-        internal RedirectPlan InsertRedirect(Redirect redirect)
+        internal RedirectPlan<TRedirect> InsertRedirect(TRedirect redirect)
         {
             var mutatedStack = _redirectStack.Push(redirect);
             
-            return new RedirectPlan(mutatedStack, IsStrictMode);
+            return new RedirectPlan<TRedirect>(mutatedStack, IsStrictMode);
         }
         
-        internal RedirectPlan InsertRedirects(IEnumerable<Redirect> redirects)
+        internal RedirectPlan<TRedirect> InsertRedirects(IEnumerable<TRedirect> redirects)
         {
             var mutatedStack = redirects.Aggregate(_redirectStack, (current, redirect) => current.Push(redirect));
             
-            return new RedirectPlan(mutatedStack, IsStrictMode);
+            return new RedirectPlan<TRedirect>(mutatedStack, IsStrictMode);
         }
         
-        internal RedirectPlan SetStrictMode(bool isStrict)
+        internal RedirectPlan<TRedirect> SetStrictMode(bool isStrict)
         {
-            return new RedirectPlan(_redirectStack, isStrict, Redirects);
+            return new RedirectPlan<TRedirect>(_redirectStack, isStrict, Redirects);
         }
         
-        private class RedirectComparer : IComparer<(Redirect redirect, int stackOrder)>
+        private class RedirectComparer : IComparer<(IRedirect redirect, int stackOrder)>
         {
             public static readonly RedirectComparer Instance = new RedirectComparer();
             
-            public int Compare((Redirect redirect, int stackOrder) x, (Redirect redirect, int stackOrder) y)
+            public int Compare((IRedirect redirect, int stackOrder) x, (IRedirect redirect, int stackOrder) y)
             {
                 var weightComparison = x.redirect.OrderWeight.CompareTo(y.redirect.OrderWeight);
                 

@@ -13,7 +13,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(IRedirectCall call)
+        public object? Handle(IRedirectCall call)
         {
             return _redirectDelegate.Invoke(call);
         }

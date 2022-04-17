@@ -20,7 +20,7 @@ namespace DivertR.Internal
             _skipCount = skipCount;
         }
 
-        public object? Call(IRedirectCall call)
+        public object? Handle(IRedirectCall call)
         {
             var count = Interlocked.Increment(ref _callCount);
 
@@ -30,7 +30,7 @@ namespace DivertR.Internal
             }
 
             return count > _skipCount 
-                ? _innerCallHandler.Call(call)
+                ? _innerCallHandler.Handle(call)
                 : call.Relay.CallNext();
         }
     }

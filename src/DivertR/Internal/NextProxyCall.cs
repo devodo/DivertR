@@ -2,7 +2,7 @@
 
 namespace DivertR.Internal
 {
-    internal class NextProxyCall : IProxyCall
+    internal class NextProxyCall<TTarget> : IProxyCall<TTarget> where TTarget : class
     {
         private readonly IRelay _relay;
 
@@ -12,7 +12,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(CallInfo callInfo)
+        public object? Call(CallInfo<TTarget> callInfo)
         {
             return _relay.CallNext(callInfo.Method, callInfo.Arguments);
         }

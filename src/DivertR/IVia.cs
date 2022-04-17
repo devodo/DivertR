@@ -25,12 +25,7 @@ namespace DivertR
         /// Reference to the Via <see cref="IRelay" /> chain of responsibility call pipeline.
         /// </summary>
         IRelay Relay { get; }
-        
-        /// <summary>
-        /// Retrieve the current proxy redirect configuration.
-        /// </summary>
-        IRedirectPlan RedirectPlan { get; }
-        
+
         /// <summary>
         /// Create a Via proxy object without needing to specify the compile time Via type.
         /// </summary>
@@ -79,6 +74,11 @@ namespace DivertR
         /// Reference to the Via <see cref="IRelay{TTarget}" /> chain of responsibility call pipeline.
         /// </summary>
         new IRelay<TTarget> Relay { get; }
+        
+        /// <summary>
+        /// Retrieve the current proxy redirect configuration.
+        /// </summary>
+        IRedirectPlan<IRedirect<TTarget>> RedirectPlan { get; }
 
         /// <summary>
         /// Create a Via proxy instance.

@@ -6,9 +6,12 @@ using System.Threading;
 
 namespace DivertR.Internal
 {
-    internal class Relay : IRelay
+    internal abstract class AbstractRelay<TCallInfo, TRedirect, TRedirectCall> : IRelay
+        where TCallInfo : CallInfo
+        where TRedirect : IRedirect<TCallInfo, TRedirectCall>
+        where TRedirectCall : IRedirectCall
     {
-        private readonly AsyncLocal<ImmutableStack<RelayIndex>> _relayIndexStack = new AsyncLocal<ImmutableStack<RelayIndex>>();
+        private readonly AsyncLocal<ImmutableStack<RelayIndex<TCallInfo, TRedirect>>> _relayIndexStack = new AsyncLocal<ImmutableStack<RelayIndex<TCallInfo, TRedirect>>>();
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? CallRoot()
@@ -43,7 +46,8 @@ namespace DivertR.Internal
         public IRedirectCall GetCurrentCall()
         {
             var relayIndex = GetRelayIndexStack().Peek();
-            return CreateRedirectCall(this, relayIndex.CallInfo, relayIndex.Redirect);
+            
+            return CreateRedirectCall(relayIndex.CallInfo, relayIndex.Redirect);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -65,7 +69,7 @@ namespace DivertR.Internal
 
             try
             {
-                return relayNext.Redirect.CallHandler.Call(CreateRedirectCall(this, relayIndex.CallInfo, relayNext.Redirect));
+                return relayNext.Redirect.Handle(CreateRedirectCall(relayIndex.CallInfo, relayNext.Redirect));
             }
             finally
             {
@@ -78,7 +82,7 @@ namespace DivertR.Internal
         {
             var relayIndexStack = GetRelayIndexStack();
             var relayIndex = relayIndexStack.Peek();
-            var callInfo = relayIndex.CallInfo.Create(method, args);
+            var callInfo = (TCallInfo) relayIndex.CallInfo.Create(method, args);
             var relayNext = relayIndex.MoveNext(callInfo);
 
             if (relayNext == null)
@@ -93,7 +97,7 @@ namespace DivertR.Internal
 
             try
             {
-                return relayNext.Redirect.CallHandler.Call(CreateRedirectCall(this, callInfo, relayNext.Redirect));
+                return relayNext.Redirect.Handle(CreateRedirectCall(callInfo, relayNext.Redirect));
             }
             finally
             {
@@ -106,7 +110,7 @@ namespace DivertR.Internal
         {
             var relayIndexStack = GetRelayIndexStack();
             var relayIndex = relayIndexStack.Peek();
-            var callInfo = relayIndex.CallInfo.Create(args);
+            var callInfo = (TCallInfo) relayIndex.CallInfo.Create(args);
             var relayNext = relayIndex.MoveNext(callInfo);
 
             if (relayNext == null)
@@ -121,7 +125,7 @@ namespace DivertR.Internal
 
             try
             {
-                return relayNext.Redirect.CallHandler.Call(CreateRedirectCall(this, callInfo, relayNext.Redirect));
+                return relayNext.Redirect.Handle(CreateRedirectCall(callInfo, relayNext.Redirect));
             }
             finally
             {
@@ -130,9 +134,9 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal object? CallBegin(RedirectPlan redirectPlan, CallInfo callInfo)
+        internal object? CallBegin(RedirectPlan<TRedirect> redirectPlan, TCallInfo callInfo)
         {
-            var relayIndex = RelayIndex.Create(redirectPlan, callInfo);
+            var relayIndex = RelayIndex<TCallInfo, TRedirect>.Create(redirectPlan, callInfo);
 
             if (relayIndex == null)
             {
@@ -144,13 +148,13 @@ namespace DivertR.Internal
                 return CallRoot(callInfo);
             }
             
-            var relayIndexStack = _relayIndexStack.Value ?? ImmutableStack<RelayIndex>.Empty;
+            var relayIndexStack = _relayIndexStack.Value ?? ImmutableStack<RelayIndex<TCallInfo, TRedirect>>.Empty;
             relayIndexStack = relayIndexStack.Push(relayIndex);
             _relayIndexStack.Value = relayIndexStack;
             
             try
             {
-                return relayIndex.Redirect.CallHandler.Call(CreateRedirectCall(this, callInfo, relayIndex.Redirect));
+                return relayIndex.Redirect.Handle(CreateRedirectCall(callInfo, relayIndex.Redirect));
             }
             finally
             {
@@ -159,7 +163,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ImmutableStack<RelayIndex> GetRelayIndexStack()
+        private ImmutableStack<RelayIndex<TCallInfo, TRedirect>> GetRelayIndexStack()
         {
             var relayIndexStack = _relayIndexStack.Value;
 
@@ -173,7 +177,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ValidateStrict(RelayIndex relayIndex)
+        private static void ValidateStrict(RelayIndex<TCallInfo, TRedirect> relayIndex)
         {
             if (!relayIndex.StrictSatisfied)
             {
@@ -192,13 +196,12 @@ namespace DivertR.Internal
             return callInfo.Invoke(callInfo.Root);
         }
 
-        protected virtual IRedirectCall CreateRedirectCall(IRelay relay, CallInfo callInfo, Redirect redirect)
-        {
-            return new RedirectCall(relay, callInfo, redirect);
-        }
+        protected abstract object? CallRedirect(TCallInfo callInfo, TRedirect redirect);
+        protected abstract TRedirectCall CreateRedirectCall(TCallInfo callInfo, TRedirect redirect);
     }
     
-    internal class Relay<TTarget> : Relay, IRelay<TTarget> where TTarget : class
+    internal class Relay<TTarget> : AbstractRelay<CallInfo<TTarget>, Redirect<TTarget>, IRedirectCall<TTarget>>, IRelay<TTarget>
+        where TTarget : class
     {
         private readonly Lazy<TTarget> _next;
         private readonly Lazy<TTarget> _root;
@@ -221,15 +224,22 @@ namespace DivertR.Internal
             return (IRedirectCall<TTarget>) base.GetCurrentCall();
         }
 
+        protected override object? CallRedirect(CallInfo<TTarget> callInfo, Redirect<TTarget> redirect)
+        {
+            var redirectCall = new RedirectCall<TTarget>(this, callInfo, redirect);
+
+            return redirect.Handle(redirectCall);
+        }
+
+        protected override IRedirectCall<TTarget> CreateRedirectCall(CallInfo<TTarget> callInfo, Redirect<TTarget> redirect)
+        {
+            return new RedirectCall<TTarget>(this, callInfo, redirect);
+        }
+
         public Relay(IProxyFactory proxyFactory)
         {
-            _next = new Lazy<TTarget>(() => proxyFactory.CreateProxy<TTarget>(new NextProxyCall(this)));
-            _root = new Lazy<TTarget>(() => proxyFactory.CreateProxy<TTarget>(new RootProxyCall(this)));
-        }
-        
-        protected override IRedirectCall CreateRedirectCall(IRelay relay, CallInfo callInfo, Redirect redirect)
-        {
-            return new RedirectCall<TTarget>((IRelay<TTarget>) relay, (CallInfo<TTarget>) callInfo, redirect);
+            _next = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new NextProxyCall<TTarget>(this)));
+            _root = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new RootProxyCall<TTarget>(this)));
         }
     }
 }

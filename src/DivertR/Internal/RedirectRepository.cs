@@ -5,9 +5,9 @@ using System.Threading;
 
 namespace DivertR.Internal
 {
-    internal class RedirectRepository
+    internal class RedirectRepository<TRedirect>
     {
-        private volatile RedirectPlan _redirectPlan = RedirectPlan.Empty;
+        private volatile RedirectPlan<TRedirect> _redirectPlan = RedirectPlan.Empty;
 
         public RedirectPlan RedirectPlan
         {

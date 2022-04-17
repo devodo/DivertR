@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class TargetCallHandler<TTarget> : CallHandler<TTarget> where TTarget : class
+    internal class TargetCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
         private readonly TTarget _target;
 
@@ -13,7 +13,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override object? Call(IRedirectCall<TTarget> call)
+        public object? Handle(IRedirectCall<TTarget> call)
         {
             return call.CallInfo.Invoke(_target);
         }

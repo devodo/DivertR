@@ -5,10 +5,10 @@ namespace DivertR.DispatchProxy
 {
     public class ProxyInvoker<TTarget> : IProxyInvoker where TTarget : class
     {
-        private readonly IProxyCall _proxyCall;
+        private readonly IProxyCall<TTarget> _proxyCall;
         private readonly TTarget _proxy;
 
-        public ProxyInvoker(TTarget proxy, IProxyCall proxyCall)
+        public ProxyInvoker(TTarget proxy, IProxyCall<TTarget> proxyCall)
         {
             _proxy = proxy;
             _proxyCall = proxyCall;

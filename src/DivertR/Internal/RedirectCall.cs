@@ -3,25 +3,30 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class RedirectCall : IRedirectCall
+    internal abstract class AbstractRedirectCall<TCallInfo, TRelay> : IRedirectCall
+        where TCallInfo : CallInfo
+        where TRelay : IRelay
     {
-        public RedirectCall(IRelay relay, CallInfo callInfo, Redirect redirect)
+        protected readonly TRelay RelayInternal;
+        protected readonly TCallInfo CallInfoInternal;
+
+        protected AbstractRedirectCall(TRelay relay, TCallInfo callInfo, IRedirect redirect)
         {
-            Relay = relay;
-            CallInfo = callInfo;
+            RelayInternal = relay;
+            CallInfoInternal = callInfo;
             Redirect = redirect;
         }
         
         public IRelay Relay
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
+            get => RelayInternal;
         }
         
         public CallInfo CallInfo
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
+            get => CallInfoInternal;
         }
         
         public CallArguments Args
@@ -30,7 +35,7 @@ namespace DivertR.Internal
             get => CallInfo.Arguments;
         }
         
-        public Redirect Redirect
+        public IRedirect Redirect
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
@@ -74,25 +79,24 @@ namespace DivertR.Internal
     }
     
 
-    internal class RedirectCall<TTarget> : RedirectCall, IRedirectCall<TTarget> where TTarget : class
+    internal class RedirectCall<TTarget> : AbstractRedirectCall<CallInfo<TTarget>, IRelay<TTarget>>, IRedirectCall<TTarget>
+        where TTarget : class
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public RedirectCall(IRelay<TTarget> relay, CallInfo<TTarget> callInfo, Redirect redirect) : base(relay, callInfo, redirect)
+        public RedirectCall(IRelay<TTarget> relay, CallInfo<TTarget> callInfo, IRedirect redirect) : base(relay, callInfo, redirect)
         {
-            Relay = relay;
-            CallInfo = callInfo;
         }
         
         public new IRelay<TTarget> Relay
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
+            get => RelayInternal;
         }
 
         public new CallInfo<TTarget> CallInfo
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
+            get => CallInfoInternal;
         }
         
         public TTarget Next

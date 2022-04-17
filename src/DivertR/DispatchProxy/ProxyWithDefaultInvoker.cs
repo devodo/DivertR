@@ -9,9 +9,9 @@ namespace DivertR.DispatchProxy
     {
         private readonly TTarget _proxy;
         private readonly TTarget? _root;
-        private readonly Func<IProxyCall?> _getProxyCall;
+        private readonly Func<IProxyCall<TTarget>?> _getProxyCall;
         
-        public ProxyWithDefaultInvoker(TTarget proxy, TTarget? root, Func<IProxyCall?> getProxyCall)
+        public ProxyWithDefaultInvoker(TTarget proxy, TTarget? root, Func<IProxyCall<TTarget>?> getProxyCall)
         {
             _proxy = proxy;
             _root = root;

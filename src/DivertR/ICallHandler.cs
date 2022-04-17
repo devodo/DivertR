@@ -1,7 +1,17 @@
 ﻿namespace DivertR
 {
-    public interface ICallHandler
+    public interface IBaseCallHandler<in TRedirectCall>
+        where TRedirectCall : IRedirectCall
     {
-        object? Call(IRedirectCall call);
+        object? Handle(TRedirectCall call);
+    }
+    
+    public interface ICallHandler : IBaseCallHandler<IRedirectCall>
+    {
+    }
+    
+    public interface ICallHandler<TTarget> : IBaseCallHandler<IRedirectCall<TTarget>>
+        where TTarget : class
+    {
     }
 }

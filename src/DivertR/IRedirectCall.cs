@@ -7,7 +7,7 @@ namespace DivertR
         IRelay Relay { get; }
         CallInfo CallInfo { get; }
         CallArguments Args { get; }
-        Redirect Redirect { get; }
+        IRedirect Redirect { get; }
 
         object? CallNext();
         object? CallNext(MethodInfo method, CallArguments args);

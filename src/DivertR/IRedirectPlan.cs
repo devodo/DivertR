@@ -2,9 +2,9 @@
 
 namespace DivertR
 {
-    public interface IRedirectPlan
+    public interface IRedirectPlan<out TRedirect> where TRedirect : IRedirect
     {
-        IReadOnlyList<Redirect> Redirects { get; }
+        IReadOnlyList<TRedirect> Redirects { get; }
 
         bool IsStrictMode { get; }
     }

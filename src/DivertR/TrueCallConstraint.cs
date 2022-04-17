@@ -14,4 +14,17 @@ namespace DivertR
             return true;
         }
     }
+    
+    public class TrueCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class
+    {
+        public static readonly TrueCallConstraint<TTarget> Instance = new TrueCallConstraint<TTarget>();
+        
+        private TrueCallConstraint() { }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsMatch(CallInfo<TTarget> callInfo)
+        {
+            return true;
+        }
+    }
 }

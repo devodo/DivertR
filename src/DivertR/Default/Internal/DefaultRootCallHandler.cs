@@ -12,7 +12,7 @@ namespace DivertR.Default.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(IRedirectCall call)
+        public object? Handle(IRedirectCall call)
         {
             return _defaultValueFactory.Create(call.CallInfo.Method.ReturnType);
         }
