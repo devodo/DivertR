@@ -5,25 +5,25 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class RedirectPlan<TRedirect> : IRedirectPlan<TRedirect> where TRedirect : IRedirect
+    internal class RedirectPlan<TTarget> : IRedirectPlan<TTarget> where TTarget : class
     {
-        public static readonly RedirectPlan<TRedirect> Empty = new RedirectPlan<TRedirect>(ImmutableStack<TRedirect>.Empty, false);
+        public static readonly RedirectPlan<TTarget> Empty = new RedirectPlan<TTarget>(ImmutableStack<IRedirect<TTarget>>.Empty, false);
         
-        private readonly ImmutableStack<TRedirect> _redirectStack;
+        private readonly ImmutableStack<IRedirect<TTarget>> _redirectStack;
 
-        private RedirectPlan(ImmutableStack<TRedirect> redirectStack, bool isStrictMode)
+        private RedirectPlan(ImmutableStack<IRedirect<TTarget>> redirectStack, bool isStrictMode)
             : this(redirectStack, isStrictMode, OrderRedirects(redirectStack))
         {
         }
         
-        private RedirectPlan(ImmutableStack<TRedirect> redirectStack, bool isStrictMode, IReadOnlyList<TRedirect> redirects)
+        private RedirectPlan(ImmutableStack<IRedirect<TTarget>> redirectStack, bool isStrictMode, IReadOnlyList<IRedirect<TTarget>> redirects)
         {
             _redirectStack = redirectStack;
             IsStrictMode = isStrictMode;
             Redirects = redirects;
         }
 
-        public IReadOnlyList<TRedirect> Redirects
+        public IReadOnlyList<IRedirect<TTarget>> Redirects
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
@@ -35,39 +35,39 @@ namespace DivertR.Internal
             get;
         }
 
-        private static IReadOnlyList<TRedirect> OrderRedirects(ImmutableStack<TRedirect> redirectStack)
+        private static IReadOnlyList<IRedirect<TTarget>> OrderRedirects(ImmutableStack<IRedirect<TTarget>> redirectStack)
         {
             return redirectStack
                 .Select((r, i) => (r, i))
-                .OrderByDescending(x => x, RedirectComparer.Instance)
+                .OrderByDescending(x => x, RedirectComparer<TTarget>.Instance)
                 .Select(x => x.r)
                 .ToArray();
         }
         
-        internal RedirectPlan<TRedirect> InsertRedirect(TRedirect redirect)
+        internal RedirectPlan<TTarget> InsertRedirect(IRedirect<TTarget> redirect)
         {
             var mutatedStack = _redirectStack.Push(redirect);
             
-            return new RedirectPlan<TRedirect>(mutatedStack, IsStrictMode);
+            return new RedirectPlan<TTarget>(mutatedStack, IsStrictMode);
         }
         
-        internal RedirectPlan<TRedirect> InsertRedirects(IEnumerable<TRedirect> redirects)
+        internal RedirectPlan<TTarget> InsertRedirects(IEnumerable<IRedirect<TTarget>> redirects)
         {
             var mutatedStack = redirects.Aggregate(_redirectStack, (current, redirect) => current.Push(redirect));
             
-            return new RedirectPlan<TRedirect>(mutatedStack, IsStrictMode);
+            return new RedirectPlan<TTarget>(mutatedStack, IsStrictMode);
         }
         
-        internal RedirectPlan<TRedirect> SetStrictMode(bool isStrict)
+        internal RedirectPlan<TTarget> SetStrictMode(bool isStrict)
         {
-            return new RedirectPlan<TRedirect>(_redirectStack, isStrict, Redirects);
+            return new RedirectPlan<TTarget>(_redirectStack, isStrict, Redirects);
         }
         
-        private class RedirectComparer : IComparer<(IRedirect redirect, int stackOrder)>
+        private class RedirectComparer<T> : IComparer<(IRedirect<T> redirect, int stackOrder)> where T : class
         {
-            public static readonly RedirectComparer Instance = new RedirectComparer();
+            public static readonly RedirectComparer<T> Instance = new RedirectComparer<T>();
             
-            public int Compare((IRedirect redirect, int stackOrder) x, (IRedirect redirect, int stackOrder) y)
+            public int Compare((IRedirect<T> redirect, int stackOrder) x, (IRedirect<T> redirect, int stackOrder) y)
             {
                 var weightComparison = x.redirect.OrderWeight.CompareTo(y.redirect.OrderWeight);
                 

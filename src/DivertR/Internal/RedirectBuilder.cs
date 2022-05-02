@@ -8,9 +8,9 @@ namespace DivertR.Internal
     {
         protected readonly IVia<TTarget> Via;
 
-        protected CompositeCallConstraint CallConstraint { get; private set; } = CompositeCallConstraint.Empty;
+        protected CompositeCallConstraint<TTarget> CallConstraint { get; private set; } = CompositeCallConstraint<TTarget>.Empty;
 
-        public RedirectBuilder(IVia<TTarget> via, ICallConstraint? callConstraint = null)
+        public RedirectBuilder(IVia<TTarget> via, ICallConstraint<TTarget>? callConstraint = null)
         {
             Via = via ?? throw new ArgumentNullException(nameof(via));
 
@@ -20,28 +20,28 @@ namespace DivertR.Internal
             }
         }
 
-        public IRedirectBuilder<TTarget> AddConstraint(ICallConstraint callConstraint)
+        public IRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint)
         {
             CallConstraint = CallConstraint.AddCallConstraint(callConstraint);
 
             return this;
         }
 
-        public Redirect Build(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IRedirect<TTarget> Build(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            ICallHandler callHandler = new TargetCallHandler<TTarget>(target);
+            ICallHandler<TTarget> callHandler = new TargetCallHandler<TTarget>(target);
 
             return Build(callHandler, optionsAction);
         }
 
-        public IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var redirect = Build(target, optionsAction);
             
             return Via.InsertRedirect(redirect);
         }
 
-        public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordHandler = new RecordCallHandler<TTarget>();
             var redirect = Build(recordHandler, optionsAction);
@@ -50,14 +50,14 @@ namespace DivertR.Internal
             return recordHandler.RecordStream;
         }
 
-        protected Redirect Build(ICallHandler callHandler, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        protected IRedirect<TTarget> Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             return Build(callHandler, optionsAction.Create());
         }
 
-        private Redirect Build(ICallHandler callHandler, RedirectOptions redirectOptions)
+        private IRedirect<TTarget> Build(ICallHandler<TTarget> callHandler, IRedirectOptions<TTarget> redirectOptions)
         {
-            return new Redirect(callHandler, CallConstraint, redirectOptions);
+            return new Redirect<TTarget>(callHandler, CallConstraint, redirectOptions);
         }
     }
 }

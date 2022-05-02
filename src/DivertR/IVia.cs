@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using DivertR.Internal;
 using DivertR.Record;
 
 namespace DivertR
@@ -35,21 +34,7 @@ namespace DivertR
         object ProxyObject(object? root);
         
         object ProxyObject();
-        
-        /// <summary>
-        /// Insert a <see cref="Redirect"/> instance into the Via <see cref="RedirectPlan" />.
-        /// </summary>
-        /// <param name="redirect">The redirect.</param>
-        /// <returns>The current <see cref="IVia"/> instance.</returns>
-        IVia InsertRedirect(Redirect redirect);
-        
-        /// <summary>
-        /// Insert multiple <see cref="Redirect"/> instances into the Via <see cref="RedirectPlan" />.
-        /// </summary>
-        /// <param name="redirects">The redirects.</param>
-        /// <returns>The current <see cref="IVia"/> instance.</returns>
-        IVia InsertRedirects(IEnumerable<Redirect> redirects);
-        
+
         /// <summary>
         /// Reset the Via.
         /// </summary>
@@ -65,7 +50,7 @@ namespace DivertR
     }
     
     /// <summary>
-    /// A Via is the DivertR unit associated with a type. The Via is used to create proxies of its type and to configure the proxy behaviour.
+    /// Strongly typed Via class used to create DivertR proxies of its type and to configure the proxy behaviour.
     /// </summary>
     /// <typeparam name="TTarget">The Via type.</typeparam>
     public interface IVia<TTarget> : IVia where TTarget : class
@@ -78,7 +63,7 @@ namespace DivertR
         /// <summary>
         /// Retrieve the current proxy redirect configuration.
         /// </summary>
-        IRedirectPlan<IRedirect<TTarget>> RedirectPlan { get; }
+        IRedirectPlan<TTarget> RedirectPlan { get; }
 
         /// <summary>
         /// Create a Via proxy instance.
@@ -90,21 +75,21 @@ namespace DivertR
         TTarget Proxy();
         
         /// <summary>
-        /// Insert a <see cref="Redirect"/> instance into the Via <see cref="RedirectPlan" />.
+        /// Insert a <see cref="IRedirect{TTarget}"/> instance into the Via <see cref="IRedirectPlan{TTarget}" />.
         /// </summary>
         /// <param name="redirect">The redirect.</param>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
-        new IVia<TTarget> InsertRedirect(Redirect redirect);
+        IVia<TTarget> InsertRedirect(IRedirect<TTarget> redirect);
         
         /// <summary>
-        /// Insert multiple <see cref="Redirect"/> instances into the Via <see cref="RedirectPlan" />.
+        /// Insert multiple <see cref="IRedirect{TTarget}"/> instances into the Via <see cref="IRedirectPlan{TTarget}" />.
         /// </summary>
         /// <param name="redirects">The redirects.</param>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
-        new IVia<TTarget> InsertRedirects(IEnumerable<Redirect> redirects);
+        IVia<TTarget> InsertRedirects(IEnumerable<IRedirect<TTarget>> redirects);
         
         /// <summary>
-        /// Reset the Via <see cref="RedirectPlan" />.
+        /// Reset the Via <see cref="IRedirectPlan{TTarget}" />.
         /// </summary>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
         new IVia<TTarget> Reset();
@@ -117,13 +102,13 @@ namespace DivertR
         new IVia<TTarget> Strict(bool? isStrict = true);
 
         /// <summary>
-        /// Create and insert a redirect (with no <see cref="ICallConstraint"/>) to the given <paramref name="target"/>
-        /// into the Via <see cref="RedirectPlan" />.
+        /// Create and insert a redirect (with no <see cref="ICallConstraint{TTarget}"/>) to the given <paramref name="target"/>
+        /// into the Via <see cref="IRedirectPlan{TTarget}" />.
         /// </summary>
         /// <param name="target">The target instance to redirect call to.</param>
         /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
-        IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null);
+        IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         
         /// <summary>
         /// Inserts a redirect that captures incoming calls from all proxies.
@@ -131,15 +116,15 @@ namespace DivertR
         /// </summary>
         /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
         /// <returns>An <see cref="IRecordStream{TTarget}"/> reference for retrieving and iterating the recorded calls.</returns>
-        IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
+        IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         
         /// <summary>
         /// Creates a Redirect builder. />
         /// </summary>
-        /// <param name="callConstraint">Optional redirect <see cref="ICallConstraint"/>.</param>
+        /// <param name="callConstraint">Optional redirect <see cref="ICallConstraint{TTarget}"/>.</param>
         /// <returns>The Redirect builder.</returns>
         /// 
-        IRedirectBuilder<TTarget> To(ICallConstraint? callConstraint = null);
+        IRedirectBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null);
 
         /// <summary>
         /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning <typeparam name="TReturn" />.

@@ -2,14 +2,14 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
-namespace DivertR.Default.Internal
+namespace DivertR.Dummy.Internal
 {
     internal class TaskValueFactory
     {
         private readonly ConcurrentDictionary<Type, IInternalTaskFactory> _taskFactories = new ConcurrentDictionary<Type, IInternalTaskFactory>();
         private readonly ConcurrentDictionary<Type, IInternalValueTaskFactory> _valueTaskFactories = new ConcurrentDictionary<Type, IInternalValueTaskFactory>();
 
-        public Task CreateTaskOf(Type taskType, IDefaultValueFactory defaultValueFactory)
+        public Task CreateTaskOf(Type taskType, DummyValueFactory dummyValueFactory)
         {
             var taskFactory = _taskFactories.GetOrAdd(taskType, type =>
             {
@@ -17,10 +17,10 @@ namespace DivertR.Default.Internal
                 return (IInternalTaskFactory) Activator.CreateInstance(taskFactoryType);
             });
 
-            return taskFactory.CreateTask(defaultValueFactory);
+            return taskFactory.CreateTask(dummyValueFactory);
         }
         
-        public object CreateValueTaskOf(Type taskType, IDefaultValueFactory defaultValueFactory)
+        public object CreateValueTaskOf(Type taskType, DummyValueFactory dummyValueFactory)
         {
             var taskFactory = _valueTaskFactories.GetOrAdd(taskType, type =>
             {
@@ -28,19 +28,19 @@ namespace DivertR.Default.Internal
                 return (IInternalValueTaskFactory) Activator.CreateInstance(taskFactoryType);
             });
 
-            return taskFactory.CreateValueTask(defaultValueFactory);
+            return taskFactory.CreateValueTask(dummyValueFactory);
         }
 
         private interface IInternalTaskFactory
         {
-            Task CreateTask(IDefaultValueFactory defaultValueFactory);
+            Task CreateTask(DummyValueFactory dummyValueFactory);
         }
 
         private class InternalTaskFactory<TResult> : IInternalTaskFactory
         {
-            public Task CreateTask(IDefaultValueFactory defaultValueFactory)
+            public Task CreateTask(DummyValueFactory dummyValueFactory)
             {
-                var value = (TResult) defaultValueFactory.Create(typeof(TResult))!;
+                var value = (TResult) dummyValueFactory.Create(typeof(TResult))!;
                 
                 return Task.FromResult<TResult>(value);
             }
@@ -48,14 +48,14 @@ namespace DivertR.Default.Internal
         
         private interface IInternalValueTaskFactory
         {
-            object CreateValueTask(IDefaultValueFactory defaultValueFactory);
+            object CreateValueTask(DummyValueFactory dummyValueFactory);
         }
 
         private class InternalValueTaskFactory<TResult> : IInternalValueTaskFactory
         {
-            public object CreateValueTask(IDefaultValueFactory defaultValueFactory)
+            public object CreateValueTask(DummyValueFactory dummyValueFactory)
             {
-                var value = (TResult) defaultValueFactory.Create(typeof(TResult))!;
+                var value = (TResult) dummyValueFactory.Create(typeof(TResult))!;
 
                 return new ValueTask<TResult>(value);
             }

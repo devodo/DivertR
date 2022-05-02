@@ -1,21 +1,50 @@
-﻿namespace DivertR
+﻿using System.Runtime.CompilerServices;
+
+namespace DivertR
 {
     public interface IRedirect
     {
         int OrderWeight { get; }
-        bool DisableSatisfyStrict { get; }
+
+        bool DisableSatisfyStrict
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+        
+        ICallConstraint CallConstraint
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+
+        ICallHandler CallHandler
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
     }
 
-    public interface IRedirect<in TCallInfo> : IRedirect
-        where TCallInfo : CallInfo
+    public interface IRedirect<TTarget> where TTarget : class
     {
-        bool IsMatch(TCallInfo callInfo);
-    }
-    
-    public interface IRedirect<in TCallInfo, in TRedirectCall> : IRedirect<TCallInfo>
-        where TCallInfo : CallInfo
-        where TRedirectCall : IRedirectCall
-    {
-        object? Handle(TRedirectCall redirectCall);
+        int OrderWeight { get; }
+
+        bool DisableSatisfyStrict
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+
+        ICallConstraint<TTarget> CallConstraint
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+
+        ICallHandler<TTarget> CallHandler
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
     }
 }

@@ -455,7 +455,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoGeneric(Is<object>.Any))
-                .AddConstraint(new MatchCallConstraint(callInfo => callInfo.Method.GetGenericArguments()[0] == typeof(object)))
+                .AddConstraint(new MatchCallConstraint<IFoo>(callInfo => callInfo.Method.GetGenericArguments()[0] == typeof(object)))
                 .Redirect<(object i, __)>(call => $"{call.Args.i} - {_via.Relay.Next.Name}");
 
             // ACT
@@ -868,7 +868,7 @@ namespace DivertR.UnitTests
 
             _via
                 .To(x => x.Name)
-                .AddConstraint(new SwitchCallConstraint(redirectSwitch))
+                .AddConstraint(new SwitchCallConstraint<IFoo>(redirectSwitch))
                 .Redirect(() => "enabled");
 
             var proxy = _via.Proxy(new Foo("disabled"));

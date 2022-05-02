@@ -2,25 +2,11 @@
 
 namespace DivertR
 {
-    public interface IBaseRedirectOptions<TCallHandler, TCallConstraint, TRedirectCall, TCallInfo>
-        where TCallHandler : IBaseCallHandler<TRedirectCall>
-        where TCallConstraint : IBaseCallConstraint<TCallInfo>
-        where TRedirectCall : IRedirectCall
-        where TCallInfo : CallInfo
+    public interface IRedirectOptions<TTarget> where TTarget : class
     {
         int? OrderWeight { get; }
         bool? DisableSatisfyStrict { get; }
-        
-        Func<TCallHandler, TCallHandler>? CallHandlerDecorator { get; }
-        Func<TCallConstraint, TCallConstraint>? CallConstraintDecorator { get; }
-    }
-    
-    public interface IRedirectOptions : IBaseRedirectOptions<ICallHandler, ICallConstraint, IRedirectCall, CallInfo>
-    {
-    }
-    
-    public interface IRedirectOptions<TTarget> : IBaseRedirectOptions<ICallHandler<TTarget>, ICallConstraint<TTarget>, IRedirectCall<TTarget>, CallInfo<TTarget>>
-        where TTarget : class
-    {
+        Func<ICallHandler<TTarget>, ICallHandler<TTarget>>? CallHandlerDecorator { get; }
+        Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>>? CallConstraintDecorator { get; }
     }
 }

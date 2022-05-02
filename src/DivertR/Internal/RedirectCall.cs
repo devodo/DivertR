@@ -3,30 +3,34 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal abstract class AbstractRedirectCall<TCallInfo, TRelay> : IRedirectCall
-        where TCallInfo : CallInfo
-        where TRelay : IRelay
+    internal class RedirectCall<TTarget> : IRedirectCall<TTarget>
+        where TTarget : class
     {
-        protected readonly TRelay RelayInternal;
-        protected readonly TCallInfo CallInfoInternal;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public RedirectCall(IRelay<TTarget> relay, CallInfo<TTarget> callInfo)
+        {
+            Relay = relay;
+            CallInfo = callInfo;
+        }
+        
+        public IRelay<TTarget> Relay
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
 
-        protected AbstractRedirectCall(TRelay relay, TCallInfo callInfo, IRedirect redirect)
-        {
-            RelayInternal = relay;
-            CallInfoInternal = callInfo;
-            Redirect = redirect;
-        }
-        
-        public IRelay Relay
+        CallInfo IRedirectCall.CallInfo
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => RelayInternal;
+            get => CallInfo;
         }
-        
-        public CallInfo CallInfo
+
+        IRelay IRedirectCall.Relay => Relay;
+
+        public CallInfo<TTarget> CallInfo
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => CallInfoInternal;
+            get;
         }
         
         public CallArguments Args
@@ -34,13 +38,7 @@ namespace DivertR.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => CallInfo.Arguments;
         }
-        
-        public IRedirect Redirect
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-        }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? CallNext()
         {
@@ -75,28 +73,6 @@ namespace DivertR.Internal
         public object? CallRoot(CallArguments args)
         {
             return Relay.CallRoot(args);
-        }
-    }
-    
-
-    internal class RedirectCall<TTarget> : AbstractRedirectCall<CallInfo<TTarget>, IRelay<TTarget>>, IRedirectCall<TTarget>
-        where TTarget : class
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public RedirectCall(IRelay<TTarget> relay, CallInfo<TTarget> callInfo, IRedirect redirect) : base(relay, callInfo, redirect)
-        {
-        }
-        
-        public new IRelay<TTarget> Relay
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => RelayInternal;
-        }
-
-        public new CallInfo<TTarget> CallInfo
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => CallInfoInternal;
         }
         
         public TTarget Next

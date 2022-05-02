@@ -1,17 +1,16 @@
-﻿namespace DivertR
+﻿using System.Runtime.CompilerServices;
+
+namespace DivertR
 {
-    public interface IBaseCallHandler<in TRedirectCall>
-        where TRedirectCall : IRedirectCall
+    public interface ICallHandler
     {
-        object? Handle(TRedirectCall call);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        object? Handle(IRedirectCall call);
     }
     
-    public interface ICallHandler : IBaseCallHandler<IRedirectCall>
+    public interface ICallHandler<TTarget> where TTarget : class
     {
-    }
-    
-    public interface ICallHandler<TTarget> : IBaseCallHandler<IRedirectCall<TTarget>>
-        where TTarget : class
-    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        object? Handle(IRedirectCall<TTarget> call);
     }
 }

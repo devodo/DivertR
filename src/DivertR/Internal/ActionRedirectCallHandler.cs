@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class ActionRedirectCallHandler<TTarget> : CallHandler<TTarget> where TTarget : class
+    internal class ActionRedirectCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
         private readonly Action<IActionRedirectCall<TTarget>> _redirectDelegate;
 
@@ -14,7 +14,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override object? Call(IRedirectCall<TTarget> call)
+        public object? Handle(IRedirectCall<TTarget> call)
         {
             var redirectCall = new ActionRedirectCall<TTarget>(call);
             _redirectDelegate.Invoke(redirectCall);
@@ -23,7 +23,7 @@ namespace DivertR.Internal
         }
     }
 
-    internal class ActionRedirectCallHandler<TTarget, TArgs> : CallHandler<TTarget>
+    internal class ActionRedirectCallHandler<TTarget, TArgs> : ICallHandler<TTarget>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
@@ -39,7 +39,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override object? Call(IRedirectCall<TTarget> call)
+        public object? Handle(IRedirectCall<TTarget> call)
         {
             var valueTupleArgs = (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs);
             var redirectCall = new ActionRedirectCall<TTarget, TArgs>(call, valueTupleArgs);
@@ -57,7 +57,7 @@ namespace DivertR.Internal
         }
     }
     
-    internal class ActionArgsRedirectCallHandler<TTarget> : CallHandler<TTarget> where TTarget : class
+    internal class ActionArgsRedirectCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
         private readonly Action<IActionRedirectCall<TTarget>, CallArguments> _redirectDelegate;
 
@@ -67,7 +67,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override object? Call(IRedirectCall<TTarget> call)
+        public object? Handle(IRedirectCall<TTarget> call)
         {
             var redirectCall = new ActionRedirectCall<TTarget>(call);
             _redirectDelegate.Invoke(redirectCall, redirectCall.Args);
@@ -76,7 +76,7 @@ namespace DivertR.Internal
         }
     }
     
-    internal class ActionArgsRedirectCallHandler<TTarget, TArgs> : CallHandler<TTarget>
+    internal class ActionArgsRedirectCallHandler<TTarget, TArgs> : ICallHandler<TTarget>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
@@ -92,7 +92,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override object? Call(IRedirectCall<TTarget> call)
+        public object? Handle(IRedirectCall<TTarget> call)
         {
             var valueTupleArgs = (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs);
             var redirectCall = new ActionRedirectCall<TTarget, TArgs>(call, valueTupleArgs);

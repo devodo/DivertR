@@ -7,7 +7,7 @@ namespace DivertR.Internal
     internal class ActionRedirectCall<TTarget> : RedirectCall<TTarget>, IActionRedirectCall<TTarget> where TTarget : class
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ActionRedirectCall(IRedirectCall<TTarget> call) : base(call.Relay, call.CallInfo, call.Redirect)
+        public ActionRedirectCall(IRedirectCall<TTarget> call) : base(call.Relay, call.CallInfo)
         {
         }
         

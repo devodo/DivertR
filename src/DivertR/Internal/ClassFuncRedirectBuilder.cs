@@ -11,80 +11,80 @@ namespace DivertR.Internal
         {
         }
 
-        public IVia<TReturn> Divert(Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia<TReturn> Divert(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             return Divert(null!, optionsAction);
         }
 
-        public IVia<TReturn> Divert(string name, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia<TReturn> Divert(string name, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var via = Via.ViaSet.Via<TReturn>(name);
-            ICallHandler callHandler = new DelegateCallHandler<TTarget>(callInfo => via.Proxy((TReturn?) Via.Relay.CallNext()));
+            ICallHandler<TTarget> callHandler = new DelegateCallHandler<TTarget>(callInfo => via.Proxy((TReturn?) Via.Relay.CallNext()));
             base.InsertRedirect(callHandler, optionsAction);
 
             return via;
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             base.Redirect(redirectDelegate, optionsAction);
 
             return this;
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn> Redirect(TReturn instance, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn> Redirect(TReturn instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             base.Redirect(instance, optionsAction);
 
             return this;
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn> Redirect(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn> Redirect(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             base.Redirect(redirectDelegate, optionsAction);
 
             return this;
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             base.Redirect(redirectDelegate, optionsAction);
 
             return this;
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             base.Redirect(redirectDelegate, optionsAction);
 
             return this;
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Delegate redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Redirect(redirectDelegate, optionsAction);
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(TReturn instance, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(TReturn instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Redirect(instance, optionsAction);
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Redirect(redirectDelegate, optionsAction);
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Redirect(redirectDelegate, optionsAction);
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Redirect(redirectDelegate, optionsAction);
@@ -102,61 +102,61 @@ namespace DivertR.Internal
         where TReturn : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        public ClassFuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint callConstraint)
+        public ClassFuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
             : base(via, parsedCallExpression, callConstraint)
         {
         }
 
-        public IVia<TReturn> Divert(Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia<TReturn> Divert(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             return Divert(null!, optionsAction);
         }
 
-        public IVia<TReturn> Divert(string name, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia<TReturn> Divert(string name, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var via = Via.ViaSet.Via<TReturn>(name);
-            ICallHandler callHandler = new DelegateCallHandler<TTarget>(callInfo => via.Proxy((TReturn?) Via.Relay.CallNext()));
+            ICallHandler<TTarget> callHandler = new DelegateCallHandler<TTarget>(callInfo => via.Proxy((TReturn?) Via.Relay.CallNext()));
             base.InsertRedirect(callHandler, optionsAction);
 
             return via;
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             base.Redirect(redirectDelegate, optionsAction);
 
             return this;
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(TReturn instance, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(TReturn instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             base.Redirect(instance, optionsAction);
 
             return this;
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             base.Redirect(redirectDelegate, optionsAction);
 
             return this;
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             base.Redirect(redirectDelegate, optionsAction);
 
             return this;
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             base.Redirect(redirectDelegate, optionsAction);
 
             return this;
         }
 
-        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             base.Redirect(redirectDelegate, optionsAction);
 

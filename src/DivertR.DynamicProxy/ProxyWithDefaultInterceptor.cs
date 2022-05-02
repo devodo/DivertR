@@ -6,14 +6,14 @@ namespace DivertR.DynamicProxy
     public class ProxyWithDefaultInterceptor<TTarget> : IInterceptor where TTarget : class
     {
         private readonly TTarget? _root;
-        private readonly Func<IProxyCall?> _getProxyCall;
+        private readonly Func<IProxyCall<TTarget>?> _getProxyCall;
         
-        public ProxyWithDefaultInterceptor(Func<IProxyCall?> getProxyCall)
+        public ProxyWithDefaultInterceptor(Func<IProxyCall<TTarget>?> getProxyCall)
             : this(null, getProxyCall)
         {
         }
 
-        public ProxyWithDefaultInterceptor(TTarget? root, Func<IProxyCall?> getProxyCall)
+        public ProxyWithDefaultInterceptor(TTarget? root, Func<IProxyCall<TTarget>?> getProxyCall)
         {
             _root = root;
             _getProxyCall = getProxyCall;

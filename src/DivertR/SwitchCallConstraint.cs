@@ -1,6 +1,6 @@
 ﻿namespace DivertR
 {
-    public class SwitchCallConstraint : ICallConstraint
+    public class SwitchCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class
     {
         private readonly IRedirectSwitch _redirectSwitch;
 
@@ -9,7 +9,7 @@
             _redirectSwitch = redirectSwitch;
         }
         
-        public bool IsMatch(CallInfo callInfo)
+        public bool IsMatch(CallInfo<TTarget> callInfo)
         {
             return _redirectSwitch.IsEnabled;
         }

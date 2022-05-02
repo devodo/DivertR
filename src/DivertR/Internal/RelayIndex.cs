@@ -3,11 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class RelayIndex<TCallInfo, TRedirect>
-        where TCallInfo : CallInfo
-        where TRedirect : IRedirect<TCallInfo>
+    internal class RelayIndex<TTarget> where TTarget : class
     {
-        private readonly RedirectPlan<TRedirect> _redirectPlan;
+        private readonly RedirectPlan<TTarget> _redirectPlan;
         private readonly int _index;
 
         public bool StrictSatisfied
@@ -16,20 +14,20 @@ namespace DivertR.Internal
             get;
         }
         
-        public TCallInfo CallInfo
+        public CallInfo<TTarget> CallInfo
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
 
-        public TRedirect Redirect
+        public IRedirect<TTarget> Redirect
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _redirectPlan.Redirects[_index];
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RelayIndex<TCallInfo, TRedirect>? Create(RedirectPlan<TRedirect> redirectPlan, TCallInfo callInfo)
+        public static RelayIndex<TTarget>? Create(RedirectPlan<TTarget> redirectPlan, CallInfo<TTarget> callInfo)
         {
             var index = GetNextIndex(-1, redirectPlan.Redirects, callInfo);
 
@@ -40,11 +38,11 @@ namespace DivertR.Internal
 
             var strictSatisfied = !redirectPlan.IsStrictMode || !redirectPlan.Redirects[index].DisableSatisfyStrict;
             
-            return new RelayIndex<TCallInfo, TRedirect>(redirectPlan, index, callInfo, strictSatisfied);
+            return new RelayIndex<TTarget>(redirectPlan, index, callInfo, strictSatisfied);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private RelayIndex(RedirectPlan<TRedirect> redirectPlan, int index, TCallInfo callInfo, bool strictSatisfied)
+        private RelayIndex(RedirectPlan<TTarget> redirectPlan, int index, CallInfo<TTarget> callInfo, bool strictSatisfied)
         {
             _redirectPlan = redirectPlan;
             CallInfo = callInfo;
@@ -53,7 +51,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public RelayIndex<TCallInfo, TRedirect>? MoveNext(TCallInfo callInfo)
+        public RelayIndex<TTarget>? MoveNext(CallInfo<TTarget> callInfo)
         {
             var index = GetNextIndex(_index, _redirectPlan.Redirects, callInfo);
 
@@ -64,17 +62,17 @@ namespace DivertR.Internal
 
             var strictSatisfied = StrictSatisfied || !_redirectPlan.Redirects[index].DisableSatisfyStrict;
 
-            return new RelayIndex<TCallInfo, TRedirect>(_redirectPlan, index, callInfo, strictSatisfied);
+            return new RelayIndex<TTarget>(_redirectPlan, index, callInfo, strictSatisfied);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetNextIndex(int index, IReadOnlyList<TRedirect> redirects, TCallInfo callInfo)
+        private static int GetNextIndex(int index, IReadOnlyList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
         {
             var startIndex = index + 1;
 
             for (var i = startIndex; i < redirects.Count; i++)
             {
-                if (!redirects[i].IsMatch(callInfo))
+                if (!redirects[i].CallConstraint.IsMatch(callInfo))
                 {
                     continue;
                 }

@@ -2,13 +2,13 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace DivertR.Default.Internal
+namespace DivertR.Dummy.Internal
 {
     internal class ListValueFactory
     {
         private readonly ConcurrentDictionary<Type, Type> _iListTypes = new ConcurrentDictionary<Type, Type>();
 
-        public object? CreateListOf(Type iListType, IDefaultValueFactory _)
+        public object? CreateListOf(Type iListType, DummyValueFactory _)
         {
             var type = _iListTypes.GetOrAdd(iListType, type =>
             {

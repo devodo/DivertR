@@ -6,9 +6,9 @@ namespace DivertR.Internal
         where TTarget : class
     {
         private readonly Relay<TTarget> _relay;
-        private readonly RedirectPlan<Redirect<TTarget>> _redirectPlan;
+        private readonly RedirectPlan<TTarget> _redirectPlan;
 
-        public ViaProxyCall(Relay<TTarget> relay, RedirectPlan<Redirect<TTarget>> redirectPlan)
+        public ViaProxyCall(Relay<TTarget> relay, RedirectPlan<TTarget> redirectPlan)
         {
             _relay = relay;
             _redirectPlan = redirectPlan;

@@ -1,16 +1,16 @@
-﻿namespace DivertR
-{
-    public interface IBaseCallConstraint<in TCallInfo>
-        where TCallInfo : CallInfo
-    {
-        bool IsMatch(TCallInfo callInfo);
-    }
+﻿using System.Runtime.CompilerServices;
 
-    public interface ICallConstraint : IBaseCallConstraint<CallInfo>
+namespace DivertR
+{
+    public interface ICallConstraint
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool IsMatch(CallInfo callInfo);
     }
     
-    public interface ICallConstraint<TTarget> : IBaseCallConstraint<CallInfo<TTarget>> where TTarget : class
+    public interface ICallConstraint<TTarget> where TTarget : class
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool IsMatch(CallInfo<TTarget> callInfo);
     }
 }

@@ -3,13 +3,13 @@ using System.Threading;
 
 namespace DivertR.Internal
 {
-    internal class SkipCallHandler : ICallHandler
+    internal class SkipCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
-        private readonly ICallHandler _innerCallHandler;
+        private readonly ICallHandler<TTarget> _innerCallHandler;
         private readonly int _skipCount;
         private long _callCount;
 
-        public SkipCallHandler(ICallHandler innerCallHandler, int skipCount)
+        public SkipCallHandler(ICallHandler<TTarget> innerCallHandler, int skipCount)
         {
             if (skipCount < 0)
             {
@@ -20,7 +20,7 @@ namespace DivertR.Internal
             _skipCount = skipCount;
         }
 
-        public object? Handle(IRedirectCall call)
+        public object? Handle(IRedirectCall<TTarget> call)
         {
             var count = Interlocked.Increment(ref _callCount);
 

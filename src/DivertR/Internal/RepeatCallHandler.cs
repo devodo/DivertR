@@ -3,13 +3,13 @@ using System.Threading;
 
 namespace DivertR.Internal
 {
-    internal class RepeatCallHandler : ICallHandler
+    internal class RepeatCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
-        private readonly ICallHandler _innerCallHandler;
+        private readonly ICallHandler<TTarget> _innerCallHandler;
         private readonly int _repeatCount;
         private long _callCount;
 
-        public RepeatCallHandler(ICallHandler innerCallHandler, int repeatCount)
+        public RepeatCallHandler(ICallHandler<TTarget> innerCallHandler, int repeatCount)
         {
             if (repeatCount < 0)
             {
@@ -20,7 +20,7 @@ namespace DivertR.Internal
             _repeatCount = repeatCount;
         }
 
-        public object? Handle(IRedirectCall call)
+        public object? Handle(IRedirectCall<TTarget> call)
         {
             var count = Interlocked.Increment(ref _callCount);
 
