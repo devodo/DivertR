@@ -45,7 +45,7 @@ namespace DivertR.Internal
         {
             var relayIndex = GetRelayIndexStack().Peek();
             ValidateStrict(relayIndex);
-            var callInfo = (CallInfo<TTarget>) relayIndex.CallInfo.Create(method, args);
+            var callInfo = relayIndex.CallInfo.Create(method, args);
             
             return CallRoot(callInfo);
         }
@@ -55,7 +55,7 @@ namespace DivertR.Internal
         {
             var relayIndex = GetRelayIndexStack().Peek();
             ValidateStrict(relayIndex);
-            var callInfo = (CallInfo<TTarget>) relayIndex.CallInfo.Create(args);
+            var callInfo = relayIndex.CallInfo.Create(args);
             
             return CallRoot(callInfo);
         }
@@ -106,7 +106,7 @@ namespace DivertR.Internal
         {
             var relayIndexStack = GetRelayIndexStack();
             var relayIndex = relayIndexStack.Peek();
-            var callInfo = (CallInfo<TTarget>) relayIndex.CallInfo.Create(method, args);
+            var callInfo = relayIndex.CallInfo.Create(method, args);
             var relayNext = relayIndex.MoveNext(callInfo);
 
             if (relayNext == null)
@@ -134,7 +134,7 @@ namespace DivertR.Internal
         {
             var relayIndexStack = GetRelayIndexStack();
             var relayIndex = relayIndexStack.Peek();
-            var callInfo = (CallInfo<TTarget>) relayIndex.CallInfo.Create(args);
+            var callInfo = relayIndex.CallInfo.Create(args);
             var relayNext = relayIndex.MoveNext(callInfo);
 
             if (relayNext == null)
@@ -158,7 +158,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal object? CallBegin(RedirectPlan<TTarget> redirectPlan, CallInfo<TTarget> callInfo)
+        internal object? CallBegin(RedirectPlan<TTarget> redirectPlan, ICallInfo<TTarget> callInfo)
         {
             var relayIndex = RelayIndex<TTarget>.Create(redirectPlan, callInfo);
 
@@ -210,7 +210,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static object? CallRoot(CallInfo<TTarget> callInfo)
+        private static object? CallRoot(ICallInfo<TTarget> callInfo)
         {
             if (callInfo.Root == null)
             {
@@ -221,7 +221,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IRedirectCall<TTarget> CreateRedirectCall(CallInfo<TTarget> callInfo)
+        private IRedirectCall<TTarget> CreateRedirectCall(ICallInfo<TTarget> callInfo)
         {
             return new RedirectCall<TTarget>(this, callInfo);
         }

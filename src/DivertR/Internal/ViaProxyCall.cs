@@ -15,7 +15,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(CallInfo<TTarget> callInfo)
+        public object? Call(ICallInfo<TTarget> callInfo)
         {
             return _relay.CallBegin(_redirectPlan, callInfo);
         }

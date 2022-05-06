@@ -7,13 +7,8 @@ namespace DivertR.Internal
 {
     internal class ActionRedirectBuilder<TTarget> : DelegateRedirectBuilder<TTarget>, IActionRedirectBuilder<TTarget> where TTarget : class
     {
-        public ActionRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression)
-            : base(via, parsedCallExpression, parsedCallExpression.ToCallConstraint<TTarget>())
-        {
-        }
-        
-        protected ActionRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
-            : base(via, parsedCallExpression, callConstraint)
+        public ActionRedirectBuilder(IVia<TTarget> via, ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
+            : base(via, callValidator, callConstraint)
         {
         }
         
@@ -111,14 +106,14 @@ namespace DivertR.Internal
 
         public IActionRedirectBuilder<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new ActionRedirectBuilder<TTarget, TArgs>(Via, ParsedCallExpression, CallConstraint);
+            return new ActionRedirectBuilder<TTarget, TArgs>(Via, CallValidator, CallConstraint);
         }
 
         public new IActionCallLog<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
 
-            return new ActionCallLog<TTarget>(recordStream, ParsedCallExpression);
+            return new ActionCallLog<TTarget>(recordStream, CallValidator);
         }
 
         public IActionCallLog<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -133,11 +128,11 @@ namespace DivertR.Internal
     {
         private readonly IValueTupleMapper _valueTupleMapper;
         
-        public ActionRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
-            : base(via, parsedCallExpression, callConstraint)
+        public ActionRedirectBuilder(IVia<TTarget> via, ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
+            : base(via, callValidator, callConstraint)
         {
             _valueTupleMapper = ValueTupleMapperFactory.Create<TArgs>();
-            ParsedCallExpression.Validate(_valueTupleMapper);
+            CallValidator.Validate(_valueTupleMapper);
         }
 
         public IRedirect<TTarget> Build(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -196,7 +191,7 @@ namespace DivertR.Internal
             var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
             var mappedCollection = ActionCallLog<TTarget>.MapCalls<TArgs>(recordStream, _valueTupleMapper);
 
-            return new ActionCallLog<TTarget, TArgs>(mappedCollection, ParsedCallExpression);
+            return new ActionCallLog<TTarget, TArgs>(mappedCollection, CallValidator);
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using DivertR.Default;
-
-namespace DivertR.Dummy.Internal
+﻿namespace DivertR.Dummy.Internal
 {
     internal class DummyFactory : IDummyFactory
     {

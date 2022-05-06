@@ -7,7 +7,7 @@ namespace DivertR.Internal
         where TTarget : class
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public RedirectCall(IRelay<TTarget> relay, CallInfo<TTarget> callInfo)
+        public RedirectCall(IRelay<TTarget> relay, ICallInfo<TTarget> callInfo)
         {
             Relay = relay;
             CallInfo = callInfo;
@@ -19,7 +19,7 @@ namespace DivertR.Internal
             get;
         }
 
-        CallInfo IRedirectCall.CallInfo
+        ICallInfo IRedirectCall.CallInfo
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => CallInfo;
@@ -27,7 +27,7 @@ namespace DivertR.Internal
 
         IRelay IRedirectCall.Relay => Relay;
 
-        public CallInfo<TTarget> CallInfo
+        public ICallInfo<TTarget> CallInfo
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;

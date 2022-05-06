@@ -28,7 +28,7 @@ namespace DivertR.Record.Internal
             if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
-            var callConstraint = parsedCall.ToCallConstraint<TTarget>();
+            var callConstraint = parsedCall.CreateCallConstraint<TTarget>();
             var calls = _recordedCalls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
                 .Select(call => new FuncRecordedCall<TTarget, TReturn>(call));
@@ -41,7 +41,7 @@ namespace DivertR.Record.Internal
             if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
-            var callConstraint = parsedCall.ToCallConstraint<TTarget>();
+            var callConstraint = parsedCall.CreateCallConstraint<TTarget>();
             var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
             return new ActionCallStream<TTarget>(calls, parsedCall);
@@ -58,7 +58,7 @@ namespace DivertR.Record.Internal
             }
 
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
-            var callConstraint = parsedCall.ToCallConstraint<TTarget>();
+            var callConstraint = parsedCall.CreateCallConstraint<TTarget>();
             var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
             return new ActionCallStream<TTarget>(calls, parsedCall);

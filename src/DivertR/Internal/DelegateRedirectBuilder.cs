@@ -4,17 +4,17 @@ namespace DivertR.Internal
 {
     internal abstract class DelegateRedirectBuilder<TTarget> : RedirectBuilder<TTarget>, IDelegateRedirectBuilder<TTarget> where TTarget : class
     {
-        protected readonly ParsedCallExpression ParsedCallExpression;
+        protected readonly ICallValidator CallValidator;
 
-        protected DelegateRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
+        protected DelegateRedirectBuilder(IVia<TTarget> via, ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
             : base(via, callConstraint)
         {
-            ParsedCallExpression = parsedCallExpression ?? throw new ArgumentNullException(nameof(parsedCallExpression));
+            CallValidator = callValidator ?? throw new ArgumentNullException(nameof(callValidator));
         }
 
         public IRedirect<TTarget> Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            ParsedCallExpression.Validate(redirectDelegate);
+            CallValidator.Validate(redirectDelegate);
             var fastDelegate = redirectDelegate.ToDelegate();
             var callHandler = new DelegateCallHandler<TTarget>(call => fastDelegate.Invoke(call.Args.InternalArgs));
 

@@ -1,4 +1,4 @@
-﻿namespace DivertR.Default
+﻿namespace DivertR.Dummy
 {
     public interface IDummyFactory
     {

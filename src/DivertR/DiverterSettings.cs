@@ -1,13 +1,13 @@
-﻿using DivertR.Default;
-using DivertR.DispatchProxy;
+﻿using DivertR.DispatchProxy;
+using DivertR.Dummy;
 using DivertR.Dummy.Internal;
 
 namespace DivertR
 {
     public class DiverterSettings
     {
-        private static DiverterSettings Settings = new DiverterSettings();
-        private static readonly object SettingsLock = new object();
+        private static DiverterSettings GlobalSettings = new DiverterSettings();
+        private static readonly object GlobalLock = new object();
         
         public IProxyFactory ProxyFactory { get; }
 
@@ -20,17 +20,17 @@ namespace DivertR
         {
             get
             {
-                lock (SettingsLock)
+                lock (GlobalLock)
                 {
-                    return Settings;
+                    return GlobalSettings;
                 }
             }
 
             set
             {
-                lock (SettingsLock)
+                lock (GlobalLock)
                 {
-                    Settings = value;
+                    GlobalSettings = value;
                 }
             }
         }
@@ -41,7 +41,7 @@ namespace DivertR
             IDummyFactory? defaultRootFactory = null)
         {
             ProxyFactory = proxyFactory ?? new DispatchProxyFactory();
-            DummyRedirect ??= new DummyRedirect();
+            DummyRedirect = dummyRedirect ?? new DummyRedirect();
             DummyFactory = defaultRootFactory ?? new DummyFactory();
         }
     }

@@ -7,8 +7,8 @@ namespace DivertR.Record.Internal
 {
     internal class FuncCallLog<TTarget, TReturn> : FuncCallStream<TTarget, TReturn>, IFuncCallLog<TTarget, TReturn> where TTarget : class
     {
-        public FuncCallLog(IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn>> recordedCalls, ParsedCallExpression parsedCallExpression)
-            : base(recordedCalls, parsedCallExpression)
+        public FuncCallLog(IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn>> recordedCalls, ICallValidator callValidator)
+            : base(recordedCalls, callValidator)
         {
         }
 
@@ -29,10 +29,10 @@ namespace DivertR.Record.Internal
         public new IFuncCallLog<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleFactory = ValueTupleMapperFactory.Create<TArgs>();
-            ParsedCallExpression.Validate(valueTupleFactory);
+            CallValidator.Validate(valueTupleFactory);
             var mappedCall = MapCalls<TArgs>(Calls, valueTupleFactory);
             
-            return new FuncCallLog<TTarget, TReturn, TArgs>(mappedCall, ParsedCallExpression);
+            return new FuncCallLog<TTarget, TReturn, TArgs>(mappedCall, CallValidator);
         }
         
         public int Count => Calls.Count;
@@ -50,8 +50,8 @@ namespace DivertR.Record.Internal
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        public FuncCallLog(IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn, TArgs>> recordedCalls, ParsedCallExpression parsedCallExpression)
-            : base(recordedCalls, parsedCallExpression)
+        public FuncCallLog(IReadOnlyCollection<IFuncRecordedCall<TTarget, TReturn, TArgs>> recordedCalls, ICallValidator callValidator)
+            : base(recordedCalls, callValidator)
         {
         }
 
@@ -73,10 +73,10 @@ namespace DivertR.Record.Internal
         public new IFuncCallLog<TTarget, TReturn, TNewArgs> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleFactory = ValueTupleMapperFactory.Create<TNewArgs>();
-            ParsedCallExpression.Validate(valueTupleFactory);
+            CallValidator.Validate(valueTupleFactory);
             var mappedCall = FuncCallLog<TTarget, TReturn>.MapCalls<TNewArgs>(Calls, valueTupleFactory);
             
-            return new FuncCallLog<TTarget, TReturn, TNewArgs>(mappedCall, ParsedCallExpression);
+            return new FuncCallLog<TTarget, TReturn, TNewArgs>(mappedCall, CallValidator);
         }
         
         public int Count => Calls.Count;

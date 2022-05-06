@@ -14,7 +14,7 @@
             }
         }
 
-        public CallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
+        public ICallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
         public CallArguments Args => _recordedCall.CallInfo.Arguments;
         public ICallReturn<TReturn>? Returned { get; }
         ICallReturn? IRecordedCall<TTarget>.Returned => Returned;

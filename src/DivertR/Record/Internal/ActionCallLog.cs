@@ -7,8 +7,8 @@ namespace DivertR.Record.Internal
 {
     internal class ActionCallLog<TTarget> : ActionCallStream<TTarget>, IActionCallLog<TTarget> where TTarget : class
     {
-        public ActionCallLog(IReadOnlyCollection<IRecordedCall<TTarget>> calls, ParsedCallExpression parsedCallExpression)
-            : base(calls, parsedCallExpression)
+        public ActionCallLog(IReadOnlyCollection<IRecordedCall<TTarget>> calls, ICallValidator callValidator)
+            : base(calls, callValidator)
         {
         }
         
@@ -27,10 +27,10 @@ namespace DivertR.Record.Internal
         public new IActionCallLog<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleFactory = ValueTupleMapperFactory.Create<TArgs>();
-            ParsedCallExpression.Validate(valueTupleFactory);
+            CallValidator.Validate(valueTupleFactory);
             var mappedCall = MapCalls<TArgs>(Calls, valueTupleFactory);
 
-            return new ActionCallLog<TTarget, TArgs>(mappedCall, ParsedCallExpression);
+            return new ActionCallLog<TTarget, TArgs>(mappedCall, CallValidator);
         }
         
         public int Count => Calls.Count;
@@ -49,8 +49,8 @@ namespace DivertR.Record.Internal
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        public ActionCallLog(IReadOnlyCollection<IRecordedCall<TTarget, TArgs>> recordedCalls, ParsedCallExpression parsedCallExpression)
-            : base(recordedCalls, parsedCallExpression)
+        public ActionCallLog(IReadOnlyCollection<IRecordedCall<TTarget, TArgs>> recordedCalls, ICallValidator callValidator)
+            : base(recordedCalls, callValidator)
         {
         }
 
@@ -70,10 +70,10 @@ namespace DivertR.Record.Internal
             where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleFactory = ValueTupleMapperFactory.Create<TNewArgs>();
-            ParsedCallExpression.Validate(valueTupleFactory);
+            CallValidator.Validate(valueTupleFactory);
             var mappedCall = ActionCallLog<TTarget>.MapCalls<TNewArgs>(Calls, valueTupleFactory);
 
-            return new ActionCallLog<TTarget, TNewArgs>(mappedCall, ParsedCallExpression);
+            return new ActionCallLog<TTarget, TNewArgs>(mappedCall, CallValidator);
         }
         
         public int Count => Calls.Count;

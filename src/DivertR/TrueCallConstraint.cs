@@ -9,7 +9,7 @@ namespace DivertR
         private TrueCallConstraint() { }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsMatch(CallInfo callInfo)
+        public bool IsMatch(ICallInfo callInfo)
         {
             return true;
         }
@@ -22,7 +22,7 @@ namespace DivertR
         private TrueCallConstraint() { }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsMatch(CallInfo<TTarget> callInfo)
+        public bool IsMatch(ICallInfo<TTarget> callInfo)
         {
             return true;
         }

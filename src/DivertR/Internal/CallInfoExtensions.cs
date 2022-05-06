@@ -6,7 +6,7 @@ namespace DivertR.Internal
     internal static class CallInfoExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object? Invoke<TTarget>(this CallInfo<TTarget> callInfo, object target) where TTarget : class
+        public static object? Invoke<TTarget>(this ICallInfo<TTarget> callInfo, object target) where TTarget : class
         {
             if (target == null) throw new ArgumentNullException(nameof(target));
             

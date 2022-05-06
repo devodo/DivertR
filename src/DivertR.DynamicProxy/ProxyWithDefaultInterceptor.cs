@@ -29,7 +29,7 @@ namespace DivertR.DynamicProxy
                 return;
             }
             
-            var callInfo = new CallInfo<TTarget>((TTarget) invocation.Proxy, _root, invocation.Method, invocation.Arguments);
+            var callInfo = CallInfoFactory.Create((TTarget) invocation.Proxy, _root, invocation.Method, invocation.Arguments);
             invocation.ReturnValue = proxyCall.Call(callInfo);
         }
 

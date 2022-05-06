@@ -9,21 +9,21 @@ namespace DivertR.Record.Internal
 {
     internal class ActionCallStream<TTarget> : CallStream<IRecordedCall<TTarget>, TTarget>, IActionCallStream<TTarget> where TTarget : class
     {
-        protected readonly ParsedCallExpression ParsedCallExpression;
+        protected readonly ICallValidator CallValidator;
 
-        public ActionCallStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ParsedCallExpression parsedCallExpression)
+        public ActionCallStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls, ICallValidator callValidator)
             : base(recordedCalls)
         {
-            ParsedCallExpression = parsedCallExpression;
+            CallValidator = callValidator;
         }
         
         public IActionCallStream<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleFactory = ValueTupleMapperFactory.Create<TArgs>();
-            ParsedCallExpression.Validate(valueTupleFactory);
+            CallValidator.Validate(valueTupleFactory);
             var mappedCall = MapCalls<TArgs>(Calls, valueTupleFactory);
 
-            return new ActionCallStream<TTarget, TArgs>(mappedCall, ParsedCallExpression);
+            return new ActionCallStream<TTarget, TArgs>(mappedCall, CallValidator);
         }
 
         public IReplayResult Replay<TArgs>(Action<IRecordedCall<TTarget, TArgs>> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -78,22 +78,22 @@ namespace DivertR.Record.Internal
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        protected readonly ParsedCallExpression ParsedCallExpression;
+        protected readonly ICallValidator CallValidator;
 
-        public ActionCallStream(IEnumerable<IRecordedCall<TTarget, TArgs>> recordedCalls, ParsedCallExpression parsedCallExpression)
+        public ActionCallStream(IEnumerable<IRecordedCall<TTarget, TArgs>> recordedCalls, ICallValidator callValidator)
             : base(recordedCalls)
         {
-            ParsedCallExpression = parsedCallExpression;
+            CallValidator = callValidator;
         }
         
         public IActionCallStream<TTarget, TNewArgs> WithArgs<TNewArgs>()
             where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleFactory = ValueTupleMapperFactory.Create<TNewArgs>();
-            ParsedCallExpression.Validate(valueTupleFactory);
+            CallValidator.Validate(valueTupleFactory);
             var mappedCall = ActionCallStream<TTarget>.MapCalls<TNewArgs>(Calls, valueTupleFactory);
 
-            return new ActionCallStream<TTarget, TNewArgs>(mappedCall, ParsedCallExpression);
+            return new ActionCallStream<TTarget, TNewArgs>(mappedCall, CallValidator);
         }
     }
 }

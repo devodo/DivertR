@@ -5,18 +5,18 @@ using System.Reflection;
 
 namespace DivertR.Internal
 {
-    internal class ParsedCallExpression
+    internal class ParsedCallExpression : ICallValidator
     {
         private readonly IMethodConstraint _methodConstraint;
         private readonly IArgumentConstraint[] _argumentConstraints;
-        
-        public MethodInfo Method { get; }
-        public ParameterInfo[] ParameterInfos { get; }
+        private readonly MethodInfo _method;
+        private readonly ParameterInfo[] _parameterInfos;
+
 
         internal ParsedCallExpression(MethodInfo method, ParameterInfo[] parameterInfos, IMethodConstraint methodConstraint, IArgumentConstraint[] argumentConstraints)
         {
-            Method = method;
-            ParameterInfos = parameterInfos;
+            _method = method;
+            _parameterInfos = parameterInfos;
             _methodConstraint = methodConstraint;
             _argumentConstraints = argumentConstraints;
         }
@@ -48,13 +48,13 @@ namespace DivertR.Internal
             
             if (!ReturnTypeValid(returnType))
             {
-                var redirectReturnName = Method.ReturnType.Name;
+                var redirectReturnName = _method.ReturnType.Name;
                 var returnTypeName = redirectDelegate.Method.ReturnType.Name;
 
                 if (returnTypeName == redirectReturnName)
                 {
                     returnTypeName = redirectDelegate.Method.ReturnType.FullName;
-                    redirectReturnName = Method.ReturnType.FullName;
+                    redirectReturnName = _method.ReturnType.FullName;
                 }
                 
                 throw new DiverterValidationException($"Delegate return type ({returnTypeName}) invalid for redirect call returning type ({redirectReturnName})");
@@ -78,53 +78,48 @@ namespace DivertR.Internal
                 $"{Environment.NewLine}{details}");
         }
 
-        public ICallConstraint<TTarget> ToCallConstraint<TTarget>() where TTarget : class
+        public ICallConstraint<TTarget> CreateCallConstraint<TTarget>() where TTarget : class
         {
             return new MethodCallConstraint<TTarget>(_methodConstraint, _argumentConstraints);
         }
         
         private string GetMethodParameterSignature()
         {
-            var methodParameters = string.Join(", ", ParameterInfos.Select(x => x.ParameterType.Name));
+            var methodParameters = string.Join(", ", _parameterInfos.Select(x => x.ParameterType.Name));
 
             string? genericArguments = null;
             
-            if (Method.IsGenericMethod)
+            if (_method.IsGenericMethod)
             {
-                var joinedArgs = string.Join(", ", Method.GetGenericArguments().Select(x => x.Name));
+                var joinedArgs = string.Join(", ", _method.GetGenericArguments().Select(x => x.Name));
                 genericArguments = $"<{joinedArgs}>";
             }
             
-            return $"{Method.Name}{genericArguments}({methodParameters})";
+            return $"{_method.Name}{genericArguments}({methodParameters})";
         }
 
         private bool ReturnTypeValid(Type returnType)
         {
-            if (ReferenceEquals(returnType, Method.ReturnType))
+            if (ReferenceEquals(returnType, _method.ReturnType))
             {
                 return true;
             }
             
-            if (Method.ReturnType.IsAssignableFrom(returnType))
-            {
-                return true;
-            }
-
-            return false;
+            return _method.ReturnType.IsAssignableFrom(returnType);
         }
 
         private IEnumerable<(bool isValid, string? message)> ValidateArgumentTypes((Type type, ParameterInfo? parameter)[] argumentTypes, bool isStrict)
         {
-            var parameterTypes = ParameterInfos
+            var parameterTypes = _parameterInfos
                 .Select(x => x)
                 .Concat(Enumerable
-                    .Range(0, Math.Max(0, argumentTypes.Length - ParameterInfos.Length))
+                    .Range(0, Math.Max(0, argumentTypes.Length - _parameterInfos.Length))
                     .Select(_ => (ParameterInfo?) null));
             
             var argTypes = argumentTypes
                 .Select(x => x)
                 .Concat(Enumerable
-                    .Range(0, Math.Max(0, ParameterInfos.Length - argumentTypes.Length))
+                    .Range(0, Math.Max(0, _parameterInfos.Length - argumentTypes.Length))
                     .Select(_ => ((Type type, ParameterInfo? parameter)) default));
 
             var zip = parameterTypes

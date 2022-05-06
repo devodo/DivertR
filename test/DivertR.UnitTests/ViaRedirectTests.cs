@@ -791,6 +791,23 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenRedirect_WithReturnMatch_ShouldRedirect()
+        {
+            // ARRANGE
+            var original = new Foo("foo");
+            var proxy = _via.Proxy(original);
+            _via
+                .To(x => Is<string>.Any)
+                .Redirect(() => "relay " + (string) _via.Relay.CallRoot());
+
+            // ACT
+            var result = proxy.Name;
+
+            // ASSERT
+            result.ShouldBe("relay " + original.Name);
+        }
+        
+        [Fact]
         public void TestNumber()
         {
             // ARRANGE

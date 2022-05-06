@@ -8,12 +8,12 @@ namespace DivertR.Record.Internal
         
         private ICallReturn? _callReturn;
         
-        public RecordedCall(CallInfo<TTarget> callInfo)
+        public RecordedCall(ICallInfo<TTarget> callInfo)
         {
             CallInfo = callInfo;
         }
         
-        public CallInfo<TTarget> CallInfo { get; }
+        public ICallInfo<TTarget> CallInfo { get; }
 
         public CallArguments Args => CallInfo.Arguments;
         
@@ -64,6 +64,6 @@ namespace DivertR.Record.Internal
         
         CallArguments IRecordedCall<TTarget>.Args => _recordedCall.Args;
         
-        public CallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
+        public ICallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
     }
 }

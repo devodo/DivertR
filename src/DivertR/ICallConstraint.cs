@@ -5,12 +5,12 @@ namespace DivertR
     public interface ICallConstraint
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        bool IsMatch(CallInfo callInfo);
+        bool IsMatch(ICallInfo callInfo);
     }
     
-    public interface ICallConstraint<TTarget> where TTarget : class
+    public interface ICallConstraint<in TTarget> where TTarget : class
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        bool IsMatch(CallInfo<TTarget> callInfo);
+        bool IsMatch(ICallInfo<TTarget> callInfo);
     }
 }

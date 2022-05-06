@@ -14,7 +14,7 @@ namespace DivertR.Internal
             get;
         }
         
-        public CallInfo<TTarget> CallInfo
+        public ICallInfo<TTarget> CallInfo
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
@@ -27,7 +27,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RelayIndex<TTarget>? Create(RedirectPlan<TTarget> redirectPlan, CallInfo<TTarget> callInfo)
+        public static RelayIndex<TTarget>? Create(RedirectPlan<TTarget> redirectPlan, ICallInfo<TTarget> callInfo)
         {
             var index = GetNextIndex(-1, redirectPlan.Redirects, callInfo);
 
@@ -42,7 +42,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private RelayIndex(RedirectPlan<TTarget> redirectPlan, int index, CallInfo<TTarget> callInfo, bool strictSatisfied)
+        private RelayIndex(RedirectPlan<TTarget> redirectPlan, int index, ICallInfo<TTarget> callInfo, bool strictSatisfied)
         {
             _redirectPlan = redirectPlan;
             CallInfo = callInfo;
@@ -51,7 +51,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public RelayIndex<TTarget>? MoveNext(CallInfo<TTarget> callInfo)
+        public RelayIndex<TTarget>? MoveNext(ICallInfo<TTarget> callInfo)
         {
             var index = GetNextIndex(_index, _redirectPlan.Redirects, callInfo);
 
@@ -66,7 +66,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetNextIndex(int index, IReadOnlyList<IRedirect<TTarget>> redirects, CallInfo<TTarget> callInfo)
+        private static int GetNextIndex(int index, IReadOnlyList<IRedirect<TTarget>> redirects, ICallInfo<TTarget> callInfo)
         {
             var startIndex = index + 1;
 

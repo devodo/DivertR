@@ -14,7 +14,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsMatch(CallInfo<TTarget> callInfo)
+        public bool IsMatch(ICallInfo<TTarget> callInfo)
         {
             if (!_methodConstraint.IsMatch(callInfo.Method))
             {

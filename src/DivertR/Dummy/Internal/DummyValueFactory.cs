@@ -12,8 +12,7 @@ namespace DivertR.Dummy.Internal
         public DummyValueFactory()
         {
             var defaultTaskFactory = new TaskValueFactory();
-            var defaultIListFactory = new ListValueFactory();
-            
+
             _valueFactories = new Dictionary<Type, Func<Type, DummyValueFactory, object?>>
             {
                 [typeof(Task)] = (type, factory) => Task.CompletedTask,
@@ -22,8 +21,6 @@ namespace DivertR.Dummy.Internal
                 [typeof(IEnumerable)] = CreateEnumerable,
                 [typeof(IEnumerable<>)] = CreateEnumerableOf,
                 [typeof(Array)] = CreateArray,
-                [typeof(List<>)] = (type, factory) => Activator.CreateInstance(type),
-                [typeof(IList<>)] = defaultIListFactory.CreateListOf,
                 [typeof(ValueTuple<>)] = CreateTupleOf,
                 [typeof(ValueTuple<,>)] = CreateTupleOf,
                 [typeof(ValueTuple<,,>)] = CreateTupleOf,

@@ -7,13 +7,8 @@ namespace DivertR.Internal
 {
     internal class FuncRedirectBuilder<TTarget, TReturn> : DelegateRedirectBuilder<TTarget>, IFuncRedirectBuilder<TTarget, TReturn> where TTarget : class
     {
-        public FuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression)
-            : base(via, parsedCallExpression, parsedCallExpression.ToCallConstraint<TTarget>())
-        {
-        }
-        
-        protected FuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
-            : base(via, parsedCallExpression, callConstraint)
+        public FuncRedirectBuilder(IVia<TTarget> via, ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
+            : base(via, callValidator, callConstraint)
         {
         }
         
@@ -122,7 +117,7 @@ namespace DivertR.Internal
 
         public IFuncRedirectBuilder<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new FuncRedirectBuilder<TTarget, TReturn, TArgs>(Via, ParsedCallExpression, CallConstraint);
+            return new FuncRedirectBuilder<TTarget, TReturn, TArgs>(Via, CallValidator, CallConstraint);
         }
         
         public new IFuncCallLog<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -131,7 +126,7 @@ namespace DivertR.Internal
             var mappedCollection = new MappedCollection<IRecordedCall<TTarget>, IFuncRecordedCall<TTarget, TReturn>>(recordStream,
                 call => new FuncRecordedCall<TTarget, TReturn>(call));
 
-            return new FuncCallLog<TTarget, TReturn>(mappedCollection, ParsedCallExpression);
+            return new FuncCallLog<TTarget, TReturn>(mappedCollection, CallValidator);
         }
 
         public IFuncCallLog<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -146,11 +141,11 @@ namespace DivertR.Internal
     {
         private readonly IValueTupleMapper _valueTupleMapper;
         
-        public FuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
-            : base(via, parsedCallExpression, callConstraint)
+        public FuncRedirectBuilder(IVia<TTarget> via, ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
+            : base(via, callValidator, callConstraint)
         {
             _valueTupleMapper = ValueTupleMapperFactory.Create<TArgs>();
-            ParsedCallExpression.Validate(_valueTupleMapper);
+            CallValidator.Validate(_valueTupleMapper);
         }
 
         public IRedirect<TTarget> Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -224,7 +219,7 @@ namespace DivertR.Internal
             var mappedCollection = new MappedCollection<IRecordedCall<TTarget>, IFuncRecordedCall<TTarget, TReturn, TArgs>>(recordStream,
                 call => new FuncRecordedCall<TTarget, TReturn, TArgs>(call, (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs)));
 
-            return new FuncCallLog<TTarget, TReturn, TArgs>(mappedCollection, ParsedCallExpression);
+            return new FuncCallLog<TTarget, TReturn, TArgs>(mappedCollection, CallValidator);
         }
     }
 }

@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DivertR.Default;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;

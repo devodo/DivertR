@@ -7,7 +7,8 @@ namespace DivertR.Internal
         where TTarget : class
         where TReturn : class
     {
-        public ClassFuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression) : base(via, parsedCallExpression)
+        public ClassFuncRedirectBuilder(IVia<TTarget> via, ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
+            : base(via, callValidator, callConstraint)
         {
         }
 
@@ -92,7 +93,7 @@ namespace DivertR.Internal
 
         public new IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new ClassFuncRedirectBuilder<TTarget, TReturn, TArgs>(Via, ParsedCallExpression, CallConstraint);
+            return new ClassFuncRedirectBuilder<TTarget, TReturn, TArgs>(Via, CallValidator, CallConstraint);
         }
     }
 
@@ -102,8 +103,8 @@ namespace DivertR.Internal
         where TReturn : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        public ClassFuncRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
-            : base(via, parsedCallExpression, callConstraint)
+        public ClassFuncRedirectBuilder(IVia<TTarget> via, ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
+            : base(via, callValidator, callConstraint)
         {
         }
 

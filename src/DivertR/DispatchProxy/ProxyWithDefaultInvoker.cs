@@ -28,7 +28,7 @@ namespace DivertR.DispatchProxy
                 return DefaultProceed(targetMethod, args);
             }
             
-            var callInfo = new CallInfo<TTarget>(_proxy, _root, targetMethod, args);
+            var callInfo = CallInfoFactory.Create(_proxy, _root, targetMethod, args);
 
             return proxyCall.Call(callInfo)!;
         }

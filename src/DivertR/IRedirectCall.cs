@@ -5,7 +5,7 @@ namespace DivertR
     public interface IRedirectCall
     {
         IRelay Relay { get; }
-        CallInfo CallInfo { get; }
+        ICallInfo CallInfo { get; }
         CallArguments Args { get; }
 
         object? CallNext();
@@ -18,7 +18,7 @@ namespace DivertR
     
     public interface IRedirectCall<TTarget> : IRedirectCall where TTarget : class
     {
-        new CallInfo<TTarget> CallInfo { get; }
+        new ICallInfo<TTarget> CallInfo { get; }
         new IRelay<TTarget> Relay { get; }
         TTarget Next { get; }
         TTarget Root { get; }
