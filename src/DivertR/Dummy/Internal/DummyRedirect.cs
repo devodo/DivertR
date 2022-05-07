@@ -2,7 +2,7 @@
 
 namespace DivertR.Dummy.Internal
 {
-    public class DummyRedirect : IRedirect
+    public class DummyRedirect : IRedirectUntargeted
     {
         private readonly DummyCallHandler _callHandler = new DummyCallHandler();
         
@@ -19,6 +19,18 @@ namespace DivertR.Dummy.Internal
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _callHandler;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsMatch(ICallInfo callInfo)
+        {
+            throw new System.NotImplementedException();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Handle(IRedirectCall call)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

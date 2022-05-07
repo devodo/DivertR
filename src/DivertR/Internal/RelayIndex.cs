@@ -5,7 +5,7 @@ namespace DivertR.Internal
 {
     internal class RelayIndex<TTarget> where TTarget : class
     {
-        private readonly RedirectPlan<TTarget> _redirectPlan;
+        private readonly IRedirectPlan _redirectPlan;
         private readonly int _index;
 
         public bool StrictSatisfied
@@ -20,14 +20,14 @@ namespace DivertR.Internal
             get;
         }
 
-        public IRedirect<TTarget> Redirect
+        public IRedirect Redirect
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _redirectPlan.Redirects[_index];
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RelayIndex<TTarget>? Create(RedirectPlan<TTarget> redirectPlan, ICallInfo<TTarget> callInfo)
+        public static RelayIndex<TTarget>? Create(IRedirectPlan redirectPlan, ICallInfo<TTarget> callInfo)
         {
             var index = GetNextIndex(-1, redirectPlan.Redirects, callInfo);
 
@@ -42,7 +42,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private RelayIndex(RedirectPlan<TTarget> redirectPlan, int index, ICallInfo<TTarget> callInfo, bool strictSatisfied)
+        private RelayIndex(IRedirectPlan redirectPlan, int index, ICallInfo<TTarget> callInfo, bool strictSatisfied)
         {
             _redirectPlan = redirectPlan;
             CallInfo = callInfo;
@@ -66,13 +66,13 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetNextIndex(int index, IReadOnlyList<IRedirect<TTarget>> redirects, ICallInfo<TTarget> callInfo)
+        private static int GetNextIndex(int index, IReadOnlyList<IRedirect> redirects, ICallInfo callInfo)
         {
             var startIndex = index + 1;
 
             for (var i = startIndex; i < redirects.Count; i++)
             {
-                if (!redirects[i].CallConstraint.IsMatch(callInfo))
+                if (!redirects[i].IsMatch(callInfo))
                 {
                     continue;
                 }

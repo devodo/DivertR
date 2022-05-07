@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -110,6 +111,36 @@ namespace DivertR.UnitTests
             
             // ASSERT
             subject.Name.ShouldBe(original.Name);
+        }
+        
+        [Fact]
+        public void GivenRegisterByType_ShouldRegisterVia()
+        {
+            // ARRANGE
+            var diverter = new Diverter();
+            diverter.Register(typeof(IFoo));
+
+            // ACT
+            var foo = diverter.Via<IFoo>().Proxy();
+            
+            // ASSERT
+            foo.ShouldNotBeNull();
+        }
+        
+        [Fact]
+        public void GivenRegisterByTypes_ShouldRegisterVia()
+        {
+            // ARRANGE
+            var diverter = new Diverter();
+            diverter.Register(new[] { typeof(IFoo), typeof(IList<int>) });
+
+            // ACT
+            var foo = diverter.Via<IFoo>().Proxy();
+            var list = diverter.Via<IList<int>>().Proxy();
+            
+            // ASSERT
+            foo.ShouldNotBeNull();
+            list.ShouldNotBeNull();
         }
     }
 }

@@ -11,30 +11,16 @@ namespace DivertR
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
-        
-        ICallConstraint CallConstraint
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-        }
 
-        ICallHandler CallHandler
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool IsMatch(ICallInfo callInfo);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        object? Handle(IRedirectCall call);
     }
 
-    public interface IRedirect<TTarget> where TTarget : class
+    public interface IRedirect<TTarget> : IRedirect where TTarget : class
     {
-        int OrderWeight { get; }
-
-        bool DisableSatisfyStrict
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-        }
-
         ICallConstraint<TTarget> CallConstraint
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

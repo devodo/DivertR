@@ -93,7 +93,7 @@ namespace DivertR.Internal
 
             try
             {
-                return relayNext.Redirect.CallHandler.Handle(CreateRedirectCall(relayIndex.CallInfo));
+                return relayNext.Redirect.Handle(CreateRedirectCall(relayIndex.CallInfo));
             }
             finally
             {
@@ -121,7 +121,7 @@ namespace DivertR.Internal
 
             try
             {
-                return relayNext.Redirect.CallHandler.Handle(CreateRedirectCall(callInfo));
+                return relayNext.Redirect.Handle(CreateRedirectCall(callInfo));
             }
             finally
             {
@@ -149,7 +149,7 @@ namespace DivertR.Internal
 
             try
             {
-                return relayNext.Redirect.CallHandler.Handle(CreateRedirectCall(callInfo));
+                return relayNext.Redirect.Handle(CreateRedirectCall(callInfo));
             }
             finally
             {
@@ -158,7 +158,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal object? CallBegin(RedirectPlan<TTarget> redirectPlan, ICallInfo<TTarget> callInfo)
+        internal object? CallBegin(IRedirectPlan redirectPlan, ICallInfo<TTarget> callInfo)
         {
             var relayIndex = RelayIndex<TTarget>.Create(redirectPlan, callInfo);
 
@@ -178,7 +178,7 @@ namespace DivertR.Internal
             
             try
             {
-                return relayIndex.Redirect.CallHandler.Handle(CreateRedirectCall(callInfo));
+                return relayIndex.Redirect.Handle(CreateRedirectCall(callInfo));
             }
             finally
             {

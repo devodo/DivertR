@@ -43,5 +43,27 @@ namespace DivertR
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsMatch(ICallInfo callInfo)
+        {
+            if (!(callInfo is ICallInfo<TTarget> callOfTTarget))
+            {
+                return false;
+            }
+            
+            return CallConstraint.IsMatch(callOfTTarget);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Handle(IRedirectCall call)
+        {
+            if (!(call is IRedirectCall<TTarget> callOfTTarget))
+            {
+                throw new ArgumentException($"Redirect target type invalid for IRedirectCall type: {call.GetType()}", nameof(call));
+            }
+            
+            return CallHandler.Handle(callOfTTarget);
+        }
     }
 }

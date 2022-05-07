@@ -4,11 +4,9 @@
     {
         public TTarget Create<TTarget>(DiverterSettings diverterSettings) where TTarget : class
         {
-            var via = new Via<TTarget>(diverterSettings);
-            var redirect = new WrappedRedirect<TTarget>(diverterSettings.DummyRedirect);
-            via.InsertRedirect(redirect);
+            var via = new Via<TTarget>(diverterSettings, diverterSettings.DummyRedirectRepository);
 
-            return via.Proxy(null);
+            return via.Proxy(false);
         }
     }
 }

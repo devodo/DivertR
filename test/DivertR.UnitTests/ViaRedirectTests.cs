@@ -870,7 +870,7 @@ namespace DivertR.UnitTests
             }
 
             // ACT
-            var redirectPlan = _via.RedirectPlan;
+            var redirectPlan = _via.RedirectRepository.RedirectPlan;
 
             // ASSERT
             redirectPlan.IsStrictMode.ShouldBe(false);

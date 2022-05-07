@@ -5,24 +5,40 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class RedirectRepository<TTarget> where TTarget : class
+    internal class RedirectRepository : IRedirectRepository
     {
-        private readonly ConcurrentStack<RedirectPlan<TTarget>> _redirectPlans = new ConcurrentStack<RedirectPlan<TTarget>>();
+        private readonly ConcurrentStack<RedirectPlan> _redirectPlans = new ConcurrentStack<RedirectPlan>();
         private readonly object _lockObject = new object();
 
-        public RedirectPlan<TTarget> RedirectPlan
+        public RedirectRepository()
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            // ReSharper disable once InconsistentlySynchronizedField
-            get => _redirectPlans.TryPeek(out var redirectPlan) ? redirectPlan : RedirectPlan<TTarget>.Empty;
+            _redirectPlans.Push(DivertR.Internal.RedirectPlan.Empty);
+        }
+        
+        public RedirectRepository(IEnumerable<IRedirect> redirects)
+        {
+            var redirectPlan = DivertR.Internal.RedirectPlan.Empty.InsertRedirects(redirects);
+            _redirectPlans.Push(redirectPlan);
         }
 
-        public void InsertRedirect(IRedirect<TTarget> redirect)
+        public IRedirectPlan RedirectPlan
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                // ReSharper disable once InconsistentlySynchronizedField
+                _redirectPlans.TryPeek(out var redirectPlan);
+
+                return redirectPlan;
+            } 
+        }
+
+        public void InsertRedirect(IRedirect redirect)
         {
             MutateRedirectPlan(original => original.InsertRedirect(redirect));
         }
         
-        public void InsertRedirects(IEnumerable<IRedirect<TTarget>> redirects)
+        public void InsertRedirects(IEnumerable<IRedirect> redirects)
         {
             MutateRedirectPlan(original => original.InsertRedirects(redirects));
         }
@@ -37,15 +53,16 @@ namespace DivertR.Internal
             lock (_lockObject)
             {
                 _redirectPlans.Clear();
+                _redirectPlans.Push(DivertR.Internal.RedirectPlan.Empty);
             }
         }
 
-        private void MutateRedirectPlan(Func<RedirectPlan<TTarget>, RedirectPlan<TTarget>> mutateAction)
+        private void MutateRedirectPlan(Func<RedirectPlan, RedirectPlan> mutateAction)
         {
             lock (_lockObject)
             {
-                var current = RedirectPlan;
-                var mutated = mutateAction(current);
+                _redirectPlans.TryPeek(out var redirectPlan);
+                var mutated = mutateAction(redirectPlan);
                 _redirectPlans.Push(mutated);
             }
         }

@@ -8,7 +8,7 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class DefaultRootTests
+    public class DummyRootTests
     {
         private readonly IVia<IFoo> _via = new Via<IFoo>();
 
@@ -201,33 +201,7 @@ namespace DivertR.UnitTests
             // ASSERT
             result.ShouldBe(Array.Empty<object[][]>());
         }
-        
-        [Fact]
-        public void GivenDummyRootProxy_WhenCallHasListTypeReturn_ShouldReturnEmptyList()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy();
 
-            // ACT
-            var result = proxy.EchoGeneric<List<int>>(default);
-
-            // ASSERT
-            result.ShouldBe(new List<int>());
-        }
-        
-        [Fact]
-        public void GivenDummyRootProxy_WhenCallHasIListTypeReturn_ShouldReturnEmptyList()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy();
-
-            // ACT
-            var result = proxy.EchoGeneric<IList<int>>(default);
-
-            // ASSERT
-            result.ShouldBe(new List<int>());
-        }
-        
         [Fact]
         public void GivenDummyRootProxy_WhenCallHasIEnumerableReturn_ShouldReturnEmptyIEnumerable()
         {
@@ -539,11 +513,12 @@ namespace DivertR.UnitTests
             result.Rest.Item1.ShouldBe(Task.CompletedTask);
         }
         
-/*
         [Fact]
         public void GivenCustomDummyValueFactory_WhenCallCustomTypeReturn_ShouldReturnCustomValue()
         {
             // ARRANGE
+            var diverterSettings = new DiverterSettings();
+            diverterSettings.DummyRedirectRepository.InsertRedirect();
             var defaultValue = new List<int> { 1, 2, 3 };
             var defaultValueFactory = DefaultValueFactory.Default.Customise(x => x
                 .Add(typeof(List<int>), (_, _) => defaultValue));
@@ -597,7 +572,5 @@ namespace DivertR.UnitTests
             valueTypeResult.ShouldBe(default);
             taskResult.ShouldBe(null);
         }
-        
-        */
     }
 }
