@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -89,7 +90,7 @@ namespace DivertR.Internal
                           parameterInfo.ParameterType.IsByRef) &&
                          memberExpression.Member.Name == nameof(Is<object>.Any):
                     {
-                        return TrueArgumentConstraint.Instance;
+                        return BuildTypeMatchConstraint(memberExpression.Member.DeclaringType.GenericTypeArguments[0]);
                     }
 
                 case MethodCallExpression callExpression
@@ -132,6 +133,20 @@ namespace DivertR.Internal
             var lambdaType = typeof(LambdaArgumentConstraint<>).MakeGenericType(argumentType);
             
             return (IArgumentConstraint) Activator.CreateInstance(lambdaType, ActivatorFlags, null, new object[] { matchExpression }, default);
+        }
+        
+        private static readonly ConcurrentDictionary<Type, IArgumentConstraint> TypeMatchConstraintCache = new ConcurrentDictionary<Type, IArgumentConstraint>();
+        
+        private static IArgumentConstraint BuildTypeMatchConstraint(Type argumentType)
+        {
+            const BindingFlags ActivatorFlags = BindingFlags.Public | BindingFlags.Instance;
+
+            return TypeMatchConstraintCache.GetOrAdd(argumentType, argType =>
+            {
+                var lambdaType = typeof(TypeArgumentConstraint<>).MakeGenericType(argumentType);
+
+                return (IArgumentConstraint) Activator.CreateInstance(lambdaType, ActivatorFlags, null, null, default);
+            });
         }
 
         private static IMethodConstraint CreateMethodConstraint(MethodInfo methodInfo)

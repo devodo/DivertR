@@ -138,12 +138,27 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirectWithCallNextRelay_ShouldRelayToRoot()
+        public void GivenRedirectWithCallNextRelay_ShouldRelay()
         {
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             _via.To(x => x.Name).Redirect(() => "relay " + (string) _via.Relay.CallNext());
+
+            // ACT
+            var name = proxy.Name;
+
+            // ASSERT
+            name.ShouldBe("relay " + original.Name);
+        }
+        
+        [Fact]
+        public void GivenRedirectWithCallNext_ShouldRelay()
+        {
+            // ARRANGE
+            var original = new Foo("foo");
+            var proxy = _via.Proxy(original);
+            _via.To(x => x.Name).Redirect(call => "relay " + call.CallNext());
 
             // ACT
             var name = proxy.Name;
@@ -348,6 +363,40 @@ namespace DivertR.UnitTests
 
             // ASSERT
             message.ShouldBe("hello foo test");
+        }
+
+        [Fact]
+        public void GivenSubTypeIsAnyExpressionRedirect_WhenCallSubTypeNotMatch_ShouldNotRedirect()
+        {
+            // ARRANGE
+            var via = new Via<IFoo>();
+            via
+                .To(x => x.EchoGeneric<object>(Is<string>.Any))
+                .Redirect<(object input, __)>(call => $"{call.Next.Name} {call.Args.input}");
+
+            // ACT
+            var proxy = via.Proxy(new Foo());
+            var result = proxy.EchoGeneric<object>(1);
+
+            // ASSERT
+            result.ShouldBe(1);
+        }
+        
+        [Fact]
+        public void GivenSubTypeIsMatchExpressionRedirect_WhenCallSubTypeNotMatch_ShouldNotRedirect()
+        {
+            // ARRANGE
+            var via = new Via<IFoo>();
+            via
+                .To(x => x.EchoGeneric<object>(Is<string>.Match(a => true)))
+                .Redirect<(object input, __)>(call => $"{call.Next.Name} {call.Args.input}");
+
+            // ACT
+            var proxy = via.Proxy(new Foo());
+            var result = proxy.EchoGeneric<object>(1);
+
+            // ASSERT
+            result.ShouldBe(1);
         }
         
         [Fact]
@@ -632,7 +681,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirect_WithCallOriginalRelay_ShouldRelayToRoot()
+        public void GivenRedirect_WithCallRootRelay_ShouldRelayToRoot()
         {
             // ARRANGE
             var original = new Foo("foo");
@@ -640,6 +689,23 @@ namespace DivertR.UnitTests
             _via
                 .To(x => x.Name)
                 .Redirect(() => "relay " + (string) _via.Relay.CallRoot());
+
+            // ACT
+            var result = proxy.Name;
+
+            // ASSERT
+            result.ShouldBe("relay " + original.Name);
+        }
+        
+        [Fact]
+        public void GivenRedirect_WithCallRoot_ShouldRelayToRoot()
+        {
+            // ARRANGE
+            var original = new Foo("foo");
+            var proxy = _via.Proxy(original);
+            _via
+                .To(x => x.Name)
+                .Redirect(call => "relay " + call.CallRoot());
 
             // ACT
             var result = proxy.Name;
@@ -806,24 +872,7 @@ namespace DivertR.UnitTests
             // ASSERT
             result.ShouldBe("relay " + original.Name);
         }
-        
-        [Fact]
-        public void TestNumber()
-        {
-            // ARRANGE
-            var via = new Via<INumber>();
-            via
-                .To(x => x.GetNumber(Is<int>.Any))
-                .Redirect<(int input, __)>(call => call.Args.input + 5);
 
-            // ACT
-            var proxy = via.Proxy(new Number());
-            var result = proxy.GetNumber(10);
-
-            // ASSERT
-            result.ShouldBe(15);
-        }
-        
         [Fact]
         public void GivenActionRelayRedirect_ShouldRedirect()
         {
