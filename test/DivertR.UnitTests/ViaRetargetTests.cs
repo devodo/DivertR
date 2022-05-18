@@ -209,10 +209,10 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _via.Proxy(new Foo("hello foo"));
             var next = _via.Relay.Next;
-            _via
-                .To().Retarget(new FooAlt(() => $"DivertR {next.Name} 1"))
-                .To().Retarget(new FooAlt(() => $"here {next.Name} 2"))
-                .To().Retarget(new FooAlt(() => $"again {next.Name} 3"), options => options.OrderWeight(-10));
+            _via.To(x => x.Name)
+                .Retarget(new FooAlt(() => $"DivertR {next.Name} 1"))
+                .Retarget(new FooAlt(() => $"here {next.Name} 2"))
+                .Retarget(new FooAlt(() => $"again {next.Name} 3"), options => options.OrderWeight(-10));
 
             // ACT
             var name = proxy.Name;

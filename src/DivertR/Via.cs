@@ -124,7 +124,7 @@ namespace DivertR
             return this;
         }
         
-        public IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             return To().Retarget(target, optionsAction);
         }
@@ -134,50 +134,50 @@ namespace DivertR
             return To().Record(optionsAction);
         }
 
-        public IRedirectBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null)
+        public IViaBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null)
         {
-            return new RedirectBuilder<TTarget>(this, callConstraint);
+            return new ViaBuilder<TTarget>(RedirectRepository, callConstraint);
         }
         
-        public IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(bool matchSubType = false) where TReturn : struct
+        public IFuncViaBuilder<TTarget, TReturn> To<TReturn>(bool matchSubType = false) where TReturn : struct
         {
             var callValidator = new ReturnCallValidator(typeof(TReturn), matchSubType);
             var callConstraint = callValidator.CreateCallConstraint<TTarget>();
             
-            return new FuncRedirectBuilder<TTarget, TReturn>(this, callValidator, callConstraint);
+            return new FuncViaBuilder<TTarget, TReturn>(RedirectRepository, callValidator, callConstraint);
         }
 
-        public IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : struct
+        public IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : struct
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
             var callConstraint = parsedCall.CreateCallConstraint<TTarget>();
             
-            return new FuncRedirectBuilder<TTarget, TReturn>(this, parsedCall, callConstraint);
+            return new FuncViaBuilder<TTarget, TReturn>(RedirectRepository, parsedCall, callConstraint);
         }
 
-        public IClassFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<IVia<TTarget>.ClassReturnMatch<TTarget, TReturn>> constraintExpression) where TReturn : class
+        public IClassFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<IVia<TTarget>.ClassReturnMatch<TTarget, TReturn>> constraintExpression) where TReturn : class
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
             var callConstraint = parsedCall.CreateCallConstraint<TTarget>();
             
-            return new ClassFuncRedirectBuilder<TTarget, TReturn>(this, parsedCall, callConstraint);
+            return new ClassFuncViaBuilder<TTarget, TReturn>(this, parsedCall, callConstraint);
         }
 
-        public IActionRedirectBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
+        public IActionViaBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
             var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
             var callConstraint = parsedCall.CreateCallConstraint<TTarget>();
             
-            return new ActionRedirectBuilder<TTarget>(this, parsedCall, callConstraint);
+            return new ActionViaBuilder<TTarget>(RedirectRepository, parsedCall, callConstraint);
         }
         
-        public IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression)
+        public IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression)
         {
             if (memberExpression.Body == null) throw new ArgumentNullException(nameof(memberExpression));
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
@@ -190,7 +190,7 @@ namespace DivertR
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, constraintExpression.Body);
             var callConstraint = parsedCall.CreateCallConstraint<TTarget>();
 
-            return new ActionRedirectBuilder<TTarget>(this, parsedCall, callConstraint);
+            return new ActionViaBuilder<TTarget>(RedirectRepository, parsedCall, callConstraint);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

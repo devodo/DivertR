@@ -6,8 +6,8 @@ namespace DivertR.Internal
     {
         protected readonly ICallValidator CallValidator;
 
-        protected DelegateRedirectBuilder(IVia<TTarget> via, ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
-            : base(via, callConstraint)
+        protected DelegateRedirectBuilder(ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
+            : base(callConstraint)
         {
             CallValidator = callValidator ?? throw new ArgumentNullException(nameof(callValidator));
         }
@@ -19,21 +19,6 @@ namespace DivertR.Internal
             var callHandler = new DelegateCallHandler<TTarget>(call => fastDelegate.Invoke(call.Args.InternalArgs));
 
             return Build(callHandler, optionsAction);
-        }
-
-        public IDelegateRedirectBuilder<TTarget> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            var redirect = Build(redirectDelegate, optionsAction);
-            Via.InsertRedirect(redirect);
-
-            return this;
-        }
-
-        protected IVia<TTarget> InsertRedirect(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction)
-        {
-            var redirect = Build(callHandler, optionsAction);
-
-            return Via.InsertRedirect(redirect);
         }
     }
 }

@@ -32,4 +32,32 @@ namespace DivertR.Internal
             return _callConstraints.All(callConstraint => callConstraint.IsMatch(callInfo));
         }
     }
+    
+    internal class CompositeCallConstraint : ICallConstraint
+    {
+        private readonly ImmutableArray<ICallConstraint> _callConstraints;
+        
+        public static readonly CompositeCallConstraint Empty = new CompositeCallConstraint(ImmutableArray<ICallConstraint>.Empty);
+
+        private CompositeCallConstraint(ImmutableArray<ICallConstraint> callConstraints)
+        {
+            _callConstraints = callConstraints;
+        }
+
+        public CompositeCallConstraint AddCallConstraint(ICallConstraint callConstraint)
+        {
+            return new CompositeCallConstraint(_callConstraints.Add(callConstraint));
+        }
+        
+        public CompositeCallConstraint AddCallConstraints(IEnumerable<ICallConstraint> callConstraints)
+        {
+            return new CompositeCallConstraint(_callConstraints.AddRange(callConstraints));
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsMatch(ICallInfo callInfo)
+        {
+            return _callConstraints.All(callConstraint => callConstraint.IsMatch(callInfo));
+        }
+    }
 }

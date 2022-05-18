@@ -106,8 +106,8 @@ namespace DivertR
         /// </summary>
         /// <param name="target">The target instance to redirect call to.</param>
         /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
-        /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
-        IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        /// <returns>The Redirect builder instance.</returns>
+        IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         
         /// <summary>
         /// Inserts a redirect that captures incoming calls from all proxies.
@@ -121,9 +121,9 @@ namespace DivertR
         /// Creates a Redirect builder. />
         /// </summary>
         /// <param name="callConstraint">Optional redirect <see cref="ICallConstraint{TTarget}"/>.</param>
-        /// <returns>The Redirect builder.</returns>
+        /// <returns>The Redirect builder instance.</returns>
         /// 
-        IRedirectBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null);
+        IViaBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null);
 
         /// <summary>
         /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning <typeparam name="TReturn" />.
@@ -131,7 +131,7 @@ namespace DivertR
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <typeparam name="TReturn">The Expression return type</typeparam>
         /// <returns>The Redirect builder instance.</returns>
-        IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : struct;
+        IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : struct;
         
         // Delegate required to coerce C# to allow the To overload below
         delegate TResult ClassReturnMatch<in T, out TResult>(T args) where TResult : class;
@@ -142,14 +142,14 @@ namespace DivertR
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <typeparam name="TReturn">The Expression return type</typeparam>
         /// <returns>The Redirect builder instance.</returns>
-        IClassFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<ClassReturnMatch<TTarget, TReturn>> constraintExpression) where TReturn : class;
+        IClassFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<ClassReturnMatch<TTarget, TReturn>> constraintExpression) where TReturn : class;
         
         /// <summary>
         /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning void />.
         /// </summary>
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <returns>The Redirect builder instance.</returns>
-        IActionRedirectBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression);
+        IActionViaBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression);
         
         /// <summary>
         /// Creates a Redirect builder from an Expression with a call constraint that matches a property setter member of <typeparamref name="TTarget"/> />.
@@ -158,6 +158,6 @@ namespace DivertR
         /// <param name="constraintExpression">The call constraint expression for the input value of the setter.</param>
         /// <typeparam name="TProperty">The member type of the property setter.</typeparam>
         /// <returns>The Redirect builder instance.</returns>
-        IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression);
+        IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression);
     }
 }

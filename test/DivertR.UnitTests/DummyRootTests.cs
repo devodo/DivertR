@@ -514,63 +514,23 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenCustomDummyValueFactory_WhenCallCustomTypeReturn_ShouldReturnCustomValue()
+        public void GivenDummyRedirectRepositoryWithReturnTypeRedirect_WhenProxyMethodReturnTypeMatches_ShouldRedirect()
         {
             // ARRANGE
             var diverterSettings = new DiverterSettings();
-            diverterSettings.DummyRedirectRepository.InsertRedirect();
-            var defaultValue = new List<int> { 1, 2, 3 };
-            var defaultValueFactory = DefaultValueFactory.Default.Customise(x => x
-                .Add(typeof(List<int>), (_, _) => defaultValue));
-            var defaultRootFactory = 
-            var diverterSettings = new DiverterSettings(dummyFactory: defaultValueFactory);
+            diverterSettings.DummyRedirectRepository.InsertRedirect(
+                Calls
+                    .Returning<string>()
+                    .Redirect(call => $"{call.CallNext()} redirected"));
+           
             var via = new Via<IFoo>(diverterSettings);
             var proxy = via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<List<int>>(default);
+            var result = proxy.EchoGeneric("hello");
 
             // ASSERT
-            result.ShouldBe(defaultValue);
-        }
-        
-        [Fact]
-        public void GivenEmptyDummyValueFactory_WhenDefaultRootCalled_ShouldReturnDefault()
-        {
-            // ARRANGE
-            var diverterSettings = new DiverterSettings(dummyFactory: DefaultValueFactory.Empty);
-            var via = new Via<IFoo>(diverterSettings);
-            var proxy = via.Proxy();
-
-            // ACT
-            var iListResult = proxy.EchoGeneric<List<int>>(default);
-            var valueTypeResult = proxy.EchoGeneric<int>(default);
-            var taskResult = proxy.EchoGeneric<Task>(default);
-
-            // ASSERT
-            iListResult.ShouldBe(null);
-            valueTypeResult.ShouldBe(default);
-            taskResult.ShouldBe(null);
-        }
-        
-        
-        [Fact]
-        public void GivenEmptyDummyValueFactory_WhenDefaultRootCalled_ShouldReturnDefault()
-        {
-            // ARRANGE
-            var diverterSettings = new DiverterSettings(dummyFactory: DefaultValueFactory.Empty);
-            var via = new Via<IFoo>(diverterSettings);
-            var proxy = via.Proxy();
-
-            // ACT
-            var iListResult = proxy.EchoGeneric<List<int>>(default);
-            var valueTypeResult = proxy.EchoGeneric<int>(default);
-            var taskResult = proxy.EchoGeneric<Task>(default);
-
-            // ASSERT
-            iListResult.ShouldBe(null);
-            valueTypeResult.ShouldBe(default);
-            taskResult.ShouldBe(null);
+            result.ShouldBe("hello redirected");
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using DivertR.Record;
 
 namespace DivertR
 {
@@ -7,7 +6,11 @@ namespace DivertR
     {
         IRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
         IRedirect<TTarget> Build(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
-        IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
-        IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+    }
+    
+    public interface IRedirectBuilder
+    {
+        IRedirectBuilder AddConstraint(ICallConstraint callConstraint);
+        IRedirect Build(object target, Action<IRedirectOptionsBuilder>? optionsAction = null);
     }
 }

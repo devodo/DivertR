@@ -42,6 +42,11 @@ namespace DivertR.Internal
             return new ReturnCallConstraint<TTarget>(_returnType, _matchSubType);
         }
         
+        public ICallConstraint CreateCallConstraint()
+        {
+            return new ReturnCallConstraint(_returnType, _matchSubType);
+        }
+        
         private bool ReturnTypeValid(Type callReturnType)
         {
             if (ReferenceEquals(callReturnType, _returnType))

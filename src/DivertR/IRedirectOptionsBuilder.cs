@@ -2,16 +2,26 @@
 
 namespace DivertR
 {
-    public interface IRedirectOptionsBuilder<TTarget> where TTarget : class
+    public interface IRedirectOptionsBuilderBase<out TBuilder>
     {
-        IRedirectOptionsBuilder<TTarget> OrderWeight(int orderWeight);
-        IRedirectOptionsBuilder<TTarget> OrderFirst();
-        IRedirectOptionsBuilder<TTarget> OrderLast();
-        IRedirectOptionsBuilder<TTarget> DisableSatisfyStrict(bool disableStrict = true);
+        TBuilder OrderWeight(int orderWeight);
+        TBuilder OrderFirst();
+        TBuilder OrderLast();
+        TBuilder DisableSatisfyStrict(bool disableStrict = true);
+        TBuilder Repeat(int repeatCount);
+        TBuilder Skip(int skipCount);
+        TBuilder AddSwitch(IRedirectSwitch redirectSwitch);
+    }
+    
+    public interface IRedirectOptionsBuilder<TTarget> : IRedirectOptionsBuilderBase<IRedirectOptionsBuilder<TTarget>> where TTarget : class
+    {
         IRedirectOptionsBuilder<TTarget> DecorateCallHandler(Func<ICallHandler<TTarget>, ICallHandler<TTarget>> decorator);
         IRedirectOptionsBuilder<TTarget> DecorateCallConstraint(Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>> decorator);
-        IRedirectOptionsBuilder<TTarget> Repeat(int repeatCount);
-        IRedirectOptionsBuilder<TTarget> Skip(int skipCount);
-        IRedirectOptionsBuilder<TTarget> AddSwitch(IRedirectSwitch redirectSwitch);
+    }
+    
+    public interface IRedirectOptionsBuilder : IRedirectOptionsBuilderBase<IRedirectOptionsBuilder>
+    {
+        IRedirectOptionsBuilder DecorateCallHandler(Func<ICallHandler, ICallHandler> decorator);
+        IRedirectOptionsBuilder DecorateCallConstraint(Func<ICallConstraint, ICallConstraint> decorator);
     }
 }
