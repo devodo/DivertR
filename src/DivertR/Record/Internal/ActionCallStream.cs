@@ -7,7 +7,7 @@ using DivertR.Internal;
 
 namespace DivertR.Record.Internal
 {
-    internal class ActionCallStream<TTarget> : CallStream<IRecordedCall<TTarget>>, IActionCallStream<TTarget> where TTarget : class
+    internal class ActionCallStream<TTarget> : CallStream<IRecordedCall<TTarget>, TTarget>, IActionCallStream<TTarget> where TTarget : class
     {
         protected readonly ParsedCallExpression ParsedCallExpression;
 
@@ -26,54 +26,44 @@ namespace DivertR.Record.Internal
             return new ActionCallStream<TTarget, TArgs>(mappedCall, ParsedCallExpression);
         }
 
-        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, CallArguments, TMap> mapper)
+        public IReplayResult Replay<TArgs>(Action<IRecordedCall<TTarget, TArgs>> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new CallStream<TMap>(Calls.Select(call => mapper.Invoke(call, call.Args)));
+            return WithArgs<TArgs>().Replay(visitor);
         }
 
-        public IReplayResult Replay(Action<IRecordedCall<TTarget>, CallArguments> visitor)
+        public IReplayResult Replay<TArgs>(Action<IRecordedCall<TTarget, TArgs>, TArgs> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new ReplayResult(Calls.Select(call =>
-            {
-                visitor.Invoke(call, call.Args);
-
-                return call;
-            }).Count());
+            return WithArgs<TArgs>().Replay(visitor);
         }
 
-        public IReplayResult Replay(Action<IRecordedCall<TTarget>, CallArguments, int> visitor)
+        public IReplayResult Replay<TArgs>(Action<IRecordedCall<TTarget, TArgs>, int> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new ReplayResult(Calls.Select((call, i) =>
-            {
-                visitor.Invoke(call, call.Args, i);
-
-                return call;
-            }).Count());
+            return WithArgs<TArgs>().Replay(visitor);
         }
 
-        public async Task<IReplayResult> Replay(Func<IRecordedCall<TTarget>, CallArguments, Task> visitor)
+        public IReplayResult Replay<TArgs>(Action<IRecordedCall<TTarget, TArgs>, TArgs, int> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            var count = 0;
-            
-            foreach (var call in Calls)
-            {
-                await visitor.Invoke(call, call.Args);
-                count++;
-            }
-
-            return new ReplayResult(count);
+            return WithArgs<TArgs>().Replay(visitor);
         }
 
-        public async Task<IReplayResult> Replay(Func<IRecordedCall<TTarget>, CallArguments, int, Task> visitor)
+        public Task<IReplayResult> Replay<TArgs>(Func<IRecordedCall<TTarget, TArgs>, Task> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            var count = 0;
-            
-            foreach (var call in Calls)
-            {
-                await visitor.Invoke(call, call.Args, count++);
-            }
+            return WithArgs<TArgs>().Replay(visitor);
+        }
 
-            return new ReplayResult(count);
+        public Task<IReplayResult> Replay<TArgs>(Func<IRecordedCall<TTarget, TArgs>, TArgs, Task> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        {
+            return WithArgs<TArgs>().Replay(visitor);
+        }
+
+        public Task<IReplayResult> Replay<TArgs>(Func<IRecordedCall<TTarget, TArgs>, int, Task> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        {
+            return WithArgs<TArgs>().Replay(visitor);
+        }
+
+        public Task<IReplayResult> Replay<TArgs>(Func<IRecordedCall<TTarget, TArgs>, TArgs, int, Task> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        {
+            return WithArgs<TArgs>().Replay(visitor);
         }
 
         internal static IEnumerable<IRecordedCall<TTarget, TArgs>> MapCalls<TArgs>(IEnumerable<IRecordedCall<TTarget>> calls, IValueTupleMapper valueTupleMapper)
@@ -84,7 +74,7 @@ namespace DivertR.Record.Internal
         }
     }
 
-    internal class ActionCallStream<TTarget, TArgs> : CallStream<IRecordedCall<TTarget, TArgs>>, IActionCallStream<TTarget, TArgs>
+    internal class ActionCallStream<TTarget, TArgs> : CallStream<IRecordedCall<TTarget, TArgs>, TTarget, TArgs>, IActionCallStream<TTarget, TArgs>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
@@ -104,56 +94,6 @@ namespace DivertR.Record.Internal
             var mappedCall = ActionCallStream<TTarget>.MapCalls<TNewArgs>(Calls, valueTupleFactory);
 
             return new ActionCallStream<TTarget, TNewArgs>(mappedCall, ParsedCallExpression);
-        }
-
-        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall<TTarget, TArgs>, TArgs, TMap> mapper)
-        {
-            return new CallStream<TMap>(Calls.Select(call => mapper.Invoke(call, call.Args)));
-        }
-
-        public IReplayResult Replay(Action<IRecordedCall<TTarget>, TArgs> visitor)
-        {
-            return new ReplayResult(Calls.Select(call =>
-            {
-                visitor.Invoke(call, call.Args);
-
-                return call;
-            }).Count());
-        }
-
-        public IReplayResult Replay(Action<IRecordedCall<TTarget, TArgs>, TArgs, int> visitor)
-        {
-            return new ReplayResult(Calls.Select((call, i) =>
-            {
-                visitor.Invoke(call, call.Args, i);
-
-                return call;
-            }).Count());
-        }
-
-        public async Task<IReplayResult> Replay(Func<IRecordedCall<TTarget>, TArgs, Task> visitor)
-        {
-            var count = 0;
-            
-            foreach (var call in Calls)
-            {
-                await visitor.Invoke(call, call.Args);
-                count++;
-            }
-
-            return new ReplayResult(count);
-        }
-
-        public async Task<IReplayResult> Replay(Func<IRecordedCall<TTarget, TArgs>, TArgs, int, Task> visitor)
-        {
-            var count = 0;
-            
-            foreach (var call in Calls)
-            {
-                await visitor.Invoke(call, call.Args, count++);
-            }
-
-            return new ReplayResult(count);
         }
     }
 }

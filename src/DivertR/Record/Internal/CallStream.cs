@@ -75,4 +75,122 @@ namespace DivertR.Record.Internal
             return GetEnumerator();
         }
     }
+    
+    internal class CallStream<TRecordedCall, TTarget> : CallStream<TRecordedCall>
+        where TRecordedCall : IRecordedCall<TTarget>
+        where TTarget : class
+    {
+        protected CallStream(IEnumerable<TRecordedCall> calls) : base(calls)
+        {
+        }
+
+        public ICallStream<TMap> Map<TMap>(Func<TRecordedCall, CallArguments, TMap> mapper)
+        {
+            return new CallStream<TMap>(Calls.Select(call => mapper.Invoke(call, call.Args)));
+        }
+
+        public IReplayResult Replay(Action<TRecordedCall, CallArguments> visitor)
+        {
+            return new ReplayResult(Calls.Select(call =>
+            {
+                visitor.Invoke(call, call.Args);
+
+                return call;
+            }).Count());
+        }
+
+        public IReplayResult Replay(Action<TRecordedCall, CallArguments, int> visitor)
+        {
+            return new ReplayResult(Calls.Select((call, i) =>
+            {
+                visitor.Invoke(call, call.Args, i);
+
+                return call;
+            }).Count());
+        }
+
+        public async Task<IReplayResult> Replay(Func<TRecordedCall, CallArguments, Task> visitor)
+        {
+            var count = 0;
+            
+            foreach (var call in Calls)
+            {
+                await visitor.Invoke(call, call.Args);
+                count++;
+            }
+
+            return new ReplayResult(count);
+        }
+
+        public async Task<IReplayResult> Replay(Func<TRecordedCall, CallArguments, int, Task> visitor)
+        {
+            var count = 0;
+            
+            foreach (var call in Calls)
+            {
+                await visitor.Invoke(call, call.Args, count++);
+            }
+
+            return new ReplayResult(count);
+        }
+    }
+
+    internal class CallStream<TRecordedCall, TTarget, TArgs> : CallStream<TRecordedCall>
+        where TRecordedCall : IRecordedCall<TTarget, TArgs>
+        where TTarget : class
+    {
+        protected CallStream(IEnumerable<TRecordedCall> calls) : base(calls)
+        {
+        }
+
+        public ICallStream<TMap> Map<TMap>(Func<TRecordedCall, TArgs, TMap> mapper)
+        {
+            return new CallStream<TMap>(Calls.Select(call => mapper.Invoke(call, call.Args)));
+        }
+
+        public IReplayResult Replay(Action<TRecordedCall, TArgs> visitor)
+        {
+            return new ReplayResult(Calls.Select(call =>
+            {
+                visitor.Invoke(call, call.Args);
+
+                return call;
+            }).Count());
+        }
+
+        public IReplayResult Replay(Action<TRecordedCall, TArgs, int> visitor)
+        {
+            return new ReplayResult(Calls.Select((call, i) =>
+            {
+                visitor.Invoke(call, call.Args, i);
+
+                return call;
+            }).Count());
+        }
+
+        public async Task<IReplayResult> Replay(Func<TRecordedCall, TArgs, Task> visitor)
+        {
+            var count = 0;
+            
+            foreach (var call in Calls)
+            {
+                await visitor.Invoke(call, call.Args);
+                count++;
+            }
+
+            return new ReplayResult(count);
+        }
+
+        public async Task<IReplayResult> Replay(Func<TRecordedCall, TArgs, int, Task> visitor)
+        {
+            var count = 0;
+            
+            foreach (var call in Calls)
+            {
+                await visitor.Invoke(call, call.Args, count++);
+            }
+
+            return new ReplayResult(count);
+        }
+    }
 }

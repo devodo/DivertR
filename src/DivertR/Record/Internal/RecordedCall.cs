@@ -62,7 +62,7 @@ namespace DivertR.Record.Internal
         
         public ICallReturn? Returned => _recordedCall.Returned;
         
-        CallArguments IRecordedCall.Args => _recordedCall.Args;
+        CallArguments IRecordedCall<TTarget>.Args => _recordedCall.Args;
         
         public CallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
     }

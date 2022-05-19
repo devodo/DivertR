@@ -17,7 +17,7 @@
         public CallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
         public CallArguments Args => _recordedCall.CallInfo.Arguments;
         public ICallReturn<TReturn>? Returned { get; }
-        ICallReturn? IRecordedCall.Returned => Returned;
+        ICallReturn? IRecordedCall<TTarget>.Returned => Returned;
     }
 
     internal class FuncRecordedCall<TTarget, TReturn, TArgs> : FuncRecordedCall<TTarget, TReturn>, IFuncRecordedCall<TTarget, TReturn, TArgs>

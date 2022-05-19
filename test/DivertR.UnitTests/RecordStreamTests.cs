@@ -16,7 +16,7 @@ namespace DivertR.UnitTests
         public RecordStreamTests()
         {
             _recordStream = _via.Record(opt => opt
-                .OrderWeight(int.MaxValue)
+                .OrderFirst()
                 .DisableSatisfyStrict());
         }
         
@@ -105,10 +105,9 @@ namespace DivertR.UnitTests
             caughtException.ShouldNotBeNull();
             _recordStream
                 .To(x => x.Echo("test"))
-                .WithArgs<(string input, __)>()
-                .Replay(call =>
+                .Replay<(string input, __)>((call, args) =>
                 {
-                    call.Args.input.ShouldBe("test");
+                    args.input.ShouldBe("test");
                     call.Returned?.Exception.ShouldBeSameAs(caughtException);
                 }).Count.ShouldBe(1);
         }
@@ -195,8 +194,7 @@ namespace DivertR.UnitTests
 
             _recordStream
                 .To(x => x.EchoAsync("test"))
-                .WithArgs<(string input, __)>()
-                .Replay(call =>
+                .Replay<(string input, __)>(call =>
                 {
                     call.Args.input.ShouldBe("test");
                     call.Returned!.Value.Result.ShouldBe(result);
@@ -309,8 +307,7 @@ namespace DivertR.UnitTests
             var fooProxy = _via.Proxy();
 
             var recordedCalls = _recordStream
-                .To(x => x.Echo(Is<string>.Any))
-                .WithArgs<(string input, __)>();
+                .To(x => x.Echo(Is<string>.Any));
             
             var recordedOutputs = recordedCalls.Select(call => call.Returned!.Value);
 
@@ -321,7 +318,7 @@ namespace DivertR.UnitTests
 
             // ASSERT
             beforeCount.ShouldBe(0);
-            recordedCalls.Replay((call, i) => call.Args.input.ShouldBe(inputs[i])).Count.ShouldBe(inputs.Count);
+            recordedCalls.Replay<(string input, __)>((call, i) => call.Args.input.ShouldBe(inputs[i])).Count.ShouldBe(inputs.Count);
             // ReSharper disable once PossibleMultipleEnumeration (Testing deferred enumeration)
             recordedOutputs.Count().ShouldBe(inputs.Count);
             // ReSharper disable once PossibleMultipleEnumeration (Testing deferred enumeration)
