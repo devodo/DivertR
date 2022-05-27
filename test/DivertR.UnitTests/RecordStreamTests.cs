@@ -47,7 +47,11 @@ namespace DivertR.UnitTests
             
             echoCalls.Select(call => call.Args.input).ShouldBe(inputs);
             echoCalls.Select(call => call.Returned!.Value).ShouldBe(outputs);
-            echoCalls.Replay((_, args, i) => args.input.ShouldBe(inputs[i])).Count.ShouldBe(inputs.Count);
+            echoCalls.Verify().Select((call, i) =>
+            {
+                call.Args.input.ShouldBe(inputs[i]);
+                return call;
+            }).Count().ShouldBe(inputs.Count);
         }
         
         [Fact]
@@ -75,7 +79,7 @@ namespace DivertR.UnitTests
             calls.Single().CallInfo.Arguments.Count.ShouldBe(1);
             calls.Single().CallInfo.Proxy.ShouldBeSameAs(fooProxy);
 
-            calls.Replay(call =>
+            calls.Verify(call =>
             {
                 call.Args.input.ShouldBe(inputs[0]);
                 call.Returned!.Value.ShouldBe(outputs[0]);
@@ -105,7 +109,7 @@ namespace DivertR.UnitTests
             caughtException.ShouldNotBeNull();
             _recordStream
                 .To(x => x.Echo("test"))
-                .Replay<(string input, __)>((call, args) =>
+                .Verify<(string input, __)>((call, args) =>
                 {
                     args.input.ShouldBe("test");
                     call.Returned?.Exception.ShouldBeSameAs(caughtException);
@@ -170,7 +174,7 @@ namespace DivertR.UnitTests
             
             _recordStream
                 .To(x => x.EchoAsync("test"))
-                .Replay(call =>
+                .Verify(call =>
                 {
                     call.CallInfo.Arguments[0].ShouldBe("test");
                     call.Returned!.Exception.ShouldBeOfType<StrictNotSatisfiedException>();
@@ -194,7 +198,7 @@ namespace DivertR.UnitTests
 
             _recordStream
                 .To(x => x.EchoAsync("test"))
-                .Replay<(string input, __)>(call =>
+                .Verify<(string input, __)>(call =>
                 {
                     call.Args.input.ShouldBe("test");
                     call.Returned!.Value.Result.ShouldBe(result);
@@ -253,7 +257,7 @@ namespace DivertR.UnitTests
                 .Select(call => call.Returned!.Value)
                 .ShouldBe(outputs);
 
-            recordedCalls.Replay(call =>
+            recordedCalls.Verify(call =>
             {
                 outputs.ShouldContain(call.Returned!.Value);
             }).Count.ShouldBe(outputs.Count);
@@ -285,11 +289,12 @@ namespace DivertR.UnitTests
                 .Select(call => call.Args.name)
                 .ShouldBe(inputs);
                 
-            recordedCalls.Replay((call, args, i) =>
+            recordedCalls.Verify().Select((call, i) =>
             {
-                args.name.ShouldBe(inputs[i]);
+                call.Args.name.ShouldBe(inputs[i]);
                 call.Returned!.Value.ShouldBeNull();
-            }).Count.ShouldBe(inputs.Count);
+                return call;
+            }).Count().ShouldBe(inputs.Count);
         }
         
         [Fact]
@@ -318,7 +323,11 @@ namespace DivertR.UnitTests
 
             // ASSERT
             beforeCount.ShouldBe(0);
-            recordedCalls.Replay<(string input, __)>((call, i) => call.Args.input.ShouldBe(inputs[i])).Count.ShouldBe(inputs.Count);
+            recordedCalls.Verify<(string input, __)>().Select((call, i) =>
+            {
+                call.Args.input.ShouldBe(inputs[i]);
+                return call;
+            }).Count().ShouldBe(inputs.Count);
             // ReSharper disable once PossibleMultipleEnumeration (Testing deferred enumeration)
             recordedOutputs.Count().ShouldBe(inputs.Count);
             // ReSharper disable once PossibleMultipleEnumeration (Testing deferred enumeration)
@@ -348,11 +357,12 @@ namespace DivertR.UnitTests
             var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
 
             // ASSERT
-            mappedCalls.Replay((call, i) =>
+            mappedCalls.Verify().Select((call, i) =>
             {
                 call.Input.ShouldBe(inputs[i]);
                 call.Result?.Value.ShouldBe(outputs[i]);
-            }).Count.ShouldBe(inputs.Count);
+                return call;
+            }).Count().ShouldBe(inputs.Count);
         }
         
         [Fact]
@@ -378,11 +388,15 @@ namespace DivertR.UnitTests
             var outputs = inputs.Select(x => fooProxy.EchoAsync(x)).ToList();
 
             // ASSERT
-            (await mappedCalls.Replay(async (call, i) =>
+            var calls = mappedCalls.Select(async (call, i) =>
             {
                 call.Input.ShouldBe(inputs[i]);
                 (await call.Result!.Value).ShouldBe((await outputs[i]));
-            })).Count.ShouldBe(inputs.Count);
+                return call;
+            }).ToList();
+            
+            await Task.WhenAll(calls);
+            calls.Count.ShouldBe(inputs.Count);
         }
     }
 }

@@ -136,7 +136,7 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.GenericAction(_inputs[0][0].Arg))
                 .WithArgs<(int i1, __)>()
-                .Replay(call =>
+                .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBeNull();
                     call.Args.i1.ShouldBe(_inputs[0][0].Arg);
@@ -158,7 +158,7 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.GenericAction(_inputs[1][0].Arg, _inputs[1][1].Arg))
                 .WithArgs<(int i1, int i2)>()
-                .Replay(call =>
+                .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBeNull();
                     call.Args.i1.ShouldBe(_inputs[1][0].Arg);
@@ -181,7 +181,7 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.GenericAction(_inputs[2][0].Arg, _inputs[2][1].Arg, _inputs[2][2].Arg))
                 .WithArgs<(int i1, int i2, int i3)>()
-                .Replay(call =>
+                .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBeNull();
                     call.Args.i1.ShouldBe(_inputs[2][0].Arg);
@@ -205,7 +205,7 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.GenericAction(_inputs[3][0].Arg, _inputs[3][1].Arg, _inputs[3][2].Arg, _inputs[3][3].Arg))
                 .WithArgs<(int i1, int i2, int i3, int i4)>()
-                .Replay(call =>
+                .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBeNull();
                     call.Args.i1.ShouldBe(_inputs[3][0].Arg);
@@ -233,7 +233,7 @@ namespace DivertR.UnitTests
                 .To(x => x.GenericAction(_inputs[4][0].Arg, _inputs[4][1].Arg, _inputs[4][2].Arg, _inputs[4][3].Arg,
                     _inputs[4][4].Arg))
                 .WithArgs<(int i1, int i2, int i3, int i4, int i5)>()
-                .Replay(call =>
+                .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBeNull();
                     call.Args.i1.ShouldBe(_inputs[4][0].Arg);
@@ -262,7 +262,7 @@ namespace DivertR.UnitTests
                 .To(x => x.GenericAction(_inputs[5][0].Arg, _inputs[5][1].Arg, _inputs[5][2].Arg, _inputs[5][3].Arg,
                     _inputs[5][4].Arg, _inputs[5][5].Arg))
                 .WithArgs<(int i1, int i2, int i3, int i4, int i5, int i6)>()
-                .Replay(call =>
+                .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBeNull();
                     call.Args.i1.ShouldBe(_inputs[5][0].Arg);
@@ -292,7 +292,7 @@ namespace DivertR.UnitTests
                 .To(x => x.GenericAction(_inputs[6][0].Arg, _inputs[6][1].Arg, _inputs[6][2].Arg, _inputs[6][3].Arg,
                     _inputs[6][4].Arg, _inputs[6][5].Arg, _inputs[6][6].Arg))
                 .WithArgs<(int i1, int i2, int i3, int i4, int i5, int i6, int i7)>()
-                .Replay(call =>
+                .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBeNull();
                     call.Args.i1.ShouldBe(_inputs[6][0].Arg);
@@ -323,7 +323,7 @@ namespace DivertR.UnitTests
                 .To(x => x.GenericAction(_inputs[7][0].Arg, _inputs[7][1].Arg, _inputs[7][2].Arg, _inputs[7][3].Arg,
                     _inputs[7][4].Arg, _inputs[7][5].Arg, _inputs[7][6].Arg, _inputs[7][7].Arg))
                 .WithArgs<(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8)>()
-                .Replay(call =>
+                .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBeNull();
                     call.Args.i1.ShouldBe(_inputs[7][0].Arg);

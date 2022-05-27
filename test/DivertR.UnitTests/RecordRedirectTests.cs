@@ -29,7 +29,7 @@ namespace DivertR.UnitTests
             var result = _proxy.Name;
 
             // ASSERT
-            calls.Replay(call =>
+            calls.Verify(call =>
             {
                 result.ShouldBe(_foo.Name);
                 call.Args.Count.ShouldBe(0);
@@ -56,23 +56,24 @@ namespace DivertR.UnitTests
             results.ShouldBe(inputs.Select(input => _foo.Echo(input)));
             calls.Select(call => call.Args[0]).ShouldBe(inputs);
             
-            calls.Replay(call =>
+            calls.Verify(call =>
             {
                 call.Args.Count.ShouldBe(1);
                 call.Returned?.Value.ShouldBe(_foo.Echo((string) call.Args[0]));
             }).Count.ShouldBe(inputs.Length);
             
-            calls.Replay((call, args) =>
+            calls.Verify((call, args) =>
             {
                 args.Count.ShouldBe(1);
                 call.Returned?.Value.ShouldBe(_foo.Echo((string) args[0]));
             }).Count.ShouldBe(inputs.Length);
             
-            calls.WithArgs<(string input, __)>().Replay((call, args, i) =>
+            calls.WithArgs<(string input, __)>().Select((call, i) =>
             {
-                args.input.ShouldBe(inputs[i]);
-                call.Returned?.Value.ShouldBe(_foo.Echo(args.input));
-            }).Count.ShouldBe(inputs.Length);
+                call.Args.input.ShouldBe(inputs[i]);
+                call.Returned?.Value.ShouldBe(_foo.Echo(call.Args.input));
+                return call;
+            }).Count().ShouldBe(inputs.Length);
         }
         
         [Fact]
@@ -95,24 +96,25 @@ namespace DivertR.UnitTests
             results.ShouldBe(inputs.Select(input => $"{_foo.Echo(input)} redirected"));
 
             var count = 0;
-            calls.Replay(call =>
+            calls.Verify(call =>
             {
                 call.Args.input.ShouldBe(inputs[count]);
                 call.Returned?.Value.ShouldBe(results[count++]);
             }).Count.ShouldBe(inputs.Length);
             
             var count2 = 0;
-            calls.Replay((call, args) =>
+            calls.Verify((call, args) =>
             {
                 args.input.ShouldBe(inputs[count2]);
                 call.Returned?.Value.ShouldBe(results[count2++]);
             }).Count.ShouldBe(inputs.Length);
 
-            calls.Replay((call, args, i) =>
+            calls.Select((call, i) =>
             {
-                args.input.ShouldBe(inputs[i]);
+                call.Args.input.ShouldBe(inputs[i]);
                 call.Returned?.Value.ShouldBe(results[i]);
-            }).Count.ShouldBe(inputs.Length);
+                return call;
+            }).Count().ShouldBe(inputs.Length);
         }
         
         [Fact]
@@ -135,23 +137,17 @@ namespace DivertR.UnitTests
             results.ShouldBe(inputs.Select(input => $"{_foo.Echo(input)} redirected"));
 
             var count = 0;
-            calls.Replay(call =>
+            calls.Verify(call =>
             {
                 call.Args.input.ShouldBe(inputs[count]);
                 call.Returned?.Value.ShouldBe(results[count++]);
             }).Count.ShouldBe(inputs.Length);
             
             var count2 = 0;
-            calls.Replay((call, args) =>
+            calls.Verify((call, args) =>
             {
                 args.input.ShouldBe(inputs[count2]);
                 call.Returned?.Value.ShouldBe(results[count2++]);
-            }).Count.ShouldBe(inputs.Length);
-
-            calls.Replay((call, args, i) =>
-            {
-                args.input.ShouldBe(inputs[i]);
-                call.Returned?.Value.ShouldBe(results[i]);
             }).Count.ShouldBe(inputs.Length);
         }
         
@@ -179,22 +175,16 @@ namespace DivertR.UnitTests
             results.ShouldBe(inputs.Select(input => $"{input} redirected"));
 
             var count = 0;
-            calls.Replay(call =>
+            calls.Verify(call =>
             {
                 call.Args.input.ShouldBe(inputs[count++]);
                 call.Returned?.Value.ShouldBeNull();
             }).Count.ShouldBe(inputs.Length);
             
             var count2 = 0;
-            calls.Replay((call, args) =>
+            calls.Verify((call, args) =>
             {
                 args.input.ShouldBe(inputs[count2++]);
-                call.Returned?.Value.ShouldBeNull();
-            }).Count.ShouldBe(inputs.Length);
-
-            calls.Replay((call, args, i) =>
-            {
-                args.input.ShouldBe(inputs[i]);
                 call.Returned?.Value.ShouldBeNull();
             }).Count.ShouldBe(inputs.Length);
         }
@@ -223,7 +213,7 @@ namespace DivertR.UnitTests
             results.ShouldBe(inputs.Select(input => $"{input} redirected"));
 
             var count = 0;
-            calls.Replay(call =>
+            calls.Verify(call =>
             {
                 call.Args.input.ShouldBe(inputs[count++]);
                 call.Returned.ShouldNotBeNull();
@@ -232,15 +222,9 @@ namespace DivertR.UnitTests
             }).Count.ShouldBe(inputs.Length);
             
             var count2 = 0;
-            calls.Replay((call, args) =>
+            calls.Verify((call, args) =>
             {
                 args.input.ShouldBe(inputs[count2++]);
-                call.Returned?.Value.ShouldBeNull();
-            }).Count.ShouldBe(inputs.Length);
-
-            calls.Replay((call, args, i) =>
-            {
-                args.input.ShouldBe(inputs[i]);
                 call.Returned?.Value.ShouldBeNull();
             }).Count.ShouldBe(inputs.Length);
         }
@@ -288,11 +272,12 @@ namespace DivertR.UnitTests
 
             // ASSERT
             results.ShouldBe(inputs.Select(input => $"{_foo.Echo(input)} modified redirected"));
-            calls.Replay((call, args, i) =>
+            calls.Verify().Select((call, i) =>
             {
-                args.input.ShouldBe($"{inputs[i]} modified");
+                call.Args.input.ShouldBe($"{inputs[i]} modified");
                 call.Returned?.Value.ShouldBe($"{_foo.Echo(inputs[i])} modified");
-            }).Count.ShouldBe(inputs.Length);
+                return call;
+            }).Count().ShouldBe(inputs.Length);
         }
         
         [Fact]
@@ -317,11 +302,12 @@ namespace DivertR.UnitTests
 
             // ASSERT
             results.ShouldBe(inputs.Select(input => $"{_foo.Echo(input)} modified redirected"));
-            recordedCalls.Replay((call, args, i) =>
+            recordedCalls.Verify().Select((call, i) =>
             {
-                args.input.ShouldBe($"{inputs[i]}");
+                call.Args.input.ShouldBe($"{inputs[i]}");
                 call.Returned?.Value.ShouldBe($"{results[i]}");
-            }).Count.ShouldBe(inputs.Length);
+                return call;
+            }).Count().ShouldBe(inputs.Length);
         }
         
         [Fact]

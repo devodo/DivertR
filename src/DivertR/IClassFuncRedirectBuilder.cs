@@ -35,7 +35,7 @@ namespace DivertR
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
 
-    public interface IClassFuncRedirectBuilder<TTarget, TReturn, out TArgs> : IFuncRedirectBuilder<TTarget, TReturn, TArgs>
+    public interface IClassFuncRedirectBuilder<TTarget, TReturn, TArgs> : IFuncRedirectBuilder<TTarget, TReturn, TArgs>
         where TTarget : class
         where TReturn : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable

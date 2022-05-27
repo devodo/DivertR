@@ -43,13 +43,13 @@ namespace DivertR
         IFuncRedirectBuilder<TTarget, TReturn, TArgs> WithArgs<TArgs>()
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
 
-        new IFuncCallLog<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        new IFuncCallStream<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         
-        IFuncCallLog<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        IFuncCallStream<TTarget, TArgs, TReturn> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
 
-    public interface IFuncRedirectBuilder<TTarget, TReturn, out TArgs> : IFuncRedirectBuilder<TTarget, TReturn>
+    public interface IFuncRedirectBuilder<TTarget, TReturn, TArgs> : IFuncRedirectBuilder<TTarget, TReturn>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
@@ -64,6 +64,6 @@ namespace DivertR
         IFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         IFuncRedirectBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
        
-        new IFuncCallLog<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        new IFuncCallStream<TTarget, TArgs, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
     }
 }
