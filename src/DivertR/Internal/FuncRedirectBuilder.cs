@@ -139,7 +139,7 @@ namespace DivertR.Internal
             return new FuncCallStream<TTarget, TReturn>(recordStream, ParsedCallExpression);
         }
 
-        public IFuncCallStream<TTarget, TArgs, TReturn> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IFuncCallStream<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Record(optionsAction);
         }
@@ -223,13 +223,13 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IFuncCallStream<TTarget, TArgs, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IFuncCallStream<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordStream = ((RedirectBuilder<TTarget>) this)
                 .Record(optionsAction)
-                .Select(call => new FuncRecordedCall<TTarget, TArgs, TReturn>(call, (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs)));
+                .Select(call => new FuncRecordedCall<TTarget, TReturn, TArgs>(call, (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs)));
 
-            return new FuncCallStream<TTarget, TArgs, TReturn>(recordStream, ParsedCallExpression);
+            return new FuncCallStream<TTarget, TReturn, TArgs>(recordStream, ParsedCallExpression);
         }
     }
 }

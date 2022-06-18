@@ -7,34 +7,34 @@ namespace DivertR.Record
     public interface IFuncCallStream<TTarget, TReturn> : ICallStream<IFuncRecordedCall<TTarget, TReturn>>
         where TTarget : class
     {
-        IFuncCallStream<TTarget, TArgs, TReturn> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        IFuncCallStream<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
         ICallStream<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, TMap> mapper);
         
         IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn>> Verify(Action<IFuncRecordedCall<TTarget, TReturn>, CallArguments> visitor);
         Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn>>> Verify(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, Task> visitor);
         
-        IVerifySnapshot<IFuncRecordedCall<TTarget, TArgs, TReturn>> Verify<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        IVerifySnapshot<IFuncRecordedCall<TTarget, TArgs, TReturn>> Verify<TArgs>(Action<IFuncRecordedCall<TTarget, TArgs, TReturn>> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        IVerifySnapshot<IFuncRecordedCall<TTarget, TArgs, TReturn>> Verify<TArgs>(Action<IFuncRecordedCall<TTarget, TArgs, TReturn>, TArgs> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TArgs, TReturn>>> Verify<TArgs>(Func<IFuncRecordedCall<TTarget, TArgs, TReturn>, Task> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TArgs, TReturn>>> Verify<TArgs>(Func<IFuncRecordedCall<TTarget, TArgs, TReturn>, TArgs, Task> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TArgs>> Verify<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TArgs>> Verify<TArgs>(Action<IFuncRecordedCall<TTarget, TReturn, TArgs>> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TArgs>> Verify<TArgs>(Action<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TArgs>>> Verify<TArgs>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, Task> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TArgs>>> Verify<TArgs>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, Task> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
     
-    public interface IFuncCallStream<TTarget, TArgs, TReturn> : ICallStream<IFuncRecordedCall<TTarget, TArgs, TReturn>>
+    public interface IFuncCallStream<TTarget, TReturn, TArgs> : ICallStream<IFuncRecordedCall<TTarget, TReturn, TArgs>>
         where TTarget : class
     {
-        IFuncCallStream<TTarget, TNewArgs, TReturn> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        IFuncCallStream<TTarget, TReturn, TNewArgs> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
-        ICallStream<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TArgs, TReturn>, TArgs, TMap> mapper);
+        ICallStream<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, TMap> mapper);
 
-        IVerifySnapshot<IFuncRecordedCall<TTarget, TArgs, TReturn>> Verify(Action<IFuncRecordedCall<TTarget, TArgs, TReturn>, TArgs> visitor);
-        Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TArgs, TReturn>>> Verify(Func<IFuncRecordedCall<TTarget, TArgs, TReturn>, TArgs, Task> visitor);
+        IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TArgs>> Verify(Action<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs> visitor);
+        Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TArgs>>> Verify(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, Task> visitor);
         
-        IVerifySnapshot<IFuncRecordedCall<TTarget, TNewArgs, TReturn>> Verify<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        IVerifySnapshot<IFuncRecordedCall<TTarget, TNewArgs, TReturn>> Verify<TNewArgs>(Action<IFuncRecordedCall<TTarget, TNewArgs, TReturn>> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        IVerifySnapshot<IFuncRecordedCall<TTarget, TNewArgs, TReturn>> Verify<TNewArgs>(Action<IFuncRecordedCall<TTarget, TNewArgs, TReturn>, TNewArgs> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TNewArgs, TReturn>>> Verify<TNewArgs>(Func<IFuncRecordedCall<TTarget, TNewArgs, TReturn>, Task> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TNewArgs, TReturn>>> Verify<TNewArgs>(Func<IFuncRecordedCall<TTarget, TNewArgs, TReturn>, TNewArgs, Task> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>> Verify<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>> Verify<TNewArgs>(Action<IFuncRecordedCall<TTarget, TReturn, TNewArgs>> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>> Verify<TNewArgs>(Action<IFuncRecordedCall<TTarget, TReturn, TNewArgs>, TNewArgs> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>>> Verify<TNewArgs>(Func<IFuncRecordedCall<TTarget, TReturn, TNewArgs>, Task> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>>> Verify<TNewArgs>(Func<IFuncRecordedCall<TTarget, TReturn, TNewArgs>, TNewArgs, Task> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
 }
