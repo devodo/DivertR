@@ -38,6 +38,222 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenRecordFuncCallStream_WhenProxyCalled_ThenRecordsCall()
+        {
+            // ARRANGE
+            var calls = _fooVia
+                .To(x => x.Echo(Is<string>.Any))
+                .Record();
+
+            var input = Guid.NewGuid().ToString();
+
+            // ACT
+            var result = _proxy.Echo(input);
+
+            // ASSERT
+            result.ShouldBe(_foo.Echo(input));
+            
+            calls.Verify(call =>
+            {
+                call.Args[0].ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(string input, __)>(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(string input, __)>((call, args) =>
+            {
+                args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+            }).Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public void GivenTypedRecordFuncCallStream_WhenProxyCalled_ThenRecordsCall()
+        {
+            // ARRANGE
+            var calls = _fooVia
+                .To(x => x.Echo(Is<string>.Any))
+                .Record<(string input, __)>();
+
+            var input = Guid.NewGuid().ToString();
+
+            // ACT
+            var result = _proxy.Echo(input);
+
+            // ASSERT
+            result.ShouldBe(_foo.Echo(input));
+            
+            calls.Verify(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(string input, __)>(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(string input, __)>((call, args) =>
+            {
+                args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(object input, __)>(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(object input, __)>((call, args) =>
+            {
+                args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+            }).Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public void GivenRecordFuncCallStream_WhenVerifyArgsWithInvalidType_ThenThrowsException()
+        {
+            // ARRANGE
+            var calls = _fooVia
+                .To(x => x.Echo(Is<string>.Any))
+                .Record();
+
+            var input = Guid.NewGuid().ToString();
+
+            // ACT
+            Action verify = () => calls.Verify<(int input, __)>();
+            
+            Action verifyCalls = () => calls.Verify<(int input, __)>(_ =>
+            {
+            });
+
+            Action verifyCallsWithArgs = () => calls.Verify<(int input, __)>((_, _) =>
+            {
+            });
+            
+            // ASSERT
+            verify.ShouldThrow<DiverterValidationException>();
+            verifyCalls.ShouldThrow<DiverterValidationException>();
+            verifyCallsWithArgs.ShouldThrow<DiverterValidationException>();
+        }
+        
+        [Fact]
+        public void GivenRecordActionCallStream_WhenVerifyArgsWithInvalidType_ThenThrowsException()
+        {
+            // ARRANGE
+            var calls = _fooVia
+                .To(x => x.SetName(Is<string>.Any))
+                .Record();
+
+            // ACT
+            Action verify = () => calls.Verify<(int input, __)>();
+            
+            Action verifyCalls = () => calls.Verify<(int input, __)>(_ =>
+            {
+            });
+
+            Action verifyCallsWithArgs = () => calls.Verify<(int input, __)>((_, _) =>
+            {
+            });
+            
+            // ASSERT
+            verify.ShouldThrow<DiverterValidationException>();
+            verifyCalls.ShouldThrow<DiverterValidationException>();
+            verifyCallsWithArgs.ShouldThrow<DiverterValidationException>();
+        }
+        
+        [Fact]
+        public void GivenRecordActionCallStream_WhenProxyCalled_ThenRecordsCall()
+        {
+            // ARRANGE
+            var calls = _fooVia
+                .To(x => x.SetName(Is<string>.Any))
+                .Record();
+
+            var input = Guid.NewGuid().ToString();
+
+            // ACT
+            _proxy.SetName(input);
+
+            // ASSERT
+            _foo.Name.ShouldBe(input);
+            
+            calls.Verify(call =>
+            {
+                call.Args[0].ShouldBe(input);
+                call.Returned?.Value.ShouldBeNull();
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(string input, __)>(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBeNull();
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(string input, __)>((call, args) =>
+            {
+                args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBeNull();
+            }).Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public void GivenTypedRecordActionCallStream_WhenProxyCalled_ThenRecordsCall()
+        {
+            // ARRANGE
+            var calls = _fooVia
+                .To(x => x.SetName(Is<string>.Any))
+                .Record<(string input, __)>();
+
+            var input = Guid.NewGuid().ToString();
+
+            // ACT
+            _proxy.SetName(input);
+
+            // ASSERT
+            _foo.Name.ShouldBe(input);
+            
+            calls.Verify(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBeNull();
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(string input, __)>(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBeNull();
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(string input, __)>((call, args) =>
+            {
+                args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBeNull();
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(object input, __)>(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBeNull();
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(object input, __)>((call, args) =>
+            {
+                args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBeNull();
+            }).Count.ShouldBe(1);
+        }
+
+        [Fact]
         public void GivenRecordRedirectWithArgs_WhenCalled_ThenRecordsCallsWithArgs()
         {
             // ARRANGE
@@ -77,7 +293,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenFuncCallLogWithRelayRootRedirect_WhenCalled_ThenRecordsCalls()
+        public void GivenFuncCallStreamWithRelayRootRedirect_WhenCalled_ThenRecordsCalls()
         {
             // ARRANGE
             var inputs = Enumerable.Range(0, 10)
@@ -118,7 +334,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenFuncCallLogWithRelayNextRedirect_WhenCalled_ThenRecordsCalls()
+        public void GivenFuncCallStreamWithRelayNextRedirect_WhenCalled_ThenRecordsCalls()
         {
             // ARRANGE
             var inputs = Enumerable.Range(0, 10)
@@ -152,7 +368,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenActionCallLogWithRelayRootRedirect_WhenCalled_ThenRecordsCalls()
+        public void GivenActionCallStreamWithRelayRootRedirect_WhenCalled_ThenRecordsCalls()
         {
             // ARRANGE
             var inputs = Enumerable.Range(0, 10)
@@ -190,7 +406,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenActionCallLogWithRelayNextRedirect_WhenCalled_ThenRecordsCalls()
+        public void GivenActionCallStreamWithRelayNextRedirect_WhenCalled_ThenRecordsCalls()
         {
             // ARRANGE
             var inputs = Enumerable.Range(0, 10)
@@ -328,10 +544,15 @@ namespace DivertR.UnitTests
                 }, opt => opt.OrderLast());
 
             // ACT
-            var result = inputs.Select(input => _proxy.Echo(input)).Count();
+            var results = inputs.Select(input => _proxy.Echo(input)).ToList();
 
             // ASSERT
-            recordedCalls.Count.ShouldBe(result);
+            recordedCalls.Select((call, i) =>
+            {
+                call.Args.input.ShouldBe(inputs[i]);
+                call.Returned!.Value.ShouldBe($"{results[i]}");
+                return call;
+            }).Count().ShouldBe(results.Count);
         }
     }
 }
