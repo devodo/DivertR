@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -35,6 +36,38 @@ namespace DivertR.UnitTests
                 call.Args.Count.ShouldBe(0);
                 call.Returned?.Value.ShouldBe(_foo.Name);
             }).Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public void GivenRecordFuncCallStream_WhenProxyNotCalled_ThenRecordsNoCalls()
+        {
+            // ARRANGE
+            var calls = _fooVia
+                .To(x => x.Echo(Is<string>.Any))
+                .Record();
+
+            // ACT
+
+            // ASSERT
+            calls.Count.ShouldBe(0);
+            calls.Verify().Count.ShouldBe(0);
+            calls.Verify<(string input, __)>().Count.ShouldBe(0);
+        }
+        
+        [Fact]
+        public void GivenRecordActionCallStream_WhenProxyNotCalled_ThenRecordsNoCalls()
+        {
+            // ARRANGE
+            var calls = _fooVia
+                .To(x => x.SetName(Is<string>.Any))
+                .Record();
+
+            // ACT
+
+            // ASSERT
+            calls.Count.ShouldBe(0);
+            calls.Verify().Count.ShouldBe(0);
+            calls.Verify<(string input, __)>().Count.ShouldBe(0);
         }
         
         [Fact]
@@ -117,6 +150,88 @@ namespace DivertR.UnitTests
                 args.input.ShouldBe(input);
                 call.Returned?.Value.ShouldBe(result);
             }).Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public async Task GivenRecordFuncCallStreamWithTaskParam_WhenProxyCalled_ThenRecordsCall()
+        {
+            // ARRANGE
+            var calls = _fooVia
+                .To(x => x.EchoGeneric(Is<Task<string>>.Any))
+                .Record();
+
+            var input = Guid.NewGuid().ToString();
+
+            // ACT
+            var result = _proxy.EchoGeneric(Task.FromResult(input));
+
+            // ASSERT
+            (await result).ShouldBe(input);
+            
+            (await calls.Verify(async call =>
+            {
+                (await (Task<string>) call.Args[0]).ShouldBe(input);
+                call.Returned!.Value.ShouldBe(result);
+            })).Count.ShouldBe(1);
+            
+            (await calls.Verify(async (call, args) =>
+            {
+                (await (Task<string>) args[0]).ShouldBe(input);
+                call.Returned!.Value.ShouldBe(result);
+            })).Count.ShouldBe(1);
+            
+            (await calls.Verify<(Task<string> input, __)>(async call =>
+            {
+                (await call.Args.input).ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+            })).Count.ShouldBe(1);
+            
+            (await calls.Verify<(Task<string> input, __)>(async (call, args) =>
+            {
+                (await args.input).ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+            })).Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public async Task GivenRecordActionCallStreamWithTaskParam_WhenProxyCalled_ThenRecordsCall()
+        {
+            // ARRANGE
+            var calls = _fooVia
+                .To(x => x.SetName(Is<Task<string>>.Any))
+                .Record();
+
+            var input = Guid.NewGuid().ToString();
+
+            // ACT
+            _proxy.SetName(Task.FromResult(input));
+
+            // ASSERT
+            _foo.Name.ShouldBe(input);
+            
+            (await calls.Verify(async call =>
+            {
+                (await (Task<string>) call.Args[0]).ShouldBe(input);
+                call.Returned!.Value.ShouldBeNull();
+            })).Count.ShouldBe(1);
+            
+            (await calls.Verify(async (call, args) =>
+            {
+                (await (Task<string>) args[0]).ShouldBe(input);
+                call.Returned!.Value.ShouldBeNull();
+            })).Count.ShouldBe(1);
+            
+            (await calls.Verify<(Task<string> input, __)>(async call =>
+            {
+                (await call.Args.input).ShouldBe(input);
+                call.Returned!.Value.ShouldBeNull();
+            })).Count.ShouldBe(1);
+            
+            (await calls.Verify<(Task<string> input, __)>(async (call, args) =>
+            {
+                (await args.input).ShouldBe(input);
+                call.Returned!.Value.ShouldBeNull();
+            })).Count.ShouldBe(1);
         }
         
         [Fact]

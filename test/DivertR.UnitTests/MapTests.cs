@@ -350,7 +350,7 @@ namespace DivertR.UnitTests
             {
                 args[0].ShouldBe($"test {input}");
                 call.Returned!.Value.ShouldBeNull();
-            });
+            }).Count.ShouldBe(1);
             
             calls.Map(call => new
             {
