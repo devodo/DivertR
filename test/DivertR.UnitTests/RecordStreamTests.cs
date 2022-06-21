@@ -47,10 +47,11 @@ namespace DivertR.UnitTests
             
             echoCalls.Select(call => call.Args.input).ShouldBe(inputs);
             echoCalls.Select(call => call.Returned!.Value).ShouldBe(outputs);
-            echoCalls.Verify().Select((call, i) =>
+
+            var i = 0;
+            echoCalls.Verify((_, args) =>
             {
-                call.Args.input.ShouldBe(inputs[i]);
-                return call;
+                args.input.ShouldBe(inputs[i++]);
             }).Count().ShouldBe(inputs.Count);
         }
         
@@ -288,13 +289,13 @@ namespace DivertR.UnitTests
             recordedCalls
                 .Select(call => call.Args.name)
                 .ShouldBe(inputs);
-                
-            recordedCalls.Verify().Select((call, i) =>
+
+            var i = 0;
+            recordedCalls.Verify((call, args) =>
             {
-                call.Args.name.ShouldBe(inputs[i]);
+                args.name.ShouldBe(inputs[i++]);
                 call.Returned!.Value.ShouldBeNull();
-                return call;
-            }).Count().ShouldBe(inputs.Count);
+            }).Count.ShouldBe(inputs.Count);
         }
         
         [Fact]

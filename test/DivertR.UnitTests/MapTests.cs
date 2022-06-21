@@ -61,12 +61,13 @@ namespace DivertR.UnitTests
             echoes.Count.ShouldBe(inputs.Count);
             echoes.Select(x => x.Input).ShouldBe(inputs);
             echoes.Select(x => x.Returned).ShouldBe(outputs);
-            echoes.Verify().Select((call, i) =>
+            
+            var i = 0;
+            echoes.Verify(call =>
             {
                 call.Input.ShouldBe(inputs[i]);
-                call.Returned.ShouldBe(outputs[i]);
-                return call;
-            }).Count().ShouldBe(outputs.Count);
+                call.Returned.ShouldBe(outputs[i++]);
+            }).Count.ShouldBe(outputs.Count);
         }
         
         [Fact]
