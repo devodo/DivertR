@@ -85,6 +85,11 @@ namespace DivertR.Record.Internal
 
         public IActionCallStream<TTarget, TNewArgs> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
+            if (typeof(TNewArgs) == typeof(TArgs))
+            {
+                return (IActionCallStream<TTarget, TNewArgs>) this;
+            }
+
             return ActionCallStream<TTarget>.WithArgs<TNewArgs>(Calls, _parsedCallExpression);
         }
 

@@ -103,6 +103,12 @@ namespace DivertR.UnitTests
                 args.input.ShouldBe(input);
                 call.Returned?.Value.ShouldBe(result);
             }).Count.ShouldBe(1);
+            
+            calls.WithArgs<(string input, __)>().Verify(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+            }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -150,6 +156,25 @@ namespace DivertR.UnitTests
                 args.input.ShouldBe(input);
                 call.Returned?.Value.ShouldBe(result);
             }).Count.ShouldBe(1);
+            
+            calls.WithArgs<(string input, __)>().Verify(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+            }).Count.ShouldBe(1);
+            
+            calls.WithArgs<(object input, __)>().Verify(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(object input, __)>().Select(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBe(result);
+                return call;
+            }).Count().ShouldBe(1);
         }
         
         [Fact]
@@ -190,6 +215,65 @@ namespace DivertR.UnitTests
             {
                 (await args.input).ShouldBe(input);
                 call.Returned?.Value.ShouldBe(result);
+            })).Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public async Task GivenTypedRecordFuncCallStreamWithTaskParam_WhenProxyCalled_ThenRecordsCall()
+        {
+            // ARRANGE
+            var calls = _fooVia
+                .To(x => x.EchoGeneric(Is<Task<string>>.Any, Is<Task<int>>.Any))
+                .Record<(Task<string> input1, Task<int> input2)>();
+
+            var input1 = Guid.NewGuid().ToString();
+            var input2 = BitConverter.ToInt32(Guid.NewGuid().ToByteArray(), 0);
+
+            // ACT
+            var result = _proxy.EchoGeneric(Task.FromResult(input1), Task.FromResult(input2));
+
+            // ASSERT
+            (await result.Item1).ShouldBe(input1);
+            (await result.Item2).ShouldBe(input2);
+            
+            (await calls.Verify(async call =>
+            {
+                (await call.Args.input1).ShouldBe(input1);
+                (await call.Args.input2).ShouldBe(input2);
+                call.Returned!.Value.ShouldBe(result);
+            })).Count.ShouldBe(1);
+            
+            (await calls.Verify(async (call, args) =>
+            {
+                (await args.input1).ShouldBe(input1);
+                (await args.input2).ShouldBe(input2);
+                call.Returned!.Value.ShouldBe(result);
+            })).Count.ShouldBe(1);
+            
+            (await calls.Verify<(Task<string> i1, Task<int> i2)>(async call =>
+            {
+                (await call.Args.i1).ShouldBe(input1);
+                (await call.Args.i2).ShouldBe(input2);
+                call.Returned!.Value.ShouldBe(result);
+            })).Count.ShouldBe(1);
+            
+            (await calls.Verify<(Task<string> i1, Task<int> i2)>(async (call, args) =>
+            {
+                (await args.i1).ShouldBe(input1);
+                (await args.i2).ShouldBe(input2);
+                call.Returned!.Value.ShouldBe(result);
+            })).Count.ShouldBe(1);
+            
+            (await calls.Verify<(Task<string> i1, __)>(async call =>
+            {
+                (await call.Args.i1).ShouldBe(input1);
+                call.Returned!.Value.ShouldBe(result);
+            })).Count.ShouldBe(1);
+            
+            (await calls.Verify<(Task<string> i1, __)>(async (call, args) =>
+            {
+                (await args.i1).ShouldBe(input1);
+                call.Returned!.Value.ShouldBe(result);
             })).Count.ShouldBe(1);
         }
         
@@ -241,8 +325,6 @@ namespace DivertR.UnitTests
             var calls = _fooVia
                 .To(x => x.Echo(Is<string>.Any))
                 .Record();
-
-            var input = Guid.NewGuid().ToString();
 
             // ACT
             Action verify = () => calls.Verify<(int input, __)>();
@@ -319,6 +401,12 @@ namespace DivertR.UnitTests
                 args.input.ShouldBe(input);
                 call.Returned?.Value.ShouldBeNull();
             }).Count.ShouldBe(1);
+            
+            calls.WithArgs<(string input, __)>().Verify<(string input, __)>((call, args) =>
+            {
+                args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBeNull();
+            }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -366,6 +454,25 @@ namespace DivertR.UnitTests
                 args.input.ShouldBe(input);
                 call.Returned?.Value.ShouldBeNull();
             }).Count.ShouldBe(1);
+            
+            calls.WithArgs<(string input, __)>().Verify(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBeNull();
+            }).Count.ShouldBe(1);
+            
+            calls.WithArgs<(object input, __)>().Verify(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBeNull();
+            }).Count.ShouldBe(1);
+            
+            calls.Verify<(object input, __)>().Select(call =>
+            {
+                call.Args.input.ShouldBe(input);
+                call.Returned?.Value.ShouldBeNull();
+                return call;
+            }).Count().ShouldBe(1);
         }
 
         [Fact]
