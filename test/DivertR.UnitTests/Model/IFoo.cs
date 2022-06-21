@@ -38,7 +38,8 @@ namespace DivertR.UnitTests.Model
         ValueTask<string> EchoValueSync(string input);
         
         void SetName(string name);
-        
+        void SetName(Task<string> name);
+
         string SetName(Wrapper<string> input);
 
         IFoo GetFoo();

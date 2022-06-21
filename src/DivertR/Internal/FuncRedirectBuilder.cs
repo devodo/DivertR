@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using DivertR.Record;
 using DivertR.Record.Internal;
 
@@ -129,16 +130,16 @@ namespace DivertR.Internal
             return new FuncRedirectBuilder<TTarget, TReturn, TArgs>(Via, ParsedCallExpression, CallConstraint, Relay);
         }
         
-        public new IFuncCallLog<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IFuncCallStream<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
-            var mappedCollection = new MappedCollection<IRecordedCall<TTarget>, IFuncRecordedCall<TTarget, TReturn>>(recordStream,
-                call => new FuncRecordedCall<TTarget, TReturn>(call));
-
-            return new FuncCallLog<TTarget, TReturn>(mappedCollection, ParsedCallExpression);
+            var recordStream = ((RedirectBuilder<TTarget>) this)
+                .Record(optionsAction)
+                .Select(call => new FuncRecordedCall<TTarget, TReturn>(call));
+                
+            return new FuncCallStream<TTarget, TReturn>(recordStream, ParsedCallExpression);
         }
 
-        public IFuncCallLog<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IFuncCallStream<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Record(optionsAction);
         }
@@ -222,13 +223,13 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IFuncCallLog<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IFuncCallStream<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var recordStream = ((RedirectBuilder<TTarget>) this).Record(optionsAction);
-            var mappedCollection = new MappedCollection<IRecordedCall<TTarget>, IFuncRecordedCall<TTarget, TReturn, TArgs>>(recordStream,
-                call => new FuncRecordedCall<TTarget, TReturn, TArgs>(call, (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs)));
+            var recordStream = ((RedirectBuilder<TTarget>) this)
+                .Record(optionsAction)
+                .Select(call => new FuncRecordedCall<TTarget, TReturn, TArgs>(call, (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs)));
 
-            return new FuncCallLog<TTarget, TReturn, TArgs>(mappedCollection, ParsedCallExpression);
+            return new FuncCallStream<TTarget, TReturn, TArgs>(recordStream, ParsedCallExpression);
         }
     }
 }

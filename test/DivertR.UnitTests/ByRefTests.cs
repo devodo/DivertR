@@ -192,7 +192,7 @@ namespace DivertR.UnitTests
                 call.Args.output.Value.ShouldBe(13);
             }
 
-            recordStream.Replay(call =>
+            recordStream.Verify(call =>
             {
                 call.Args.input.ShouldBe(3);
                 call.Args.output.Value.ShouldBe(13);
