@@ -152,6 +152,11 @@ namespace DivertR.UnitTests.Model
         {
             Name = name;
         }
+        
+        public async void SetName(Task<string> name)
+        {
+            Name = await name;
+        }
 
         public string SetName(Wrapper<string> input)
         {

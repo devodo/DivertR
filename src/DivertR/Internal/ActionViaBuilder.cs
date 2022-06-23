@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using DivertR.Record;
 using DivertR.Record.Internal;
 
@@ -121,14 +122,14 @@ namespace DivertR.Internal
             return new ActionViaBuilder<TTarget, TArgs>(RedirectRepository, CallValidator, CallConstraint);
         }
 
-        public new IActionCallLog<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IActionCallStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordStream = ((ViaBuilder<TTarget>) this).Record(optionsAction);
 
-            return new ActionCallLog<TTarget>(recordStream, CallValidator);
+            return new ActionCallStream<TTarget>(recordStream, CallValidator);
         }
 
-        public IActionCallLog<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IActionCallStream<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return WithArgs<TArgs>().Record(optionsAction);
         }
@@ -205,12 +206,13 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IActionCallLog<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public new IActionCallStream<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var recordStream = ((ViaBuilder<TTarget>) this).Record(optionsAction);
-            var mappedCollection = ActionCallLog<TTarget>.MapCalls<TArgs>(recordStream, _valueTupleMapper);
+            var recordStream = ((ViaBuilder<TTarget>) this)
+                .Record(optionsAction)
+                .Select(call => new RecordedCall<TTarget, TArgs>(call, (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs)));
 
-            return new ActionCallLog<TTarget, TArgs>(mappedCollection, CallValidator);
+            return new ActionCallStream<TTarget, TArgs>(recordStream, CallValidator);
         }
     }
 }

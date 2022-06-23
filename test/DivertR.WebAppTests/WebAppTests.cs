@@ -103,7 +103,7 @@ namespace DivertR.WebAppTests
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
             response.Content.ShouldBeNull();
 
-            (await getFooCalls.Replay(async (call, args) =>
+            (await getFooCalls.Verify(async (call, args) =>
             {
                 args.fooId.ShouldBe(foo.Id);
                 (await call.Returned!.Value).ShouldBeNull();
@@ -162,7 +162,7 @@ namespace DivertR.WebAppTests
             await _fooClient.CreateFooAsync(createFooRequest);
 
             // ASSERT
-            (await insertCalls.Replay(async (call, args) =>
+            (await insertCalls.Verify(async (call, args) =>
             {
                 args.foo.Name.ShouldBe(createFooRequest.Name);
                 call.Returned.ShouldNotBeNull();
@@ -193,10 +193,10 @@ namespace DivertR.WebAppTests
             await _fooClient.CreateFooAsync(createFooRequest);
 
             // ASSERT
-            (await insertCalls.Replay(async call =>
+            (await insertCalls.Verify(async call =>
             {
                 call.Foo.Name.ShouldBe(createFooRequest.Name);
-                (await call.Result.Value).ShouldBe(true);
+                (await call.Result!.Value).ShouldBe(true);
             })).Count.ShouldBe(1);
         }
         
@@ -222,7 +222,7 @@ namespace DivertR.WebAppTests
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
-            recordedCalls.Replay((call, args) =>
+            recordedCalls.Verify((call, args) =>
             {
                 args.foo.Name.ShouldBe(createFooRequest.Name);
                 call.Returned?.Exception.ShouldBeSameAs(testException);

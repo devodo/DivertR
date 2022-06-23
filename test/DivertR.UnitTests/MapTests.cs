@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DivertR.Record;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -62,10 +61,12 @@ namespace DivertR.UnitTests
             echoes.Count.ShouldBe(inputs.Count);
             echoes.Select(x => x.Input).ShouldBe(inputs);
             echoes.Select(x => x.Returned).ShouldBe(outputs);
-            echoes.Replay((call, i) =>
+            
+            var i = 0;
+            echoes.Verify(call =>
             {
                 call.Input.ShouldBe(inputs[i]);
-                call.Returned.ShouldBe(outputs[i]);
+                call.Returned.ShouldBe(outputs[i++]);
             }).Count.ShouldBe(outputs.Count);
         }
         
@@ -128,7 +129,7 @@ namespace DivertR.UnitTests
             echoes.Count.ShouldBe(inputs.Count);
             echoes.Select(x => x.Input).ShouldBe(inputs);
             echoes.Select(x => x.Exception).ShouldBe(outputs);
-            echoes.Replay(call =>
+            echoes.Verify(call =>
             {
                 Should.Throw<DiverterException>(() => call.Returned!.Value);
             });
@@ -165,7 +166,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenTaskMapRedirect_ShouldReplayAsync()
+        public async Task GivenTaskMapRedirect_ShouldVerifyAsync()
         {
             // ARRANGE
             var inputs = Enumerable
@@ -194,34 +195,17 @@ namespace DivertR.UnitTests
             calls.Count.ShouldBe(inputs.Count);
 
             var count = 0;
-            (await calls.ReplayAsync(call =>
-            {
-                call.Input.ShouldBe($"test{count}");
-                call.Result.ShouldBe($"test{count++} diverted");
-            })).Count.ShouldBe(inputs.Count);
-            
-            (await calls.ReplayAsync((call, i) =>
-            {
-                call.Input.ShouldBe($"test{i}");
-                call.Result.ShouldBe($"test{i} diverted");
-            })).Count.ShouldBe(inputs.Count);
 
             count = 0;
-            (await calls.Replay(async call =>
+            (await calls.Verify(async call =>
             {
                 (await call).Input.ShouldBe($"test{count}");
                 (await call).Result.ShouldBe($"test{count++} diverted");
             })).Count.ShouldBe(inputs.Count);
-            
-            (await calls.Replay(async (call, i) =>
-            {
-                (await call).Input.ShouldBe($"test{i}");
-                (await call).Result.ShouldBe($"test{i} diverted");
-            })).Count.ShouldBe(inputs.Count);
         }
         
         [Fact]
-        public async Task GivenMapRedirect_ShouldReplayAsync()
+        public async Task GivenMapTypedFuncRedirect_ShouldVerifyAsync()
         {
             // ARRANGE
             var inputs = Enumerable
@@ -250,17 +234,144 @@ namespace DivertR.UnitTests
             calls.Count.ShouldBe(inputs.Count);
 
             var count = 0;
-            (await calls.Replay(async call =>
+            (await calls.Verify(async call =>
             {
                 call.Input.ShouldBe($"test{count}");
                 (await call.Result).ShouldBe($"test{count++} diverted");
             })).Count.ShouldBe(inputs.Count);
+        }
+        
+        [Fact]
+        public async Task GivenMapFuncRedirect_ShouldVerifyAsync()
+        {
+            // ARRANGE
+            var inputs = Enumerable
+                .Range(0, 20).Select(i => i)
+                .ToList();
             
-            (await calls.Replay(async (call, i) =>
+            var calls = _via
+                .To(x => x.EchoAsync(Is<string>.Any))
+                .Redirect(call => Task.FromResult($"{call.Args[0]} diverted"))
+                .Record()
+                .Map((call, args) => new
+                {
+                    Input = (string) args[0],
+                    Result = call.Returned!.Value
+                });
+
+            // ACT
+            var results = new List<string>(inputs.Count);
+            foreach (var input in inputs)
             {
-                call.Input.ShouldBe($"test{i}");
-                (await call.Result).ShouldBe($"test{i} diverted");
+                results.Add(await _proxy.EchoAsync("test" + input));
+            }
+            
+            // ASSERT
+            results.ShouldBe(inputs.Select(x => $"test{x} diverted"));
+            calls.Count.ShouldBe(inputs.Count);
+
+            var count = 0;
+            (await calls.Verify(async call =>
+            {
+                call.Input.ShouldBe($"test{count}");
+                (await call.Result).ShouldBe($"test{count++} diverted");
             })).Count.ShouldBe(inputs.Count);
+        }
+        
+        [Fact]
+        public void GivenMapTypedActionRedirect_ShouldVerifyAsync()
+        {
+            // ARRANGE
+            var input = Guid.NewGuid().ToString();
+            
+            var calls = _via
+                .To(x => x.SetName(Is<string>.Any))
+                .Redirect<(string input, __)>((call, args) =>
+                {
+                    call.Next.SetName($"{args.input} diverted");
+                })
+                .Record();
+
+            // ACT
+            _proxy.SetName($"test {input}");
+
+            // ASSERT
+            _proxy.Name.ShouldBe($"test {input} diverted");
+            calls.Count.ShouldBe(1);
+            
+            calls.Map(call => new
+            {
+                Input = call.Args.input,
+                Result = call.Returned!.Value
+            }).Verify(map =>
+            {
+                map.Input.ShouldBe($"test {input}");
+                map.Result.ShouldBeNull();
+            });
+            
+            calls.Map((call, args) => new
+            {
+                Input = args.input,
+                Result = call.Returned!.Value
+            }).Verify(map =>
+            {
+                map.Input.ShouldBe($"test {input}");
+                map.Result.ShouldBeNull();
+            });
+        }
+        
+        [Fact]
+        public void GivenMapActionRedirect_ShouldVerifyAsync()
+        {
+            // ARRANGE
+            var input = Guid.NewGuid().ToString();
+            
+            var calls = _via
+                .To(x => x.SetName(Is<string>.Any))
+                .Redirect((call, args) =>
+                {
+                    call.Next.SetName($"{args[0]} diverted");
+                })
+                .Record();
+
+            // ACT
+            _proxy.SetName($"test {input}");
+
+            // ASSERT
+            _proxy.Name.ShouldBe($"test {input} diverted");
+            calls.Count.ShouldBe(1);
+
+            calls.Verify(call =>
+            {
+                call.Args[0].ShouldBe($"test {input}");
+                call.Returned!.Value.ShouldBeNull();
+            });
+            
+            calls.Verify((call, args) =>
+            {
+                args[0].ShouldBe($"test {input}");
+                call.Returned!.Value.ShouldBeNull();
+            }).Count.ShouldBe(1);
+            
+            calls.Map(call => new
+            {
+                Input = (string) call.Args[0],
+                Result = call.Returned!.Value
+            }).Verify(map =>
+            {
+                map.Input.ShouldBe($"test {input}");
+                map.Result.ShouldBeNull();
+            }).Count.ShouldBe(1);
+            
+            calls.Map((call, args) => new
+            {
+                Input = (string) args[0],
+                Result = call.Returned!.Value
+            }).Verify(map =>
+            {
+                map.Input.ShouldBe($"test {input}");
+                map.Result.ShouldBeNull();
+            }).Count.ShouldBe(1);
         }
         
         [Fact]
@@ -283,10 +394,13 @@ namespace DivertR.UnitTests
             outputs.ShouldBe(inputs.Select(x => $"{_proxy.Name}: {x}"));
             echoes.Count.ShouldBe(inputs.Count);
             echoes.Select(x => x.Input).ShouldBe(inputs);
-            echoes.Replay((call, i) =>
+            
+            var snapshot = echoes.Verify();
+            snapshot.Count.ShouldBe(inputs.Count);
+            for (var i = 0; i < snapshot.Count; i++)
             {
-                call.Input.ShouldBe(inputs[i]);
-            }).Count.ShouldBe(inputs.Count);
+                snapshot[i].Input.ShouldBe(inputs[i]);
+            }
         }
         
         [Fact]
@@ -306,12 +420,12 @@ namespace DivertR.UnitTests
             var result = await _proxy.EchoAsync("test");
             
             // ASSERT
-            await calls.ReplayAsync(call =>
+            (await calls.Verify(async call =>
             {
                 result.ShouldBe("original: test");
-                call.Input.ShouldBe("test");
-                call.Result.ShouldBe(result);
-            });
+                (await call).Input.ShouldBe("test");
+                (await call).Result.ShouldBe(result);
+            })).Count.ShouldBe(1);
         }
     }
 }

@@ -46,13 +46,13 @@ namespace DivertR
         IActionViaBuilder<TTarget, TArgs> WithArgs<TArgs>()
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
-        new IActionCallLog<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        new IActionCallStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         
-        IActionCallLog<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        IActionCallStream<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
     
-    public interface IActionViaBuilder<TTarget, out TArgs> : IActionViaBuilder<TTarget>
+    public interface IActionViaBuilder<TTarget, TArgs> : IActionViaBuilder<TTarget>
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
@@ -67,6 +67,6 @@ namespace DivertR
 
         new IActionViaBuilder<TTarget, TArgs> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         
-        new IActionCallLog<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        new IActionCallStream<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
     }
 }

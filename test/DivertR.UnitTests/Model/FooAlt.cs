@@ -157,6 +157,11 @@ namespace DivertR.UnitTests.Model
             _messageFactory = () => name;
         }
 
+        public void SetName(Task<string> name)
+        {
+            throw new NotImplementedException();
+        }
+
         public string SetName(Wrapper<string> input)
         {
             _messageFactory = () => input.Item;

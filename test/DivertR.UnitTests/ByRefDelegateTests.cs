@@ -180,7 +180,7 @@ namespace DivertR.UnitTests
             // ASSERT
             output.ShouldBe(13);
             recordStream.Count.ShouldBe(1);
-            recordStream.Replay(call =>
+            recordStream.Verify(call =>
             {
                 call.Args[0].ShouldBe(3);
                 call.Args[1].ShouldBe(13);
@@ -208,7 +208,7 @@ namespace DivertR.UnitTests
             // ASSERT
             output.ShouldBe(13);
             recordStream.Count.ShouldBe(1);
-            recordStream.Replay(call =>
+            recordStream.Verify(call =>
             {
                 call.Args.i.ShouldBe(3);
                 call.Args.o.Value.ShouldBe(13);

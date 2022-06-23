@@ -47,7 +47,7 @@ namespace DivertR.Dummy.Internal
                 return factory.Invoke(type, this); 
             }
 
-            Type factoryType = type.IsGenericType
+            var factoryType = type.IsGenericType
                 ? type.GetGenericTypeDefinition()
                 : type.IsArray
                     ? typeof(Array)

@@ -64,16 +64,14 @@ namespace DivertR.Record.Internal
             return new ActionCallStream<TTarget>(calls, parsedCall);
         }
 
-        public ICallLog<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, TMap> mapper)
+        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, TMap> mapper)
         {
-            var mappedCalls = new MappedCollection<IRecordedCall<TTarget>, TMap>(this, mapper);
-            return new CallLog<TMap>(mappedCalls);
+            return new CallStream<TMap>(this.Select(mapper));
         }
 
-        public ICallLog<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, CallArguments, TMap> mapper)
+        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, CallArguments, TMap> mapper)
         {
-            var mappedCalls = new MappedCollection<IRecordedCall<TTarget>, TMap>(this, call => mapper.Invoke(call, call.Args));
-            return new CallLog<TMap>(mappedCalls);
+            return new CallStream<TMap>(this.Select(call => mapper.Invoke(call, call.Args)));
         }
 
         public int Count => _recordedCalls.Count;

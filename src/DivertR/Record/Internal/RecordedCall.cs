@@ -46,24 +46,30 @@ namespace DivertR.Record.Internal
             Returned = new CallReturn(null, exception);
         }
     }
-    
-    internal class RecordedCall<TTarget, TArgs> : IRecordedCall<TTarget, TArgs>
-        where TTarget : class
+
+    internal class RecordedCallInternal<TTarget> : IRecordedCall<TTarget> where TTarget : class
     {
         private readonly IRecordedCall<TTarget> _recordedCall;
 
-        public RecordedCall(IRecordedCall<TTarget> recordedCall, TArgs args)
+        protected RecordedCallInternal(IRecordedCall<TTarget> recordedCall)
         {
             _recordedCall = recordedCall;
-            Args = args;
         }
 
-        public TArgs Args { get; }
-        
-        public ICallReturn? Returned => _recordedCall.Returned;
-        
-        CallArguments IRecordedCall<TTarget>.Args => _recordedCall.Args;
-        
         public ICallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
+        public ICallReturn? Returned => _recordedCall.Returned;
+        public CallArguments Args => _recordedCall.Args;
+    }
+    
+    internal class RecordedCall<TTarget, TArgs> : RecordedCallInternal<TTarget>, IRecordedCall<TTarget, TArgs>
+        where TTarget : class
+    {
+        public RecordedCall(IRecordedCall<TTarget> recordedCall, TArgs args) : base(recordedCall)
+        {
+            Args = args;
+        }
+        
+        public new TArgs Args { get; }
+        CallArguments IRecordedCall<TTarget>.Args => CallInfo.Arguments;
     }
 }
