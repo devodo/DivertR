@@ -48,6 +48,14 @@ namespace DivertR.Internal
             return WithArgs<TArgs>().Build(redirectDelegate, optionsAction);
         }
 
+        public new IActionRecordRedirect<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var recordRedirect = base.Record(optionsAction);
+            var callStream = new ActionCallStream<TTarget>(recordRedirect.RecordStream, CallValidator);
+                
+            return new ActionRecordRedirect<TTarget>(recordRedirect.Redirect, callStream);
+        }
+
         public IActionRedirectBuilder<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return new ActionRedirectBuilder<TTarget, TArgs>(CallValidator, CallConstraint);
@@ -79,6 +87,14 @@ namespace DivertR.Internal
             var callHandler = new ActionArgsRedirectCallHandler<TTarget, TArgs>(_valueTupleMapper, redirectDelegate);
             
             return base.Build(callHandler, optionsAction);
+        }
+
+        public new IActionRecordRedirect<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var recordRedirect = base.Record(optionsAction);
+            var callStream = recordRedirect.CallStream.WithArgs<TArgs>();
+                
+            return new ActionRecordRedirect<TTarget, TArgs>(recordRedirect.Redirect, callStream);
         }
     }
 }

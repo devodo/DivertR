@@ -1,4 +1,6 @@
 ﻿using System;
+using DivertR.Record;
+using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
@@ -36,6 +38,14 @@ namespace DivertR.Internal
         public IRedirect<TTarget> Build(ICallHandler<TTarget> callHandler, IRedirectOptions<TTarget> redirectOptions)
         {
             return new Redirect<TTarget>(callHandler, CallConstraint, redirectOptions);
+        }
+        
+        public IRecordRedirect<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var recordHandler = new RecordCallHandler<TTarget>();
+            var redirect = Build(recordHandler, optionsAction);
+
+            return new RecordRedirect<TTarget>(redirect, recordHandler.RecordStream);
         }
     }
 }

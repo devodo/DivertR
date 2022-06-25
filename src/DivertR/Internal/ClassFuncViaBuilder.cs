@@ -10,14 +10,12 @@ namespace DivertR.Internal
     {
         private readonly IVia<TTarget> _via;
         private readonly IFuncRedirectBuilder<TTarget, TReturn> _redirectBuilder;
-        private readonly ICallValidator _callValidator;
 
-        public ClassFuncViaBuilder(IVia<TTarget> via, IFuncRedirectBuilder<TTarget, TReturn> redirectBuilder, ICallValidator callValidator)
-            : base(via.RedirectRepository, redirectBuilder, callValidator)
+        public ClassFuncViaBuilder(IVia<TTarget> via, IFuncRedirectBuilder<TTarget, TReturn> redirectBuilder)
+            : base(via.RedirectRepository, redirectBuilder)
         {
             _via = via;
             _redirectBuilder = redirectBuilder;
-            _callValidator = callValidator;
         }
 
         public IVia<TReturn> RedirectVia(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -115,7 +113,7 @@ namespace DivertR.Internal
         public new IClassFuncViaBuilder<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var builder = _redirectBuilder.WithArgs<TArgs>();
-            return new ClassFuncViaBuilder<TTarget, TReturn, TArgs>(_via, builder, _callValidator);
+            return new ClassFuncViaBuilder<TTarget, TReturn, TArgs>(_via, builder);
         }
     }
 
@@ -126,8 +124,8 @@ namespace DivertR.Internal
     {
         private readonly IFuncRedirectBuilder<TTarget, TReturn, TArgs> _redirectBuilder;
 
-        public ClassFuncViaBuilder(IVia<TTarget> via, IFuncRedirectBuilder<TTarget, TReturn, TArgs> redirectBuilder, ICallValidator callValidator)
-            : base(via, redirectBuilder, callValidator)
+        public ClassFuncViaBuilder(IVia<TTarget> via, IFuncRedirectBuilder<TTarget, TReturn, TArgs> redirectBuilder)
+            : base(via, redirectBuilder)
         {
             _redirectBuilder = redirectBuilder;
         }

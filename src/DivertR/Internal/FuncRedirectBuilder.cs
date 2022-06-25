@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
+using DivertR.Record;
+using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
@@ -50,7 +53,16 @@ namespace DivertR.Internal
         {
             return WithArgs<TArgs>().Build(redirectDelegate, optionsAction);
         }
-        
+
+        public new IFuncRecordRedirect<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var recordRedirect = base.Record(optionsAction);
+            var calls = recordRedirect.RecordStream.Select(call => new FuncRecordedCall<TTarget, TReturn>(call));
+            var callStream = new FuncCallStream<TTarget, TReturn>(calls, CallValidator);
+                
+            return new FuncRecordRedirect<TTarget, TReturn>(recordRedirect.Redirect, callStream);
+        }
+
         public IFuncRedirectBuilder<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return new FuncRedirectBuilder<TTarget, TReturn, TArgs>(CallValidator, CallConstraint);
@@ -82,6 +94,14 @@ namespace DivertR.Internal
             ICallHandler<TTarget> callHandler = new FuncArgsRedirectCallHandler<TTarget, TReturn, TArgs>(_valueTupleMapper, redirectDelegate);
             
             return base.Build(callHandler, optionsAction);
+        }
+
+        public new IFuncRecordRedirect<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var recordRedirect = base.Record(optionsAction);
+            var callStream = recordRedirect.CallStream.WithArgs<TArgs>();
+                
+            return new FuncRecordRedirect<TTarget, TReturn, TArgs>(recordRedirect.Redirect, callStream);
         }
     }
 

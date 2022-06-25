@@ -1,4 +1,5 @@
 ﻿using System;
+using DivertR.Record;
 
 namespace DivertR
 {
@@ -8,6 +9,7 @@ namespace DivertR
         IRedirect<TTarget> Build(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         IRedirect<TTarget> Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         IRedirect<TTarget> Build(ICallHandler<TTarget> callHandler, IRedirectOptions<TTarget> redirectOptions);
+        IRecordRedirect<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
     }
     
     public interface IRedirectBuilder
