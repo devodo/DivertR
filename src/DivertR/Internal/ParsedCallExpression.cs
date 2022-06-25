@@ -57,7 +57,7 @@ namespace DivertR.Internal
                     redirectReturnName = _method.ReturnType.FullName;
                 }
                 
-                throw new DiverterValidationException($"Delegate return type ({returnTypeName}) invalid for redirect call returning type ({redirectReturnName})");
+                throw new DiverterValidationException($"Delegate return type ({returnTypeName}) invalid for redirect call with return type ({redirectReturnName})");
             }
             
             var delegateParameterTypes = redirectDelegate.Method.GetParameters()

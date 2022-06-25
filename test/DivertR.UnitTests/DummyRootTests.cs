@@ -518,10 +518,11 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var diverterSettings = new DiverterSettings();
-            diverterSettings.DummyRedirectRepository.InsertRedirect(
-                Calls
-                    .Returning<string>()
-                    .Redirect(call => $"{call.CallNext()} redirected"));
+            var redirect = RedirectBuilder
+                .Returning<string>()
+                .Redirect(call => $"{call.CallNext()} redirected");
+            
+            diverterSettings.DummyRedirectRepository.InsertRedirect(redirect);
            
             var via = new Via<IFoo>(diverterSettings);
             var proxy = via.Proxy();

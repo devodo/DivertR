@@ -126,6 +126,16 @@ namespace DivertR.Internal
             throw new NotImplementedException();
         }
 
+        public IRedirect Build(ICallHandler callHandler, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRedirect Build(ICallHandler callHandler, IRedirectOptions redirectOptions)
+        {
+            throw new NotImplementedException();
+        }
+
         public IRedirect Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
             throw new NotImplementedException();

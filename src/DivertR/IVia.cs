@@ -38,13 +38,6 @@ namespace DivertR
         object ProxyObject(object? root);
         
         object ProxyObject(bool createDummyRoot = true);
-        
-        /// <summary>
-        /// Insert a <see cref="IRedirectUntargeted"/> instance into the Via <see cref="IRedirectRepository" />.
-        /// </summary>
-        /// <param name="redirect">The redirect.</param>
-        /// <returns>The current <see cref="IVia"/> instance.</returns>
-        IVia InsertRedirect(IRedirectUntargeted redirect);
 
         /// <summary>
         /// Reset the Via.
@@ -79,14 +72,7 @@ namespace DivertR
         TTarget Proxy(TTarget? root);
         
         TTarget Proxy(bool createDummyRoot = true);
-        
-        /// <summary>
-        /// Insert a <see cref="IRedirect{TTarget}"/> instance into the Via <see cref="IRedirectRepository" />.
-        /// </summary>
-        /// <param name="redirect">The redirect.</param>
-        /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
-        IVia<TTarget> InsertRedirect(IRedirect<TTarget> redirect);
-        
+
         /// <summary>
         /// Reset the Via <see cref="IRedirectRepository" />.
         /// </summary>
@@ -133,7 +119,7 @@ namespace DivertR
         /// <returns>The Redirect builder instance.</returns>
         IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : struct;
         
-        // Delegate required to coerce C# to allow the To overload below
+        // Delegate required to coerce C# to allow the class constrained To method overload below
         delegate TResult ClassReturnMatch<in T, out TResult>(T args) where TResult : class;
         
         /// <summary>

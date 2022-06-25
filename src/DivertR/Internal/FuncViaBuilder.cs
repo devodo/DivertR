@@ -8,9 +8,14 @@ namespace DivertR.Internal
 {
     internal class FuncViaBuilder<TTarget, TReturn> : DelegateViaBuilder<TTarget>, IFuncViaBuilder<TTarget, TReturn> where TTarget : class
     {
-        public FuncViaBuilder(IRedirectRepository redirectRepository, ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
-            : base(redirectRepository, callValidator, callConstraint)
+        private readonly IFuncRedirectBuilder<TTarget, TReturn> _redirectBuilder;
+        private readonly ICallValidator _callValidator;
+
+        public FuncViaBuilder(IRedirectRepository redirectRepository, IFuncRedirectBuilder<TTarget, TReturn> redirectBuilder, ICallValidator callValidator)
+            : base(redirectRepository, redirectBuilder)
         {
+            _redirectBuilder = redirectBuilder;
+            _callValidator = callValidator;
         }
         
         public new IFuncViaBuilder<TTarget, TReturn> AddConstraint(ICallConstraint<TTarget> callConstraint)
@@ -18,40 +23,6 @@ namespace DivertR.Internal
             base.AddConstraint(callConstraint);
 
             return this;
-        }
-        
-        public IRedirect<TTarget> Build(TReturn instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            return Build(call => instance, optionsAction);
-        }
-        
-        public IRedirect<TTarget> Build(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            return Build(call => redirectDelegate.Invoke(), optionsAction);
-        }
-
-        public IRedirect<TTarget> Build(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            var callHandler = new FuncRedirectCallHandler<TTarget, TReturn>(redirectDelegate);
-            
-            return base.Build(callHandler, optionsAction);
-        }
-
-        public IRedirect<TTarget> Build(Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            var callHandler = new FuncArgsRedirectCallHandler<TTarget, TReturn>(redirectDelegate);
-            
-            return base.Build(callHandler, optionsAction);
-        }
-
-        public IRedirect<TTarget> Build<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
-        {
-            return WithArgs<TArgs>().Build(redirectDelegate, optionsAction);
-        }
-
-        public IRedirect<TTarget> Build<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
-        {
-            return WithArgs<TArgs>().Build(redirectDelegate, optionsAction);
         }
 
         public new IFuncViaBuilder<TTarget, TReturn> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -68,7 +39,7 @@ namespace DivertR.Internal
 
         public IFuncViaBuilder<TTarget, TReturn> Redirect(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = Build(redirectDelegate, optionsAction);
+            var redirect = _redirectBuilder.Build(redirectDelegate, optionsAction);
             RedirectRepository.InsertRedirect(redirect);
 
             return this;
@@ -76,7 +47,7 @@ namespace DivertR.Internal
 
         public IFuncViaBuilder<TTarget, TReturn> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = Build(redirectDelegate, optionsAction);
+            var redirect = _redirectBuilder.Build(redirectDelegate, optionsAction);
             RedirectRepository.InsertRedirect(redirect);
 
             return this;
@@ -84,7 +55,7 @@ namespace DivertR.Internal
 
         public IFuncViaBuilder<TTarget, TReturn> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = Build(redirectDelegate, optionsAction);
+            var redirect = _redirectBuilder.Build(redirectDelegate, optionsAction);
             RedirectRepository.InsertRedirect(redirect);
 
             return this;
@@ -130,7 +101,9 @@ namespace DivertR.Internal
 
         public IFuncViaBuilder<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new FuncViaBuilder<TTarget, TReturn, TArgs>(RedirectRepository, CallValidator, CallConstraint);
+            var builder = _redirectBuilder.WithArgs<TArgs>();
+            
+            return new FuncViaBuilder<TTarget, TReturn, TArgs>(RedirectRepository, builder, _callValidator);
         }
         
         public new IFuncCallStream<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -139,7 +112,7 @@ namespace DivertR.Internal
                 .Record(optionsAction)
                 .Select(call => new FuncRecordedCall<TTarget, TReturn>(call));
 
-            return new FuncCallStream<TTarget, TReturn>(recordStream, CallValidator);
+            return new FuncCallStream<TTarget, TReturn>(recordStream, _callValidator);
         }
 
         public IFuncCallStream<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -152,27 +125,12 @@ namespace DivertR.Internal
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        private readonly IValueTupleMapper _valueTupleMapper;
-        
-        public FuncViaBuilder(IRedirectRepository redirectRepository, ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
-            : base(redirectRepository, callValidator, callConstraint)
-        {
-            _valueTupleMapper = ValueTupleMapperFactory.Create<TArgs>();
-            CallValidator.Validate(_valueTupleMapper);
-        }
+        private readonly IFuncRedirectBuilder<TTarget, TReturn, TArgs> _redirectBuilder;
 
-        public IRedirect<TTarget> Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public FuncViaBuilder(IRedirectRepository redirectRepository, IFuncRedirectBuilder<TTarget, TReturn, TArgs> redirectBuilder, ICallValidator callValidator)
+            : base(redirectRepository, redirectBuilder, callValidator)
         {
-            ICallHandler<TTarget> callHandler = new FuncRedirectCallHandler<TTarget, TReturn, TArgs>(_valueTupleMapper, redirectDelegate);
-            
-            return base.Build(callHandler, optionsAction);
-        }
-        
-        public IRedirect<TTarget> Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            ICallHandler<TTarget> callHandler = new FuncArgsRedirectCallHandler<TTarget, TReturn, TArgs>(_valueTupleMapper, redirectDelegate);
-            
-            return base.Build(callHandler, optionsAction);
+            _redirectBuilder = redirectBuilder;
         }
 
         public new IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -212,7 +170,7 @@ namespace DivertR.Internal
 
         public IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = Build(redirectDelegate, optionsAction);
+            var redirect = _redirectBuilder.Build(redirectDelegate, optionsAction);
             RedirectRepository.InsertRedirect(redirect);
 
             return this;
@@ -220,7 +178,7 @@ namespace DivertR.Internal
 
         public IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = Build(redirectDelegate, optionsAction);
+            var redirect = _redirectBuilder.Build(redirectDelegate, optionsAction);
             RedirectRepository.InsertRedirect(redirect);
 
             return this;
@@ -235,11 +193,7 @@ namespace DivertR.Internal
 
         public new IFuncCallStream<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var recordStream = ((ViaBuilder<TTarget>) this)
-                .Record(optionsAction)
-                .Select(call => new FuncRecordedCall<TTarget, TReturn, TArgs>(call, (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs)));
-
-            return new FuncCallStream<TTarget, TReturn, TArgs>(recordStream, CallValidator);
+            return base.Record(optionsAction).WithArgs<TArgs>();
         }
     }
 }

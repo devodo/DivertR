@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using DivertR.Record;
 
 namespace DivertR.Internal
 {
@@ -8,23 +9,28 @@ namespace DivertR.Internal
         where TReturn : class
     {
         private readonly IVia<TTarget> _via;
+        private readonly IFuncRedirectBuilder<TTarget, TReturn> _redirectBuilder;
+        private readonly ICallValidator _callValidator;
 
-        public ClassFuncViaBuilder(IVia<TTarget> via, ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
-            : base(via.RedirectRepository, callValidator, callConstraint)
+        public ClassFuncViaBuilder(IVia<TTarget> via, IFuncRedirectBuilder<TTarget, TReturn> redirectBuilder, ICallValidator callValidator)
+            : base(via.RedirectRepository, redirectBuilder, callValidator)
         {
             _via = via;
+            _redirectBuilder = redirectBuilder;
+            _callValidator = callValidator;
         }
 
-        public IVia<TReturn> Divert(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IVia<TReturn> RedirectVia(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            return Divert(null!, optionsAction);
+            return RedirectVia(null!, optionsAction);
         }
 
-        public IVia<TReturn> Divert(string name, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IVia<TReturn> RedirectVia(string name, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var via = _via.ViaSet.Via<TReturn>(name);
             ICallHandler<TTarget> callHandler = new DelegateCallHandler<TTarget>(call => via.Proxy((TReturn?) call.Relay.CallNext()));
-            base.InsertRedirect(callHandler, optionsAction);
+            var redirect = _redirectBuilder.Build(callHandler, optionsAction);
+            _via.RedirectRepository.InsertRedirect(redirect);
 
             return via;
         }
@@ -108,36 +114,22 @@ namespace DivertR.Internal
 
         public new IClassFuncViaBuilder<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new ClassFuncViaBuilder<TTarget, TReturn, TArgs>(_via, CallValidator, CallConstraint);
+            var builder = _redirectBuilder.WithArgs<TArgs>();
+            return new ClassFuncViaBuilder<TTarget, TReturn, TArgs>(_via, builder, _callValidator);
         }
     }
 
-    internal class ClassFuncViaBuilder<TTarget, TReturn, TArgs> : FuncViaBuilder<TTarget, TReturn, TArgs>,
-        IClassFuncViaBuilder<TTarget, TReturn, TArgs>
+    internal class ClassFuncViaBuilder<TTarget, TReturn, TArgs> : ClassFuncViaBuilder<TTarget, TReturn>, IClassFuncViaBuilder<TTarget, TReturn, TArgs>
         where TTarget : class
         where TReturn : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        private readonly IVia<TTarget> _via;
+        private readonly IFuncRedirectBuilder<TTarget, TReturn, TArgs> _redirectBuilder;
 
-        public ClassFuncViaBuilder(IVia<TTarget> via, ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
-            : base(via.RedirectRepository, callValidator, callConstraint)
+        public ClassFuncViaBuilder(IVia<TTarget> via, IFuncRedirectBuilder<TTarget, TReturn, TArgs> redirectBuilder, ICallValidator callValidator)
+            : base(via, redirectBuilder, callValidator)
         {
-            _via = via;
-        }
-
-        public IVia<TReturn> Divert(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            return Divert(null!, optionsAction);
-        }
-
-        public IVia<TReturn> Divert(string name, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            var via = _via.ViaSet.Via<TReturn>(name);
-            ICallHandler<TTarget> callHandler = new DelegateCallHandler<TTarget>(call => via.Proxy((TReturn?) call.Relay.CallNext()));
-            base.InsertRedirect(callHandler, optionsAction);
-
-            return via;
+            _redirectBuilder = redirectBuilder;
         }
 
         public new IClassFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -168,16 +160,18 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IClassFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IClassFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            base.Redirect(redirectDelegate, optionsAction);
+            var redirect = _redirectBuilder.Build(redirectDelegate, optionsAction);
+            RedirectRepository.InsertRedirect(redirect);
 
             return this;
         }
 
-        public new IClassFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IClassFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            base.Redirect(redirectDelegate, optionsAction);
+            var redirect = _redirectBuilder.Build(redirectDelegate, optionsAction);
+            RedirectRepository.InsertRedirect(redirect);
 
             return this;
         }
@@ -187,6 +181,11 @@ namespace DivertR.Internal
             base.Retarget(target, optionsAction);
 
             return this;
+        }
+
+        public new IFuncCallStream<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            return base.Record(optionsAction).WithArgs<TArgs>();
         }
     }
 }
