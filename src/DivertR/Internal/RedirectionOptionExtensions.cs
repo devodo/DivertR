@@ -11,5 +11,13 @@ namespace DivertR.Internal
             
             return builder.Build();
         }
+        
+        public static IRedirectOptions Create(this Action<IRedirectOptionsBuilder>? optionsAction)
+        {
+            var builder = new RedirectOptionsBuilder();
+            optionsAction?.Invoke(builder);
+            
+            return builder.Build();
+        }
     }
 }

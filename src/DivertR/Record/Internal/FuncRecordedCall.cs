@@ -25,4 +25,26 @@
 
         public new ICallReturn<TReturn>? Returned { get; }
     }
+    
+    internal class FuncRecordedCall<TReturn> : IFuncRecordedCall<TReturn>
+    {
+        private readonly IRecordedCall _recordedCall;
+
+        public FuncRecordedCall(IRecordedCall recordedCall)
+        {
+            _recordedCall = recordedCall;
+            
+            if (recordedCall.Returned != null)
+            {
+                Returned = new CallReturn<TReturn>(recordedCall.Returned);
+            }
+        }
+
+        public ICallInfo CallInfo => _recordedCall.CallInfo;
+        public CallArguments Args => _recordedCall.Args;
+        
+        ICallReturn? IRecordedCall.Returned => Returned;
+
+        public ICallReturn<TReturn>? Returned { get; }
+    }
 }

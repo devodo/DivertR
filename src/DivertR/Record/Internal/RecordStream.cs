@@ -86,4 +86,43 @@ namespace DivertR.Record.Internal
             return GetEnumerator();
         }
     }
+    
+    internal class RecordStream : IRecordStream
+    {
+        private readonly IReadOnlyCollection<RecordedCall> _recordedCalls;
+
+        public RecordStream(IReadOnlyCollection<RecordedCall> recordedCalls)
+        {
+            _recordedCalls = recordedCalls ?? throw new ArgumentNullException(nameof(recordedCalls));
+        }
+
+        public IEnumerable<IRecordedCall> To(ICallConstraint? callConstraint = null)
+        {
+            callConstraint ??= TrueCallConstraint.Instance;
+            
+            return _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
+        }
+
+        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall, TMap> mapper)
+        {
+            return new CallStream<TMap>(this.Select(mapper));
+        }
+
+        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall, CallArguments, TMap> mapper)
+        {
+            return new CallStream<TMap>(this.Select(call => mapper.Invoke(call, call.Args)));
+        }
+
+        public int Count => _recordedCalls.Count;
+
+        public IEnumerator<IRecordedCall> GetEnumerator()
+        {
+            return _recordedCalls.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
 }

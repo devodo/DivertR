@@ -110,25 +110,25 @@ namespace DivertR
         /// <returns>The Redirect builder instance.</returns>
         /// 
         IViaBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null);
+        
+        // Delegate required to coerce C# to allow the struct return type constrained To method overload below
+        delegate TResult StructReturnFunc<in T, out TResult>(T args) where TResult : struct;
 
         /// <summary>
-        /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning <typeparam name="TReturn" />.
+        /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning struct <typeparam name="TReturn" />.
         /// </summary>
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <typeparam name="TReturn">The Expression return type</typeparam>
         /// <returns>The Redirect builder instance.</returns>
-        IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : struct;
-        
-        // Delegate required to coerce C# to allow the class constrained To method overload below
-        delegate TResult ClassReturnMatch<in T, out TResult>(T args) where TResult : class;
-        
+        IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<StructReturnFunc<TTarget, TReturn>> constraintExpression) where TReturn : struct;
+
         /// <summary>
-        /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning <typeparam name="TReturn" />.
+        /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning class <typeparam name="TReturn" />.
         /// </summary>
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <typeparam name="TReturn">The Expression return type</typeparam>
         /// <returns>The Redirect builder instance.</returns>
-        IClassFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<ClassReturnMatch<TTarget, TReturn>> constraintExpression) where TReturn : class;
+        IClassFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : class;
         
         /// <summary>
         /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning void />.

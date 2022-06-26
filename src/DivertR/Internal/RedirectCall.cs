@@ -3,31 +3,22 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class RedirectCall<TTarget> : IRedirectCall<TTarget>
-        where TTarget : class
+    internal class RedirectCall : IRedirectCall
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public RedirectCall(IRelay<TTarget> relay, ICallInfo<TTarget> callInfo)
+        protected RedirectCall(IRelay relay, ICallInfo callInfo)
         {
             Relay = relay;
             CallInfo = callInfo;
         }
         
-        public IRelay<TTarget> Relay
+        public IRelay Relay
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
-
-        ICallInfo IRedirectCall.CallInfo
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => CallInfo;
-        }
-
-        IRelay IRedirectCall.Relay => Relay;
-
-        public ICallInfo<TTarget> CallInfo
+        
+        public ICallInfo CallInfo
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
@@ -74,7 +65,30 @@ namespace DivertR.Internal
         {
             return Relay.CallRoot(args);
         }
+    }
+    
+    internal class RedirectCall<TTarget> : RedirectCall, IRedirectCall<TTarget>
+        where TTarget : class
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public RedirectCall(IRelay<TTarget> relay, ICallInfo<TTarget> callInfo) : base(relay, callInfo)
+        {
+            Relay = relay;
+            CallInfo = callInfo;
+        }
         
+        public new IRelay<TTarget> Relay
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+        
+        public new ICallInfo<TTarget> CallInfo
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+
         public TTarget Next
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

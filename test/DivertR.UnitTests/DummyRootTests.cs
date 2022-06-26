@@ -520,7 +520,7 @@ namespace DivertR.UnitTests
             var diverterSettings = new DiverterSettings();
             var redirect = RedirectBuilder
                 .Returning<string>()
-                .Redirect(call => $"{call.CallNext()} redirected");
+                .Build(call => $"{call.Args[0]} redirected");
             
             diverterSettings.DummyRedirectRepository.InsertRedirect(redirect);
            

@@ -4,6 +4,41 @@ using System.Linq;
 
 namespace DivertR.Internal
 {
+    internal class RedirectOptionsBuilder : IRedirectOptionsBuilder
+    {
+        private int? _orderWeight;
+        private bool? _disableSatisfyStrict;
+        
+        public IRedirectOptionsBuilder OrderWeight(int orderWeight)
+        {
+            _orderWeight = orderWeight;
+
+            return this;
+        }
+
+        public IRedirectOptionsBuilder OrderFirst()
+        {
+            return OrderWeight(int.MaxValue);
+        }
+
+        public IRedirectOptionsBuilder OrderLast()
+        {
+            return OrderWeight(int.MinValue);
+        }
+
+        public IRedirectOptionsBuilder DisableSatisfyStrict(bool disableStrict = true)
+        {
+            _disableSatisfyStrict = disableStrict;
+
+            return this;
+        }
+
+        public IRedirectOptions Build()
+        {
+            return new RedirectOptions(_orderWeight, _disableSatisfyStrict);
+        }
+    }
+        
     internal class RedirectOptionsBuilder<TTarget> : IRedirectOptionsBuilder<TTarget> where TTarget : class
     {
         private int? _orderWeight;

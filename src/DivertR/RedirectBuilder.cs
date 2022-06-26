@@ -10,26 +10,8 @@ namespace DivertR
         {
             return new Internal.RedirectBuilder<TTarget>(callConstraint);
         }
-        
-        public static IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(bool matchSubType = false) where TReturn : struct
-        {
-            var callValidator = new ReturnCallValidator(typeof(TReturn), matchSubType);
-            var callConstraint = callValidator.CreateCallConstraint<TTarget>();
-            
-            return new FuncRedirectBuilder<TTarget, TReturn>(callValidator, callConstraint);
-        }
 
-        public static IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : struct
-        {
-            if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
-
-            var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
-            var callConstraint = parsedCall.CreateCallConstraint<TTarget>();
-            
-            return new FuncRedirectBuilder<TTarget, TReturn>(parsedCall, callConstraint);
-        }
-
-        public static IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<IVia<TTarget>.ClassReturnMatch<TTarget, TReturn>> constraintExpression) where TReturn : class
+        public static IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
@@ -64,10 +46,23 @@ namespace DivertR
 
             return new ActionRedirectBuilder<TTarget>(parsedCall, callConstraint);
         }
+        
+        public static IFuncRedirectBuilder<TTarget, TReturn> Returning<TReturn>(bool matchSubType = false) where TReturn : struct
+        {
+            var callValidator = new ReturnCallValidator(typeof(TReturn), matchSubType);
+            var callConstraint = callValidator.CreateCallConstraint<TTarget>();
+            
+            return new FuncRedirectBuilder<TTarget, TReturn>(callValidator, callConstraint);
+        }
     }
 
     public static class RedirectBuilder
     {
+        public static IRedirectBuilder To(ICallConstraint? callConstraint = null)
+        {
+            return new Internal.RedirectBuilder(callConstraint);
+        }
+        
         public static IFuncRedirectBuilder<TReturn> Returning<TReturn>(bool matchSubType = false)
         {
             var callValidator = new ReturnCallValidator(typeof(TReturn), matchSubType);

@@ -13,5 +13,14 @@ namespace DivertR.Internal
             var delegateInternal = callInfo.Method.ToDelegate(typeof(TTarget));
             return delegateInternal.Invoke(target, callInfo.Arguments.InternalArgs);
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static object? Invoke(this ICallInfo callInfo, object target)
+        {
+            if (target == null) throw new ArgumentNullException(nameof(target));
+            
+            var delegateInternal = callInfo.Method.ToDelegate(target.GetType());
+            return delegateInternal.Invoke(target, callInfo.Arguments.InternalArgs);
+        }
     }
 }

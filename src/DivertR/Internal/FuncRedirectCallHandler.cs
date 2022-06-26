@@ -55,6 +55,25 @@ namespace DivertR.Internal
         }
     }
     
+    internal class FuncRedirectCallHandler<TReturn> : ICallHandler
+    {
+        private readonly Func<IFuncRedirectCall<TReturn>, TReturn> _redirectDelegate;
+
+        public FuncRedirectCallHandler(
+            Func<IFuncRedirectCall<TReturn>, TReturn> redirectDelegate)
+        {
+            _redirectDelegate = redirectDelegate;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Handle(IRedirectCall call)
+        {
+            var redirectCall = new FuncRedirectCall<TReturn>(call);
+
+            return _redirectDelegate.Invoke(redirectCall);
+        }
+    }
+    
     internal class FuncArgsRedirectCallHandler<TTarget, TReturn> : ICallHandler<TTarget>
         where TTarget : class
     {
@@ -104,6 +123,25 @@ namespace DivertR.Internal
             {
                 _valueTupleMapper.WriteBackReferences(call.Args.InternalArgs, valueTupleArgs);
             }
+        }
+    }
+    
+    internal class FuncArgsRedirectCallHandler<TReturn> : ICallHandler
+    {
+        private readonly Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> _redirectDelegate;
+
+        public FuncArgsRedirectCallHandler(
+            Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> redirectDelegate)
+        {
+            _redirectDelegate = redirectDelegate;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Handle(IRedirectCall call)
+        {
+            var redirectCall = new FuncRedirectCall<TReturn>(call);
+
+            return _redirectDelegate.Invoke(redirectCall, redirectCall.Args);
         }
     }
 }

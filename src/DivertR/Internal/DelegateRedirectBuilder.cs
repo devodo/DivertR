@@ -12,11 +12,31 @@ namespace DivertR.Internal
             CallValidator = callValidator ?? throw new ArgumentNullException(nameof(callValidator));
         }
 
-        public IRedirect<TTarget> Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRedirect Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             CallValidator.Validate(redirectDelegate);
             var fastDelegate = redirectDelegate.ToDelegate();
             var callHandler = new DelegateCallHandler<TTarget>(call => fastDelegate.Invoke(call.Args.InternalArgs));
+
+            return Build(callHandler, optionsAction);
+        }
+    }
+    
+    internal abstract class DelegateRedirectBuilder : RedirectBuilder, IDelegateRedirectBuilder
+    {
+        protected readonly ICallValidator CallValidator;
+
+        protected DelegateRedirectBuilder(ICallValidator callValidator, ICallConstraint callConstraint)
+            : base(callConstraint)
+        {
+            CallValidator = callValidator ?? throw new ArgumentNullException(nameof(callValidator));
+        }
+
+        public IRedirect Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        {
+            CallValidator.Validate(redirectDelegate);
+            var fastDelegate = redirectDelegate.ToDelegate();
+            var callHandler = new DelegateCallHandler(call => fastDelegate.Invoke(call.Args.InternalArgs));
 
             return Build(callHandler, optionsAction);
         }

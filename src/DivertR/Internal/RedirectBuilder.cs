@@ -23,19 +23,19 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IRedirect<TTarget> Build(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRedirect Build(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             ICallHandler<TTarget> callHandler = new TargetCallHandler<TTarget>(target);
 
             return Build(callHandler, optionsAction);
         }
         
-        public IRedirect<TTarget> Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRedirect Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             return Build(callHandler, optionsAction.Create());
         }
 
-        public IRedirect<TTarget> Build(ICallHandler<TTarget> callHandler, IRedirectOptions<TTarget> redirectOptions)
+        public IRedirect Build(ICallHandler<TTarget> callHandler, IRedirectOptions<TTarget> redirectOptions)
         {
             return new Redirect<TTarget>(callHandler, CallConstraint, redirectOptions);
         }
@@ -46,6 +46,51 @@ namespace DivertR.Internal
             var redirect = Build(recordHandler, optionsAction);
 
             return new RecordRedirect<TTarget>(redirect, recordHandler.RecordStream);
+        }
+    }
+    
+    internal class RedirectBuilder : IRedirectBuilder
+    {
+        protected CompositeCallConstraint CallConstraint { get; private set; } = CompositeCallConstraint.Empty;
+
+        public RedirectBuilder(ICallConstraint? callConstraint = null)
+        {
+            if (callConstraint != null)
+            {
+                CallConstraint = CallConstraint.AddCallConstraint(callConstraint);
+            }
+        }
+
+        public IRedirectBuilder AddConstraint(ICallConstraint callConstraint)
+        {
+            CallConstraint = CallConstraint.AddCallConstraint(callConstraint);
+
+            return this;
+        }
+
+        public IRedirect Build(object target, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        {
+            var callHandler = new TargetCallHandler(target);
+
+            return Build(callHandler, optionsAction);
+        }
+        
+        public IRedirect Build(ICallHandler callHandler, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        {
+            return Build(callHandler, optionsAction.Create());
+        }
+
+        public IRedirect Build(ICallHandler callHandler, IRedirectOptions redirectOptions)
+        {
+            return new Redirect(callHandler, CallConstraint, redirectOptions);
+        }
+        
+        public IRecordRedirect Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
+        {
+            var recordHandler = new RecordCallHandler();
+            var redirect = Build(recordHandler, optionsAction);
+
+            return new RecordRedirect(redirect, recordHandler.RecordStream);
         }
     }
 }

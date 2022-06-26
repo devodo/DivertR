@@ -48,9 +48,9 @@ namespace DivertR
 
         private static IRedirectRepository CreateDummyRepository()
         {
-            var dummyRedirect = new RedirectUntargeted(new DummyCallHandler());
+            var redirect = new Redirect(new DummyCallHandler());
             
-            return new RedirectRepository(new[] { dummyRedirect });
+            return new RedirectRepository(new[] { redirect });
         }
     }
 }

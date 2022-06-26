@@ -124,18 +124,15 @@ namespace DivertR
         {
             return new ViaBuilder<TTarget>(RedirectRepository, RedirectBuilder<TTarget>.To(callConstraint));
         }
-        
-        public IFuncViaBuilder<TTarget, TReturn> To<TReturn>(bool matchSubType = false) where TReturn : struct
+
+        public IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<IVia<TTarget>.StructReturnFunc<TTarget, TReturn>> constraintExpression) where TReturn : struct
         {
-            return new FuncViaBuilder<TTarget, TReturn>(RedirectRepository, RedirectBuilder<TTarget>.To<TReturn>());
+            var funcExpression = Expression.Lambda<Func<TTarget, TReturn>>(constraintExpression.Body, constraintExpression.Parameters);
+            
+            return new FuncViaBuilder<TTarget, TReturn>(RedirectRepository, RedirectBuilder<TTarget>.To(funcExpression));
         }
 
-        public IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : struct
-        {
-            return new FuncViaBuilder<TTarget, TReturn>(RedirectRepository, RedirectBuilder<TTarget>.To(constraintExpression));
-        }
-
-        public IClassFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<IVia<TTarget>.ClassReturnMatch<TTarget, TReturn>> constraintExpression) where TReturn : class
+        public IClassFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : class
         {
             return new ClassFuncViaBuilder<TTarget, TReturn>(this, RedirectBuilder<TTarget>.To(constraintExpression));
         }

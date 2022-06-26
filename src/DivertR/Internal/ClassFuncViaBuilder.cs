@@ -32,7 +32,7 @@ namespace DivertR.Internal
 
             return via;
         }
-
+        
         public new IClassFuncViaBuilder<TTarget, TReturn> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             base.Redirect(redirectDelegate, optionsAction);

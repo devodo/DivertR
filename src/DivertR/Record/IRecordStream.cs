@@ -13,4 +13,11 @@ namespace DivertR.Record
         ICallStream<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, TMap> mapper);
         ICallStream<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, CallArguments, TMap> mapper);
     }
+    
+    public interface IRecordStream : IReadOnlyCollection<IRecordedCall>
+    {
+        IEnumerable<IRecordedCall> To(ICallConstraint? callConstraint = null);
+        ICallStream<TMap> Map<TMap>(Func<IRecordedCall, TMap> mapper);
+        ICallStream<TMap> Map<TMap>(Func<IRecordedCall, CallArguments, TMap> mapper);
+    }
 }

@@ -18,4 +18,20 @@ namespace DivertR.Internal
             return _redirectDelegate.Invoke(call);
         }
     }
+    
+    internal class DelegateCallHandler : ICallHandler
+    {
+        private readonly Func<IRedirectCall, object?> _redirectDelegate;
+
+        public DelegateCallHandler(Func<IRedirectCall, object?> redirectDelegate)
+        {
+            _redirectDelegate = redirectDelegate ?? throw new ArgumentNullException(nameof(redirectDelegate));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Handle(IRedirectCall call)
+        {
+            return _redirectDelegate.Invoke(call);
+        }
+    }
 }

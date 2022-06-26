@@ -20,17 +20,10 @@ namespace DivertR.Internal
 
             return this;
         }
-
-        public IRedirect<TTarget> Build(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            ICallHandler<TTarget> callHandler = new TargetCallHandler<TTarget>(target);
-
-            return _redirectBuilder.Build(callHandler, optionsAction);
-        }
-
+        
         public IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = Build(target, optionsAction);
+            var redirect = _redirectBuilder.Build(target, optionsAction);
             RedirectRepository.InsertRedirect(redirect);
 
             return this;

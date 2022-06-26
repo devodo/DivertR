@@ -18,19 +18,4 @@ namespace DivertR
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         object? Handle(IRedirectCall call);
     }
-
-    public interface IRedirect<TTarget> : IRedirect where TTarget : class
-    {
-        ICallConstraint<TTarget> CallConstraint
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-        }
-
-        ICallHandler<TTarget> CallHandler
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-        }
-    }
 }
