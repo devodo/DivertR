@@ -32,10 +32,17 @@ namespace DivertR.Internal
         
         public IRedirect Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            return Build(callHandler, optionsAction.Create());
+            var builder = new RedirectOptionsBuilder<TTarget>();
+            optionsAction?.Invoke(builder);
+            
+            var redirectOptions = builder.BuildOptions();
+            callHandler = builder.BuildCallHandler(callHandler);
+            var callConstraint = builder.BuildCallConstraint(CallConstraint);
+                
+            return new Redirect<TTarget>(callHandler, callConstraint, redirectOptions);
         }
 
-        public IRedirect Build(ICallHandler<TTarget> callHandler, IRedirectOptions<TTarget> redirectOptions)
+        public IRedirect Build(ICallHandler<TTarget> callHandler, IRedirectOptions redirectOptions)
         {
             return new Redirect<TTarget>(callHandler, CallConstraint, redirectOptions);
         }
@@ -77,7 +84,10 @@ namespace DivertR.Internal
         
         public IRedirect Build(ICallHandler callHandler, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            return Build(callHandler, optionsAction.Create());
+            var builder = new RedirectOptionsBuilder();
+            optionsAction?.Invoke(builder);
+
+            return Build(callHandler, builder.BuildOptions());
         }
 
         public IRedirect Build(ICallHandler callHandler, IRedirectOptions redirectOptions)

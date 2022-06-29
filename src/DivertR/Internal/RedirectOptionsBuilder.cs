@@ -33,7 +33,7 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IRedirectOptions Build()
+        public IRedirectOptions BuildOptions()
         {
             return new RedirectOptions(_orderWeight, _disableSatisfyStrict);
         }
@@ -110,12 +110,12 @@ namespace DivertR.Internal
             return DecorateCallConstraint(Decorator);
         }
 
-        public IRedirectOptions<TTarget> Build()
+        public IRedirectOptions BuildOptions()
         {
-            return new RedirectOptions<TTarget>(_orderWeight, _disableSatisfyStrict, BuildCallHandlerDecorator, BuildCallConstraintDecorator);
+            return new RedirectOptions(_orderWeight, _disableSatisfyStrict);
         }
         
-        private ICallHandler<TTarget> BuildCallHandlerDecorator(ICallHandler<TTarget> callHandler)
+        public ICallHandler<TTarget> BuildCallHandler(ICallHandler<TTarget> callHandler)
         {
             if (!_callHandlerDecorators.Any())
             {
@@ -129,8 +129,8 @@ namespace DivertR.Internal
 
             return callHandler;
         }
-        
-        private ICallConstraint<TTarget> BuildCallConstraintDecorator(ICallConstraint<TTarget> callConstraint)
+
+        public ICallConstraint<TTarget> BuildCallConstraint(ICallConstraint<TTarget> callConstraint)
         {
             if (!_callConstraintDecorators.Any())
             {

@@ -8,7 +8,7 @@ namespace DivertR
         IRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
         IRedirect Build(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         IRedirect Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
-        IRedirect Build(ICallHandler<TTarget> callHandler, IRedirectOptions<TTarget> redirectOptions);
+        IRedirect Build(ICallHandler<TTarget> callHandler, IRedirectOptions redirectOptions);
         IRecordRedirect<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
     }
     

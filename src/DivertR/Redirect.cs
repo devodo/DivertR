@@ -50,20 +50,17 @@ namespace DivertR
         private readonly ICallHandler<TTarget> _callHandler;
         private readonly ICallConstraint<TTarget> _callConstraint;
 
-        public Redirect(ICallHandler<TTarget> callHandler, ICallConstraint<TTarget> callConstraint, IRedirectOptions<TTarget>? redirectOptions = null)
+        public Redirect(ICallHandler<TTarget> callHandler, ICallConstraint<TTarget> callConstraint, IRedirectOptions? redirectOptions = null)
         {
-            if (callHandler == null) throw new ArgumentNullException(nameof(callHandler));
-            if (callConstraint == null) throw new ArgumentNullException(nameof(callConstraint));
+            _callHandler = callHandler ?? throw new ArgumentNullException(nameof(callHandler));
+            _callConstraint = callConstraint ?? throw new ArgumentNullException(nameof(callConstraint));
             
-            redirectOptions ??= RedirectOptions<TTarget>.Default;
-            _callHandler = redirectOptions.CallHandlerDecorator?.Invoke(callHandler) ?? callHandler;
-            _callConstraint = redirectOptions.CallConstraintDecorator?.Invoke(callConstraint) ?? callConstraint;
-            
+            redirectOptions ??= RedirectOptions.Default;
             OrderWeight = redirectOptions.OrderWeight ?? 0;
             DisableSatisfyStrict = redirectOptions.DisableSatisfyStrict ?? false;
         }
         
-        public Redirect(ICallHandler<TTarget> callHandler, IRedirectOptions<TTarget>? redirectOptions = null)
+        public Redirect(ICallHandler<TTarget> callHandler, IRedirectOptions? redirectOptions = null)
             : this(callHandler, TrueCallConstraint<TTarget>.Instance, redirectOptions)
         {
         }
