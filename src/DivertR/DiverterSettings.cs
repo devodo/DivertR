@@ -12,6 +12,8 @@ namespace DivertR
         
         public IProxyFactory ProxyFactory { get; }
 
+        public bool DefaultWithDummyRoot { get; }
+
         public IDummyFactory DummyFactory { get; }
         
         public IRedirectRepository DummyRedirectRepository { get; }
@@ -38,10 +40,12 @@ namespace DivertR
 
         public DiverterSettings(
             IProxyFactory? proxyFactory = null,
+            bool defaultWithDummyRoot = true,
             IRedirectRepository? dummyRedirectRepository = null,
             IDummyFactory? defaultRootFactory = null)
         {
             ProxyFactory = proxyFactory ?? new DispatchProxyFactory();
+            DefaultWithDummyRoot = defaultWithDummyRoot;
             DummyRedirectRepository = dummyRedirectRepository ?? CreateDummyRepository();
             DummyFactory = defaultRootFactory ?? new DummyFactory();
         }

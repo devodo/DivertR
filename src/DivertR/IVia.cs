@@ -35,9 +35,11 @@ namespace DivertR
         /// <param name="root">Optional root instance to proxy calls to.</param>
         /// <exception cref="System.ArgumentException">Thrown if <paramref name="root"/> is not the Via type.</exception>
         /// <returns>The proxy instance.</returns>
-        object ProxyObject(object? root);
+        object Proxy(object? root);
         
-        object ProxyObject(bool createDummyRoot = true);
+        object Proxy(bool withDummyRoot);
+        
+        object Proxy();
 
         /// <summary>
         /// Reset the Via.
@@ -70,8 +72,12 @@ namespace DivertR
         /// <param name="root">Optional root instance to proxy calls to.</param>
         /// <returns>The proxy instance.</returns>
         TTarget Proxy(TTarget? root);
-        
-        TTarget Proxy(bool createDummyRoot = true);
+
+        new TTarget Proxy(object? root);
+
+        new TTarget Proxy(bool withDummyRoot);
+
+        new TTarget Proxy();
 
         /// <summary>
         /// Reset the Via <see cref="IRedirectRepository" />.

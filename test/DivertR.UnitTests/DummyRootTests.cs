@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DivertR.UnitTests.Model;
 using Shouldly;
@@ -517,11 +518,11 @@ namespace DivertR.UnitTests
         public void GivenDummyRedirectRepositoryWithReturnTypeRedirect_WhenProxyMethodReturnTypeMatches_ShouldRedirect()
         {
             // ARRANGE
-            var diverterSettings = new DiverterSettings();
             var redirect = RedirectBuilder
                 .Returning<string>()
-                .Build(call => $"{call.Args[0]} redirected");
+                .Build(call => $"{call.Args.FirstOrDefault()} redirected".Trim());
             
+            var diverterSettings = new DiverterSettings();
             diverterSettings.DummyRedirectRepository.InsertRedirect(redirect);
            
             var via = new Via<IFoo>(diverterSettings);
@@ -529,9 +530,13 @@ namespace DivertR.UnitTests
 
             // ACT
             var result = proxy.EchoGeneric("hello");
+            var name = proxy.Name;
+            var objectReturn = proxy.EchoGeneric<object>("hello");
 
             // ASSERT
             result.ShouldBe("hello redirected");
+            name.ShouldBe("redirected");
+            objectReturn.ShouldBeNull();
         }
     }
 }

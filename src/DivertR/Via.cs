@@ -58,20 +58,23 @@ namespace DivertR
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _relay;
         }
-
-        public TTarget Proxy(TTarget? root)
+        
+        object IVia.Proxy(object? root)
         {
-            return _proxyFactory.CreateProxy(GetProxyCall, root);
+            return Proxy(root);
+        }
+
+        object IVia.Proxy(bool withDummyRoot)
+        {
+            return Proxy(withDummyRoot);
+        }
+
+        object IVia.Proxy()
+        {
+            return Proxy();
         }
         
-        public TTarget Proxy(bool createDummyRoot = true)
-        {
-            var defaultRoot = createDummyRoot ? ViaSet.Settings.DummyFactory.Create<TTarget>(ViaSet.Settings) : null;
-            
-            return _proxyFactory.CreateProxy(GetProxyCall, defaultRoot);
-        }
-
-        public object ProxyObject(object? root)
+        public TTarget Proxy(object? root)
         {
             if (root != null && !(root is TTarget))
             {
@@ -81,9 +84,21 @@ namespace DivertR
             return Proxy(root as TTarget);
         }
 
-        public object ProxyObject(bool createDummyRoot = true)
+        public TTarget Proxy(TTarget? root)
         {
-            return Proxy(createDummyRoot);
+            return _proxyFactory.CreateProxy(GetProxyCall, root);
+        }
+
+        public TTarget Proxy(bool withDummyRoot)
+        {
+            var defaultRoot = withDummyRoot ? ViaSet.Settings.DummyFactory.Create<TTarget>(ViaSet.Settings) : null;
+            
+            return _proxyFactory.CreateProxy(GetProxyCall, defaultRoot);
+        }
+
+        public TTarget Proxy()
+        {
+            return Proxy(ViaSet.Settings.DefaultWithDummyRoot);
         }
 
         IVia IVia.Reset()

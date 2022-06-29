@@ -30,7 +30,7 @@ namespace DivertR.UnitTests
             var original = new Foo();
 
             // ACT
-            var proxy = (IFoo) _via.ProxyObject(original);
+            var proxy = (IFoo) ((IVia) _via).Proxy(original);
 
             // ASSERT
             proxy.Name.ShouldBe(original.Name);
@@ -56,7 +56,7 @@ namespace DivertR.UnitTests
             var invalidOriginal = new object();
 
             // ACT
-            Func<object> testAction = () => _via.ProxyObject(invalidOriginal);
+            Func<object> testAction = () => _via.Proxy(invalidOriginal);
 
             // ASSERT
             testAction.ShouldThrow<ArgumentException>();
