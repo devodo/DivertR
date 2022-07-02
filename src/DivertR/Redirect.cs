@@ -44,8 +44,7 @@ namespace DivertR
         }
     }
     
-    public class Redirect<TTarget> : IRedirect
-        where TTarget : class
+    public class Redirect<TTarget> : IRedirect where TTarget : class
     {
         private readonly ICallHandler<TTarget> _callHandler;
         private readonly ICallConstraint<TTarget> _callConstraint;

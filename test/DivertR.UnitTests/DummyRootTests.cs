@@ -519,7 +519,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             var redirect = RedirectBuilder
-                .Returning<string>()
+                .To(() => Is<string>.Return)
                 .Build(call => $"{call.Args.FirstOrDefault()} redirected".Trim());
             
             var diverterSettings = new DiverterSettings();

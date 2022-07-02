@@ -6,5 +6,6 @@ namespace DivertR.Internal
     {
         void Validate(IValueTupleMapper valueTupleMapper);
         void Validate(Delegate redirectDelegate);
+        ICallConstraint CreateCallConstraint();
     }
 }

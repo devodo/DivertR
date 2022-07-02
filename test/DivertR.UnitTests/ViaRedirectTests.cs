@@ -1,5 +1,6 @@
 using System;
 using DivertR.UnitTests.Model;
+using Moq;
 using Shouldly;
 using Xunit;
 
@@ -863,7 +864,7 @@ namespace DivertR.UnitTests
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
             _via
-                .To(x => Is<string>.Any)
+                .To(x => Is<string>.Return)
                 .Redirect(() => "relay " + (string) _via.Relay.CallRoot());
 
             // ACT
@@ -947,6 +948,30 @@ namespace DivertR.UnitTests
             // ASSERT
             enabledResult.ShouldBe("enabled");
             disabledResult.ShouldBe("disabled");
+        }
+        
+        [Fact]
+        public void GivenMoqAnyArgumentSyntax_ShouldThrowException()
+        {
+            // ARRANGE
+
+            // ACT
+            Action testAction = () => _via.To(x => x.Echo(It.IsAny<string>()));
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
+        }
+        
+        [Fact]
+        public void GivenMoqIsArgumentSyntax_ShouldThrowException()
+        {
+            // ARRANGE
+
+            // ACT
+            Action testAction = () => _via.To(x => x.Echo(It.Is<string>(m => true)));
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
         }
     }
 }

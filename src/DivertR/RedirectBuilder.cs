@@ -15,22 +15,22 @@ namespace DivertR
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
-            var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
-            var callConstraint = parsedCall.CreateCallConstraint<TTarget>();
+            var callValidator = CallExpressionParser.FromExpression(constraintExpression.Body);
+            var callConstraint = callValidator.CreateCallConstraint();
             
-            return new FuncRedirectBuilder<TTarget, TReturn>(parsedCall, callConstraint);
+            return new FuncRedirectBuilder<TTarget, TReturn>(callValidator, new CallConstraint<TTarget>(callConstraint));
         }
 
         public static IActionRedirectBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
-            var parsedCall = CallExpressionParser.FromExpression(constraintExpression.Body);
-            var callConstraint = parsedCall.CreateCallConstraint<TTarget>();
+            var callValidator = CallExpressionParser.FromExpression(constraintExpression.Body);
+            var callConstraint = callValidator.CreateCallConstraint();
             
-            return new ActionRedirectBuilder<TTarget>(parsedCall, callConstraint);
+            return new ActionRedirectBuilder<TTarget>(callValidator, new CallConstraint<TTarget>(callConstraint));
         }
-        
+
         public static IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression)
         {
             if (memberExpression.Body == null) throw new ArgumentNullException(nameof(memberExpression));
@@ -38,21 +38,13 @@ namespace DivertR
 
             if (!(memberExpression.Body is MemberExpression propertyExpression))
             {
-                throw new ArgumentException("Must be a property member expression", nameof(propertyExpression));
+                throw new ArgumentException("Must be a property member expression", nameof(memberExpression));
             }
 
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, constraintExpression.Body);
-            var callConstraint = parsedCall.CreateCallConstraint<TTarget>();
+            var callConstraint = parsedCall.CreateCallConstraint();
 
-            return new ActionRedirectBuilder<TTarget>(parsedCall, callConstraint);
-        }
-        
-        public static IFuncRedirectBuilder<TTarget, TReturn> Returning<TReturn>(bool matchSubType = false) where TReturn : struct
-        {
-            var callValidator = new ReturnCallValidator(typeof(TReturn), matchSubType);
-            var callConstraint = callValidator.CreateCallConstraint<TTarget>();
-            
-            return new FuncRedirectBuilder<TTarget, TReturn>(callValidator, callConstraint);
+            return new ActionRedirectBuilder<TTarget>(parsedCall, new CallConstraint<TTarget>(callConstraint));
         }
     }
 
@@ -63,9 +55,11 @@ namespace DivertR
             return new Internal.RedirectBuilder(callConstraint);
         }
         
-        public static IFuncRedirectBuilder<TReturn> Returning<TReturn>(bool matchSubType = false)
+        public static IFuncRedirectBuilder<TReturn> To<TReturn>(Expression<Func<TReturn>> constraintExpression)
         {
-            var callValidator = new ReturnCallValidator(typeof(TReturn), matchSubType);
+            if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
+
+            var callValidator = CallExpressionParser.FromExpression(constraintExpression.Body);
             var callConstraint = callValidator.CreateCallConstraint();
             
             return new FuncRedirectBuilder<TReturn>(callValidator, callConstraint);

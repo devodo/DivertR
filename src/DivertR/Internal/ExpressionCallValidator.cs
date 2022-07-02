@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace DivertR.Internal
 {
-    internal class ParsedCallExpression : ICallValidator
+    internal class ExpressionCallValidator : ICallValidator
     {
         private readonly IMethodConstraint _methodConstraint;
         private readonly IArgumentConstraint[] _argumentConstraints;
@@ -13,7 +13,7 @@ namespace DivertR.Internal
         private readonly ParameterInfo[] _parameterInfos;
 
 
-        internal ParsedCallExpression(MethodInfo method, ParameterInfo[] parameterInfos, IMethodConstraint methodConstraint, IArgumentConstraint[] argumentConstraints)
+        internal ExpressionCallValidator(MethodInfo method, ParameterInfo[] parameterInfos, IMethodConstraint methodConstraint, IArgumentConstraint[] argumentConstraints)
         {
             _method = method;
             _parameterInfos = parameterInfos;
@@ -78,9 +78,9 @@ namespace DivertR.Internal
                 $"{Environment.NewLine}{details}");
         }
 
-        public ICallConstraint<TTarget> CreateCallConstraint<TTarget>() where TTarget : class
+        public ICallConstraint CreateCallConstraint()
         {
-            return new MethodCallConstraint<TTarget>(_methodConstraint, _argumentConstraints);
+            return new MethodCallConstraint(_methodConstraint, _argumentConstraints);
         }
         
         private string GetMethodParameterSignature()

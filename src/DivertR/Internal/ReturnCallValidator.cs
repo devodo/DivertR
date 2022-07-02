@@ -7,7 +7,7 @@ namespace DivertR.Internal
         private readonly Type _returnType;
         private readonly bool _matchSubType;
 
-        public ReturnCallValidator(Type returnType, bool matchSubType)
+        public ReturnCallValidator(Type returnType, bool matchSubType = false)
         {
             _returnType = returnType;
             _matchSubType = matchSubType;
