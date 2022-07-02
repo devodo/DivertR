@@ -19,7 +19,7 @@ namespace DivertR.DispatchProxy
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Invoke(MethodInfo targetMethod, object[] args)
+        public object? Invoke(MethodInfo targetMethod, object[] args)
         {
             var proxyCall = _getProxyCall.Invoke();
 
@@ -28,17 +28,17 @@ namespace DivertR.DispatchProxy
                 return DefaultProceed(targetMethod, args);
             }
             
-            var callInfo = new CallInfo<TTarget>(_proxy, _root, targetMethod, args);
+            var callInfo = CallInfoFactory.Create(_proxy, _root, targetMethod, args);
 
             return proxyCall.Call(callInfo)!;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private object DefaultProceed(MethodInfo targetMethod, object[] args)
+        private object? DefaultProceed(MethodInfo targetMethod, object[] args)
         {
             if (_root == null)
             {
-                throw new DiverterException("The root instance reference is null");
+                throw new DiverterNullRootException("Root instance is null");
             }
 
             return targetMethod.ToDelegate<TTarget>().Invoke(_root, args);

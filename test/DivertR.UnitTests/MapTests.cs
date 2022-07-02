@@ -383,7 +383,7 @@ namespace DivertR.UnitTests
                 .ToList();
 
             var echoes = _via
-                .To(new CallConstraint<IFoo>(call => call.Method.Name == nameof(IFoo.Echo)))
+                .To(new MatchCallConstraint<IFoo>(call => call.Method.Name == nameof(IFoo.Echo)))
                 .Record()
                 .Map((_, args) => new { Input = args[0] });
 

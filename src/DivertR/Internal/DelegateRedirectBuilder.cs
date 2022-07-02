@@ -4,36 +4,41 @@ namespace DivertR.Internal
 {
     internal abstract class DelegateRedirectBuilder<TTarget> : RedirectBuilder<TTarget>, IDelegateRedirectBuilder<TTarget> where TTarget : class
     {
-        protected readonly ParsedCallExpression ParsedCallExpression;
+        protected readonly ICallValidator CallValidator;
 
-        protected DelegateRedirectBuilder(IVia<TTarget> via, ParsedCallExpression parsedCallExpression, ICallConstraint<TTarget> callConstraint)
-            : base(via, callConstraint)
+        protected DelegateRedirectBuilder(ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
+            : base(callConstraint)
         {
-            ParsedCallExpression = parsedCallExpression ?? throw new ArgumentNullException(nameof(parsedCallExpression));
+            CallValidator = callValidator ?? throw new ArgumentNullException(nameof(callValidator));
         }
 
-        public Redirect<TTarget> Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRedirect Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            ParsedCallExpression.Validate(redirectDelegate);
+            CallValidator.Validate(redirectDelegate);
             var fastDelegate = redirectDelegate.ToDelegate();
-            var redirect = new DelegateCallHandler<TTarget>(callInfo => fastDelegate.Invoke(callInfo.Arguments.InternalArgs));
+            var callHandler = new CallHandler<TTarget>(call => fastDelegate.Invoke(call.Args.InternalArgs));
 
-            return Build(redirect, optionsAction);
+            return Build(callHandler, optionsAction);
+        }
+    }
+    
+    internal abstract class DelegateRedirectBuilder : RedirectBuilder, IDelegateRedirectBuilder
+    {
+        protected readonly ICallValidator CallValidator;
+
+        protected DelegateRedirectBuilder(ICallValidator callValidator, ICallConstraint callConstraint)
+            : base(callConstraint)
+        {
+            CallValidator = callValidator ?? throw new ArgumentNullException(nameof(callValidator));
         }
 
-        public IDelegateRedirectBuilder<TTarget> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRedirect Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var redirect = Build(redirectDelegate, optionsAction);
-            Via.InsertRedirect(redirect);
+            CallValidator.Validate(redirectDelegate);
+            var fastDelegate = redirectDelegate.ToDelegate();
+            var callHandler = new CallHandler(call => fastDelegate.Invoke(call.Args.InternalArgs));
 
-            return this;
-        }
-
-        protected IVia<TTarget> InsertRedirect(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction)
-        {
-            var redirect = Build(callHandler, optionsAction);
-
-            return Via.InsertRedirect(redirect);
+            return Build(callHandler, optionsAction);
         }
     }
 }

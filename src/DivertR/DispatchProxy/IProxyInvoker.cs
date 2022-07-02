@@ -4,6 +4,6 @@ namespace DivertR.DispatchProxy
 {
     public interface IProxyInvoker
     {
-        object Invoke(MethodInfo targetMethod, object[] args);
+        object? Invoke(MethodInfo targetMethod, object[] args);
     }
 }

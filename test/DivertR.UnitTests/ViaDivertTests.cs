@@ -20,7 +20,7 @@ namespace DivertR.UnitTests
         public void GivenDivert_ShouldDefaultToRoot()
         {
             // ARRANGE
-            _via.To(x => x.GetFoo()).Divert();
+            _via.To(x => x.GetFoo()).RedirectVia();
 
             // ACT
             var result = _proxy.GetFoo().Name;
@@ -35,7 +35,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var fooVia = _via
                 .To(x => x.GetFoo())
-                .Divert("nested");
+                .RedirectVia("nested");
             
             fooVia.To(x => x.Name).Redirect("Diverted");
 
@@ -52,7 +52,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var fooVia = _via
                 .To(x => x.GetFoo())
-                .Divert("nested");
+                .RedirectVia("nested");
             
             fooVia.To(x => x.Name).Redirect("Diverted");
             var nestedFoo = _proxy.GetFoo();
@@ -71,7 +71,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var fooVia = _via
                 .To(x => x.GetFoo())
-                .Divert("nested");
+                .RedirectVia("nested");
             
             fooVia.To(x => x.Name).Redirect("Diverted");
             var nestedFoo = _proxy.GetFoo();
@@ -90,7 +90,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var fooVia = _via
                 .To(x => x.GetFoo())
-                .Divert("nested");
+                .RedirectVia("nested");
             
             fooVia.To(x => x.Name).Redirect("Diverted");
             var nestedFoo = _proxy.GetFoo();
@@ -110,7 +110,7 @@ namespace DivertR.UnitTests
             var divertedVia = _via
                 .To(x => x.EchoGeneric(Is<IList<string>>.Any))
                 .Redirect<(IList<string> input, __)>((_, args) => args.input.Select(x => $"redirect: {x}").ToList())
-                .Divert();
+                .RedirectVia();
             
             divertedVia
                 .To(x => x[Is<int>.Any])

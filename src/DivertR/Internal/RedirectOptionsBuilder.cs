@@ -4,9 +4,43 @@ using System.Linq;
 
 namespace DivertR.Internal
 {
+    internal class RedirectOptionsBuilder : IRedirectOptionsBuilder
+    {
+        private int? _orderWeight;
+        private bool? _disableSatisfyStrict;
+        
+        public IRedirectOptionsBuilder OrderWeight(int orderWeight)
+        {
+            _orderWeight = orderWeight;
+
+            return this;
+        }
+
+        public IRedirectOptionsBuilder OrderFirst()
+        {
+            return OrderWeight(int.MaxValue);
+        }
+
+        public IRedirectOptionsBuilder OrderLast()
+        {
+            return OrderWeight(int.MinValue);
+        }
+
+        public IRedirectOptionsBuilder DisableSatisfyStrict(bool disableStrict = true)
+        {
+            _disableSatisfyStrict = disableStrict;
+
+            return this;
+        }
+
+        public IRedirectOptions BuildOptions()
+        {
+            return new RedirectOptions(_orderWeight, _disableSatisfyStrict);
+        }
+    }
+        
     internal class RedirectOptionsBuilder<TTarget> : IRedirectOptionsBuilder<TTarget> where TTarget : class
     {
-        private readonly IVia<TTarget> _via;
         private int? _orderWeight;
         private bool? _disableSatisfyStrict;
         
@@ -15,11 +49,6 @@ namespace DivertR.Internal
         
         private readonly List<Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>>> _callConstraintDecorators =
             new List<Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>>>();
-
-        public RedirectOptionsBuilder(IVia<TTarget> via)
-        {
-            _via = via;
-        }
 
         public IRedirectOptionsBuilder<TTarget> OrderWeight(int orderWeight)
         {
@@ -61,12 +90,12 @@ namespace DivertR.Internal
 
         public IRedirectOptionsBuilder<TTarget> Repeat(int repeatCount)
         {
-            return DecorateCallHandler(callHandler => new RepeatCallHandler<TTarget>(_via, callHandler, repeatCount));
+            return DecorateCallHandler(callHandler => new RepeatCallHandler<TTarget>(callHandler, repeatCount));
         }
         
         public IRedirectOptionsBuilder<TTarget> Skip(int skipCount)
         {
-            return DecorateCallHandler(callHandler => new SkipCallHandler<TTarget>(_via, callHandler, skipCount));
+            return DecorateCallHandler(callHandler => new SkipCallHandler<TTarget>(callHandler, skipCount));
         }
 
         public IRedirectOptionsBuilder<TTarget> AddSwitch(IRedirectSwitch redirectSwitch)
@@ -81,18 +110,12 @@ namespace DivertR.Internal
             return DecorateCallConstraint(Decorator);
         }
 
-        public RedirectOptions<TTarget> Build()
+        public IRedirectOptions BuildOptions()
         {
-            return new RedirectOptions<TTarget>
-            {
-                OrderWeight = _orderWeight,
-                DisableSatisfyStrict = _disableSatisfyStrict,
-                CallHandlerDecorator = BuildCallHandlerDecorator,
-                CallConstraintDecorator = BuildCallConstraintDecorator
-            };
+            return new RedirectOptions(_orderWeight, _disableSatisfyStrict);
         }
         
-        private ICallHandler<TTarget> BuildCallHandlerDecorator(ICallHandler<TTarget> callHandler)
+        public ICallHandler<TTarget> BuildCallHandler(ICallHandler<TTarget> callHandler)
         {
             if (!_callHandlerDecorators.Any())
             {
@@ -106,8 +129,8 @@ namespace DivertR.Internal
 
             return callHandler;
         }
-        
-        private ICallConstraint<TTarget> BuildCallConstraintDecorator(ICallConstraint<TTarget> callConstraint)
+
+        public ICallConstraint<TTarget> BuildCallConstraint(ICallConstraint<TTarget> callConstraint)
         {
             if (!_callConstraintDecorators.Any())
             {

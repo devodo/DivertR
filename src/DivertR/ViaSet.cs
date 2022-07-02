@@ -34,9 +34,8 @@ namespace DivertR
                 const BindingFlags ActivatorFlags = BindingFlags.NonPublic | BindingFlags.Instance;
                 
                 var diverterType = typeof(Via<>).MakeGenericType(type);
-                var constructorParams = new object[] { viaId, this };
-                var via = (IVia) Activator.CreateInstance(diverterType, ActivatorFlags, null, constructorParams,
-                    default);
+                var constructorParams = new object[] { viaId, this, null! };
+                var via = (IVia) Activator.CreateInstance(diverterType, ActivatorFlags, null, constructorParams, default);
 
                 return via;
             }
@@ -102,7 +101,7 @@ namespace DivertR
         }
         
         /// <summary>
-        /// Add a <see cref="IVia{TTarget}"/> to this <see cref="IViaSet"/>. For internal use only to allow empty <see cref="IVia{TTarget}"/> constructor.
+        /// Add a <see cref="IVia{TTarget}"/> to this <see cref="IViaSet"/>. For internal use by <see cref="IVia{TTarget}"/> constructor.
         /// </summary>
         /// <param name="via">The <see cref="IVia{TTarget}"/> instance to add.</param>
         /// <exception cref="DiverterException">Thrown if <see cref="IVia{TTarget}"/> already exists in this <see cref="IViaSet"/></exception>

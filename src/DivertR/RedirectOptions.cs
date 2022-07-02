@@ -1,17 +1,18 @@
-﻿using System;
-
-namespace DivertR
+﻿namespace DivertR
 {
-    public class RedirectOptions<TTarget> where TTarget : class
+    public class RedirectOptions : IRedirectOptions
     {
-        public static readonly RedirectOptions<TTarget> Default = new RedirectOptions<TTarget>();
-        
-        public int? OrderWeight { get; set; }
+        public static readonly RedirectOptions Default = new RedirectOptions();
 
-        public bool? DisableSatisfyStrict { get; set; }
+        public RedirectOptions(
+            int? orderWeight = null,
+            bool? disableSatisfyStrict = null)
+        {
+            OrderWeight = orderWeight;
+            DisableSatisfyStrict = disableSatisfyStrict;
+        }
 
-        public Func<ICallHandler<TTarget>, ICallHandler<TTarget>>? CallHandlerDecorator { get; set; }
-        
-        public Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>>? CallConstraintDecorator { get; set; }
+        public int? OrderWeight { get; }
+        public bool? DisableSatisfyStrict { get; }
     }
 }

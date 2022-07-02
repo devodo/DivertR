@@ -9,7 +9,7 @@
             _redirectSwitch = redirectSwitch;
         }
         
-        public bool IsMatch(CallInfo<TTarget> callInfo)
+        public bool IsMatch(ICallInfo<TTarget> callInfo)
         {
             return _redirectSwitch.IsEnabled;
         }

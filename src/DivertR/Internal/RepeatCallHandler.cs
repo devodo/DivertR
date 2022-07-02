@@ -5,24 +5,22 @@ namespace DivertR.Internal
 {
     internal class RepeatCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
-        private readonly IVia<TTarget> _via;
         private readonly ICallHandler<TTarget> _innerCallHandler;
         private readonly int _repeatCount;
         private long _callCount;
 
-        public RepeatCallHandler(IVia<TTarget> via, ICallHandler<TTarget> innerCallHandler, int repeatCount)
+        public RepeatCallHandler(ICallHandler<TTarget> innerCallHandler, int repeatCount)
         {
             if (repeatCount < 0)
             {
                 throw new ArgumentException("Must be greater than or equal to zero", nameof(repeatCount));
             }
             
-            _via = via;
             _innerCallHandler = innerCallHandler;
             _repeatCount = repeatCount;
         }
 
-        public object? Call(CallInfo<TTarget> callInfo)
+        public object? Handle(IRedirectCall<TTarget> call)
         {
             var count = Interlocked.Increment(ref _callCount);
 
@@ -32,8 +30,8 @@ namespace DivertR.Internal
             }
 
             return count <= _repeatCount 
-                ? _innerCallHandler.Call(callInfo)
-                : _via.Relay.CallNext();
+                ? _innerCallHandler.Handle(call)
+                : call.Relay.CallNext();
         }
     }
 }

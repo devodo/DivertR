@@ -1,7 +1,16 @@
-﻿namespace DivertR
+﻿using System.Runtime.CompilerServices;
+
+namespace DivertR
 {
-    public interface ICallConstraint<TTarget> where TTarget : class
+    public interface ICallConstraint
     {
-        bool IsMatch(CallInfo<TTarget> callInfo);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool IsMatch(ICallInfo callInfo);
+    }
+    
+    public interface ICallConstraint<in TTarget> where TTarget : class
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool IsMatch(ICallInfo<TTarget> callInfo);
     }
 }

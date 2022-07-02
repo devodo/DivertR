@@ -4,19 +4,24 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class LambdaArgumentConstraint<TTarget> : IArgumentConstraint
+    internal class LambdaArgumentConstraint<TArgument> : IArgumentConstraint
     {
-        private readonly Func<TTarget, bool> _matchFunc;
+        private readonly Func<TArgument, bool> _matchFunc;
 
         public LambdaArgumentConstraint(LambdaExpression lambdaExpression)
         {
-            _matchFunc = (Func<TTarget, bool>) lambdaExpression.Compile();
+            _matchFunc = (Func<TArgument, bool>) lambdaExpression.Compile();
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(object? argument)
         {
-            return _matchFunc((TTarget) argument!);
+            return argument switch
+            {
+                null => _matchFunc(default!),
+                TArgument tArg => _matchFunc(tArg),
+                _ => false
+            };
         }
     }
 }

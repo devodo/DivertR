@@ -27,24 +27,24 @@ namespace DivertR.Record.Internal
         {
             if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
-            var callConstraint = parsedCall.ToCallConstraint<TTarget>();
+            var callValidator = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            var callConstraint = callValidator.CreateCallConstraint();
             var calls = _recordedCalls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
                 .Select(call => new FuncRecordedCall<TTarget, TReturn>(call));
 
-            return new FuncCallStream<TTarget, TReturn>(calls, parsedCall);
+            return new FuncCallStream<TTarget, TReturn>(calls, callValidator);
         }
 
         public IActionCallStream<TTarget> To(Expression<Action<TTarget>> lambdaExpression)
         {
             if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
-            var parsedCall = CallExpressionParser.FromExpression(lambdaExpression.Body);
-            var callConstraint = parsedCall.ToCallConstraint<TTarget>();
+            var callValidator = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            var callConstraint = callValidator.CreateCallConstraint();
             var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
-            return new ActionCallStream<TTarget>(calls, parsedCall);
+            return new ActionCallStream<TTarget>(calls, callValidator);
         }
 
         public IActionCallStream<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> lambdaExpression, Expression<Func<TProperty>> valueExpression)
@@ -58,7 +58,7 @@ namespace DivertR.Record.Internal
             }
 
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
-            var callConstraint = parsedCall.ToCallConstraint<TTarget>();
+            var callConstraint = parsedCall.CreateCallConstraint();
             var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
             return new ActionCallStream<TTarget>(calls, parsedCall);
@@ -77,6 +77,45 @@ namespace DivertR.Record.Internal
         public int Count => _recordedCalls.Count;
 
         public IEnumerator<IRecordedCall<TTarget>> GetEnumerator()
+        {
+            return _recordedCalls.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
+    
+    internal class RecordStream : IRecordStream
+    {
+        private readonly IReadOnlyCollection<RecordedCall> _recordedCalls;
+
+        public RecordStream(IReadOnlyCollection<RecordedCall> recordedCalls)
+        {
+            _recordedCalls = recordedCalls ?? throw new ArgumentNullException(nameof(recordedCalls));
+        }
+
+        public IEnumerable<IRecordedCall> To(ICallConstraint? callConstraint = null)
+        {
+            callConstraint ??= TrueCallConstraint.Instance;
+            
+            return _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
+        }
+
+        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall, TMap> mapper)
+        {
+            return new CallStream<TMap>(this.Select(mapper));
+        }
+
+        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall, CallArguments, TMap> mapper)
+        {
+            return new CallStream<TMap>(this.Select(call => mapper.Invoke(call, call.Args)));
+        }
+
+        public int Count => _recordedCalls.Count;
+
+        public IEnumerator<IRecordedCall> GetEnumerator()
         {
             return _recordedCalls.GetEnumerator();
         }

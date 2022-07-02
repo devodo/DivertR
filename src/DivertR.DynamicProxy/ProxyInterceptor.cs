@@ -13,7 +13,7 @@ namespace DivertR.DynamicProxy
         
         public void Intercept(IInvocation invocation)
         {
-            var callInfo = new CallInfo<TTarget>((TTarget) invocation.Proxy, null, invocation.Method, invocation.Arguments);
+            var callInfo = CallInfoFactory.Create((TTarget) invocation.Proxy, null, invocation.Method, invocation.Arguments);
             invocation.ReturnValue = _proxyCall.Call(callInfo);
         }
     }

@@ -1,36 +1,60 @@
 ﻿using DivertR.DispatchProxy;
+using DivertR.Dummy;
+using DivertR.Dummy.Internal;
+using DivertR.Internal;
 
 namespace DivertR
 {
     public class DiverterSettings
     {
-        private static DiverterSettings Settings = new DiverterSettings();
-        private static readonly object SettingsLock = new object();
+        private static DiverterSettings GlobalSettings = new DiverterSettings();
+        private static readonly object GlobalLock = new object();
+        
+        public IProxyFactory ProxyFactory { get; }
 
+        public bool DefaultWithDummyRoot { get; }
+
+        public IDummyFactory DummyFactory { get; }
+        
+        public IRedirectRepository DummyRedirectRepository { get; }
+
+        
         public static DiverterSettings Global
         {
             get
             {
-                lock (SettingsLock)
+                lock (GlobalLock)
                 {
-                    return Settings;
+                    return GlobalSettings;
                 }
             }
 
             set
             {
-                lock (SettingsLock)
+                lock (GlobalLock)
                 {
-                    Settings = value;
+                    GlobalSettings = value;
                 }
             }
         }
 
-        public DiverterSettings(IProxyFactory? proxyFactory = null)
+        public DiverterSettings(
+            IProxyFactory? proxyFactory = null,
+            bool defaultWithDummyRoot = true,
+            IRedirectRepository? dummyRedirectRepository = null,
+            IDummyFactory? defaultRootFactory = null)
         {
             ProxyFactory = proxyFactory ?? new DispatchProxyFactory();
+            DefaultWithDummyRoot = defaultWithDummyRoot;
+            DummyRedirectRepository = dummyRedirectRepository ?? CreateDummyRepository();
+            DummyFactory = defaultRootFactory ?? new DummyFactory();
         }
 
-        public IProxyFactory ProxyFactory { get; }
+        private static IRedirectRepository CreateDummyRepository()
+        {
+            var redirect = new Redirect(new DummyCallHandler());
+            
+            return new RedirectRepository(new[] { redirect });
+        }
     }
 }

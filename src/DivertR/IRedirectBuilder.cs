@@ -6,8 +6,18 @@ namespace DivertR
     public interface IRedirectBuilder<TTarget> where TTarget : class
     {
         IRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
-        Redirect<TTarget> Build(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
-        IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
-        IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        IRedirect Build(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        IRedirect Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        IRedirect Build(ICallHandler<TTarget> callHandler, IRedirectOptions redirectOptions);
+        IRecordRedirect<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+    }
+    
+    public interface IRedirectBuilder
+    {
+        IRedirectBuilder AddConstraint(ICallConstraint callConstraint);
+        IRedirect Build(object target, Action<IRedirectOptionsBuilder>? optionsAction = null);
+        IRedirect Build(ICallHandler callHandler, Action<IRedirectOptionsBuilder>? optionsAction = null);
+        IRedirect Build(ICallHandler callHandler, IRedirectOptions redirectOptions);
+        IRecordRedirect Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
     }
 }

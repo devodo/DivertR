@@ -2,18 +2,20 @@
 
 namespace DivertR.Record.Internal
 {
-    internal class RecordedCall<TTarget> : IRecordedCall<TTarget> where TTarget : class
+    internal class RecordedCall : IRecordedCall
     {
         private readonly object _returnedLock = new object();
         
         private ICallReturn? _callReturn;
         
-        public RecordedCall(CallInfo<TTarget> callInfo)
+        public RecordedCall(ICallInfo callInfo)
         {
             CallInfo = callInfo;
         }
         
-        public CallInfo<TTarget> CallInfo { get; }
+        public ICallInfo CallInfo { get; }
+
+        ICallInfo IRecordedCall.CallInfo => CallInfo;
 
         public CallArguments Args => CallInfo.Arguments;
         
@@ -46,6 +48,16 @@ namespace DivertR.Record.Internal
             Returned = new CallReturn(null, exception);
         }
     }
+    
+    internal class RecordedCall<TTarget> : RecordedCall, IRecordedCall<TTarget> where TTarget : class
+    {
+        public RecordedCall(ICallInfo<TTarget> callInfo) : base(callInfo)
+        {
+            CallInfo = callInfo;
+        }
+        
+        public new ICallInfo<TTarget> CallInfo { get; }
+    }
 
     internal class RecordedCallInternal<TTarget> : IRecordedCall<TTarget> where TTarget : class
     {
@@ -56,8 +68,10 @@ namespace DivertR.Record.Internal
             _recordedCall = recordedCall;
         }
 
-        public CallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
+        public ICallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
         public ICallReturn? Returned => _recordedCall.Returned;
+        ICallInfo IRecordedCall.CallInfo => CallInfo;
+
         public CallArguments Args => _recordedCall.Args;
     }
     
@@ -70,6 +84,6 @@ namespace DivertR.Record.Internal
         }
         
         public new TArgs Args { get; }
-        CallArguments IRecordedCall<TTarget>.Args => CallInfo.Arguments;
+        CallArguments IRecordedCall.Args => CallInfo.Arguments;
     }
 }

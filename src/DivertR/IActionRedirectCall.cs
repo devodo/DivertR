@@ -3,13 +3,16 @@ using System.Collections;
 
 namespace DivertR
 {
-    public interface IActionRedirectCall<TTarget> where TTarget : class
+    public interface IActionRedirectCall : IRedirectCall
     {
-        CallInfo<TTarget> CallInfo { get; }
-        CallArguments Args { get; }
-        IRelay<TTarget> Relay { get; }
-        TTarget Next { get; }
-        TTarget Root { get; }
+        new void CallNext();
+        new void CallNext(CallArguments args);
+        new void CallRoot();
+        new void CallRoot(CallArguments args);
+    }
+    
+    public interface IActionRedirectCall<TTarget> : IRedirectCall<TTarget> where TTarget : class
+    {
     }
     
     public interface IActionRedirectCall<TTarget, out TArgs> : IActionRedirectCall<TTarget>

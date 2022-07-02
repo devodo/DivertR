@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 
@@ -11,43 +12,46 @@ namespace DivertR.Internal
             typeof(ValueTuple), typeof(ValueTuple<>), typeof(ValueTuple<,>), typeof(ValueTuple<,,>), typeof(ValueTuple<,,,>), typeof(ValueTuple<,,,,>), typeof(ValueTuple<,,,,,>), typeof(ValueTuple<,,,,,,>), typeof(ValueTuple<,,,,,,,>)
         };
         
-        private static readonly Type[] ValueTupleFactoryTypes =
+        private static readonly Type[] ValueTupleMapperTypes =
         {
             typeof(ValueTupleMapper), typeof(ValueTupleMapper<>), typeof(ValueTupleMapper<,>), typeof(ValueTupleMapper<,,>), typeof(ValueTupleMapper<,,,>), typeof(ValueTupleMapper<,,,,>), typeof(ValueTupleMapper<,,,,,>), typeof(ValueTupleMapper<,,,,,,>), typeof(ValueTupleMapper<,,,,,,,>)
         };
+        
+        private static readonly ConcurrentDictionary<Type, IValueTupleMapper> MapperCache = new ConcurrentDictionary<Type, IValueTupleMapper>();
 
         public static IValueTupleMapper Create<TArgs>()
         {
-            var valueTupleType = typeof(TArgs);
+            return MapperCache.GetOrAdd(typeof(TArgs), valueTupleType =>
+            {
+                if (!IsValueTuple(valueTupleType))
+                {
+                    throw new DiverterException($"Type {valueTupleType.Name} is not a ValueTuple type");
+                }
 
-            if (!IsValueTuple(valueTupleType))
-            {
-                throw new DiverterException($"Type {valueTupleType.Name} is not a ValueTuple type");
-            }
-
-            Type factoryType;
-            if (valueTupleType.GenericTypeArguments.Length == 2 && valueTupleType.GenericTypeArguments[1] == typeof(__))
-            {
-                var factoryTypeDefinition = typeof(ValueTupleMapperDiscard<>);
-                factoryType = factoryTypeDefinition.MakeGenericType(valueTupleType.GenericTypeArguments[0]);
-            }
-            else
-            {
-                var factoryTypeDefinition = ValueTupleFactoryTypes[valueTupleType.GenericTypeArguments.Length];
-                factoryType = factoryTypeDefinition.MakeGenericType(valueTupleType.GenericTypeArguments);
-            }
+                Type mapperType;
+                if (valueTupleType.GenericTypeArguments.Length == 2 && valueTupleType.GenericTypeArguments[1] == typeof(__))
+                {
+                    var factoryTypeDefinition = typeof(ValueTupleMapperDiscard<>);
+                    mapperType = factoryTypeDefinition.MakeGenericType(valueTupleType.GenericTypeArguments[0]);
+                }
+                else
+                {
+                    var factoryTypeDefinition = ValueTupleMapperTypes[valueTupleType.GenericTypeArguments.Length];
+                    mapperType = factoryTypeDefinition.MakeGenericType(valueTupleType.GenericTypeArguments);
+                }
             
-            const BindingFlags ActivatorFlags = BindingFlags.Public | BindingFlags.Instance;
-            var factory = (IValueTupleMapper) Activator.CreateInstance(factoryType, ActivatorFlags, null, null, default);
+                const BindingFlags ActivatorFlags = BindingFlags.Public | BindingFlags.Instance;
+                var mapper = (IValueTupleMapper) Activator.CreateInstance(mapperType, ActivatorFlags, null, null, default);
             
-            var refMappers = GetRefMappers(valueTupleType.GenericTypeArguments);
+                var refMappers = GetRefMappers(valueTupleType.GenericTypeArguments);
 
-            if (refMappers.Length > 0)
-            {
-                factory = new RefValueTupleMapper(factory, refMappers);
-            }
+                if (refMappers.Length > 0)
+                {
+                    mapper = new RefValueTupleMapper(mapper, refMappers);
+                }
 
-            return factory;
+                return mapper;
+            });
         }
 
         private static bool IsValueTuple(Type type)

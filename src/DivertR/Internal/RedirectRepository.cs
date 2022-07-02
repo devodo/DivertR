@@ -1,22 +1,46 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace DivertR.Internal
 {
-    internal class RedirectRepository<TTarget> where TTarget : class
+    internal class RedirectRepository : IRedirectRepository
     {
-        private volatile RedirectPlan<TTarget> _redirectPlan = RedirectPlan<TTarget>.Empty;
+        private readonly ConcurrentStack<RedirectPlan> _redirectPlans = new ConcurrentStack<RedirectPlan>();
+        private readonly object _lockObject = new object();
 
-        public RedirectPlan<TTarget> RedirectPlan
+        public RedirectRepository()
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _redirectPlan;
+            _redirectPlans.Push(DivertR.Internal.RedirectPlan.Empty);
+        }
+        
+        public RedirectRepository(IEnumerable<IRedirect> redirects)
+        {
+            var redirectPlan = DivertR.Internal.RedirectPlan.Empty.InsertRedirects(redirects);
+            _redirectPlans.Push(redirectPlan);
         }
 
-        public void InsertRedirect(Redirect<TTarget> redirect)
+        public IRedirectPlan RedirectPlan
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                // ReSharper disable once InconsistentlySynchronizedField
+                _redirectPlans.TryPeek(out var redirectPlan);
+
+                return redirectPlan;
+            } 
+        }
+
+        public void InsertRedirect(IRedirect redirect)
         {
             MutateRedirectPlan(original => original.InsertRedirect(redirect));
+        }
+        
+        public void InsertRedirects(IEnumerable<IRedirect> redirects)
+        {
+            MutateRedirectPlan(original => original.InsertRedirects(redirects));
         }
         
         public void SetStrictMode(bool isStrict = true)
@@ -26,29 +50,20 @@ namespace DivertR.Internal
 
         public void Reset()
         {
-            if (ReferenceEquals(_redirectPlan, RedirectPlan<TTarget>.Empty))
+            lock (_lockObject)
             {
-                return;
+                _redirectPlans.Clear();
+                _redirectPlans.Push(DivertR.Internal.RedirectPlan.Empty);
             }
-            
-            Interlocked.Exchange(ref _redirectPlan, RedirectPlan<TTarget>.Empty);
         }
 
-        private void MutateRedirectPlan(Func<RedirectPlan<TTarget>, RedirectPlan<TTarget>> mutateAction)
+        private void MutateRedirectPlan(Func<RedirectPlan, RedirectPlan> mutateAction)
         {
-            var lastRead = _redirectPlan;
-
-            while (true)
+            lock (_lockObject)
             {
-                var mutated = mutateAction(lastRead);
-                var actual = Interlocked.CompareExchange(ref _redirectPlan, mutated, lastRead);
-
-                if (ReferenceEquals(actual, lastRead))
-                {
-                    break;
-                }
-
-                lastRead = actual;
+                _redirectPlans.TryPeek(out var redirectPlan);
+                var mutated = mutateAction(redirectPlan);
+                _redirectPlans.Push(mutated);
             }
         }
     }

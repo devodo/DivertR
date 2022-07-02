@@ -2,7 +2,7 @@
 
 namespace DivertR.Internal
 {
-    internal class MethodCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class
+    internal class MethodCallConstraint : ICallConstraint
     {
         private readonly IMethodConstraint _methodConstraint;
         private readonly IArgumentConstraint[] _argumentConditions;
@@ -14,7 +14,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsMatch(CallInfo<TTarget> callInfo)
+        public bool IsMatch(ICallInfo callInfo)
         {
             if (!_methodConstraint.IsMatch(callInfo.Method))
             {

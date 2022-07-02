@@ -10,16 +10,16 @@ namespace DivertR.Record.Internal
     internal class FuncCallStream<TTarget, TReturn> : CallStream<IFuncRecordedCall<TTarget, TReturn>>, IFuncCallStream<TTarget, TReturn>
         where TTarget : class
     {
-        private readonly ParsedCallExpression _parsedCallExpression;
+        private readonly ICallValidator _callValidator;
 
-        public FuncCallStream(IEnumerable<IFuncRecordedCall<TTarget, TReturn>> calls, ParsedCallExpression parsedCallExpression) : base(calls)
+        public FuncCallStream(IEnumerable<IFuncRecordedCall<TTarget, TReturn>> calls, ICallValidator callValidator) : base(calls)
         {
-            _parsedCallExpression = parsedCallExpression;
+            _callValidator = callValidator;
         }
 
         public IFuncCallStream<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>(Calls, _parsedCallExpression);
+            return WithArgs<TArgs>(Calls, _callValidator);
         }
         
         public ICallStream<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, TMap> mapper)
@@ -62,25 +62,25 @@ namespace DivertR.Record.Internal
             return WithArgs<TArgs>().Verify(visitor);
         }
         
-        internal static IFuncCallStream<TTarget, TReturn, TArgs> WithArgs<TArgs>(IEnumerable<IRecordedCall<TTarget>> calls, ParsedCallExpression parsedCallExpression) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        internal static IFuncCallStream<TTarget, TReturn, TArgs> WithArgs<TArgs>(IEnumerable<IRecordedCall<TTarget>> calls, ICallValidator callValidator) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleMapper = ValueTupleMapperFactory.Create<TArgs>();
-            parsedCallExpression.Validate(valueTupleMapper);
+            callValidator.Validate(valueTupleMapper);
             var mappedCall = calls.Select(call => 
                 new FuncRecordedCall<TTarget, TReturn, TArgs>(call, (TArgs) valueTupleMapper.ToTuple(call.CallInfo.Arguments.InternalArgs)));
             
-            return new FuncCallStream<TTarget, TReturn, TArgs>(mappedCall, parsedCallExpression);
+            return new FuncCallStream<TTarget, TReturn, TArgs>(mappedCall, callValidator);
         }
     }
         
     internal class FuncCallStream<TTarget, TReturn, TArgs> : CallStream<IFuncRecordedCall<TTarget, TReturn, TArgs>>, IFuncCallStream<TTarget, TReturn, TArgs>
         where TTarget : class
     {
-        private readonly ParsedCallExpression _parsedCallExpression;
+        private readonly ICallValidator _callValidator;
 
-        public FuncCallStream(IEnumerable<IFuncRecordedCall<TTarget, TReturn, TArgs>> calls, ParsedCallExpression parsedCallExpression) : base(calls)
+        public FuncCallStream(IEnumerable<IFuncRecordedCall<TTarget, TReturn, TArgs>> calls, ICallValidator callValidator) : base(calls)
         {
-            _parsedCallExpression = parsedCallExpression;
+            _callValidator = callValidator;
         }
 
         public IFuncCallStream<TTarget, TReturn, TNewArgs> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -90,7 +90,7 @@ namespace DivertR.Record.Internal
                 return (IFuncCallStream<TTarget, TReturn, TNewArgs>) this;
             }
             
-            return FuncCallStream<TTarget, TReturn>.WithArgs<TNewArgs>(Calls, _parsedCallExpression);
+            return FuncCallStream<TTarget, TReturn>.WithArgs<TNewArgs>(Calls, _callValidator);
         }
 
         public ICallStream<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, TMap> mapper)

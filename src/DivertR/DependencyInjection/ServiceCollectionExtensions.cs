@@ -63,7 +63,7 @@ namespace DivertR.DependencyInjection
             object ProxyFactory(IServiceProvider provider)
             {
                 var instance = GetServiceInstance(provider, descriptor);
-                return via.ProxyObject(instance);
+                return via.Proxy(instance);
             }
 
             return ProxyFactory;

@@ -2,14 +2,17 @@
 
 namespace DivertR.Internal
 {
-    internal class TrueArgumentConstraint : IArgumentConstraint
+    internal class TypeArgumentConstraint<TArgument> : IArgumentConstraint
     {
-        public static readonly TrueArgumentConstraint Instance = new TrueArgumentConstraint();
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(object? argument)
         {
-            return true;
+            if (argument == null)
+            {
+                return true;
+            }
+
+            return argument is TArgument;
         }
     }
 }

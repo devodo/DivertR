@@ -13,9 +13,25 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(CallInfo<TTarget> callInfo)
+        public object? Handle(IRedirectCall<TTarget> call)
         {
-            return callInfo.Invoke(_target);
+            return call.CallInfo.Invoke(_target);
+        }
+    }
+    
+    internal class TargetCallHandler : ICallHandler
+    {
+        private readonly object _target;
+
+        public TargetCallHandler(object target)
+        {
+            _target = target ?? throw new ArgumentNullException(nameof(target));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Handle(IRedirectCall call)
+        {
+            return call.CallInfo.Invoke(_target);
         }
     }
 }

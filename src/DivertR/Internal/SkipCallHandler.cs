@@ -5,24 +5,22 @@ namespace DivertR.Internal
 {
     internal class SkipCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
-        private readonly IVia<TTarget> _via;
         private readonly ICallHandler<TTarget> _innerCallHandler;
         private readonly int _skipCount;
         private long _callCount;
 
-        public SkipCallHandler(IVia<TTarget> via, ICallHandler<TTarget> innerCallHandler, int skipCount)
+        public SkipCallHandler(ICallHandler<TTarget> innerCallHandler, int skipCount)
         {
             if (skipCount < 0)
             {
                 throw new ArgumentException("Must be greater than or equal to zero", nameof(skipCount));
             }
             
-            _via = via;
             _innerCallHandler = innerCallHandler;
             _skipCount = skipCount;
         }
 
-        public object? Call(CallInfo<TTarget> callInfo)
+        public object? Handle(IRedirectCall<TTarget> call)
         {
             var count = Interlocked.Increment(ref _callCount);
 
@@ -32,8 +30,8 @@ namespace DivertR.Internal
             }
 
             return count > _skipCount 
-                ? _innerCallHandler.Call(callInfo)
-                : _via.Relay.CallNext();
+                ? _innerCallHandler.Handle(call)
+                : call.Relay.CallNext();
         }
     }
 }

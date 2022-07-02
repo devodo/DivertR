@@ -5,25 +5,25 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class RedirectPlan<TTarget> : IRedirectPlan<TTarget> where TTarget : class
+    internal class RedirectPlan : IRedirectPlan
     {
-        public static readonly RedirectPlan<TTarget> Empty = new RedirectPlan<TTarget>(ImmutableStack<Redirect<TTarget>>.Empty, false);
+        public static readonly RedirectPlan Empty = new RedirectPlan(ImmutableStack<IRedirect>.Empty, false);
         
-        private readonly ImmutableStack<Redirect<TTarget>> _redirectStack;
+        private readonly ImmutableStack<IRedirect> _redirectStack;
 
-        private RedirectPlan(ImmutableStack<Redirect<TTarget>> redirectStack, bool isStrictMode)
+        private RedirectPlan(ImmutableStack<IRedirect> redirectStack, bool isStrictMode)
             : this(redirectStack, isStrictMode, OrderRedirects(redirectStack))
         {
         }
         
-        private RedirectPlan(ImmutableStack<Redirect<TTarget>> redirectStack, bool isStrictMode, IReadOnlyList<Redirect<TTarget>> redirects)
+        private RedirectPlan(ImmutableStack<IRedirect> redirectStack, bool isStrictMode, IReadOnlyList<IRedirect> redirects)
         {
             _redirectStack = redirectStack;
             IsStrictMode = isStrictMode;
             Redirects = redirects;
         }
 
-        public IReadOnlyList<Redirect<TTarget>> Redirects
+        public IReadOnlyList<IRedirect> Redirects
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
@@ -35,7 +35,7 @@ namespace DivertR.Internal
             get;
         }
 
-        private static IReadOnlyList<Redirect<TTarget>> OrderRedirects(ImmutableStack<Redirect<TTarget>> redirectStack)
+        private static IReadOnlyList<IRedirect> OrderRedirects(ImmutableStack<IRedirect> redirectStack)
         {
             return redirectStack
                 .Select((r, i) => (r, i))
@@ -44,32 +44,39 @@ namespace DivertR.Internal
                 .ToArray();
         }
         
-        internal RedirectPlan<TTarget> InsertRedirect(Redirect<TTarget> redirect)
+        internal RedirectPlan InsertRedirect(IRedirect redirect)
         {
             var mutatedStack = _redirectStack.Push(redirect);
             
-            return new RedirectPlan<TTarget>(mutatedStack, IsStrictMode);
+            return new RedirectPlan(mutatedStack, IsStrictMode);
         }
         
-        internal RedirectPlan<TTarget> SetStrictMode(bool isStrict)
+        internal RedirectPlan InsertRedirects(IEnumerable<IRedirect> redirects)
         {
-            return new RedirectPlan<TTarget>(_redirectStack, isStrict, Redirects);
+            var mutatedStack = redirects.Aggregate(_redirectStack, (current, redirect) => current.Push(redirect));
+            
+            return new RedirectPlan(mutatedStack, IsStrictMode);
         }
         
-        private class RedirectComparer : IComparer<(Redirect<TTarget> Redirect, int StackOrder)>
+        internal RedirectPlan SetStrictMode(bool isStrict)
+        {
+            return new RedirectPlan(_redirectStack, isStrict, Redirects);
+        }
+        
+        private class RedirectComparer : IComparer<(IRedirect redirect, int stackOrder)>
         {
             public static readonly RedirectComparer Instance = new RedirectComparer();
             
-            public int Compare((Redirect<TTarget> Redirect, int StackOrder) x, (Redirect<TTarget> Redirect, int StackOrder) y)
+            public int Compare((IRedirect redirect, int stackOrder) x, (IRedirect redirect, int stackOrder) y)
             {
-                var weightComparison = x.Redirect.OrderWeight.CompareTo(y.Redirect.OrderWeight);
+                var weightComparison = x.redirect.OrderWeight.CompareTo(y.redirect.OrderWeight);
                 
                 if (weightComparison != 0)
                 {
                     return weightComparison;
                 }
 
-                return y.StackOrder.CompareTo(x.StackOrder);
+                return y.stackOrder.CompareTo(x.stackOrder);
             }
         }
     }

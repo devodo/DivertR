@@ -4,15 +4,15 @@ namespace DivertR.Internal
 {
     internal class RootProxyCall<TTarget> : IProxyCall<TTarget> where TTarget : class
     {
-        private readonly IRelay<TTarget> _relay;
+        private readonly IRelay _relay;
 
-        public RootProxyCall(IRelay<TTarget> relay)
+        public RootProxyCall(IRelay relay)
         {
             _relay = relay;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(CallInfo<TTarget> callInfo)
+        public object? Call(ICallInfo<TTarget> callInfo)
         {
             return _relay.CallRoot(callInfo.Method, callInfo.Arguments);
         }
