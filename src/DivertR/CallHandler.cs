@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace DivertR.Internal
+namespace DivertR
 {
-    internal class DelegateCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
+    public class CallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
         private readonly Func<IRedirectCall<TTarget>, object?> _redirectDelegate;
 
-        public DelegateCallHandler(Func<IRedirectCall<TTarget>, object?> redirectDelegate)
+        public CallHandler(Func<IRedirectCall<TTarget>, object?> redirectDelegate)
         {
             _redirectDelegate = redirectDelegate ?? throw new ArgumentNullException(nameof(redirectDelegate));
         }
@@ -19,11 +19,11 @@ namespace DivertR.Internal
         }
     }
     
-    internal class DelegateCallHandler : ICallHandler
+    public class CallHandler : ICallHandler
     {
         private readonly Func<IRedirectCall, object?> _redirectDelegate;
 
-        public DelegateCallHandler(Func<IRedirectCall, object?> redirectDelegate)
+        public CallHandler(Func<IRedirectCall, object?> redirectDelegate)
         {
             _redirectDelegate = redirectDelegate ?? throw new ArgumentNullException(nameof(redirectDelegate));
         }

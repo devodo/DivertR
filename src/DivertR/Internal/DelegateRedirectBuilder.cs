@@ -16,7 +16,7 @@ namespace DivertR.Internal
         {
             CallValidator.Validate(redirectDelegate);
             var fastDelegate = redirectDelegate.ToDelegate();
-            var callHandler = new DelegateCallHandler<TTarget>(call => fastDelegate.Invoke(call.Args.InternalArgs));
+            var callHandler = new CallHandler<TTarget>(call => fastDelegate.Invoke(call.Args.InternalArgs));
 
             return Build(callHandler, optionsAction);
         }
@@ -36,7 +36,7 @@ namespace DivertR.Internal
         {
             CallValidator.Validate(redirectDelegate);
             var fastDelegate = redirectDelegate.ToDelegate();
-            var callHandler = new DelegateCallHandler(call => fastDelegate.Invoke(call.Args.InternalArgs));
+            var callHandler = new CallHandler(call => fastDelegate.Invoke(call.Args.InternalArgs));
 
             return Build(callHandler, optionsAction);
         }

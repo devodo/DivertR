@@ -18,7 +18,7 @@ namespace DivertR
             var callValidator = CallExpressionParser.FromExpression(constraintExpression.Body);
             var callConstraint = callValidator.CreateCallConstraint();
             
-            return new FuncRedirectBuilder<TTarget, TReturn>(callValidator, new CallConstraint<TTarget>(callConstraint));
+            return new FuncRedirectBuilder<TTarget, TReturn>(callValidator, callConstraint.Of<TTarget>());
         }
 
         public static IActionRedirectBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
@@ -28,7 +28,7 @@ namespace DivertR
             var callValidator = CallExpressionParser.FromExpression(constraintExpression.Body);
             var callConstraint = callValidator.CreateCallConstraint();
             
-            return new ActionRedirectBuilder<TTarget>(callValidator, new CallConstraint<TTarget>(callConstraint));
+            return new ActionRedirectBuilder<TTarget>(callValidator, callConstraint.Of<TTarget>());
         }
 
         public static IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression)
@@ -44,7 +44,7 @@ namespace DivertR
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, constraintExpression.Body);
             var callConstraint = parsedCall.CreateCallConstraint();
 
-            return new ActionRedirectBuilder<TTarget>(parsedCall, new CallConstraint<TTarget>(callConstraint));
+            return new ActionRedirectBuilder<TTarget>(parsedCall, callConstraint.Of<TTarget>());
         }
     }
 

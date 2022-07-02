@@ -951,6 +951,26 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenAddedCallConstraint_ShouldApply()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.Echo(Is<string>.Any))
+                .AddConstraint(new CallConstraint<IFoo>(call => (string) call.Arguments[0] != "ignore"))
+                .Redirect<(string input, __)>(call => call.CallNext(new[] { $"{call.Args.input} redirected" }));
+
+            var proxy = _via.Proxy(new Foo());
+
+            // ACT
+            var result1 = proxy.Echo("test");
+            var result2 = proxy.Echo("ignore");
+
+            // ASSERT
+            result1.ShouldBe("original: test redirected");
+            result2.ShouldBe("original: ignore");
+        }
+        
+        [Fact]
         public void GivenMoqAnyArgumentSyntax_ShouldThrowException()
         {
             // ARRANGE

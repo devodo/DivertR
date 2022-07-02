@@ -26,7 +26,7 @@ namespace DivertR.Internal
         public IVia<TReturn> RedirectVia(string name, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var via = _via.ViaSet.Via<TReturn>(name);
-            ICallHandler<TTarget> callHandler = new DelegateCallHandler<TTarget>(call => via.Proxy((TReturn?) call.Relay.CallNext()));
+            ICallHandler<TTarget> callHandler = new CallHandler<TTarget>(call => via.Proxy((TReturn?) call.Relay.CallNext()));
             var redirect = _redirectBuilder.Build(callHandler, optionsAction);
             _via.RedirectRepository.InsertRedirect(redirect);
 

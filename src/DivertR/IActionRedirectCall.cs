@@ -11,7 +11,7 @@ namespace DivertR
         new void CallRoot(CallArguments args);
     }
     
-    public interface IActionRedirectCall<TTarget> : IRedirectCall, IRedirectCall<TTarget> where TTarget : class
+    public interface IActionRedirectCall<TTarget> : IRedirectCall<TTarget> where TTarget : class
     {
     }
     

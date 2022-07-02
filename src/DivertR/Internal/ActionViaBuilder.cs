@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Linq;
 using DivertR.Record;
-using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
