@@ -9,21 +9,14 @@ namespace DivertR.DynamicProxy
         
         private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
 
-        public TTarget CreateProxy<TTarget>(Func<IProxyCall<TTarget>?> getProxyCall, TTarget? root = null) where TTarget : class
+        public TTarget CreateProxy<TTarget>(IProxyCall<TTarget> proxyCall, TTarget? root = null) where TTarget : class
         {
             ValidateProxyTarget<TTarget>();
-            var interceptor = new ProxyWithDefaultInterceptor<TTarget>(root, getProxyCall);
-
-            return CreateProxy(interceptor, root);
-        }
-
-        public TTarget CreateProxy<TTarget>(IProxyCall<TTarget> proxyCall) where TTarget : class
-        {
-            ValidateProxyTarget<TTarget>();
-            var interceptor = new ProxyInterceptor<TTarget>(proxyCall);
+            var interceptor = new ProxyInterceptor<TTarget>(proxyCall, root);
 
             return CreateProxy<TTarget>(interceptor);
         }
+        
 
         public void ValidateProxyTarget<TTarget>()
         {
@@ -33,20 +26,16 @@ namespace DivertR.DynamicProxy
             }
         }
 
-        private T CreateProxy<T>(IInterceptor interceptor, T? target = null) where T : class
+        private T CreateProxy<T>(IInterceptor interceptor) where T : class
         {
             if (typeof(T).IsInterface)
             {
-                return target == null
-                    ? _proxyGenerator.CreateInterfaceProxyWithoutTarget<T>(interceptor)
-                    : _proxyGenerator.CreateInterfaceProxyWithTarget(target, interceptor);
+                return _proxyGenerator.CreateInterfaceProxyWithoutTarget<T>(interceptor);
             }
 
             if (typeof(T).IsClass)
             {
-                return target == null
-                    ? _proxyGenerator.CreateClassProxy<T>(interceptor)
-                    : _proxyGenerator.CreateClassProxyWithTarget(target, interceptor);
+                return _proxyGenerator.CreateClassProxy<T>(interceptor);
             }
 
             throw new NotImplementedException();

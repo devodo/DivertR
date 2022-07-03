@@ -55,7 +55,7 @@ namespace DivertR.Internal
 
         public IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            ICallHandler<TTarget> callHandler = new TargetCallHandler<TTarget>(target);
+            ICallHandler<TTarget> callHandler = new TargetCallHandler<TTarget>(target, Via.ViaSet.Settings.CallInvoker);
             var redirect = RedirectBuilder.Build(callHandler, optionsAction);
             Via.RedirectRepository.InsertRedirect(redirect);
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
 using DivertR.Internal;
 using Shouldly;
@@ -17,23 +16,6 @@ namespace DivertR.Benchmarks
         public MethodInvokeBenchmarks(ITestOutputHelper output)
         {
             _output = output;
-        }
-        
-        [Fact]
-        public void DelegateInvokeTest()
-        {
-            Func<int, int, int> testDelegate = (a, b) => a + b;
-            var args = new object[] { 1, 2 };
-            
-            var dynamicInvoke = DelegateDynamicInvoke(testDelegate, args);
-            var fastInvoke = DelegateFastInvoke(testDelegate, args);
-
-            PrintResult("DynamicInvoke", dynamicInvoke);
-            PrintResult("FastInvoke", fastInvoke);
-            _output.WriteLine($"Invoke speedup: {(double) dynamicInvoke.Iterations.ElapsedTicks / fastInvoke.Iterations.ElapsedTicks}");
-            
-            fastInvoke.Initial.ElapsedTicks.ShouldBeGreaterThan(dynamicInvoke.Initial.ElapsedTicks * SpeedupFactor);
-            fastInvoke.Iterations.ElapsedTicks.ShouldBeLessThan(dynamicInvoke.Iterations.ElapsedTicks / SpeedupFactor);
         }
 
         [Fact]
@@ -63,41 +45,6 @@ namespace DivertR.Benchmarks
             _output.WriteLine($"{name} | Initial: {result.Initial.Elapsed.TotalMilliseconds} ms | Iterations: {result.Iterations.Elapsed.TotalMilliseconds} ms");
         }
 
-        private static (Stopwatch Initial, Stopwatch Iterations) DelegateDynamicInvoke(Delegate testDelegate, object[] args)
-        {
-            var sw1 = Stopwatch.StartNew();
-            testDelegate.DynamicInvoke(args);
-            sw1.Stop();
-
-            var sw2 = Stopwatch.StartNew();
-            for (var i = 0; i < Iterations; i++)
-            {
-                testDelegate.DynamicInvoke(args);
-            }
-            
-            sw2.Stop();
-
-            return (sw1, sw2);
-        }
-
-        private static (Stopwatch Initial, Stopwatch Iterations) DelegateFastInvoke(Delegate testDelegate, object[] args)
-        {
-            var sw1 = Stopwatch.StartNew();
-            var fastDelegate = testDelegate.ToDelegate();
-            fastDelegate.Invoke(args);
-            sw1.Stop();
-
-            var sw2 = Stopwatch.StartNew();
-            for (var i = 0; i < Iterations; i++)
-            {
-                fastDelegate.Invoke(args);
-            }
-            
-            sw2.Stop();
-            
-            return (sw1, sw2);
-        }
-
         private (Stopwatch Initial, Stopwatch Iterations) MethodInfoInvoke(MethodInfo methodInfo, object[] args)
         {
             var sw1 = Stopwatch.StartNew();
@@ -118,14 +65,15 @@ namespace DivertR.Benchmarks
         private (Stopwatch Initial, Stopwatch Iterations) MethodFastInvoke(MethodInfo methodInfo, object[] args)
         {
             var sw1 = Stopwatch.StartNew();
-            var fastDelegate = methodInfo.ToDelegate(GetType());
-            fastDelegate.Invoke(this, args);
+            var callInvoker = new LambdaExpressionCallInvoker();
+            var lambdaDelegate = callInvoker.CreateDelegate(this.GetType(), methodInfo);
+            lambdaDelegate.Invoke(this, args);
             sw1.Stop();
 
             var sw2 = Stopwatch.StartNew();
             for (var i = 0; i < Iterations; i++)
             {
-                fastDelegate.Invoke(this, args);
+                lambdaDelegate.Invoke(this, args);
             }
             
             sw2.Stop();

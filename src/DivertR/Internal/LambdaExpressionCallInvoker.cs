@@ -4,38 +4,37 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal static class MethodInfoExtensions
+    internal class LambdaExpressionCallInvoker : ICallInvoker
     {
-        private static readonly ConcurrentDictionary<MethodId, Func<object, object[], object?>> DelegateCache =
+        private readonly ConcurrentDictionary<MethodId, Func<object, object[], object?>> _delegateCache =
             new ConcurrentDictionary<MethodId, Func<object, object[], object?>>();
         
-        public static Func<object, object[], object?> ToDelegate<T>(this MethodInfo methodInfo)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Invoke<TTarget>(TTarget target, MethodInfo method, CallArguments arguments)
         {
-            return methodInfo.ToDelegate(typeof(T));
-        }
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+            
+            var lambdaDelegate = CreateDelegate(typeof(TTarget), method);
 
-        public static Func<object, object[], object?> ToDelegate(this MethodInfo methodInfo, Type targetType)
-        {
-            var methodId = new MethodId(targetType, methodInfo);
-            return DelegateCache.GetOrAdd(methodId, mId => mId.MethodInfo.ToDelegateInternal(mId.TargetType));
+            return lambdaDelegate.Invoke(target, arguments.InternalArgs);
         }
         
-        public static Func<object[], object?> ToDelegate(this Delegate targetDelegate)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Func<object, object[], object?> CreateDelegate(Type targetType, MethodInfo method)
         {
-            var methodInfo = targetDelegate.Method;
-            var targetType = targetDelegate.GetType();
-            var methodId = new MethodId(targetType, methodInfo);
+            var methodId = new MethodId(targetType, method);
             
-            var fastDelegate =
-                DelegateCache.GetOrAdd(methodId, mId => mId.MethodInfo.ToDelegateInternal(mId.TargetType, isDelegate: true));
-
-            return args => fastDelegate.Invoke(targetDelegate, args);
+            return _delegateCache.GetOrAdd(methodId, mId => ToDelegateInternal(mId.MethodInfo, mId.TargetType));
         }
 
-        private static Func<object, object[], object?> ToDelegateInternal(this MethodInfo methodInfo, Type targetType, bool isDelegate = false)
+        private static Func<object, object[], object?> ToDelegateInternal(MethodInfo methodInfo, Type targetType, bool isDelegate = false)
         {
             var argsParameter = Expression.Parameter(typeof(object[]), "arguments");
             var targetParameter = Expression.Parameter(typeof(object), "target");
@@ -133,7 +132,7 @@ namespace DivertR.Internal
             public List<Expression> PreCall { get; } = new List<Expression>();
             public List<Expression> PostCall { get; } = new List<Expression>();
         }
-
+        
         private readonly struct MethodId : IEquatable<MethodId>
         {
             public Type TargetType { get; }

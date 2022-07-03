@@ -1,37 +1,22 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
     internal class TargetCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
     {
         private readonly TTarget _target;
+        private readonly ICallInvoker _callInvoker;
 
-        public TargetCallHandler(TTarget target)
+        public TargetCallHandler(TTarget target, ICallInvoker callInvoker)
         {
-            _target = target ?? throw new ArgumentNullException(nameof(target));
+            _target = target;
+            _callInvoker = callInvoker;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Handle(IRedirectCall<TTarget> call)
         {
-            return call.CallInfo.Invoke(_target);
-        }
-    }
-    
-    internal class TargetCallHandler : ICallHandler
-    {
-        private readonly object _target;
-
-        public TargetCallHandler(object target)
-        {
-            _target = target ?? throw new ArgumentNullException(nameof(target));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Handle(IRedirectCall call)
-        {
-            return call.CallInfo.Invoke(_target);
+            return _callInvoker.Invoke(_target, call.CallInfo.Method, call.CallInfo.Arguments);
         }
     }
 }

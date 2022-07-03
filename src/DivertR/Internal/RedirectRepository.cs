@@ -27,7 +27,10 @@ namespace DivertR.Internal
             get
             {
                 // ReSharper disable once InconsistentlySynchronizedField
-                _redirectPlans.TryPeek(out var redirectPlan);
+                if (!_redirectPlans.TryPeek(out var redirectPlan))
+                {
+                    redirectPlan = Internal.RedirectPlan.Empty;
+                }
 
                 return redirectPlan;
             } 

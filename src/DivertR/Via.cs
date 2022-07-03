@@ -11,6 +11,7 @@ namespace DivertR
     {
         private readonly IProxyFactory _proxyFactory;
         private readonly Relay<TTarget> _relay;
+        private readonly ViaProxyCall<TTarget> _viaProxyCall;
 
         public Via(string? name = null, DiverterSettings? diverterSettings = null, IRedirectRepository? redirectRepository = null)
             : this(ViaId.From<TTarget>(name), new ViaSet(diverterSettings), redirectRepository)
@@ -32,10 +33,11 @@ namespace DivertR
         {
             _proxyFactory = viaSet.Settings.ProxyFactory;
             _proxyFactory.ValidateProxyTarget<TTarget>();
-            _relay = new Relay<TTarget>(_proxyFactory);
+            _relay = new Relay<TTarget>(_proxyFactory, viaSet.Settings.CallInvoker);
             ViaId = viaId;
             ViaSet = viaSet;
             RedirectRepository = redirectRepository ?? new RedirectRepository();
+            _viaProxyCall = new ViaProxyCall<TTarget>(_relay, RedirectRepository);
         }
         
         public ViaId ViaId { get; }
@@ -86,14 +88,14 @@ namespace DivertR
 
         public TTarget Proxy(TTarget? root)
         {
-            return _proxyFactory.CreateProxy(GetProxyCall, root);
+            return _proxyFactory.CreateProxy(_viaProxyCall, root);
         }
 
         public TTarget Proxy(bool withDummyRoot)
         {
             var defaultRoot = withDummyRoot ? ViaSet.Settings.DummyFactory.Create<TTarget>(ViaSet.Settings) : null;
             
-            return _proxyFactory.CreateProxy(GetProxyCall, defaultRoot);
+            return Proxy(defaultRoot);
         }
 
         public TTarget Proxy()
@@ -153,16 +155,6 @@ namespace DivertR
         public IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression)
         {
             return new ActionViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.ToSet(memberExpression, constraintExpression));
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private IProxyCall<TTarget>? GetProxyCall()
-        {
-            var redirectPlan = RedirectRepository.RedirectPlan;
-
-            return redirectPlan == RedirectPlan.Empty
-                ? null
-                : new ViaProxyCall<TTarget>(_relay, redirectPlan);
         }
     }
 }
