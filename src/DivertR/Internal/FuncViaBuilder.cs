@@ -149,13 +149,6 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            base.Redirect(redirectDelegate, optionsAction);
-
-            return this;
-        }
-
         public new IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             base.Redirect(redirectDelegate, optionsAction);
