@@ -132,7 +132,7 @@ namespace DivertR.Internal
                 case MethodCallExpression callExpression
                     when callExpression.Method.DeclaringType?.FullName == "Moq.It":
                     {
-                        throw new ArgumentException("Moq.It argument syntax is not supported");
+                        throw new ArgumentException("Moq.It argument syntax is not supported by DivertR");
                     }
                 
                 default:
