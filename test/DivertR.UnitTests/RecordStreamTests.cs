@@ -43,7 +43,7 @@ namespace DivertR.UnitTests
 
             var echoCalls = _recordStream
                 .To(x => x.Echo(Is<string>.Any))
-                .WithArgs<(string input, __)>();
+                .Args<(string input, __)>();
             
             echoCalls.Select(call => call.Args.input).ShouldBe(inputs);
             echoCalls.Select(call => call.Returned!.Value).ShouldBe(outputs);
@@ -73,7 +73,7 @@ namespace DivertR.UnitTests
             // ACT
             var calls = _recordStream
                 .To(x => x.Echo(inputs[0]))
-                .WithArgs<(string input, __)>();
+                .Args<(string input, __)>();
 
             // ASSERT
             calls.Count().ShouldBe(1);
@@ -226,7 +226,7 @@ namespace DivertR.UnitTests
             // ASSERT
             _recordStream
                 .To(x => x.SetName(Is<string>.Any))
-                .WithArgs<(string name, __)>()
+                .Args<(string name, __)>()
                 .Select((call, i) =>
                 {
                     call.Returned!.Value.ShouldBeNull();
@@ -284,7 +284,7 @@ namespace DivertR.UnitTests
             // ASSERT
             var recordedCalls = _recordStream
                 .ToSet(x => x.Name, () => Is<string>.Any)
-                .WithArgs<(string name, __)>();
+                .Args<(string name, __)>();
                 
             recordedCalls
                 .Select(call => call.Args.name)
@@ -349,7 +349,7 @@ namespace DivertR.UnitTests
 
             var mappedCalls = _recordStream
                 .To(x => x.Echo(Is<string>.Any))
-                .WithArgs<(string input, __)>()
+                .Args<(string input, __)>()
                 .Map((call, args) => new { Input = args.input, Result = call.Returned });
 
             var fooProxy = _via.Proxy();
@@ -380,7 +380,7 @@ namespace DivertR.UnitTests
 
             var mappedCalls = _recordStream
                 .To(x => x.EchoAsync(Is<string>.Any))
-                .WithArgs<(string input, __)>()
+                .Args<(string input, __)>()
                 .Map((call, args) => new { Input = args.input, Result = call.Returned });
 
             var fooProxy = _via.Proxy();

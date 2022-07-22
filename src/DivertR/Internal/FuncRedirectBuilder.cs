@@ -46,12 +46,12 @@ namespace DivertR.Internal
 
         public IRedirect Build<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Build(redirectDelegate, optionsAction);
+            return Args<TArgs>().Build(redirectDelegate, optionsAction);
         }
 
         public IRedirect Build<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Build(redirectDelegate, optionsAction);
+            return Args<TArgs>().Build(redirectDelegate, optionsAction);
         }
 
         public new IFuncRecordRedirect<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -63,7 +63,7 @@ namespace DivertR.Internal
             return new FuncRecordRedirect<TTarget, TReturn>(recordRedirect.Redirect, callStream);
         }
 
-        public IFuncRedirectBuilder<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IFuncRedirectBuilder<TTarget, TReturn, TArgs> Args<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return new FuncRedirectBuilder<TTarget, TReturn, TArgs>(CallValidator, CallConstraint);
         }
@@ -99,7 +99,7 @@ namespace DivertR.Internal
         public new IFuncRecordRedirect<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordRedirect = base.Record(optionsAction);
-            var callStream = recordRedirect.CallStream.WithArgs<TArgs>();
+            var callStream = recordRedirect.CallStream.Args<TArgs>();
                 
             return new FuncRecordRedirect<TTarget, TReturn, TArgs>(recordRedirect.Redirect, callStream);
         }
