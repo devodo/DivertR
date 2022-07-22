@@ -6,14 +6,14 @@ namespace DivertR.Internal
 {
     internal class ActionViaBuilder<TTarget> : DelegateViaBuilder<TTarget>, IActionViaBuilder<TTarget> where TTarget : class
     {
-        private readonly IActionRedirectBuilder<TTarget> _redirectBuilder;
-
-        public ActionViaBuilder(IRedirectRepository redirectRepository, IActionRedirectBuilder<TTarget> redirectBuilder)
-            : base(redirectRepository, redirectBuilder)
+        public ActionViaBuilder(IVia<TTarget> via, IActionRedirectBuilder<TTarget> redirectBuilder)
+            : base(via, redirectBuilder)
         {
-            _redirectBuilder = redirectBuilder;
+            RedirectBuilder = redirectBuilder;
         }
-        
+
+        public new IActionRedirectBuilder<TTarget> RedirectBuilder { get; }
+
         public new IActionViaBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint)
         {
             base.AddConstraint(callConstraint);
@@ -30,24 +30,24 @@ namespace DivertR.Internal
 
         public IActionViaBuilder<TTarget> Redirect(Action redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(redirectDelegate, optionsAction);
-            RedirectRepository.InsertRedirect(redirect);
+            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
+            Via.RedirectRepository.InsertRedirect(redirect);
 
             return this;
         }
 
         public IActionViaBuilder<TTarget> Redirect(Action<IActionRedirectCall<TTarget>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(redirectDelegate, optionsAction);
-            RedirectRepository.InsertRedirect(redirect);
+            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
+            Via.RedirectRepository.InsertRedirect(redirect);
             
             return this;
         }
 
         public IActionViaBuilder<TTarget> Redirect(Action<IActionRedirectCall<TTarget>, CallArguments> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(redirectDelegate, optionsAction);
-            RedirectRepository.InsertRedirect(redirect);
+            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
+            Via.RedirectRepository.InsertRedirect(redirect);
             
             return this;
         }
@@ -86,15 +86,15 @@ namespace DivertR.Internal
 
         public IActionViaBuilder<TTarget, TArgs> Args<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            var builder = _redirectBuilder.Args<TArgs>();
+            var builder = RedirectBuilder.Args<TArgs>();
             
-            return new ActionViaBuilder<TTarget, TArgs>(RedirectRepository, builder);
+            return new ActionViaBuilder<TTarget, TArgs>(Via, builder);
         }
 
         public new IActionCallStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var recordRedirect = _redirectBuilder.Record(optionsAction);
-            RedirectRepository.InsertRedirect(recordRedirect.Redirect);
+            var recordRedirect = RedirectBuilder.Record(optionsAction);
+            Via.RedirectRepository.InsertRedirect(recordRedirect.Redirect);
 
             return recordRedirect.CallStream;
         }
@@ -109,13 +109,13 @@ namespace DivertR.Internal
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        private readonly IActionRedirectBuilder<TTarget, TArgs> _redirectBuilder;
-
-        public ActionViaBuilder(IRedirectRepository redirectRepository, IActionRedirectBuilder<TTarget, TArgs> redirectBuilder)
-            : base(redirectRepository, redirectBuilder)
+        public ActionViaBuilder(IVia<TTarget> via, IActionRedirectBuilder<TTarget, TArgs> redirectBuilder)
+            : base(via, redirectBuilder)
         {
-            _redirectBuilder = redirectBuilder;
+            RedirectBuilder = redirectBuilder;
         }
+
+        public new IActionRedirectBuilder<TTarget, TArgs> RedirectBuilder { get; }
 
         public new IActionViaBuilder<TTarget, TArgs> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
@@ -133,16 +133,16 @@ namespace DivertR.Internal
 
         public IActionViaBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(redirectDelegate, optionsAction);
-            RedirectRepository.InsertRedirect(redirect);
+            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
+            Via.RedirectRepository.InsertRedirect(redirect);
             
             return this;
         }
 
         public IActionViaBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(redirectDelegate, optionsAction);
-            RedirectRepository.InsertRedirect(redirect);
+            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
+            Via.RedirectRepository.InsertRedirect(redirect);
             
             return this;
         }
@@ -156,8 +156,8 @@ namespace DivertR.Internal
 
         public new IActionCallStream<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var recordRedirect = _redirectBuilder.Record(optionsAction);
-            RedirectRepository.InsertRedirect(recordRedirect.Redirect);
+            var recordRedirect = RedirectBuilder.Record(optionsAction);
+            Via.RedirectRepository.InsertRedirect(recordRedirect.Redirect);
 
             return recordRedirect.CallStream;
         }

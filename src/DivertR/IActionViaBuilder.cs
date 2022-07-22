@@ -6,6 +6,8 @@ namespace DivertR
 {
     public interface IActionViaBuilder<TTarget> : IDelegateViaBuilder<TTarget> where TTarget : class
     {
+        new IActionRedirectBuilder<TTarget> RedirectBuilder { get; }
+        
         new IActionViaBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
 
         new IActionViaBuilder<TTarget> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
@@ -43,6 +45,8 @@ namespace DivertR
         where TTarget : class
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
+        new IActionRedirectBuilder<TTarget, TArgs> RedirectBuilder { get; }
+        
         new IActionViaBuilder<TTarget, TArgs> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         new IActionViaBuilder<TTarget, TArgs> Redirect(Action redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         IActionViaBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);

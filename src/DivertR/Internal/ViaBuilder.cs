@@ -5,34 +5,34 @@ namespace DivertR.Internal
 {
     internal class ViaBuilder<TTarget> : IViaBuilder<TTarget> where TTarget : class
     {
-        protected readonly IRedirectRepository RedirectRepository;
-        private readonly IRedirectBuilder<TTarget> _redirectBuilder;
-
-        public ViaBuilder(IRedirectRepository redirectRepository, IRedirectBuilder<TTarget> redirectBuilder)
+        public ViaBuilder(IVia<TTarget> via, IRedirectBuilder<TTarget> redirectBuilder)
         {
-            RedirectRepository = redirectRepository ?? throw new ArgumentNullException(nameof(redirectRepository));
-            _redirectBuilder = redirectBuilder;
+            Via = via;
+            RedirectBuilder = redirectBuilder;
         }
+
+        public IVia<TTarget> Via { get; }
+        public IRedirectBuilder<TTarget> RedirectBuilder { get; }
 
         public IViaBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint)
         {
-            _redirectBuilder.AddConstraint(callConstraint);
+            RedirectBuilder.AddConstraint(callConstraint);
 
             return this;
         }
         
         public IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(target, optionsAction);
-            RedirectRepository.InsertRedirect(redirect);
+            var redirect = RedirectBuilder.Build(target, optionsAction);
+            Via.RedirectRepository.InsertRedirect(redirect);
 
             return this;
         }
 
         public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var recordRedirect = _redirectBuilder.Record(optionsAction);
-            RedirectRepository.InsertRedirect(recordRedirect.Redirect);
+            var recordRedirect = RedirectBuilder.Record(optionsAction);
+            Via.RedirectRepository.InsertRedirect(recordRedirect.Redirect);
 
             return recordRedirect.RecordStream;
         }
