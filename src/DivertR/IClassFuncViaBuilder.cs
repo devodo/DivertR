@@ -37,7 +37,7 @@ namespace DivertR
         new IClassFuncViaBuilder<TTarget, TReturn, TArgs> Retarget<TArgs>(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
 
-        new IClassFuncViaBuilder<TTarget, TReturn, TArgs> WithArgs<TArgs>()
+        new IClassFuncViaBuilder<TTarget, TReturn, TArgs> Args<TArgs>()
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
 

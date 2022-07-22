@@ -30,7 +30,7 @@ namespace DivertR
         IActionViaBuilder<TTarget, TArgs> Retarget<TArgs>(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
 
-        IActionViaBuilder<TTarget, TArgs> WithArgs<TArgs>()
+        IActionViaBuilder<TTarget, TArgs> Args<TArgs>()
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
         new IActionCallStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);

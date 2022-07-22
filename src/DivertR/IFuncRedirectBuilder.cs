@@ -21,7 +21,7 @@ namespace DivertR
 
         new IFuncRecordRedirect<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
 
-        IFuncRedirectBuilder<TTarget, TReturn, TArgs> WithArgs<TArgs>()
+        IFuncRedirectBuilder<TTarget, TReturn, TArgs> Args<TArgs>()
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
 

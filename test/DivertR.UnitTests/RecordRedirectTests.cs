@@ -104,7 +104,7 @@ namespace DivertR.UnitTests
                 call.Returned?.Value.ShouldBe(result);
             }).Count.ShouldBe(1);
             
-            calls.WithArgs<(string input, __)>().Verify(call =>
+            calls.Args<(string input, __)>().Verify(call =>
             {
                 call.Args.input.ShouldBe(input);
                 call.Returned?.Value.ShouldBe(result);
@@ -157,13 +157,13 @@ namespace DivertR.UnitTests
                 call.Returned?.Value.ShouldBe(result);
             }).Count.ShouldBe(1);
             
-            calls.WithArgs<(string input, __)>().Verify(call =>
+            calls.Args<(string input, __)>().Verify(call =>
             {
                 call.Args.input.ShouldBe(input);
                 call.Returned?.Value.ShouldBe(result);
             }).Count.ShouldBe(1);
             
-            calls.WithArgs<(object input, __)>().Verify(call =>
+            calls.Args<(object input, __)>().Verify(call =>
             {
                 call.Args.input.ShouldBe(input);
                 call.Returned?.Value.ShouldBe(result);
@@ -402,7 +402,7 @@ namespace DivertR.UnitTests
                 call.Returned?.Value.ShouldBeNull();
             }).Count.ShouldBe(1);
             
-            calls.WithArgs<(string input, __)>().Verify<(string input, __)>((call, args) =>
+            calls.Args<(string input, __)>().Verify<(string input, __)>((call, args) =>
             {
                 args.input.ShouldBe(input);
                 call.Returned?.Value.ShouldBeNull();
@@ -455,13 +455,13 @@ namespace DivertR.UnitTests
                 call.Returned?.Value.ShouldBeNull();
             }).Count.ShouldBe(1);
             
-            calls.WithArgs<(string input, __)>().Verify(call =>
+            calls.Args<(string input, __)>().Verify(call =>
             {
                 call.Args.input.ShouldBe(input);
                 call.Returned?.Value.ShouldBeNull();
             }).Count.ShouldBe(1);
             
-            calls.WithArgs<(object input, __)>().Verify(call =>
+            calls.Args<(object input, __)>().Verify(call =>
             {
                 call.Args.input.ShouldBe(input);
                 call.Returned?.Value.ShouldBeNull();
@@ -506,7 +506,7 @@ namespace DivertR.UnitTests
                 call.Returned?.Value.ShouldBe(_foo.Echo((string) args[0]));
             }).Count.ShouldBe(inputs.Length);
             
-            calls.WithArgs<(string input, __)>().Select((call, i) =>
+            calls.Args<(string input, __)>().Select((call, i) =>
             {
                 call.Args.input.ShouldBe(inputs[i]);
                 call.Returned?.Value.ShouldBe(_foo.Echo(call.Args.input));

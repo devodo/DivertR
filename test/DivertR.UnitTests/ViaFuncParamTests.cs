@@ -126,7 +126,7 @@ namespace DivertR.UnitTests
             result.ShouldBe(_inputs[0][0].Result);
             _recordStream
                 .To(x => x.EchoGeneric(_inputs[0][0].Arg))
-                .WithArgs<(int i1, __)>()
+                .Args<(int i1, __)>()
                 .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
@@ -147,7 +147,7 @@ namespace DivertR.UnitTests
             result.ShouldBe((_inputs[1][0].Result, _inputs[1][1].Result));
             _recordStream
                 .To(x => x.EchoGeneric(_inputs[1][0].Arg, _inputs[1][1].Arg))
-                .WithArgs<(int i1, int i2)>()
+                .Args<(int i1, int i2)>()
                 .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
@@ -169,7 +169,7 @@ namespace DivertR.UnitTests
             result.ShouldBe((_inputs[2][0].Result, _inputs[2][1].Result, _inputs[2][2].Result));
             _recordStream
                 .To(x => x.EchoGeneric(_inputs[2][0].Arg, _inputs[2][1].Arg, _inputs[2][2].Arg))
-                .WithArgs<(int i1, int i2, int i3)>()
+                .Args<(int i1, int i2, int i3)>()
                 .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
@@ -192,7 +192,7 @@ namespace DivertR.UnitTests
             result.ShouldBe((_inputs[3][0].Result, _inputs[3][1].Result, _inputs[3][2].Result, _inputs[3][3].Result));
             _recordStream
                 .To(x => x.EchoGeneric(_inputs[3][0].Arg, _inputs[3][1].Arg, _inputs[3][2].Arg, _inputs[3][3].Arg))
-                .WithArgs<(int i1, int i2, int i3, int i4)>()
+                .Args<(int i1, int i2, int i3, int i4)>()
                 .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
@@ -219,7 +219,7 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.EchoGeneric(_inputs[4][0].Arg, _inputs[4][1].Arg, _inputs[4][2].Arg, _inputs[4][3].Arg,
                     _inputs[4][4].Arg))
-                .WithArgs<(int i1, int i2, int i3, int i4, int i5)>()
+                .Args<(int i1, int i2, int i3, int i4, int i5)>()
                 .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
@@ -247,7 +247,7 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.EchoGeneric(_inputs[5][0].Arg, _inputs[5][1].Arg, _inputs[5][2].Arg, _inputs[5][3].Arg,
                     _inputs[5][4].Arg, _inputs[5][5].Arg))
-                .WithArgs<(int i1, int i2, int i3, int i4, int i5, int i6)>()
+                .Args<(int i1, int i2, int i3, int i4, int i5, int i6)>()
                 .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
@@ -276,7 +276,7 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.EchoGeneric(_inputs[6][0].Arg, _inputs[6][1].Arg, _inputs[6][2].Arg, _inputs[6][3].Arg,
                     _inputs[6][4].Arg, _inputs[6][5].Arg, _inputs[6][6].Arg))
-                .WithArgs<(int i1, int i2, int i3, int i4, int i5, int i6, int i7)>()
+                .Args<(int i1, int i2, int i3, int i4, int i5, int i6, int i7)>()
                 .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);
@@ -306,7 +306,7 @@ namespace DivertR.UnitTests
             _recordStream
                 .To(x => x.EchoGeneric(_inputs[7][0].Arg, _inputs[7][1].Arg, _inputs[7][2].Arg, _inputs[7][3].Arg,
                     _inputs[7][4].Arg, _inputs[7][5].Arg, _inputs[7][6].Arg, _inputs[7][7].Arg))
-                .WithArgs<(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8)>()
+                .Args<(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8)>()
                 .Verify(call =>
                 {
                     call.Returned!.Value.ShouldBe(result);

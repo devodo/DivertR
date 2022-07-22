@@ -40,12 +40,12 @@ namespace DivertR.Internal
 
         public IRedirect Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Build(redirectDelegate, optionsAction);
+            return Args<TArgs>().Build(redirectDelegate, optionsAction);
         }
 
         public IRedirect Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Build(redirectDelegate, optionsAction);
+            return Args<TArgs>().Build(redirectDelegate, optionsAction);
         }
 
         public new IActionRecordRedirect<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -56,7 +56,7 @@ namespace DivertR.Internal
             return new ActionRecordRedirect<TTarget>(recordRedirect.Redirect, callStream);
         }
 
-        public IActionRedirectBuilder<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IActionRedirectBuilder<TTarget, TArgs> Args<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return new ActionRedirectBuilder<TTarget, TArgs>(CallValidator, CallConstraint);
         }
@@ -92,7 +92,7 @@ namespace DivertR.Internal
         public new IActionRecordRedirect<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordRedirect = base.Record(optionsAction);
-            var callStream = recordRedirect.CallStream.WithArgs<TArgs>();
+            var callStream = recordRedirect.CallStream.Args<TArgs>();
                 
             return new ActionRecordRedirect<TTarget, TArgs>(recordRedirect.Redirect, callStream);
         }

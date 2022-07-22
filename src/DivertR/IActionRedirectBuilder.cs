@@ -20,7 +20,7 @@ namespace DivertR
         
         new IActionRecordRedirect<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
 
-        IActionRedirectBuilder<TTarget, TArgs> WithArgs<TArgs>()
+        IActionRedirectBuilder<TTarget, TArgs> Args<TArgs>()
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
     

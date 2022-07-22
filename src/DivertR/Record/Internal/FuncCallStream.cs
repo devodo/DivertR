@@ -17,9 +17,9 @@ namespace DivertR.Record.Internal
             _callValidator = callValidator;
         }
 
-        public IFuncCallStream<TTarget, TReturn, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IFuncCallStream<TTarget, TReturn, TArgs> Args<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>(Calls, _callValidator);
+            return Args<TArgs>(Calls, _callValidator);
         }
         
         public ICallStream<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn>, CallArguments, TMap> mapper)
@@ -39,30 +39,30 @@ namespace DivertR.Record.Internal
 
         public IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TArgs>> Verify<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Verify();
+            return Args<TArgs>().Verify();
         }
 
         public IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TArgs>> Verify<TArgs>(Action<IFuncRecordedCall<TTarget, TReturn, TArgs>> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Verify(visitor);
+            return Args<TArgs>().Verify(visitor);
         }
 
         public IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TArgs>> Verify<TArgs>(Action<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Verify(visitor);
+            return Args<TArgs>().Verify(visitor);
         }
 
         public Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TArgs>>> Verify<TArgs>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, Task> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Verify(visitor);
+            return Args<TArgs>().Verify(visitor);
         }
 
         public Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TArgs>>> Verify<TArgs>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, Task> visitor) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Verify(visitor);
+            return Args<TArgs>().Verify(visitor);
         }
         
-        internal static IFuncCallStream<TTarget, TReturn, TArgs> WithArgs<TArgs>(IEnumerable<IRecordedCall<TTarget>> calls, ICallValidator callValidator) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        internal static IFuncCallStream<TTarget, TReturn, TArgs> Args<TArgs>(IEnumerable<IRecordedCall<TTarget>> calls, ICallValidator callValidator) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             var valueTupleMapper = ValueTupleMapperFactory.Create<TArgs>();
             callValidator.Validate(valueTupleMapper);
@@ -83,14 +83,14 @@ namespace DivertR.Record.Internal
             _callValidator = callValidator;
         }
 
-        public IFuncCallStream<TTarget, TReturn, TNewArgs> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IFuncCallStream<TTarget, TReturn, TNewArgs> Args<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             if (typeof(TNewArgs) == typeof(TArgs))
             {
                 return (IFuncCallStream<TTarget, TReturn, TNewArgs>) this;
             }
             
-            return FuncCallStream<TTarget, TReturn>.WithArgs<TNewArgs>(Calls, _callValidator);
+            return FuncCallStream<TTarget, TReturn>.Args<TNewArgs>(Calls, _callValidator);
         }
 
         public ICallStream<TMap> Map<TMap>(Func<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs, TMap> mapper)
@@ -115,7 +115,7 @@ namespace DivertR.Record.Internal
                 return (IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>>) base.Verify();
             }
 
-            return WithArgs<TNewArgs>().Verify();
+            return Args<TNewArgs>().Verify();
         }
 
         public IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>> Verify<TNewArgs>(Action<IFuncRecordedCall<TTarget, TReturn, TNewArgs>> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -125,7 +125,7 @@ namespace DivertR.Record.Internal
                 return (IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>>) base.Verify(v);
             }
             
-            return WithArgs<TNewArgs>().Verify(visitor);
+            return Args<TNewArgs>().Verify(visitor);
         }
 
         public IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>> Verify<TNewArgs>(Action<IFuncRecordedCall<TTarget, TReturn, TNewArgs>, TNewArgs> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -135,7 +135,7 @@ namespace DivertR.Record.Internal
                 return (IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>>) VerifyInternal(v);
             }
             
-            return WithArgs<TNewArgs>().Verify(visitor);
+            return Args<TNewArgs>().Verify(visitor);
         }
 
         public async Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>>> Verify<TNewArgs>(Func<IFuncRecordedCall<TTarget, TReturn, TNewArgs>, Task> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -145,7 +145,7 @@ namespace DivertR.Record.Internal
                 return (IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>>) await base.Verify(v).ConfigureAwait(false);
             }
             
-            return await WithArgs<TNewArgs>().Verify(visitor).ConfigureAwait(false);
+            return await Args<TNewArgs>().Verify(visitor).ConfigureAwait(false);
         }
 
         public async Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>>> Verify<TNewArgs>(Func<IFuncRecordedCall<TTarget, TReturn, TNewArgs>, TNewArgs, Task> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -155,7 +155,7 @@ namespace DivertR.Record.Internal
                 return (IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>>) await VerifyInternal(v).ConfigureAwait(false);
             }
             
-            return await WithArgs<TNewArgs>().Verify(visitor).ConfigureAwait(false);
+            return await Args<TNewArgs>().Verify(visitor).ConfigureAwait(false);
         }
         
         private IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TArgs>> VerifyInternal(Action<IFuncRecordedCall<TTarget, TReturn, TArgs>, TArgs> visitor)

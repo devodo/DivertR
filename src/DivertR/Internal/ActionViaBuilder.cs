@@ -54,22 +54,22 @@ namespace DivertR.Internal
 
         public IActionViaBuilder<TTarget, TArgs> Redirect<TArgs>(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Redirect(redirectDelegate, optionsAction);
+            return Args<TArgs>().Redirect(redirectDelegate, optionsAction);
         }
 
         public IActionViaBuilder<TTarget, TArgs> Redirect<TArgs>(Action redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Redirect(redirectDelegate, optionsAction);
+            return Args<TArgs>().Redirect(redirectDelegate, optionsAction);
         }
 
         public IActionViaBuilder<TTarget, TArgs> Redirect<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Redirect(redirectDelegate, optionsAction);
+            return Args<TArgs>().Redirect(redirectDelegate, optionsAction);
         }
 
         public IActionViaBuilder<TTarget, TArgs> Redirect<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Redirect(redirectDelegate, optionsAction);
+            return Args<TArgs>().Redirect(redirectDelegate, optionsAction);
         }
 
         public new IActionViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -81,12 +81,12 @@ namespace DivertR.Internal
 
         public IActionViaBuilder<TTarget, TArgs> Retarget<TArgs>(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Retarget(target, optionsAction);
+            return Args<TArgs>().Retarget(target, optionsAction);
         }
 
-        public IActionViaBuilder<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IActionViaBuilder<TTarget, TArgs> Args<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            var builder = _redirectBuilder.WithArgs<TArgs>();
+            var builder = _redirectBuilder.Args<TArgs>();
             
             return new ActionViaBuilder<TTarget, TArgs>(RedirectRepository, builder);
         }
@@ -101,7 +101,7 @@ namespace DivertR.Internal
 
         public IActionCallStream<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return WithArgs<TArgs>().Record(optionsAction);
+            return Args<TArgs>().Record(optionsAction);
         }
     }
 

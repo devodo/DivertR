@@ -7,7 +7,7 @@ namespace DivertR.Record
     public interface IActionCallStream<TTarget> : ICallStream<IRecordedCall<TTarget>>
         where TTarget : class
     {
-        IActionCallStream<TTarget, TArgs> WithArgs<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        IActionCallStream<TTarget, TArgs> Args<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
         ICallStream<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, CallArguments, TMap> mapper);
         
@@ -24,7 +24,7 @@ namespace DivertR.Record
     public interface IActionCallStream<TTarget, TArgs> : ICallStream<IRecordedCall<TTarget, TArgs>>
         where TTarget : class
     {
-        IActionCallStream<TTarget, TNewArgs> WithArgs<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        IActionCallStream<TTarget, TNewArgs> Args<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
         ICallStream<TMap> Map<TMap>(Func<IRecordedCall<TTarget, TArgs>, TArgs, TMap> mapper);
 
