@@ -137,29 +137,22 @@ namespace DivertR
 
         public IViaBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null)
         {
-            return new ViaBuilder<TTarget>(RedirectRepository, RedirectBuilder<TTarget>.To(callConstraint));
+            return new ViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.To(callConstraint));
         }
 
-        public IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<IVia<TTarget>.StructReturnFunc<TTarget, TReturn>> constraintExpression) where TReturn : struct
+        public IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
         {
-            var funcExpression = Expression.Lambda<Func<TTarget, TReturn>>(constraintExpression.Body, constraintExpression.Parameters);
-            
-            return new FuncViaBuilder<TTarget, TReturn>(RedirectRepository, RedirectBuilder<TTarget>.To(funcExpression));
-        }
-
-        public IClassFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression) where TReturn : class
-        {
-            return new ClassFuncViaBuilder<TTarget, TReturn>(this, RedirectBuilder<TTarget>.To(constraintExpression));
+            return new FuncViaBuilder<TTarget, TReturn>(this, RedirectBuilder<TTarget>.To(constraintExpression));
         }
 
         public IActionViaBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
         {
-            return new ActionViaBuilder<TTarget>(RedirectRepository, RedirectBuilder<TTarget>.To(constraintExpression));
+            return new ActionViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.To(constraintExpression));
         }
         
         public IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression)
         {
-            return new ActionViaBuilder<TTarget>(RedirectRepository, RedirectBuilder<TTarget>.ToSet(memberExpression, constraintExpression));
+            return new ActionViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.ToSet(memberExpression, constraintExpression));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -4,18 +4,18 @@ namespace DivertR.Internal
 {
     internal abstract class DelegateViaBuilder<TTarget> : ViaBuilder<TTarget>, IDelegateViaBuilder<TTarget> where TTarget : class
     {
-        private readonly IDelegateRedirectBuilder<TTarget> _redirectBuilder;
-
-        protected DelegateViaBuilder(IRedirectRepository redirectRepository, IDelegateRedirectBuilder<TTarget> redirectBuilder)
-            : base(redirectRepository, redirectBuilder)
+        protected DelegateViaBuilder(IVia<TTarget> via, IDelegateRedirectBuilder<TTarget> redirectBuilder)
+            : base(via, redirectBuilder)
         {
-            _redirectBuilder = redirectBuilder;
+            RedirectBuilder = redirectBuilder;
         }
+
+        public new IDelegateRedirectBuilder<TTarget> RedirectBuilder { get; }
 
         public IDelegateViaBuilder<TTarget> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(redirectDelegate, optionsAction);
-            RedirectRepository.InsertRedirect(redirect);
+            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
+            Via.RedirectRepository.InsertRedirect(redirect);
 
             return this;
         }
