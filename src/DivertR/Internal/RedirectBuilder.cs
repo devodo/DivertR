@@ -23,13 +23,30 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IRedirect Build(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRedirect Build(object? instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            ICallHandler<TTarget> callHandler = new TargetCallHandler<TTarget>(target);
+            return Build(call => instance, optionsAction);
+        }
 
+        public IRedirect Build(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            return Build(call => redirectDelegate.Invoke(), optionsAction);
+        }
+
+        public IRedirect Build(Func<IRedirectCall<TTarget>, object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var callHandler = new RedirectCallHandler<TTarget>(redirectDelegate);
+            
             return Build(callHandler, optionsAction);
         }
-        
+
+        public IRedirect Build(Func<IRedirectCall<TTarget>, CallArguments, object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var callHandler = new RedirectArgsCallHandler<TTarget>(redirectDelegate);
+            
+            return Build(callHandler, optionsAction);
+        }
+
         public IRedirect Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var builder = new RedirectOptionsBuilder<TTarget>();
@@ -58,7 +75,7 @@ namespace DivertR.Internal
     
     internal class RedirectBuilder : IRedirectBuilder
     {
-        protected CompositeCallConstraint CallConstraint { get; private set; } = CompositeCallConstraint.Empty;
+        private CompositeCallConstraint CallConstraint { get; set; } = CompositeCallConstraint.Empty;
 
         public RedirectBuilder(ICallConstraint? callConstraint = null)
         {
@@ -75,13 +92,30 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IRedirect Build(object target, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IRedirect Build(object? instance, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var callHandler = new TargetCallHandler(target);
+            return Build(call => instance, optionsAction);
+        }
 
+        public IRedirect Build(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        {
+            return Build(call => redirectDelegate.Invoke(), optionsAction);
+        }
+
+        public IRedirect Build(Func<IRedirectCall, object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        {
+            var callHandler = new RedirectCallHandler(redirectDelegate);
+            
             return Build(callHandler, optionsAction);
         }
-        
+
+        public IRedirect Build(Func<IRedirectCall, CallArguments, object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        {
+            var callHandler = new RedirectArgsCallHandler(redirectDelegate);
+            
+            return Build(callHandler, optionsAction);
+        }
+
         public IRedirect Build(ICallHandler callHandler, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
             var builder = new RedirectOptionsBuilder();

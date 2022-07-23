@@ -1,7 +1,5 @@
 ﻿using DivertR.DispatchProxy;
 using DivertR.Dummy;
-using DivertR.Dummy.Internal;
-using DivertR.Internal;
 
 namespace DivertR
 {
@@ -15,10 +13,8 @@ namespace DivertR
         public bool DefaultWithDummyRoot { get; }
 
         public IDummyFactory DummyFactory { get; }
-        
-        public IRedirectRepository DummyRedirectRepository { get; }
 
-        
+
         public static DiverterSettings Global
         {
             get
@@ -41,20 +37,11 @@ namespace DivertR
         public DiverterSettings(
             IProxyFactory? proxyFactory = null,
             bool defaultWithDummyRoot = true,
-            IRedirectRepository? dummyRedirectRepository = null,
-            IDummyFactory? defaultRootFactory = null)
+            IDummyFactory? dummyFactory = null)
         {
             ProxyFactory = proxyFactory ?? new DispatchProxyFactory();
             DefaultWithDummyRoot = defaultWithDummyRoot;
-            DummyRedirectRepository = dummyRedirectRepository ?? CreateDummyRepository();
-            DummyFactory = defaultRootFactory ?? new DummyFactory();
-        }
-
-        private static IRedirectRepository CreateDummyRepository()
-        {
-            var redirect = new Redirect(new DummyCallHandler());
-            
-            return new RedirectRepository(new[] { redirect });
+            DummyFactory = dummyFactory ?? new DummyFactory();
         }
     }
 }

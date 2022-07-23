@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DivertR.Dummy;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -11,7 +12,14 @@ namespace DivertR.UnitTests
 {
     public class DummyRootTests
     {
-        private readonly IVia<IFoo> _via = new Via<IFoo>();
+        private readonly IVia<IFoo> _via;
+        private readonly DummyFactory _dummyFactory = new();
+
+        public DummyRootTests()
+        {
+            var settings = new DiverterSettings(dummyFactory: _dummyFactory);
+            _via = new Via<IFoo>(settings);
+        }
 
         [Fact]
         public void GivenDummyRootProxy_WhenStringPropertyGetterCalled_ShouldReturnNull()
@@ -513,20 +521,18 @@ namespace DivertR.UnitTests
             result.Item7.ShouldBe(Task.CompletedTask);
             result.Rest.Item1.ShouldBe(Task.CompletedTask);
         }
-        
+
         [Fact]
-        public void GivenDummyRedirectRepositoryWithReturnTypeRedirect_WhenProxyMethodReturnTypeMatches_ShouldRedirect()
+        public void GivenDummyReturnTypeDelegateRedirect_WhenProxyMethodReturnTypeMatches_ShouldRedirect()
         {
             // ARRANGE
-            var redirect = RedirectBuilder
+            _dummyFactory
                 .To(() => Is<string>.Return)
-                .Build(call => $"{call.Args.FirstOrDefault()} redirected".Trim());
+                .Redirect(() => "redirected")
+                .Redirect(call => $"{call.CallNext()} call {call.Args.LastOrDefault()}".Trim())
+                .Redirect((call, args) => $"{call.CallNext()} args {args.LastOrDefault()}".Trim());
             
-            var diverterSettings = new DiverterSettings();
-            diverterSettings.DummyRedirectRepository.InsertRedirect(redirect);
-           
-            var via = new Via<IFoo>(diverterSettings);
-            var proxy = via.Proxy();
+            var proxy = _via.Proxy();
 
             // ACT
             var result = proxy.EchoGeneric("hello");
@@ -534,9 +540,78 @@ namespace DivertR.UnitTests
             var objectReturn = proxy.EchoGeneric<object>("hello");
 
             // ASSERT
-            result.ShouldBe("hello redirected");
-            name.ShouldBe("redirected");
+            result.ShouldBe("redirected call hello args hello");
+            name.ShouldBe("redirected call args");
             objectReturn.ShouldBeNull();
+        }
+        
+        [Fact]
+        public void GivenDummyReturnTypeInstanceRedirect_WhenProxyMethodReturnSubTypeMatches_ShouldNotRedirect()
+        {
+            // ARRANGE
+            _dummyFactory
+                .To(() => Is<object>.Return)
+                .Redirect("redirected");
+            
+            var proxy = _via.Proxy();
+
+            // ACT
+            var result = proxy.EchoGeneric("hello");
+            var name = proxy.Name;
+            var objectReturn = proxy.EchoGeneric<object>("hello");
+
+            // ASSERT
+            result.ShouldBeNull();
+            name.ShouldBeNull();
+            objectReturn.ShouldBe("redirected");
+        }
+        
+        [Fact]
+        public void GivenDummyConstraintRedirect_WhenConstraintMatches_ShouldRedirect()
+        {
+            // ARRANGE
+            _dummyFactory
+                .To(new CallConstraint(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
+                .Redirect(() => "redirected")
+                .Redirect(call => $"{call.CallNext()} call {call.Args.LastOrDefault()}".Trim())
+                .Redirect((call, args) => $"{call.CallNext()} args {args.LastOrDefault()}".Trim());
+            
+            var proxy = _via.Proxy();
+
+            // ACT
+            var result = proxy.EchoGeneric("hello");
+            var name = proxy.Name;
+            var objectReturn = proxy.EchoGeneric<object>("hello");
+            var intReturn = proxy.EchoGeneric(1);
+
+            // ASSERT
+            result.ShouldBe("redirected call hello args hello");
+            name.ShouldBe("redirected call args");
+            objectReturn.ShouldBe("redirected call hello args hello");
+            intReturn.ShouldBe(0);
+        }
+        
+        [Fact]
+        public void GivenDummyConstraintInstanceRedirect_WhenConstraintMatches_ShouldRedirect()
+        {
+            // ARRANGE
+            _dummyFactory
+                .To(new CallConstraint(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
+                .Redirect("redirected");
+
+            var proxy = _via.Proxy();
+
+            // ACT
+            var result = proxy.EchoGeneric("hello");
+            var name = proxy.Name;
+            var objectReturn = proxy.EchoGeneric<object>("hello");
+            var intReturn = proxy.EchoGeneric(1);
+
+            // ASSERT
+            result.ShouldBe("redirected");
+            name.ShouldBe("redirected");
+            objectReturn.ShouldBe("redirected");
+            intReturn.ShouldBe(0);
         }
     }
 }
