@@ -4,13 +4,13 @@ using DivertR.Record;
 
 namespace DivertR
 {
-    public interface IActionViaBuilder<TTarget> : IDelegateViaBuilder<TTarget> where TTarget : class
+    public interface IActionViaBuilder<TTarget> : IViaBuilder<TTarget> where TTarget : class
     {
         new IActionRedirectBuilder<TTarget> RedirectBuilder { get; }
         
         new IActionViaBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
 
-        new IActionViaBuilder<TTarget> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        IActionViaBuilder<TTarget> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         IActionViaBuilder<TTarget> Redirect(Action redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         IActionViaBuilder<TTarget> Redirect(Action<IActionRedirectCall<TTarget>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         IActionViaBuilder<TTarget> Redirect(Action<IActionRedirectCall<TTarget>, CallArguments> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
