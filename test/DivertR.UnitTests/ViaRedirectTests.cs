@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using DivertR.UnitTests.Model;
 using Moq;
 using Shouldly;
@@ -992,6 +993,54 @@ namespace DivertR.UnitTests
 
             // ASSERT
             testAction.ShouldThrow<ArgumentException>();
+        }
+        
+        [Fact]
+        public void GivenConstraintRedirect_WhenConstraintMatches_ShouldRedirect()
+        {
+            // ARRANGE
+            _via
+                .To(new CallConstraint<IFoo>(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
+                .Redirect(() => "redirected")
+                .Redirect(call => $"{call.CallNext()} call {call.Args.LastOrDefault()}".Trim())
+                .Redirect((call, args) => $"{call.CallNext()} args {args.LastOrDefault()}".Trim());
+            
+            var proxy = _via.Proxy();
+
+            // ACT
+            var result = proxy.EchoGeneric("hello");
+            var name = proxy.Name;
+            var objectReturn = proxy.EchoGeneric<object>("hello");
+            var intReturn = proxy.EchoGeneric(1);
+
+            // ASSERT
+            result.ShouldBe("redirected call hello args hello");
+            name.ShouldBe("redirected call args");
+            objectReturn.ShouldBe("redirected call hello args hello");
+            intReturn.ShouldBe(0);
+        }
+        
+        [Fact]
+        public void GivenConstraintInstanceRedirect_WhenConstraintMatches_ShouldRedirect()
+        {
+            // ARRANGE
+            _via
+                .To(new CallConstraint<IFoo>(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
+                .Redirect("redirected");
+
+            var proxy = _via.Proxy();
+
+            // ACT
+            var result = proxy.EchoGeneric("hello");
+            var name = proxy.Name;
+            var objectReturn = proxy.EchoGeneric<object>("hello");
+            var intReturn = proxy.EchoGeneric(1);
+
+            // ASSERT
+            result.ShouldBe("redirected");
+            name.ShouldBe("redirected");
+            objectReturn.ShouldBe("redirected");
+            intReturn.ShouldBe(0);
         }
     }
 }

@@ -4,7 +4,7 @@ using DivertR.Record;
 
 namespace DivertR.Internal
 {
-    internal class FuncViaBuilder<TTarget, TReturn> : DelegateViaBuilder<TTarget>, IFuncViaBuilder<TTarget, TReturn> where TTarget : class
+    internal class FuncViaBuilder<TTarget, TReturn> : ViaBuilder<TTarget>, IFuncViaBuilder<TTarget, TReturn> where TTarget : class
     {
         public FuncViaBuilder(IVia<TTarget> via, IFuncRedirectBuilder<TTarget, TReturn> redirectBuilder)
             : base(via, redirectBuilder)
@@ -21,9 +21,10 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IFuncViaBuilder<TTarget, TReturn> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IFuncViaBuilder<TTarget, TReturn> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            base.Redirect(redirectDelegate, optionsAction);
+            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
+            Via.RedirectRepository.InsertRedirect(redirect);
 
             return this;
         }

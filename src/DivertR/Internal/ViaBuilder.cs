@@ -20,10 +20,43 @@ namespace DivertR.Internal
 
             return this;
         }
-        
+
+        public IViaBuilder<TTarget> Redirect(object? instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var redirect = RedirectBuilder.Build(instance, optionsAction);
+            Via.RedirectRepository.InsertRedirect(redirect);
+
+            return this;
+        }
+
+        public IViaBuilder<TTarget> Redirect(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
+            Via.RedirectRepository.InsertRedirect(redirect);
+
+            return this;
+        }
+
+        public IViaBuilder<TTarget> Redirect(Func<IRedirectCall<TTarget>, object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
+            Via.RedirectRepository.InsertRedirect(redirect);
+
+            return this;
+        }
+
+        public IViaBuilder<TTarget> Redirect(Func<IRedirectCall<TTarget>, CallArguments, object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        {
+            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
+            Via.RedirectRepository.InsertRedirect(redirect);
+
+            return this;
+        }
+
         public IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var redirect = RedirectBuilder.Build(target, optionsAction);
+            ICallHandler<TTarget> callHandler = new TargetCallHandler<TTarget>(target);
+            var redirect = RedirectBuilder.Build(callHandler, optionsAction);
             Via.RedirectRepository.InsertRedirect(redirect);
 
             return this;
