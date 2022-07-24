@@ -12,12 +12,12 @@ namespace DivertR.Internal
 
         public RedirectRepository()
         {
-            _redirectPlans.Push(DivertR.Internal.RedirectPlan.Empty);
+            _redirectPlans.Push(Internal.RedirectPlan.Empty);
         }
         
         public RedirectRepository(IEnumerable<IRedirect> redirects)
         {
-            var redirectPlan = DivertR.Internal.RedirectPlan.Empty.InsertRedirects(redirects);
+            var redirectPlan = Internal.RedirectPlan.Empty.InsertRedirects(redirects);
             _redirectPlans.Push(redirectPlan);
         }
 
@@ -53,7 +53,7 @@ namespace DivertR.Internal
             lock (_lockObject)
             {
                 _redirectPlans.Clear();
-                _redirectPlans.Push(DivertR.Internal.RedirectPlan.Empty);
+                _redirectPlans.Push(Internal.RedirectPlan.Empty);
             }
         }
 
