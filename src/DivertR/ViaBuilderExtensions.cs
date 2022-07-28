@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
@@ -16,7 +18,7 @@ namespace DivertR
             where TTarget : class
             where TReturn : class
         {
-            var proxyCache = new ConcurrentDictionary<object, TReturn>();
+            var proxyCache = new ConcurrentDictionary<object, TReturn>(new ReferenceEqualityComparer<object>());
             var via = viaBuilder.Via.ViaSet.Via<TReturn>(name);
 
             TReturn? RedirectDelegate(IFuncRedirectCall<TTarget, TReturn> call)
@@ -35,6 +37,19 @@ namespace DivertR
             viaBuilder.Via.RedirectRepository.InsertRedirect(redirect);
 
             return via;
+        }
+        
+        private class ReferenceEqualityComparer<T> : IEqualityComparer<T> where T : class
+        {
+            public int GetHashCode(T value)
+            {
+                return RuntimeHelpers.GetHashCode(value);
+            }
+
+            public bool Equals(T left, T right)
+            {
+                return ReferenceEquals(left, right);
+            }
         }
     }
 }
