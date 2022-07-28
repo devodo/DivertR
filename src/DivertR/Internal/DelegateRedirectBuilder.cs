@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 
 namespace DivertR.Internal
 {
@@ -9,7 +10,13 @@ namespace DivertR.Internal
         protected DelegateRedirectBuilder(ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
             : base(callConstraint)
         {
-            CallValidator = callValidator ?? throw new ArgumentNullException(nameof(callValidator));
+            CallValidator = callValidator;
+        }
+        
+        protected DelegateRedirectBuilder(ICallValidator callValidator, ConcurrentBag<ICallConstraint<TTarget>> callConstraints)
+            : base(callConstraints)
+        {
+            CallValidator = callValidator;
         }
 
         public IRedirect Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -24,17 +31,23 @@ namespace DivertR.Internal
     
     internal abstract class DelegateRedirectBuilder : RedirectBuilder, IDelegateRedirectBuilder
     {
-        protected readonly ICallValidator CallValidator;
+        private readonly ICallValidator _callValidator;
 
         protected DelegateRedirectBuilder(ICallValidator callValidator, ICallConstraint callConstraint)
             : base(callConstraint)
         {
-            CallValidator = callValidator ?? throw new ArgumentNullException(nameof(callValidator));
+            _callValidator = callValidator;
+        }
+        
+        protected DelegateRedirectBuilder(ICallValidator callValidator, ConcurrentBag<ICallConstraint> callConstraints)
+            : base(callConstraints)
+        {
+            _callValidator = callValidator;
         }
 
         public IRedirect Build(Delegate redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            CallValidator.Validate(redirectDelegate);
+            _callValidator.Validate(redirectDelegate);
             var fastDelegate = redirectDelegate.ToDelegate();
             var callHandler = new CallHandler(call => fastDelegate.Invoke(call.Args.InternalArgs));
 
