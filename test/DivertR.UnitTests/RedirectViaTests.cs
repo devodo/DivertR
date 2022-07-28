@@ -6,12 +6,12 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class ViaDivertTests
+    public class RedirectViaTests
     {
         private readonly IVia<IFoo> _via = new Via<IFoo>();
         private readonly IFoo _proxy;
 
-        public ViaDivertTests()
+        public RedirectViaTests()
         {
             _proxy = _via.Proxy(new Foo());
         }
@@ -128,6 +128,72 @@ namespace DivertR.UnitTests
             
             // ASSERT
             results.ShouldBe(input.Select(x => $"redirect: {x} diverted"));
+        }
+        
+        [Fact]
+        public void GivenRedirectViaWithMultipleProxies_ShouldRedirect()
+        {
+            // ARRANGE
+            var numberVia = _via
+                .To(x => x.EchoGeneric(Is<INumber>.Any))
+                .RedirectVia();
+
+            var counter = 0;
+
+            numberVia
+                .To(x => x.GetNumber(Is<int>.Any))
+                .Redirect(call =>
+                {
+                    counter += 10;
+                    return call.CallNext() + counter;
+                });
+            
+            var numberProxy1 = _proxy.EchoGeneric<INumber>(new Number());
+            var numberProxy2 = _proxy.EchoGeneric<INumber>(new Number());
+            
+            // ACT
+            var result1 = numberProxy1.GetNumber(1);
+            var result2 = numberProxy2.GetNumber(1);
+
+            // ASSERT
+            result1.ShouldBe(11);
+            result2.ShouldBe(21);
+        }
+        
+        [Fact]
+        public void GivenRedirectVia_WhenSameReturnInstance_ThenShouldCacheProxies()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.EchoGeneric(Is<INumber>.Any))
+                .RedirectVia();
+
+            var number = new Number();
+            
+            // ACT
+            var numberProxy1 = _proxy.EchoGeneric<INumber>(number);
+            var numberProxy2 = _proxy.EchoGeneric<INumber>(number);
+            var numberProxy3 = _proxy.EchoGeneric<INumber>(new Number());
+            
+            // ASSERT
+            numberProxy1.ShouldBeSameAs(numberProxy2);
+            numberProxy3.ShouldNotBeSameAs(numberProxy1);
+        }
+        
+        [Fact]
+        public void GivenRedirectVia_WhenReturnIsNull_ThenShouldReturnNull()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.EchoGeneric(Is<INumber>.Any))
+                .Redirect(() => null)
+                .RedirectVia();
+
+            // ACT
+            var result = _proxy.EchoGeneric<INumber>(new Number());
+            
+            // ASSERT
+            result.ShouldBeNull();
         }
     }
 }

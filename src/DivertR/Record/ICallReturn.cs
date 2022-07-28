@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DivertR.Record
 {
@@ -11,6 +12,7 @@ namespace DivertR.Record
     
     public interface ICallReturn<out TReturn> : ICallReturn
     {
+        [AllowNull]
         new TReturn Value { get; }
     }
 }

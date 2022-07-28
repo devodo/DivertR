@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -51,6 +52,7 @@ namespace DivertR.Record.Internal
             _callReturn = callReturn;
         }
         
+        [AllowNull]
         public TReturn Value
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

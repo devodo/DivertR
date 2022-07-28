@@ -225,7 +225,7 @@ namespace DivertR.WebAppTests
             recordedCalls.Verify((call, args) =>
             {
                 args.foo.Name.ShouldBe(createFooRequest.Name);
-                call.Returned?.Exception.ShouldBeSameAs(testException);
+                call.Returned!.Exception.ShouldBeSameAs(testException);
             }).Count.ShouldBe(1);
         }
     }
