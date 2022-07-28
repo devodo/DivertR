@@ -62,7 +62,7 @@ namespace DivertR.Internal
             
             var redirectOptions = builder.BuildOptions();
             callHandler = builder.BuildCallHandler(callHandler);
-            var callConstraint = builder.BuildCallConstraint(CallConstraints);
+            var callConstraint = builder.BuildCallConstraint(new CompositeCallConstraint<TTarget>(CallConstraints));
                 
             return new Redirect<TTarget>(callHandler, callConstraint, redirectOptions);
         }
