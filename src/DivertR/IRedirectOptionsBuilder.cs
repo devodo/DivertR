@@ -10,7 +10,7 @@ namespace DivertR
         IRedirectOptionsBuilder<TTarget> DisableSatisfyStrict(bool disableStrict = true);
         
         IRedirectOptionsBuilder<TTarget> DecorateCallHandler(Func<ICallHandler<TTarget>, ICallHandler<TTarget>> decorator);
-        IRedirectOptionsBuilder<TTarget> DecorateCallConstraint(Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>> decorator);
+        IRedirectOptionsBuilder<TTarget> AddCallConstraint(ICallConstraint<TTarget> callConstraint);
         
         IRedirectOptionsBuilder<TTarget> Repeat(int repeatCount);
         IRedirectOptionsBuilder<TTarget> Skip(int skipCount);

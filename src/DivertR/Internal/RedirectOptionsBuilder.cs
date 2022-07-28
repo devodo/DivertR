@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -44,11 +45,10 @@ namespace DivertR.Internal
         private int? _orderWeight;
         private bool? _disableSatisfyStrict;
         
-        private readonly List<Func<ICallHandler<TTarget>, ICallHandler<TTarget>>> _callHandlerDecorators =
-            new List<Func<ICallHandler<TTarget>, ICallHandler<TTarget>>>();
+        private readonly ConcurrentStack<Func<ICallHandler<TTarget>, ICallHandler<TTarget>>> _callHandlerDecorators =
+            new ConcurrentStack<Func<ICallHandler<TTarget>, ICallHandler<TTarget>>>();
         
-        private readonly List<Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>>> _callConstraintDecorators =
-            new List<Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>>>();
+        private readonly ConcurrentBag<ICallConstraint<TTarget>> _callConstraints = new ConcurrentBag<ICallConstraint<TTarget>>();
 
         public IRedirectOptionsBuilder<TTarget> OrderWeight(int orderWeight)
         {
@@ -76,14 +76,14 @@ namespace DivertR.Internal
 
         public IRedirectOptionsBuilder<TTarget> DecorateCallHandler(Func<ICallHandler<TTarget>, ICallHandler<TTarget>> decorator)
         {
-            _callHandlerDecorators.Add(decorator);
+            _callHandlerDecorators.Push(decorator);
 
             return this;
         }
 
-        public IRedirectOptionsBuilder<TTarget> DecorateCallConstraint(Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>> decorator)
+        public IRedirectOptionsBuilder<TTarget> AddCallConstraint(ICallConstraint<TTarget> callConstraint)
         {
-            _callConstraintDecorators.Add(decorator);
+            _callConstraints.Add(callConstraint);
 
             return this;
         }
@@ -100,14 +100,9 @@ namespace DivertR.Internal
 
         public IRedirectOptionsBuilder<TTarget> AddSwitch(IRedirectSwitch redirectSwitch)
         {
-            ICallConstraint<TTarget> switchConstraint = new SwitchCallConstraint<TTarget>(redirectSwitch);
+            var switchConstraint = new SwitchCallConstraint<TTarget>(redirectSwitch);
 
-            ICallConstraint<TTarget> Decorator(ICallConstraint<TTarget> callConstraint)
-            {
-                return CompositeCallConstraint<TTarget>.Empty.AddCallConstraints(new[] { switchConstraint, callConstraint });
-            }
-
-            return DecorateCallConstraint(Decorator);
+            return AddCallConstraint(switchConstraint);
         }
 
         public IRedirectOptions BuildOptions()
@@ -122,7 +117,7 @@ namespace DivertR.Internal
                 return callHandler;
             }
             
-            foreach (var decorator in _callHandlerDecorators)
+            foreach (var decorator in _callHandlerDecorators.Reverse())
             {
                 callHandler = decorator.Invoke(callHandler);
             }
@@ -130,19 +125,9 @@ namespace DivertR.Internal
             return callHandler;
         }
 
-        public ICallConstraint<TTarget> BuildCallConstraint(ICallConstraint<TTarget> callConstraint)
+        public ICallConstraint<TTarget> BuildCallConstraint(IEnumerable<ICallConstraint<TTarget>> callConstraints)
         {
-            if (!_callConstraintDecorators.Any())
-            {
-                return callConstraint;
-            }
-            
-            foreach (var decorator in _callConstraintDecorators)
-            {
-                callConstraint = decorator.Invoke(callConstraint);
-            }
-
-            return callConstraint;
+            return new CompositeCallConstraint<TTarget>(callConstraints.Concat(_callConstraints));
         }
     }
 }

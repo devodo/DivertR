@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Linq;
 using DivertR.Record;
 using DivertR.Record.Internal;
@@ -12,6 +13,11 @@ namespace DivertR.Internal
             : base(callValidator, callConstraint)
         {
         }
+        
+        protected FuncRedirectBuilder(ICallValidator callValidator, ConcurrentBag<ICallConstraint<TTarget>> callConstraints)
+            : base(callValidator, callConstraints)
+        {
+        } 
         
         public new IFuncRedirectBuilder<TTarget, TReturn> AddConstraint(ICallConstraint<TTarget> callConstraint)
         {
@@ -65,7 +71,7 @@ namespace DivertR.Internal
 
         public IFuncRedirectBuilder<TTarget, TReturn, TArgs> Args<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return new FuncRedirectBuilder<TTarget, TReturn, TArgs>(CallValidator, CallConstraint);
+            return new FuncRedirectBuilder<TTarget, TReturn, TArgs>(CallValidator, CallConstraints);
         }
     }
 
@@ -75,8 +81,8 @@ namespace DivertR.Internal
     {
         private readonly IValueTupleMapper _valueTupleMapper;
         
-        public FuncRedirectBuilder(ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
-            : base(callValidator, callConstraint)
+        public FuncRedirectBuilder(ICallValidator callValidator, ConcurrentBag<ICallConstraint<TTarget>> callConstraints)
+            : base(callValidator, callConstraints)
         {
             _valueTupleMapper = ValueTupleMapperFactory.Create<TArgs>();
             CallValidator.Validate(_valueTupleMapper);

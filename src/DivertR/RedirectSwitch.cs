@@ -1,26 +1,34 @@
-﻿using System.Threading;
+﻿using System.Collections.Concurrent;
 
 namespace DivertR
 {
     public class RedirectSwitch : IRedirectSwitch
     {
-        private volatile int _isEnabled;
+        private readonly ConcurrentStack<bool> _switchState = new ConcurrentStack<bool>();
 
         public RedirectSwitch(bool isEnabled = true)
         {
-            _isEnabled = isEnabled ? 1 : 0;
+            _switchState.Push(isEnabled);
         }
 
-        public bool IsEnabled => _isEnabled == 1;
+        public bool IsEnabled
+        {
+            get
+            {
+                _switchState.TryPeek(out var result);
+
+                return result;
+            }
+        }
 
         public void Enable()
         {
-            Interlocked.Exchange(ref _isEnabled, 1);
+            _switchState.Push(true);
         }
 
         public void Disable()
         {
-            Interlocked.Exchange(ref _isEnabled, 0);
+            _switchState.Push(false);
         }
     }
 }
