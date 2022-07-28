@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
@@ -60,24 +61,28 @@ namespace DivertR.Internal
         {
         }
         
+        [return: MaybeNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public new TReturn CallNext()
         {
             return (TReturn) base.CallNext()!;
         }
         
+        [return: MaybeNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public new TReturn CallNext(CallArguments args)
         {
             return (TReturn) base.CallNext(args)!;
         }
         
+        [return: MaybeNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public new TReturn CallRoot()
         {
             return (TReturn) base.CallRoot()!;
         }
         
+        [return: MaybeNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public new TReturn CallRoot(CallArguments args)
         {
