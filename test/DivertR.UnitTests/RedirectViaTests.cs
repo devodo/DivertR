@@ -179,5 +179,21 @@ namespace DivertR.UnitTests
             numberProxy1.ShouldBeSameAs(numberProxy2);
             numberProxy3.ShouldNotBeSameAs(numberProxy1);
         }
+        
+        [Fact]
+        public void GivenRedirectVia_WhenReturnIsNull_ThenShouldReturnNull()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.EchoGeneric(Is<INumber>.Any))
+                .Redirect(() => null)
+                .RedirectVia();
+
+            // ACT
+            var result = _proxy.EchoGeneric<INumber>(new Number());
+            
+            // ASSERT
+            result.ShouldBeNull();
+        }
     }
 }

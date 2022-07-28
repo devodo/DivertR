@@ -19,12 +19,19 @@ namespace DivertR
             var proxyCache = new ConcurrentDictionary<object, TReturn>();
             var via = viaBuilder.Via.ViaSet.Via<TReturn>(name);
 
-            TReturn RedirectDelegate(IFuncRedirectCall<TTarget, TReturn> call)
+            TReturn? RedirectDelegate(IFuncRedirectCall<TTarget, TReturn> call)
             {
-                return proxyCache.GetOrAdd(call.CallNext(), callReturn => via.Proxy(callReturn));
+                var callReturn = call.CallNext();
+
+                if (callReturn == null)
+                {
+                    return null;
+                }
+                
+                return proxyCache.GetOrAdd(callReturn, x => via.Proxy(x));
             }
 
-            var redirect = viaBuilder.RedirectBuilder.Build(RedirectDelegate, optionsAction);
+            var redirect = viaBuilder.RedirectBuilder.Build(RedirectDelegate!, optionsAction);
             viaBuilder.Via.RedirectRepository.InsertRedirect(redirect);
 
             return via;
