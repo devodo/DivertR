@@ -75,28 +75,5 @@ namespace DivertR.UnitTests
             results.Skip(2).Take(Count - 2).ShouldAllBe(x => x == "hello");
             results.Last().ShouldBe("hello diverted");
         }
-        
-        [Fact]
-        public void GivenRedirectSwitch_ShouldEnableAndDisable()
-        {
-            // ARRANGE
-            var redirectSwitch = new RedirectSwitch();
-
-            _via
-                .To(x => x.Name)
-                .Redirect(() => "disabled")
-                .Redirect(() => "enabled", opt => opt.AddSwitch(redirectSwitch));
-
-            var proxy = _via.Proxy();
-
-            // ACT
-            var enabledResult = proxy.Name;
-            redirectSwitch.Disable();
-            var disabledResult = proxy.Name;
-
-            // ASSERT
-            enabledResult.ShouldBe("enabled");
-            disabledResult.ShouldBe("disabled");
-        }
     }
 }
