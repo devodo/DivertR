@@ -7,16 +7,20 @@ using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
-    internal class FuncRedirectBuilder<TTarget, TReturn> : DelegateRedirectBuilder<TTarget>, IFuncRedirectBuilder<TTarget, TReturn> where TTarget : class
+    internal class FuncRedirectBuilder<TTarget, TReturn> : RedirectBuilder<TTarget>, IFuncRedirectBuilder<TTarget, TReturn> where TTarget : class
     {
+        protected readonly ICallValidator CallValidator;
+
         public FuncRedirectBuilder(ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
-            : base(callValidator, callConstraint)
+            : base(callConstraint)
         {
+            CallValidator = callValidator;
         }
         
         protected FuncRedirectBuilder(ICallValidator callValidator, ConcurrentBag<ICallConstraint<TTarget>> callConstraints)
-            : base(callValidator, callConstraints)
+            : base(callConstraints)
         {
+            CallValidator = callValidator;
         } 
         
         public new IFuncRedirectBuilder<TTarget, TReturn> AddConstraint(ICallConstraint<TTarget> callConstraint)
@@ -111,10 +115,9 @@ namespace DivertR.Internal
         }
     }
 
-    internal class FuncRedirectBuilder<TReturn> : DelegateRedirectBuilder, IFuncRedirectBuilder<TReturn>
+    internal class FuncRedirectBuilder<TReturn> : RedirectBuilder, IFuncRedirectBuilder<TReturn>
     {
-        public FuncRedirectBuilder(ICallValidator callValidator, ICallConstraint callConstraint)
-            : base(callValidator, callConstraint)
+        public FuncRedirectBuilder(ICallConstraint callConstraint) : base(callConstraint)
         {
         }
 

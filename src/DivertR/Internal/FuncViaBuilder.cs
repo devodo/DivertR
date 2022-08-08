@@ -21,14 +21,6 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IFuncViaBuilder<TTarget, TReturn> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
-            Via.RedirectRepository.InsertRedirect(redirect);
-
-            return this;
-        }
-
         public IFuncViaBuilder<TTarget, TReturn> Redirect(TReturn instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             return Redirect(() => instance, optionsAction);
@@ -56,11 +48,6 @@ namespace DivertR.Internal
             Via.RedirectRepository.InsertRedirect(redirect);
 
             return this;
-        }
-
-        public IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
-        {
-            return Args<TArgs>().Redirect(redirectDelegate, optionsAction);
         }
 
         public IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(TReturn instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -128,13 +115,6 @@ namespace DivertR.Internal
         }
 
         public new IFuncRedirectBuilder<TTarget, TReturn, TArgs> RedirectBuilder { get; }
-
-        public new IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Delegate redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
-        {
-            base.Redirect(redirectDelegate, optionsAction);
-
-            return this;
-        }
 
         public new IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(TReturn instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {

@@ -45,13 +45,6 @@ namespace DivertR.UnitTests
     public class ByRefTests
     {
         protected readonly IViaSet ViaSet;
-
-        private delegate int RefCall(ref int input);
-        
-        private delegate void RefArrayCall(ref int[] input);
-        
-        private delegate void OutCall(int input, out int output);
-
         private readonly IVia<INumber> _via;
         private readonly INumber _proxy;
 
@@ -126,29 +119,7 @@ namespace DivertR.UnitTests
             // ASSERT
             output.ShouldBe(13);
         }
-        
-        [Fact]
-        public void GivenOutParameterRedirectDelegate_ShouldUpdateOutParameter()
-        {
-            // ARRANGE
-            _via
-                .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
-                .Redirect(new OutCall((int i, out int o) =>
-                {
-                    _via.Relay.Next.OutNumber(i, out o);
 
-                    o += 10;
-                }));
-            
-            var viaProxy = _via.Proxy(new Number());
-
-            // ACT
-            viaProxy.OutNumber(3, out var output);
-
-            // ASSERT
-            output.ShouldBe(13);
-        }
-        
         [Fact]
         public void GivenOutParameterTargetRedirect_ShouldUpdateOutParameter()
         {
@@ -197,31 +168,6 @@ namespace DivertR.UnitTests
                 call.Args.input.ShouldBe(3);
                 call.Args.output.Value.ShouldBe(13);
             }).Count.ShouldBe(1);
-        }
-        
-        [Fact]
-        public void GivenOutParameterRedirectDelegate_ShouldRecordCallArguments()
-        {
-            // ARRANGE
-            var recordStream = _via
-                .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
-                .Redirect(new OutCall((int i, out int o) =>
-                {
-                    _via.Relay.Next.OutNumber(i, out o);
-
-                    o += 10;
-                }))
-                .Record();
-            
-            var viaProxy = _via.Proxy(new Number());
-
-            // ACT
-            viaProxy.OutNumber(3, out var output);
-
-            // ASSERT
-            output.ShouldBe(13);
-            recordStream.Count.ShouldBe(1);
-            recordStream.First().CallInfo.Arguments[0].ShouldBe(3);
         }
 
         [Fact]
@@ -273,15 +219,15 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.RefArrayNumber(ref IsRef<int[]>.Any))
-                .Redirect(new RefArrayCall((ref int[] inRef) =>
+                .Redirect<(Ref<int[]> inRef, __)>(call =>
                 {
-                    _via.Relay.Next.RefArrayNumber(ref inRef);
+                    _via.Relay.Next.RefArrayNumber(ref call.Args.inRef.Value);
 
-                    for (var i = 0; i < inRef.Length; i++)
+                    for (var i = 0; i < call.Args.inRef.Value.Length; i++)
                     {
-                        inRef[i] += 10;
+                        call.Args.inRef.Value[i] += 10;
                     }
-                }));
+                });
 
             // ACT
             int[] inputOriginal = { 5, 8 };
@@ -319,32 +265,6 @@ namespace DivertR.UnitTests
             i2.ShouldBe(50);
         }
 
-        [Fact]
-        public void GivenRefDelegate_ShouldRedirect()
-        {
-            // ARRANGE
-            var via = new Via<INumber>();
-            int input = 5;
-            via
-                .To(x => x.RefNumber(ref input))
-                .Redirect(new RefCall((ref int i) =>
-                {
-                    var refIn = i;
-                    i = 50;
-
-                    return refIn + 1;
-                }));
-
-            // ACT
-            var i2 = 5;
-            var proxy = via.Proxy(new Number());
-            var result = proxy.RefNumber(ref i2);
-
-            // ASSERT
-            result.ShouldBe(6);
-            i2.ShouldBe(50);
-        }
-        
         [Fact]
         public void GivenRefParameter_WhenParameterlessRedirect_ShouldRedirect()
         {

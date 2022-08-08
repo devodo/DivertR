@@ -4,7 +4,7 @@ using DivertR.Record;
 
 namespace DivertR
 {
-    public interface IFuncRedirectBuilder<TTarget, TReturn> : IDelegateRedirectBuilder<TTarget> where TTarget : class
+    public interface IFuncRedirectBuilder<TTarget, TReturn> : IRedirectBuilder<TTarget> where TTarget : class
     {
         new IFuncRedirectBuilder<TTarget, TReturn> AddConstraint(ICallConstraint<TTarget> callConstraint);
 
@@ -34,7 +34,7 @@ namespace DivertR
         new IFuncRecordRedirect<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
     }
 
-    public interface IFuncRedirectBuilder<TReturn> : IDelegateRedirectBuilder
+    public interface IFuncRedirectBuilder<TReturn> : IRedirectBuilder
     {
         new IFuncRedirectBuilder<TReturn> AddConstraint(ICallConstraint callConstraint);
         

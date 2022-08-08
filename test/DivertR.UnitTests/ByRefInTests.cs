@@ -10,8 +10,6 @@ namespace DivertR.UnitTests
         // Due to a known issue DispatchProxy does not currently support in byref parameters
         // https://github.com/dotnet/runtime/issues/47522
         private static readonly DiverterSettings DiverterSettings = new(new DynamicProxyFactory());
-        
-        private delegate int InCall(in int input);
 
         private readonly IVia<INumberIn> _via = new ViaSet(DiverterSettings).Via<INumberIn>();
 
@@ -21,7 +19,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.GetNumber(in IsRef<int>.Any))
-                .Redirect(new InCall((in int i) => _via.Relay.Next.GetNumber(i) + 10));
+                .Redirect<(Ref<int> input, __)>(call => _via.Relay.Next.GetNumber(call.Args.input.Value) + 10);
             
             var viaProxy = _via.Proxy(new NumberIn());
 
@@ -41,7 +39,7 @@ namespace DivertR.UnitTests
             int inParam = input;
             _via
                 .To(x => x.GetNumber(in inParam))
-                .Redirect(new InCall((in int i) => _via.Relay.Next.GetNumber(i) + 10));
+                .Redirect<(Ref<int> input, __)>(call => _via.Relay.Next.GetNumber(call.Args.input.Value) + 10);
             
             var viaProxy = _via.Proxy(new NumberIn());
 
@@ -60,7 +58,7 @@ namespace DivertR.UnitTests
             int inParam = 4;
             _via
                 .To(x => x.GetNumber(in inParam))
-                .Redirect(new InCall((in int i) => _via.Relay.Next.GetNumber(i) + 10));
+                .Redirect<(Ref<int> input, __)>(call => _via.Relay.Next.GetNumber(call.Args.input.Value) + 10);
             
             var viaProxy = _via.Proxy(new NumberIn());
 
