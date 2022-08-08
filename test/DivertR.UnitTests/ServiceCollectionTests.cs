@@ -98,5 +98,16 @@ namespace DivertR.UnitTests
             fooBefore.Name.ShouldBe("original");
             fooAfter.Name.ShouldBe("original");
         }
+        
+        [Fact]
+        public void ShouldNotProxyNullDependencies()
+        {
+            _services.AddSingleton<IFoo>(_ => null);
+            _services.Divert(_diverter);
+            var provider = _services.BuildServiceProvider();
+            var foo = provider.GetService<IFoo>();
+            
+            foo.ShouldBeNull();
+        }
     }
 }
