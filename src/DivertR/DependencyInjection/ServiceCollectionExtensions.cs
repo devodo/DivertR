@@ -58,12 +58,12 @@ namespace DivertR.DependencyInjection
                     grp => grp.Select(x => x!.Action));
         }
 
-        private static Func<IServiceProvider, object> CreateViaProxyFactory(ServiceDescriptor descriptor, IVia via)
+        private static Func<IServiceProvider, object?> CreateViaProxyFactory(ServiceDescriptor descriptor, IVia via)
         {
-            object ProxyFactory(IServiceProvider provider)
+            object? ProxyFactory(IServiceProvider provider)
             {
                 var instance = GetServiceInstance(provider, descriptor);
-                return via.Proxy(instance);
+                return via.ViaSet.Settings.DependencyFactory.Create(via, instance);
             }
 
             return ProxyFactory;
