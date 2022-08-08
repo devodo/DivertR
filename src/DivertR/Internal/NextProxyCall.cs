@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
@@ -12,8 +13,10 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(ICallInfo<TTarget> callInfo)
+        public object? Call(TTarget proxy, TTarget? root, MethodInfo method, CallArguments arguments)
         {
+            var callInfo = new CallInfo<TTarget>(proxy, root, method, arguments);
+            
             return _relay.CallNext(callInfo.Method, callInfo.Arguments);
         }
     }

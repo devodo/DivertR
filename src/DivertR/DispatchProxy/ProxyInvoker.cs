@@ -7,19 +7,19 @@ namespace DivertR.DispatchProxy
     {
         private readonly IProxyCall<TTarget> _proxyCall;
         private readonly TTarget _proxy;
+        private readonly TTarget? _root;
 
-        public ProxyInvoker(TTarget proxy, IProxyCall<TTarget> proxyCall)
+        public ProxyInvoker(IProxyCall<TTarget> proxyCall, TTarget proxy, TTarget? root)
         {
-            _proxy = proxy;
             _proxyCall = proxyCall;
+            _proxy = proxy;
+            _root = root;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Invoke(MethodInfo targetMethod, object[] args)
         {
-            var callInfo = CallInfoFactory.Create(_proxy, null, targetMethod, args);
-
-            return _proxyCall.Call(callInfo);
+            return _proxyCall.Call(_proxy, _root, targetMethod, args);
         }
     }
 }

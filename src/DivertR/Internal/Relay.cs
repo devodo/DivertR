@@ -10,11 +10,13 @@ namespace DivertR.Internal
     {
         private readonly AsyncLocal<ImmutableStack<RelayIndex<TTarget>>> _relayIndexStack = new AsyncLocal<ImmutableStack<RelayIndex<TTarget>>>();
         
+        private readonly ICallInvoker _callInvoker;
         private readonly Lazy<TTarget> _next;
         private readonly Lazy<TTarget> _root;
         
-        public Relay(IProxyFactory proxyFactory)
+        public Relay(IProxyFactory proxyFactory, ICallInvoker callInvoker)
         {
+            _callInvoker = callInvoker;
             _next = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new NextProxyCall<TTarget>(this)));
             _root = new Lazy<TTarget>(() => proxyFactory.CreateProxy(new RootProxyCall<TTarget>(this)));
         }
@@ -187,6 +189,23 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal object? CallRoot(TTarget? root, MethodInfo method, CallArguments arguments)
+        {
+            if (root == null)
+            {
+                throw new DiverterNullRootException("Root instance is null");
+            }
+
+            return _callInvoker.Invoke(root, method, arguments);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private object? CallRoot(ICallInfo<TTarget> callInfo)
+        {
+            return CallRoot(callInfo.Root, callInfo.Method, callInfo.Arguments.InternalArgs);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ImmutableStack<RelayIndex<TTarget>> GetRelayIndexStack()
         {
             var relayIndexStack = _relayIndexStack.Value;
@@ -208,18 +227,7 @@ namespace DivertR.Internal
                 throw new StrictNotSatisfiedException("Strict mode is enabled and the call did not match any redirects");
             }
         }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static object? CallRoot(ICallInfo<TTarget> callInfo)
-        {
-            if (callInfo.Root == null)
-            {
-                throw new DiverterNullRootException("Root instance is null");
-            }
 
-            return callInfo.Invoke(callInfo.Root);
-        }
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IRedirectCall<TTarget> CreateRedirectCall(ICallInfo<TTarget> callInfo)
         {

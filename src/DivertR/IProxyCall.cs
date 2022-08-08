@@ -1,7 +1,9 @@
-﻿namespace DivertR
+﻿using System.Reflection;
+
+namespace DivertR
 {
-    public interface IProxyCall<TTarget> where TTarget : class
+    public interface IProxyCall<in TTarget> where TTarget : class
     {
-        object? Call(ICallInfo<TTarget> callInfo);
+        object? Call(TTarget proxy, TTarget? root, MethodInfo method, CallArguments arguments);
     }
 }

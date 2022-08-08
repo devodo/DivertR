@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
@@ -6,18 +7,27 @@ namespace DivertR.Internal
         where TTarget : class
     {
         private readonly Relay<TTarget> _relay;
-        private readonly IRedirectPlan _redirectPlan;
+        private readonly IRedirectRepository _redirectRepository;
 
-        public ViaProxyCall(Relay<TTarget> relay, IRedirectPlan redirectPlan)
+        public ViaProxyCall(Relay<TTarget> relay, IRedirectRepository redirectRepository)
         {
             _relay = relay;
-            _redirectPlan = redirectPlan;
+            _redirectRepository = redirectRepository;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(ICallInfo<TTarget> callInfo)
+        public object? Call(TTarget proxy, TTarget? root, MethodInfo method, CallArguments arguments)
         {
-            return _relay.CallBegin(_redirectPlan, callInfo);
+            var redirectPlan = _redirectRepository.RedirectPlan;
+
+            if (redirectPlan == RedirectPlan.Empty)
+            {
+                return _relay.CallRoot(root, method, arguments);
+            }
+            
+            var callInfo = new CallInfo<TTarget>(proxy, root, method, arguments);
+            
+            return _relay.CallBegin(redirectPlan, callInfo);
         }
     }
 }

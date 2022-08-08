@@ -4,38 +4,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal static class MethodInfoExtensions
+    internal class LambdaExpressionCallInvoker : ICallInvoker
     {
-        private static readonly ConcurrentDictionary<MethodId, Func<object, object[], object?>> DelegateCache =
-            new ConcurrentDictionary<MethodId, Func<object, object[], object?>>();
+        private readonly ConcurrentDictionary<MethodInfo, Func<object, object[], object?>> _delegateCache =
+            new ConcurrentDictionary<MethodInfo, Func<object, object[], object?>>(new ReferenceEqualityComparer<MethodInfo>());
         
-        public static Func<object, object[], object?> ToDelegate<T>(this MethodInfo methodInfo)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Invoke<TTarget>(TTarget target, MethodInfo method, CallArguments arguments)
         {
-            return methodInfo.ToDelegate(typeof(T));
-        }
-
-        public static Func<object, object[], object?> ToDelegate(this MethodInfo methodInfo, Type targetType)
-        {
-            var methodId = new MethodId(targetType, methodInfo);
-            return DelegateCache.GetOrAdd(methodId, mId => mId.MethodInfo.ToDelegateInternal(mId.TargetType));
-        }
-        
-        public static Func<object[], object?> ToDelegate(this Delegate targetDelegate)
-        {
-            var methodInfo = targetDelegate.Method;
-            var targetType = targetDelegate.GetType();
-            var methodId = new MethodId(targetType, methodInfo);
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
             
-            var fastDelegate =
-                DelegateCache.GetOrAdd(methodId, mId => mId.MethodInfo.ToDelegateInternal(mId.TargetType, isDelegate: true));
+            var lambdaDelegate = CreateDelegate(typeof(TTarget), method);
 
-            return args => fastDelegate.Invoke(targetDelegate, args);
+            return lambdaDelegate.Invoke(target, arguments.InternalArgs);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Func<object, object[], object?> CreateDelegate(Type targetType, MethodInfo method)
+        {
+            return _delegateCache.GetOrAdd(method, m => ToDelegateInternal(method, targetType));
         }
 
-        private static Func<object, object[], object?> ToDelegateInternal(this MethodInfo methodInfo, Type targetType, bool isDelegate = false)
+        private static Func<object, object[], object?> ToDelegateInternal(MethodInfo methodInfo, Type targetType, bool isDelegate = false)
         {
             var argsParameter = Expression.Parameter(typeof(object[]), "arguments");
             var targetParameter = Expression.Parameter(typeof(object), "target");
@@ -132,40 +129,6 @@ namespace DivertR.Internal
             public List<ParameterExpression> Variables { get; } = new List<ParameterExpression>();
             public List<Expression> PreCall { get; } = new List<Expression>();
             public List<Expression> PostCall { get; } = new List<Expression>();
-        }
-
-        private readonly struct MethodId : IEquatable<MethodId>
-        {
-            public Type TargetType { get; }
-            public MethodInfo MethodInfo { get; }
-
-            public MethodId(Type targetType, MethodInfo methodInfo)
-            {
-                TargetType = targetType;
-                MethodInfo = methodInfo;
-            }
-
-            public bool Equals(MethodId other)
-            {
-                return ReferenceEquals(TargetType, other.TargetType) &&
-                       ReferenceEquals(MethodInfo, other.MethodInfo);
-            }
-
-            public override bool Equals(object obj)
-            {
-                return obj is MethodId other && Equals(other);
-            }
-
-            public override int GetHashCode()
-            {
-                unchecked
-                {
-                    var hash = 17 * 31 + TargetType.GetHashCode();
-                    hash = hash * 31 + MethodInfo.GetHashCode();
-                
-                    return hash;
-                }
-            }
         }
     }
 }
