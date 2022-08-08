@@ -16,7 +16,7 @@ namespace DivertR.UnitTests.Model
 
         public string Name { get; set; }
 
-        public object LastAction { get; set; }
+        public object? LastAction { get; set; }
 
         public virtual string NameVirtual
         {
@@ -45,12 +45,12 @@ namespace DivertR.UnitTests.Model
             return $"{Name}: {input}";
         }
 
-        public T1 EchoGeneric<T1>(T1 i1)
+        public T1? EchoGeneric<T1>(T1? i1)
         {
             return i1;
         }
 
-        public T1 EchoGenericAlt<T1>(T1 i1)
+        public T1 EchoGenericAlt<T1>(T1? i1)
         {
             throw new NotImplementedException();
         }

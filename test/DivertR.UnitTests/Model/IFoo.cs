@@ -5,7 +5,7 @@ namespace DivertR.UnitTests.Model
     public interface IFoo
     {
         string Name { get; set; }
-        public object LastAction { get; set; }
+        public object? LastAction { get; set; }
 
         Task<string> GetNameAsync();
         ValueTask<string> GetNameValueAsync();
@@ -13,8 +13,8 @@ namespace DivertR.UnitTests.Model
 
         string Echo(string input);
 
-        T1 EchoGeneric<T1>(T1 i1);
-        T1 EchoGenericAlt<T1>(T1 i1);
+        T1? EchoGeneric<T1>(T1? i1);
+        T1? EchoGenericAlt<T1>(T1? i1);
         (T1, T2) EchoGeneric<T1, T2>(T1 i1, T2 i2);
         (T1, T2, T3) EchoGeneric<T1, T2, T3>(T1 i1, T2 i2, T3 i3);
         (T1, T2, T3, T4) EchoGeneric<T1, T2, T3, T4>(T1 i1, T2 i2, T3 i3, T4 i4);

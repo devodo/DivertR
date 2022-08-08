@@ -31,7 +31,7 @@ namespace DivertR.Internal
         
         public IRedirect Build(Action redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            return Build(call => redirectDelegate.Invoke(), optionsAction);
+            return Build(_ => redirectDelegate.Invoke(), optionsAction);
         }
 
         public IRedirect Build(Action<IActionRedirectCall<TTarget>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)

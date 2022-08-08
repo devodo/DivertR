@@ -123,7 +123,7 @@ namespace DivertR
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <typeparam name="TReturn">The Expression return type</typeparam>
         /// <returns>The Redirect builder instance.</returns>
-        IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression);
+        IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn?>> constraintExpression);
         
         /// <summary>
         /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning void />.
@@ -139,6 +139,6 @@ namespace DivertR
         /// <param name="constraintExpression">The call constraint expression for the input value of the setter.</param>
         /// <typeparam name="TProperty">The member type of the property setter.</typeparam>
         /// <returns>The Redirect builder instance.</returns>
-        IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression);
+        IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty?>> constraintExpression);
     }
 }

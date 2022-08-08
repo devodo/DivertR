@@ -22,8 +22,8 @@ namespace DivertR.Benchmarks
             var methodInfo = GetType().GetTypeInfo().GetMethod(nameof(TestMethod), BindingFlags.NonPublic | BindingFlags.Instance);
             var args = new object[] { 1, 1 };
             
-            var methodInvoke = MethodInfoInvoke(methodInfo, args);
-            var fastInvoke = MethodFastInvoke(methodInfo, args);
+            var methodInvoke = MethodInfoInvoke(methodInfo!, args);
+            var fastInvoke = MethodFastInvoke(methodInfo!, args);
             
             PrintResult("DynamicInvoke", methodInvoke);
             PrintResult("FastInvoke", fastInvoke);

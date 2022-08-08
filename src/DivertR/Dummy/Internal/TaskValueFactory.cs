@@ -11,7 +11,7 @@ namespace DivertR.Dummy.Internal
 
         public Task CreateTaskOf(Type taskType, DummyValueFactory dummyValueFactory)
         {
-            var taskFactory = _taskFactories.GetOrAdd(taskType, type =>
+            var taskFactory = _taskFactories.GetOrAdd(taskType, _ =>
             {
                 var taskFactoryType = typeof(InternalTaskFactory<>).MakeGenericType(taskType.GenericTypeArguments);
                 return (IInternalTaskFactory) Activator.CreateInstance(taskFactoryType);
@@ -22,7 +22,7 @@ namespace DivertR.Dummy.Internal
         
         public object CreateValueTaskOf(Type taskType, DummyValueFactory dummyValueFactory)
         {
-            var taskFactory = _valueTaskFactories.GetOrAdd(taskType, type =>
+            var taskFactory = _valueTaskFactories.GetOrAdd(taskType, _ =>
             {
                 var taskFactoryType = typeof(InternalValueTaskFactory<>).MakeGenericType(taskType.GenericTypeArguments);
                 return (IInternalValueTaskFactory) Activator.CreateInstance(taskFactoryType);

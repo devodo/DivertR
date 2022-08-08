@@ -16,7 +16,7 @@ namespace DivertR.UnitTests.Model
             return EqualityComparer<T>.Default.Equals(Item, other.Item);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
@@ -27,7 +27,7 @@ namespace DivertR.UnitTests.Model
         public override int GetHashCode()
         {
             // ReSharper disable once NonReadonlyMemberInGetHashCode (Used for testing)
-            return EqualityComparer<T>.Default.GetHashCode(Item);
+            return EqualityComparer<T>.Default.GetHashCode(Item!);
         }
     }
 }

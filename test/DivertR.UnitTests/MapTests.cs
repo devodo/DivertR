@@ -180,7 +180,7 @@ namespace DivertR.UnitTests
                 .Map(async (call, args) => new
                 {
                     Input = args.input,
-                    Result = await call.Returned!.Value
+                    Result = await call.Returned!.Value!
                 });
 
             // ACT
@@ -195,8 +195,6 @@ namespace DivertR.UnitTests
             calls.Count.ShouldBe(inputs.Count);
 
             var count = 0;
-
-            count = 0;
             (await calls.Verify(async call =>
             {
                 (await call).Input.ShouldBe($"test{count}");
@@ -237,7 +235,7 @@ namespace DivertR.UnitTests
             (await calls.Verify(async call =>
             {
                 call.Input.ShouldBe($"test{count}");
-                (await call.Result).ShouldBe($"test{count++} diverted");
+                (await call.Result!).ShouldBe($"test{count++} diverted");
             })).Count.ShouldBe(inputs.Count);
         }
         
@@ -274,7 +272,7 @@ namespace DivertR.UnitTests
             (await calls.Verify(async call =>
             {
                 call.Input.ShouldBe($"test{count}");
-                (await call.Result).ShouldBe($"test{count++} diverted");
+                (await call.Result!).ShouldBe($"test{count++} diverted");
             })).Count.ShouldBe(inputs.Count);
         }
         
@@ -413,7 +411,7 @@ namespace DivertR.UnitTests
                 .Map(async call => new
                 {
                     Input = (string) call.Args[0],
-                    Result = await call.Returned!.Value
+                    Result = await call.Returned!.Value!
                 });
 
             // ACT

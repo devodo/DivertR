@@ -81,7 +81,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var original = new Foo("foo");
             var proxy = _via.Proxy(original);
-            IFoo originalReference = null;
+            IFoo? originalReference = null;
             _via
                 .To(x => x.GetNameAsync())
                 .Redirect(async call =>

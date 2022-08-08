@@ -19,8 +19,8 @@ namespace DivertR
         {
             var proxyCache = new ConcurrentDictionary<object, TReturn>(new ReferenceEqualityComparer<object>());
             var via = viaBuilder.Via.ViaSet.Via<TReturn>(name);
-
-            TReturn? RedirectDelegate(IFuncRedirectCall<TTarget, TReturn> call)
+            
+            TReturn? RedirectDelegate(IFuncRedirectCall<TTarget, TReturn?> call)
             {
                 var callReturn = call.CallNext();
 
@@ -32,7 +32,7 @@ namespace DivertR
                 return proxyCache.GetOrAdd(callReturn, x => via.Proxy(x));
             }
 
-            var redirect = viaBuilder.RedirectBuilder.Build(RedirectDelegate!, optionsAction);
+            var redirect = viaBuilder.RedirectBuilder.Build(RedirectDelegate, optionsAction);
             viaBuilder.Via.RedirectRepository.InsertRedirect(redirect);
 
             return via;

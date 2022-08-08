@@ -191,7 +191,7 @@ namespace DivertR.UnitTests
             var result = _proxy.EchoGeneric(Task.FromResult(input));
 
             // ASSERT
-            (await result).ShouldBe(input);
+            (await result!).ShouldBe(input);
             
             (await calls.Verify(async call =>
             {

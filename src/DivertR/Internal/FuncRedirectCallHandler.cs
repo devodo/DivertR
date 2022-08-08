@@ -6,10 +6,10 @@ namespace DivertR.Internal
 {
     internal class FuncRedirectCallHandler<TTarget, TReturn> : ICallHandler<TTarget> where TTarget : class
     {
-        private readonly Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> _redirectDelegate;
+        private readonly Func<IFuncRedirectCall<TTarget, TReturn>, TReturn?> _redirectDelegate;
 
         public FuncRedirectCallHandler(
-            Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> redirectDelegate)
+            Func<IFuncRedirectCall<TTarget, TReturn>, TReturn?> redirectDelegate)
         {
             _redirectDelegate = redirectDelegate;
         }
@@ -28,11 +28,11 @@ namespace DivertR.Internal
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         private readonly IValueTupleMapper _valueTupleMapper;
-        private readonly Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> _redirectDelegate;
+        private readonly Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn?> _redirectDelegate;
 
         public FuncRedirectCallHandler(
             IValueTupleMapper valueTupleMapper,
-            Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate)
+            Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn?> redirectDelegate)
         {
             _valueTupleMapper = valueTupleMapper;
             _redirectDelegate = redirectDelegate;
@@ -57,10 +57,10 @@ namespace DivertR.Internal
     
     internal class FuncRedirectCallHandler<TReturn> : ICallHandler
     {
-        private readonly Func<IFuncRedirectCall<TReturn>, TReturn> _redirectDelegate;
+        private readonly Func<IFuncRedirectCall<TReturn>, TReturn?> _redirectDelegate;
 
         public FuncRedirectCallHandler(
-            Func<IFuncRedirectCall<TReturn>, TReturn> redirectDelegate)
+            Func<IFuncRedirectCall<TReturn>, TReturn?> redirectDelegate)
         {
             _redirectDelegate = redirectDelegate;
         }
@@ -77,10 +77,10 @@ namespace DivertR.Internal
     internal class FuncArgsRedirectCallHandler<TTarget, TReturn> : ICallHandler<TTarget>
         where TTarget : class
     {
-        private readonly Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> _redirectDelegate;
+        private readonly Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn?> _redirectDelegate;
 
         public FuncArgsRedirectCallHandler(
-            Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> redirectDelegate)
+            Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn?> redirectDelegate)
         {
             _redirectDelegate = redirectDelegate;
         }
@@ -99,11 +99,11 @@ namespace DivertR.Internal
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         private readonly IValueTupleMapper _valueTupleMapper;
-        private readonly Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> _redirectDelegate;
+        private readonly Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn?> _redirectDelegate;
 
         public FuncArgsRedirectCallHandler(
             IValueTupleMapper valueTupleMapper,
-            Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate)
+            Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn?> redirectDelegate)
         {
             _valueTupleMapper = valueTupleMapper;
             _redirectDelegate = redirectDelegate;
@@ -128,10 +128,10 @@ namespace DivertR.Internal
     
     internal class FuncArgsRedirectCallHandler<TReturn> : ICallHandler
     {
-        private readonly Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> _redirectDelegate;
+        private readonly Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn?> _redirectDelegate;
 
         public FuncArgsRedirectCallHandler(
-            Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> redirectDelegate)
+            Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn?> redirectDelegate)
         {
             _redirectDelegate = redirectDelegate;
         }

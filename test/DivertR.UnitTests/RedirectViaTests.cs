@@ -121,7 +121,7 @@ namespace DivertR.UnitTests
             
             // ACT
             var results = new List<string>();
-            for (var i = 0; i < divertedList.Count; i++)
+            for (var i = 0; i < divertedList!.Count; i++)
             {
                 results.Add(divertedList[i]);
             }
@@ -152,8 +152,8 @@ namespace DivertR.UnitTests
             var numberProxy2 = _proxy.EchoGeneric<INumber>(new Number());
             
             // ACT
-            var result1 = numberProxy1.GetNumber(1);
-            var result2 = numberProxy2.GetNumber(1);
+            var result1 = numberProxy1!.GetNumber(1);
+            var result2 = numberProxy2!.GetNumber(1);
 
             // ASSERT
             result1.ShouldBe(11);

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -52,8 +51,7 @@ namespace DivertR.Record.Internal
             _callReturn = callReturn;
         }
         
-        [AllowNull]
-        public TReturn Value
+        public TReturn? Value
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
@@ -63,7 +61,7 @@ namespace DivertR.Record.Internal
                     throw new DiverterException($"ValueType {typeof(TReturn)} cannot be unboxed from null return value. The call probably did not return a value due to an exception being thrown.");
                 }
 
-                return (TReturn) _callReturn.Value!;
+                return (TReturn?) _callReturn.Value;
             }
         }
 

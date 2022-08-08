@@ -1,22 +1,17 @@
 ﻿using System;
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
 
 namespace DivertR
 {
     public interface IFuncRedirectCall<out TReturn> : IRedirectCall
     {
-        [return: MaybeNull]
-        new TReturn CallNext();
+        new TReturn? CallNext();
         
-        [return: MaybeNull]
-        new TReturn CallNext(CallArguments args);
+        new TReturn? CallNext(CallArguments args);
         
-        [return: MaybeNull]
-        new TReturn CallRoot();
+        new TReturn? CallRoot();
         
-        [return: MaybeNull]
-        new TReturn CallRoot(CallArguments args);
+        new TReturn? CallRoot(CallArguments args);
     }
     
     public interface IFuncRedirectCall<TTarget, out TReturn> : IRedirectCall<TTarget>, IFuncRedirectCall<TReturn> where TTarget : class

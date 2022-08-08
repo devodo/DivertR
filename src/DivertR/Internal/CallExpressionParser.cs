@@ -160,7 +160,7 @@ namespace DivertR.Internal
 
             return TypeMatchConstraintCache.GetOrAdd(argumentType, argType =>
             {
-                var lambdaType = typeof(TypeArgumentConstraint<>).MakeGenericType(argumentType);
+                var lambdaType = typeof(TypeArgumentConstraint<>).MakeGenericType(argType);
 
                 return (IArgumentConstraint) Activator.CreateInstance(lambdaType, ActivatorFlags, null, null, default);
             });

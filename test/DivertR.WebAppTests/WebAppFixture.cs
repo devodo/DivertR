@@ -33,7 +33,7 @@ namespace DivertR.WebAppTests
 
         public IServiceProvider Services => _webApplicationFactory.Services;
 
-        public IDiverter InitDiverter(ITestOutputHelper output = null)
+        public IDiverter InitDiverter(ITestOutputHelper? output = null)
         {
             _diverter.ResetAll();
 

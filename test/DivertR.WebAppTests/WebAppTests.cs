@@ -36,7 +36,7 @@ namespace DivertR.WebAppTests
             _diverter
                 .Via<IFooRepository>()
                 .To(x => x.GetFooAsync(foo.Id))
-                .Redirect(Task.FromResult(foo));
+                .Redirect(Task.FromResult(foo)!);
 
             // ACT
             var response = await _fooClient.GetFooAsync(foo.Id);
@@ -59,7 +59,7 @@ namespace DivertR.WebAppTests
             var fooRepository = _services.GetRequiredService<IFooRepository>();
             (await fooRepository.TryInsertFooAsync(foo)).ShouldBeTrue();
 
-            (Guid fooId, Foo foo) fooRepoCall = default;
+            (Guid fooId, Foo? foo) fooRepoCall = default;
 
             _diverter
                 .Via<IFooRepository>()
@@ -93,7 +93,7 @@ namespace DivertR.WebAppTests
             var getFooCalls = _diverter
                 .Via<IFooRepository>()
                 .To(x => x.GetFooAsync(Is<Guid>.Any))
-                .Redirect<(Guid fooId, __)>(Task.FromResult<Foo>(null))
+                .Redirect<(Guid fooId, __)>(Task.FromResult<Foo?>(null))
                 .Record();
             
             // ACT
@@ -106,7 +106,7 @@ namespace DivertR.WebAppTests
             (await getFooCalls.Verify(async (call, args) =>
             {
                 args.fooId.ShouldBe(foo.Id);
-                (await call.Returned!.Value).ShouldBeNull();
+                (await call.Returned!.Value!).ShouldBeNull();
             })).Count.ShouldBe(1);
         }
 
@@ -119,7 +119,7 @@ namespace DivertR.WebAppTests
                 Name = Guid.NewGuid().ToString()
             };
 
-            Foo insertedFoo = null;
+            Foo? insertedFoo = null;
             bool? insertResult = null;
 
             _diverter
@@ -138,7 +138,7 @@ namespace DivertR.WebAppTests
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
-            response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{insertedFoo.Id}");
+            response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{insertedFoo!.Id}");
             insertedFoo.Name.ShouldBe(createFooRequest.Name);
             insertResult.ShouldBe(true);
             response.Content.ShouldBeEquivalentTo(insertedFoo);
@@ -166,7 +166,7 @@ namespace DivertR.WebAppTests
             {
                 args.foo.Name.ShouldBe(createFooRequest.Name);
                 call.Returned.ShouldNotBeNull();
-                (await call.Returned.Value).ShouldBe(true);
+                (await call.Returned!.Value!).ShouldBe(true);
             })).Count.ShouldBe(1);
         }
         
@@ -196,7 +196,7 @@ namespace DivertR.WebAppTests
             (await insertCalls.Verify(async call =>
             {
                 call.Foo.Name.ShouldBe(createFooRequest.Name);
-                (await call.Result!.Value).ShouldBe(true);
+                (await call.Result!.Value!).ShouldBe(true);
             })).Count.ShouldBe(1);
         }
         
