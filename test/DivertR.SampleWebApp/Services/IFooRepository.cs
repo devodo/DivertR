@@ -6,7 +6,7 @@ namespace DivertR.SampleWebApp.Services
 {
     public interface IFooRepository
     {
-        Task<Foo> GetFooAsync(Guid id);
+        Task<Foo?> GetFooAsync(Guid id);
         Task<bool> TryInsertFooAsync(Foo foo);
     }
 }

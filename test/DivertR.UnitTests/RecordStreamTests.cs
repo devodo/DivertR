@@ -96,7 +96,7 @@ namespace DivertR.UnitTests
                 .Redirect(() => throw new Exception("test"));
 
             // ACT
-            Exception caughtException = null;
+            Exception? caughtException = null;
             try
             {
                 _via.Proxy().Echo("test");
@@ -130,7 +130,7 @@ namespace DivertR.UnitTests
                 });
 
             // ACT
-            Exception caughtException = null;
+            Exception? caughtException = null;
             try
             {
                 await _via.Proxy().EchoAsync("test");
@@ -145,10 +145,10 @@ namespace DivertR.UnitTests
             caughtException.ShouldNotBeNull();
             call.Returned!.Exception.ShouldBeSameAs(caughtException);
             
-            Exception returnedException = null;
+            Exception? returnedException = null;
             try
             {
-                await call.Returned!.Value;
+                await call.Returned.Value!;
             }
             catch (Exception ex)
             {
@@ -202,7 +202,7 @@ namespace DivertR.UnitTests
                 .Verify<(string input, __)>(call =>
                 {
                     call.Args.input.ShouldBe("test");
-                    call.Returned!.Value.Result.ShouldBe(result);
+                    call.Returned!.Value!.Result.ShouldBe(result);
                 }).Count.ShouldBe(1);
         }
         
@@ -392,7 +392,7 @@ namespace DivertR.UnitTests
             var calls = mappedCalls.Select(async (call, i) =>
             {
                 call.Input.ShouldBe(inputs[i]);
-                (await call.Result!.Value).ShouldBe((await outputs[i]));
+                (await call.Result!.Value!).ShouldBe((await outputs[i]));
                 return call;
             }).ToList();
             

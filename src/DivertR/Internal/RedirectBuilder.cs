@@ -33,12 +33,12 @@ namespace DivertR.Internal
 
         public IRedirect Build(object? instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            return Build(call => instance, optionsAction);
+            return Build(_ => instance, optionsAction);
         }
 
         public IRedirect Build(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            return Build(call => redirectDelegate.Invoke(), optionsAction);
+            return Build(_ => redirectDelegate.Invoke(), optionsAction);
         }
 
         public IRedirect Build(Func<IRedirectCall<TTarget>, object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
@@ -109,12 +109,12 @@ namespace DivertR.Internal
 
         public IRedirect Build(object? instance, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            return Build(call => instance, optionsAction);
+            return Build(_ => instance, optionsAction);
         }
 
         public IRedirect Build(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            return Build(call => redirectDelegate.Invoke(), optionsAction);
+            return Build(_ => redirectDelegate.Invoke(), optionsAction);
         }
 
         public IRedirect Build(Func<IRedirectCall, object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)

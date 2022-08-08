@@ -11,7 +11,7 @@ namespace DivertR
             return new Internal.RedirectBuilder<TTarget>(callConstraint);
         }
 
-        public static IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
+        public static IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn?>> constraintExpression)
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
@@ -31,7 +31,7 @@ namespace DivertR
             return new ActionRedirectBuilder<TTarget>(callValidator, callConstraint.Of<TTarget>());
         }
 
-        public static IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression)
+        public static IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty?>> constraintExpression)
         {
             if (memberExpression.Body == null) throw new ArgumentNullException(nameof(memberExpression));
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));

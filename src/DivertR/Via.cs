@@ -142,7 +142,7 @@ namespace DivertR
             return new ViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.To(callConstraint));
         }
 
-        public IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
+        public IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn?>> constraintExpression)
         {
             return new FuncViaBuilder<TTarget, TReturn>(this, RedirectBuilder<TTarget>.To(constraintExpression));
         }
@@ -152,7 +152,7 @@ namespace DivertR
             return new ActionViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.To(constraintExpression));
         }
         
-        public IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>> constraintExpression)
+        public IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty?>> constraintExpression)
         {
             return new ActionViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.ToSet(memberExpression, constraintExpression));
         }

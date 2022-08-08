@@ -16,13 +16,13 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.x
+        dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal -f net5.0
+      run: dotnet test --no-build --verbosity normal -f net6.0
     - name: Pack DivertR
       run: dotnet pack --configuration Release --output ./artifacts ./src/DivertR/DivertR.csproj
     - name: Nuget Push

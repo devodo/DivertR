@@ -2,10 +2,11 @@
   
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <TargetFramework>net5.0</TargetFramework>
-    <LangVersion>9</LangVersion>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>10</LangVersion>
     <AssemblyName>DivertR.WebAppTests</AssemblyName>
     <RootNamespace>DivertR.WebAppTests</RootNamespace>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

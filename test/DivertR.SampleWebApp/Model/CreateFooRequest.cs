@@ -2,6 +2,6 @@
 {
     public class CreateFooRequest
     {
-        public string Name { get; init; }
+        public string? Name { get; init; }
     }
 }

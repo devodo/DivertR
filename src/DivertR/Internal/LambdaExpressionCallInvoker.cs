@@ -85,7 +85,7 @@ namespace DivertR.Internal
 
             Expression callExpr = !isDelegate
                 ? Expression.Call(targetExpr, methodInfo, parameterExpressions)
-                : (Expression) Expression.Invoke(targetExpr, parameterExpressions);
+                : Expression.Invoke(targetExpr, parameterExpressions);
 
             Expression callCastExpr;
             if (methodInfo.ReturnType != typeof(void))

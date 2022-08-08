@@ -19,11 +19,11 @@ namespace DivertR.SampleWebApp.Services
         
         private static readonly ConcurrentDictionary<Guid, Foo> FooStore = new();
         
-        public Task<Foo> GetFooAsync(Guid id)
+        public Task<Foo?> GetFooAsync(Guid id)
         {
             return FooStore.TryGetValue(id, out var foo) 
-                ? Task.FromResult(foo)
-                : Task.FromResult((Foo) null);
+                ? Task.FromResult((Foo?) foo)
+                : Task.FromResult<Foo?>(null);
         }
 
         public async Task<bool> TryInsertFooAsync(Foo foo)
