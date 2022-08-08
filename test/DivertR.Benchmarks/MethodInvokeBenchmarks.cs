@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using DivertR.Internal;
-using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
