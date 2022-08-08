@@ -10,8 +10,8 @@ namespace DivertR.Internal
 {
     internal class LambdaExpressionCallInvoker : ICallInvoker
     {
-        private readonly ConcurrentDictionary<MethodId, Func<object, object[], object?>> _delegateCache =
-            new ConcurrentDictionary<MethodId, Func<object, object[], object?>>();
+        private readonly ConcurrentDictionary<MethodInfo, Func<object, object[], object?>> _delegateCache =
+            new ConcurrentDictionary<MethodInfo, Func<object, object[], object?>>(new ReferenceEqualityComparer<MethodInfo>());
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Invoke<TTarget>(TTarget target, MethodInfo method, CallArguments arguments)
@@ -27,11 +27,9 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Func<object, object[], object?> CreateDelegate(Type targetType, MethodInfo method)
+        private Func<object, object[], object?> CreateDelegate(Type targetType, MethodInfo method)
         {
-            var methodId = new MethodId(targetType, method);
-            
-            return _delegateCache.GetOrAdd(methodId, mId => ToDelegateInternal(mId.MethodInfo, mId.TargetType));
+            return _delegateCache.GetOrAdd(method, m => ToDelegateInternal(method, targetType));
         }
 
         private static Func<object, object[], object?> ToDelegateInternal(MethodInfo methodInfo, Type targetType, bool isDelegate = false)
@@ -131,40 +129,6 @@ namespace DivertR.Internal
             public List<ParameterExpression> Variables { get; } = new List<ParameterExpression>();
             public List<Expression> PreCall { get; } = new List<Expression>();
             public List<Expression> PostCall { get; } = new List<Expression>();
-        }
-        
-        private readonly struct MethodId : IEquatable<MethodId>
-        {
-            public Type TargetType { get; }
-            public MethodInfo MethodInfo { get; }
-
-            public MethodId(Type targetType, MethodInfo methodInfo)
-            {
-                TargetType = targetType;
-                MethodInfo = methodInfo;
-            }
-
-            public bool Equals(MethodId other)
-            {
-                return ReferenceEquals(TargetType, other.TargetType) &&
-                       ReferenceEquals(MethodInfo, other.MethodInfo);
-            }
-
-            public override bool Equals(object obj)
-            {
-                return obj is MethodId other && Equals(other);
-            }
-
-            public override int GetHashCode()
-            {
-                unchecked
-                {
-                    var hash = 17 * 31 + TargetType.GetHashCode();
-                    hash = hash * 31 + MethodInfo.GetHashCode();
-                
-                    return hash;
-                }
-            }
         }
     }
 }

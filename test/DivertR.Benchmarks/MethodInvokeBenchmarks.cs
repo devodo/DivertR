@@ -9,8 +9,7 @@ namespace DivertR.Benchmarks
 {
     public class MethodInvokeBenchmarks
     {
-        private const int Iterations = 1000;
-        private const int SpeedupFactor = 2;
+        private const int Iterations = 100000;
         private readonly ITestOutputHelper _output;
 
         public MethodInvokeBenchmarks(ITestOutputHelper output)
@@ -30,9 +29,6 @@ namespace DivertR.Benchmarks
             PrintResult("DynamicInvoke", methodInvoke);
             PrintResult("FastInvoke", fastInvoke);
             _output.WriteLine($"Invoke speedup: {(double) methodInvoke.Iterations.ElapsedTicks / fastInvoke.Iterations.ElapsedTicks}");
-            
-            fastInvoke.Initial.ElapsedTicks.ShouldBeGreaterThan(methodInvoke.Initial.ElapsedTicks * SpeedupFactor);
-            fastInvoke.Iterations.ElapsedTicks.ShouldBeLessThan(methodInvoke.Iterations.ElapsedTicks / SpeedupFactor);
         }
         
         private int TestMethod(int a, int b)
@@ -66,14 +62,13 @@ namespace DivertR.Benchmarks
         {
             var sw1 = Stopwatch.StartNew();
             var callInvoker = new LambdaExpressionCallInvoker();
-            var lambdaDelegate = callInvoker.CreateDelegate(this.GetType(), methodInfo);
-            lambdaDelegate.Invoke(this, args);
+            callInvoker.Invoke(this, methodInfo, args);
             sw1.Stop();
 
             var sw2 = Stopwatch.StartNew();
             for (var i = 0; i < Iterations; i++)
             {
-                lambdaDelegate.Invoke(this, args);
+                callInvoker.Invoke(this, methodInfo, args);
             }
             
             sw2.Stop();
