@@ -78,37 +78,6 @@ namespace DivertR.UnitTests
             // ASSERT
             name.ShouldBe(redirectMessage);
         }
-        
-        [Fact]
-        public void GivenFuncRedirect_ShouldRedirect()
-        {
-            // ARRANGE
-            _via
-                .To(x => x.Echo(Is<string>.Any))
-                .Redirect(new Func<string, string>(input => $"func {input}"));
-
-            // ACT
-            var result = _via.Proxy().Echo("hello");
-
-            // ASSERT
-            result.ShouldBe("func hello");
-        }
-        
-        [Fact]
-        public void GivenActionRedirect_ShouldRedirect()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("foo"));
-            _via
-                .ToSet(x => x.Name, () => Is<string>.Any)
-                .Redirect(new Action<string>(input => _via.Relay.Root.Name = $"action {input}"));
-
-            // ACT
-            proxy.Name = "hello";
-
-            // ASSERT
-            proxy.Name.ShouldBe("action hello");
-        }
 
         [Fact]
         public void GivenStrictModeWithNoRedirect_ShouldThrowException()

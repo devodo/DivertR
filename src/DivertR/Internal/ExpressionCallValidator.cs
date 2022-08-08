@@ -41,42 +41,6 @@ namespace DivertR.Internal
                 $"ValueTuple ({valueTupleArguments}) arguments invalid for call to {GetMethodParameterSignature()}" +
                 $"{Environment.NewLine}{details}");
         }
-        
-        public void Validate(Delegate redirectDelegate)
-        {
-            var returnType = redirectDelegate.Method.ReturnType;
-            
-            if (!ReturnTypeValid(returnType))
-            {
-                var redirectReturnName = _method.ReturnType.Name;
-                var returnTypeName = redirectDelegate.Method.ReturnType.Name;
-
-                if (returnTypeName == redirectReturnName)
-                {
-                    returnTypeName = redirectDelegate.Method.ReturnType.FullName;
-                    redirectReturnName = _method.ReturnType.FullName;
-                }
-                
-                throw new DiverterValidationException($"Delegate return type ({returnTypeName}) invalid for redirect call with return type ({redirectReturnName})");
-            }
-            
-            var delegateParameterTypes = redirectDelegate.Method.GetParameters()
-                .Select(x => (x.ParameterType, (ParameterInfo?) x))
-                .ToArray();
-            
-            var validations = ValidateArgumentTypes(delegateParameterTypes, true).ToArray();
-
-            if (validations.All(x => x.isValid))
-            {
-                return;
-            }
-            
-            var details = $"{string.Join(Environment.NewLine, validations.Select(x => x.message))}";
-
-            throw new DiverterValidationException(
-                $"Delegate {redirectDelegate.Method} parameters invalid for call to {GetMethodParameterSignature()}" +
-                $"{Environment.NewLine}{details}");
-        }
 
         public ICallConstraint CreateCallConstraint()
         {
@@ -96,16 +60,6 @@ namespace DivertR.Internal
             }
             
             return $"{_method.Name}{genericArguments}({methodParameters})";
-        }
-
-        private bool ReturnTypeValid(Type returnType)
-        {
-            if (ReferenceEquals(returnType, _method.ReturnType))
-            {
-                return true;
-            }
-            
-            return _method.ReturnType.IsAssignableFrom(returnType);
         }
 
         private IEnumerable<(bool isValid, string? message)> ValidateArgumentTypes((Type type, ParameterInfo? parameter)[] argumentTypes, bool isStrict)

@@ -6,16 +6,20 @@ using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
-    internal class ActionRedirectBuilder<TTarget> : DelegateRedirectBuilder<TTarget>, IActionRedirectBuilder<TTarget> where TTarget : class
+    internal class ActionRedirectBuilder<TTarget> : RedirectBuilder<TTarget>, IActionRedirectBuilder<TTarget> where TTarget : class
     {
+        protected readonly ICallValidator CallValidator;
+
         public ActionRedirectBuilder(ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
-            : base(callValidator, callConstraint)
+            : base(callConstraint)
         {
+            CallValidator = callValidator;
         }
         
         protected ActionRedirectBuilder(ICallValidator callValidator, ConcurrentBag<ICallConstraint<TTarget>> callConstraints)
-            : base(callValidator, callConstraints)
+            : base(callConstraints)
         {
+            CallValidator = callValidator;
         }
         
         public new IActionRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint)

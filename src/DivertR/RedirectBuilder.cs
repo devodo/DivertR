@@ -62,7 +62,7 @@ namespace DivertR
             var callValidator = CallExpressionParser.FromExpression(constraintExpression.Body);
             var callConstraint = callValidator.CreateCallConstraint();
             
-            return new FuncRedirectBuilder<TReturn>(callValidator, callConstraint);
+            return new FuncRedirectBuilder<TReturn>(callConstraint);
         }
     }
 }
