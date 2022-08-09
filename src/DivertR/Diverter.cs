@@ -29,7 +29,7 @@ namespace DivertR
             ViaSet = viaSet;
         }
 
-        public IDiverter Register<TTarget>(string? name = null) where TTarget : class
+        public IDiverter Register<TTarget>(string? name = null) where TTarget : class?
         {
             var via = ViaSet.Via<TTarget>(name);
 
@@ -72,7 +72,7 @@ namespace DivertR
                 .Select(x => x.Value);
         }
         
-        public IVia<TTarget> Via<TTarget>(string? name = null) where TTarget : class
+        public IVia<TTarget> Via<TTarget>(string? name = null) where TTarget : class?
         {
             return (IVia<TTarget>) Via(ViaId.From<TTarget>(name));
         }

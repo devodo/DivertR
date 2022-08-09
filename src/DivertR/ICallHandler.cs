@@ -8,7 +8,7 @@ namespace DivertR
         object? Handle(IRedirectCall call);
     }
     
-    public interface ICallHandler<TTarget> where TTarget : class
+    public interface ICallHandler<TTarget> where TTarget : class?
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         object? Handle(IRedirectCall<TTarget> call);

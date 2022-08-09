@@ -4,14 +4,14 @@ using DivertR.Internal;
 
 namespace DivertR
 {
-    public static class RedirectBuilder<TTarget> where TTarget : class
+    public static class RedirectBuilder<TTarget> where TTarget : class?
     {
         public static IRedirectBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null)
         {
             return new Internal.RedirectBuilder<TTarget>(callConstraint);
         }
 
-        public static IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn?>> constraintExpression)
+        public static IFuncRedirectBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 

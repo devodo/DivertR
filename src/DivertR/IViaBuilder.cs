@@ -3,7 +3,7 @@ using DivertR.Record;
 
 namespace DivertR
 {
-    public interface IViaBuilder<TTarget> where TTarget : class
+    public interface IViaBuilder<TTarget> where TTarget : class?
     {
         IVia<TTarget> Via { get; }
         IRedirectBuilder<TTarget> RedirectBuilder { get; }

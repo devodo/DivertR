@@ -8,7 +8,7 @@ using DivertR.Internal;
 namespace DivertR.Record.Internal
 {
     internal class FuncCallStream<TTarget, TReturn> : CallStream<IFuncRecordedCall<TTarget, TReturn>>, IFuncCallStream<TTarget, TReturn>
-        where TTarget : class
+        where TTarget : class?
     {
         private readonly ICallValidator _callValidator;
 
@@ -74,7 +74,7 @@ namespace DivertR.Record.Internal
     }
         
     internal class FuncCallStream<TTarget, TReturn, TArgs> : CallStream<IFuncRecordedCall<TTarget, TReturn, TArgs>>, IFuncCallStream<TTarget, TReturn, TArgs>
-        where TTarget : class
+        where TTarget : class?
     {
         private readonly ICallValidator _callValidator;
 

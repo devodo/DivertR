@@ -29,7 +29,7 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Func<object, object[], object?> CreateDelegate(Type targetType, MethodInfo method)
         {
-            return _delegateCache.GetOrAdd(method, m => ToDelegateInternal(method, targetType));
+            return _delegateCache.GetOrAdd(method, _ => ToDelegateInternal(method, targetType));
         }
 
         private static Func<object, object[], object?> ToDelegateInternal(MethodInfo methodInfo, Type targetType, bool isDelegate = false)

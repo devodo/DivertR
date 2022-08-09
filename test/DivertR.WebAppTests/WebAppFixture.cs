@@ -13,10 +13,10 @@ namespace DivertR.WebAppTests
 {
     public class WebAppFixture
     {
-        private readonly IDiverter _diverter = new Diverter().Register(new[]
-        {
-            typeof(ILoggerFactory), typeof(IFooRepository), typeof(IFooPublisher)
-        });
+        private readonly IDiverter _diverter = new Diverter()
+            .Register<ILoggerFactory>()
+            .Register<IFooRepository>()
+            .Register<IFooIdGenerator>();
 
         private readonly WebApplicationFactory<Startup> _webApplicationFactory;
         

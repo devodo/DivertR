@@ -11,12 +11,12 @@ namespace DivertR.SampleWebApp.Controllers
     public class FooController : ControllerBase
     {
         private readonly IFooRepository _fooRepository;
-        private readonly IFooPublisher _fooPublisher;
+        private readonly IFooIdGenerator _fooIdGenerator;
 
-        public FooController(IFooRepository fooRepository, IFooPublisher fooPublisher)
+        public FooController(IFooRepository fooRepository, IFooIdGenerator fooIdGenerator)
         {
             _fooRepository = fooRepository ?? throw new ArgumentNullException(nameof(fooRepository));
-            _fooPublisher = fooPublisher ?? throw new ArgumentNullException(nameof(fooPublisher));
+            _fooIdGenerator = fooIdGenerator ?? throw new ArgumentNullException(nameof(fooIdGenerator));
         }
         
         [HttpGet("{id:guid}")]
@@ -37,7 +37,7 @@ namespace DivertR.SampleWebApp.Controllers
         {
             var foo = new Foo
             {
-                Id = Guid.NewGuid(),
+                Id = _fooIdGenerator.Create(),
                 Name = request.Name
             };
             
@@ -48,9 +48,6 @@ namespace DivertR.SampleWebApp.Controllers
                 return UnprocessableEntity();
             }
 
-            await _fooPublisher.PublishAsync(
-                new FooEvent { EventId = Guid.NewGuid(), EventType = FooEventType.Created, Foo = foo });
-            
             return CreatedAtAction(nameof(GetById), new { id = foo.Id }, foo);
         }
     }

@@ -7,7 +7,7 @@ using DivertR.Internal;
 
 namespace DivertR.Record.Internal
 {
-    internal class RecordStream<TTarget> : IRecordStream<TTarget> where TTarget : class
+    internal class RecordStream<TTarget> : IRecordStream<TTarget> where TTarget : class?
     {
         private readonly IReadOnlyCollection<RecordedCall<TTarget>> _recordedCalls;
 

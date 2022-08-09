@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Record.Internal
 {
-    internal class RecordCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
+    internal class RecordCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class?
     {
         private readonly ConcurrentQueue<RecordedCall<TTarget>> _recordedCalls = new ConcurrentQueue<RecordedCall<TTarget>>();
 

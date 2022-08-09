@@ -1,6 +1,6 @@
 ﻿namespace DivertR.Record.Internal
 {
-    public class ActionRecordRedirect<TTarget> : IActionRecordRedirect<TTarget> where TTarget : class
+    public class ActionRecordRedirect<TTarget> : IActionRecordRedirect<TTarget> where TTarget : class?
     {
         public IRedirect Redirect { get; }
         public IActionCallStream<TTarget> CallStream { get; }
@@ -12,7 +12,7 @@
         }
     }
 
-    public class ActionRecordRedirect<TTarget, TArgs> : IActionRecordRedirect<TTarget, TArgs> where TTarget : class
+    public class ActionRecordRedirect<TTarget, TArgs> : IActionRecordRedirect<TTarget, TArgs> where TTarget : class?
     {
         public IRedirect Redirect { get; }
         public IActionCallStream<TTarget, TArgs> CallStream { get; }

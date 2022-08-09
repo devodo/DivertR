@@ -3,7 +3,7 @@ using DivertR.Record;
 
 namespace DivertR.Internal
 {
-    internal class ViaBuilder<TTarget> : IViaBuilder<TTarget> where TTarget : class
+    internal class ViaBuilder<TTarget> : IViaBuilder<TTarget> where TTarget : class?
     {
         public ViaBuilder(IVia<TTarget> via, IRedirectBuilder<TTarget> redirectBuilder)
         {

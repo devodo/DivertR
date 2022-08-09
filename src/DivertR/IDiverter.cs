@@ -19,7 +19,7 @@ namespace DivertR
         /// <param name="name">Optional Via group name.</param>
         /// <typeparam name="TTarget">The Via type.</typeparam>
         /// <returns>The current <see cref="IDiverter"/> instance.</returns>
-        IDiverter Register<TTarget>(string? name = null) where TTarget : class;
+        IDiverter Register<TTarget>(string? name = null) where TTarget : class?;
         
         /// <summary>
         /// Register an <see cref="IVia"/> for a given type.
@@ -51,7 +51,7 @@ namespace DivertR
         /// <typeparam name="TTarget">The Via type.</typeparam>
         /// <returns>The registered <see cref="IVia{TTarget}" /> instance.</returns>
         /// <exception cref="DiverterException">If the <see cref="IVia{TTarget}" /> has not been registered.</exception>
-        IVia<TTarget> Via<TTarget>(string? name = null) where TTarget : class;
+        IVia<TTarget> Via<TTarget>(string? name = null) where TTarget : class?;
         
         /// <summary>
         /// Retrieve a registered <see cref="IVia" /> instance.

@@ -16,7 +16,7 @@ namespace DivertR
 
         public DiverterSettings Settings { get; }
 
-        public IVia<TTarget> Via<TTarget>(string? name = null) where TTarget : class
+        public IVia<TTarget> Via<TTarget>(string? name = null) where TTarget : class?
         {
             var viaId = ViaId.From<TTarget>(name);
             var viaGroup = GetViaGroup(viaId.Name);

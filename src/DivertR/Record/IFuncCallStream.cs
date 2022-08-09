@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace DivertR.Record
 {
     public interface IFuncCallStream<TTarget, TReturn> : ICallStream<IFuncRecordedCall<TTarget, TReturn>>
-        where TTarget : class
+        where TTarget : class?
     {
         IFuncCallStream<TTarget, TReturn, TArgs> Args<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
@@ -22,7 +22,7 @@ namespace DivertR.Record
     }
     
     public interface IFuncCallStream<TTarget, TReturn, TArgs> : ICallStream<IFuncRecordedCall<TTarget, TReturn, TArgs>>
-        where TTarget : class
+        where TTarget : class?
     {
         IFuncCallStream<TTarget, TReturn, TNewArgs> Args<TNewArgs>() where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         

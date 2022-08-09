@@ -16,7 +16,7 @@ namespace DivertR
         object? CallRoot(CallArguments args);
     }
     
-    public interface IRedirectCall<TTarget> : IRedirectCall where TTarget : class
+    public interface IRedirectCall<TTarget> : IRedirectCall where TTarget : class?
     {
         new ICallInfo<TTarget> CallInfo { get; }
         new IRelay<TTarget> Relay { get; }

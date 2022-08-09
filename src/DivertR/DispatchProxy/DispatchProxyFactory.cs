@@ -2,7 +2,7 @@
 {
     public class DispatchProxyFactory : IProxyFactory
     {
-        public TTarget CreateProxy<TTarget>(IProxyCall<TTarget> proxyCall, TTarget? root = null) where TTarget : class
+        public TTarget CreateProxy<TTarget>(IProxyCall<TTarget> proxyCall, TTarget? root = null) where TTarget : class?
         {
             ValidateProxyTarget<TTarget>();
             

@@ -8,7 +8,7 @@ namespace DivertR.DispatchProxy
     {
         private IProxyInvoker _invoker = null!;
 
-        public static TTarget Create<TTarget>(Func<TTarget, IProxyInvoker> invokerFactory) where TTarget : class
+        public static TTarget Create<TTarget>(Func<TTarget, IProxyInvoker> invokerFactory) where TTarget : class?
         {
             object proxy = Create<TTarget, DiverterDispatchProxy>()!;
             ((DiverterDispatchProxy) proxy)._invoker = invokerFactory.Invoke((TTarget) proxy);

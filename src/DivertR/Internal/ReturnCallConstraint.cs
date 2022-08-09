@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class ReturnCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class
+    internal class ReturnCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class?
     {
         private readonly Type _returnType;
         private readonly bool _matchSubType;

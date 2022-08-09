@@ -6,7 +6,7 @@ using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
-    internal class ActionRedirectBuilder<TTarget> : RedirectBuilder<TTarget>, IActionRedirectBuilder<TTarget> where TTarget : class
+    internal class ActionRedirectBuilder<TTarget> : RedirectBuilder<TTarget>, IActionRedirectBuilder<TTarget> where TTarget : class?
     {
         protected readonly ICallValidator CallValidator;
 
@@ -73,7 +73,7 @@ namespace DivertR.Internal
     }
 
     internal class ActionRedirectBuilder<TTarget, TArgs> : ActionRedirectBuilder<TTarget>, IActionRedirectBuilder<TTarget, TArgs>
-        where TTarget : class
+        where TTarget : class?
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         private readonly IValueTupleMapper _valueTupleMapper;

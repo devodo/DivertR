@@ -49,7 +49,7 @@ namespace DivertR.Record.Internal
         }
     }
     
-    internal class RecordedCall<TTarget> : RecordedCall, IRecordedCall<TTarget> where TTarget : class
+    internal class RecordedCall<TTarget> : RecordedCall, IRecordedCall<TTarget> where TTarget : class?
     {
         public RecordedCall(ICallInfo<TTarget> callInfo) : base(callInfo)
         {
@@ -59,7 +59,7 @@ namespace DivertR.Record.Internal
         public new ICallInfo<TTarget> CallInfo { get; }
     }
 
-    internal class RecordedCallInternal<TTarget> : IRecordedCall<TTarget> where TTarget : class
+    internal class RecordedCallInternal<TTarget> : IRecordedCall<TTarget> where TTarget : class?
     {
         private readonly IRecordedCall<TTarget> _recordedCall;
 
@@ -76,7 +76,7 @@ namespace DivertR.Record.Internal
     }
     
     internal class RecordedCall<TTarget, TArgs> : RecordedCallInternal<TTarget>, IRecordedCall<TTarget, TArgs>
-        where TTarget : class
+        where TTarget : class?
     {
         public RecordedCall(IRecordedCall<TTarget> recordedCall, TArgs args) : base(recordedCall)
         {

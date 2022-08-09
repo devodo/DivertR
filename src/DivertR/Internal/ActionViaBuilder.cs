@@ -4,7 +4,7 @@ using DivertR.Record;
 
 namespace DivertR.Internal
 {
-    internal class ActionViaBuilder<TTarget> : ViaBuilder<TTarget>, IActionViaBuilder<TTarget> where TTarget : class
+    internal class ActionViaBuilder<TTarget> : ViaBuilder<TTarget>, IActionViaBuilder<TTarget> where TTarget : class?
     {
         public ActionViaBuilder(IVia<TTarget> via, IActionRedirectBuilder<TTarget> redirectBuilder)
             : base(via, redirectBuilder)
@@ -94,7 +94,7 @@ namespace DivertR.Internal
     }
 
     internal class ActionViaBuilder<TTarget, TArgs> : ActionViaBuilder<TTarget>, IActionViaBuilder<TTarget, TArgs>
-        where TTarget : class
+        where TTarget : class?
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         public ActionViaBuilder(IVia<TTarget> via, IActionRedirectBuilder<TTarget, TArgs> redirectBuilder)

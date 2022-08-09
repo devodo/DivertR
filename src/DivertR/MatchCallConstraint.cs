@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
-    public class MatchCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class
+    public class MatchCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class?
     {
         private readonly Func<ICallInfo<TTarget>, bool> _matchFunc;
 

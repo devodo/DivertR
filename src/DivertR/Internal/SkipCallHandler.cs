@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace DivertR.Internal
 {
-    internal class SkipCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
+    internal class SkipCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class?
     {
         private readonly ICallHandler<TTarget> _innerCallHandler;
         private readonly int _skipCount;

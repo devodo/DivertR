@@ -2,7 +2,7 @@
 
 namespace DivertR.Internal
 {
-    internal class CallHandlerWrapper<TTarget> : ICallHandler<TTarget> where TTarget : class
+    internal class CallHandlerWrapper<TTarget> : ICallHandler<TTarget> where TTarget : class?
     {
         private readonly ICallHandler _callHandler;
 

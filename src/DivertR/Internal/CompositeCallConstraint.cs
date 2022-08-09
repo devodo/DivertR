@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class CompositeCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class
+    internal class CompositeCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class?
     {
         private readonly ReadOnlyCollection<ICallConstraint<TTarget>> _callConstraints;
         

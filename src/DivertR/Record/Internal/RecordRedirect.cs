@@ -1,6 +1,6 @@
 ﻿namespace DivertR.Record.Internal
 {
-    internal class RecordRedirect<TTarget> : IRecordRedirect<TTarget> where TTarget : class
+    internal class RecordRedirect<TTarget> : IRecordRedirect<TTarget> where TTarget : class?
     {
         public IRedirect Redirect { get; }
         public IRecordStream<TTarget> RecordStream { get; }

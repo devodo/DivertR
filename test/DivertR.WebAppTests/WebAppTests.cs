@@ -30,24 +30,48 @@ namespace DivertR.WebAppTests
             var foo = new Foo
             {
                 Id = Guid.NewGuid(),
-                Name = Guid.NewGuid().ToString()
+                Name = "Foo123"
             };
 
             _diverter
                 .Via<IFooRepository>()
                 .To(x => x.GetFooAsync(foo.Id))
-                .Redirect(Task.FromResult(foo)!);
+                .Redirect(Task.FromResult<Foo?>(foo));
 
             // ACT
             var response = await _fooClient.GetFooAsync(foo.Id);
             
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
-            response.Content.ShouldBeEquivalentTo(foo);
+            response.Content.Id.ShouldBe(foo.Id);
+            response.Content.Name.ShouldBe(foo.Name);
         }
         
         [Fact]
-        public async Task GivenFooExists_WhenGetFoo_ThenReadsFromFooRepository()
+        public async Task GivenAnyFooExistsInRepo_WhenGetFoo_ThenReturnFooContent_WithOk200()
+        {
+            // ARRANGE
+            var fooId = Guid.NewGuid();
+            
+            _diverter
+                .Via<IFooRepository>()
+                .To(x => x.GetFooAsync(Is<Guid>.Any))
+                .Redirect<(Guid fooId, __)>(call => Task.FromResult<Foo?>(new Foo
+                {
+                    Id = call.Args.fooId,
+                    Name = $"{call.Args.fooId}"
+                }));
+            
+            // ACT
+            var response = await _fooClient.GetFooAsync(fooId);
+            
+            // ASSERT
+            response.Content.Id.ShouldBe(fooId);
+            response.Content.Name.ShouldBe($"{fooId}");
+        }
+        
+        [Fact]
+        public async Task GivenFooInserted_WhenGetFoo_ThenReadsFromFooRepository()
         {
             // ARRANGE
             var foo = new Foo
@@ -56,48 +80,44 @@ namespace DivertR.WebAppTests
                 Name = Guid.NewGuid().ToString()
             };
             
+            // Insert foo directly into the repository
             var fooRepository = _services.GetRequiredService<IFooRepository>();
             (await fooRepository.TryInsertFooAsync(foo)).ShouldBeTrue();
 
-            (Guid fooId, Foo? foo) fooRepoCall = default;
-
-            _diverter
+            var fooRepoCalls = _diverter
                 .Via<IFooRepository>()
-                .To(x => x.GetFooAsync(Is<Guid>.Any))
-                .Redirect<(Guid fooId, __)>(async (call, args) =>
-                {
-                    var getFoo = await call.Root.GetFooAsync(args.fooId);
-                    fooRepoCall = (args.fooId, getFoo);
+                .Record();
 
-                    return getFoo;
-                });
-            
             // ACT
             var response = await _fooClient.GetFooAsync(foo.Id);
             
             // ASSERT
             response.Content.ShouldBeEquivalentTo(foo);
-            fooRepoCall.foo.ShouldBeEquivalentTo(foo);
-            fooRepoCall.fooId.ShouldBe(foo.Id);
+            
+            // Verify repo read call
+            (await fooRepoCalls
+                .To(x => x.GetFooAsync(Is<Guid>.Any))
+                .Verify<(Guid fooId, __)>(async call =>
+                {
+                    call.Args.fooId.ShouldBe(foo.Id);
+                    (await call.Returned!.Value!).ShouldBeEquivalentTo(foo);
+                })).Count.ShouldBe(1);
         }
         
         [Fact]
         public async Task GivenFooDoesNotExist_WhenGetFoo_ThenReturn404NotFound()
         {
             // ARRANGE
-            var foo = new Foo
-            {
-                Id = Guid.NewGuid()
-            };
+            var fooId = Guid.NewGuid();
 
             var getFooCalls = _diverter
                 .Via<IFooRepository>()
-                .To(x => x.GetFooAsync(Is<Guid>.Any))
+                .To(x => x.GetFooAsync(fooId))
                 .Redirect<(Guid fooId, __)>(Task.FromResult<Foo?>(null))
                 .Record();
             
             // ACT
-            var response = await _fooClient.GetFooAsync(foo.Id);
+            var response = await _fooClient.GetFooAsync(fooId);
             
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
@@ -105,7 +125,7 @@ namespace DivertR.WebAppTests
 
             (await getFooCalls.Verify(async (call, args) =>
             {
-                args.fooId.ShouldBe(foo.Id);
+                args.fooId.ShouldBe(fooId);
                 (await call.Returned!.Value!).ShouldBeNull();
             })).Count.ShouldBe(1);
         }
@@ -145,14 +165,22 @@ namespace DivertR.WebAppTests
         }
         
         [Fact]
-        public async Task GiveFooNotExists_WhenCreateFooRequest_ThenInsertsFoo_RecordExample()
+        public async Task GiveFooNotExists_WhenCreateFooRequest_ThenInsertsFooIntoRepository()
         {
             // ARRANGE
+            var fooId = Guid.NewGuid();
+            
             var createFooRequest = new CreateFooRequest
             {
                 Name = Guid.NewGuid().ToString()
             };
-            
+
+            var createFooIdCalls = _diverter
+                .Via<IFooIdGenerator>()
+                .To(x => x.Create())
+                .Redirect(fooId)
+                .Record();
+
             var insertCalls = _diverter
                 .Via<IFooRepository>()
                 .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
@@ -162,41 +190,13 @@ namespace DivertR.WebAppTests
             await _fooClient.CreateFooAsync(createFooRequest);
 
             // ASSERT
+            createFooIdCalls.Count.ShouldBe(1);
+            
             (await insertCalls.Verify(async (call, args) =>
             {
+                args.foo.Id.ShouldBe(fooId);
                 args.foo.Name.ShouldBe(createFooRequest.Name);
-                call.Returned.ShouldNotBeNull();
                 (await call.Returned!.Value!).ShouldBe(true);
-            })).Count.ShouldBe(1);
-        }
-        
-        [Fact]
-        public async Task GiveFooNotExists_WhenCreateFooRequest_ThenInsertsFoo_RecordMapExample()
-        {
-            // ARRANGE
-            var createFooRequest = new CreateFooRequest
-            {
-                Name = Guid.NewGuid().ToString()
-            };
-            
-            var insertCalls = _diverter
-                .Via<IFooRepository>()
-                .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
-                .Record<(Foo foo, __)>()
-                .Map((call, args) => new
-                {
-                    Foo = args.foo,
-                    Result = call.Returned
-                });
-
-            // ACT  
-            await _fooClient.CreateFooAsync(createFooRequest);
-
-            // ASSERT
-            (await insertCalls.Verify(async call =>
-            {
-                call.Foo.Name.ShouldBe(createFooRequest.Name);
-                (await call.Result!.Value!).ShouldBe(true);
             })).Count.ShouldBe(1);
         }
         
@@ -227,6 +227,35 @@ namespace DivertR.WebAppTests
                 args.foo.Name.ShouldBe(createFooRequest.Name);
                 call.Returned!.Exception.ShouldBeSameAs(testException);
             }).Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public async Task GiveFooExists_WhenCreateFooRequest_ThenRepoInsertReturnsFalse()
+        {
+            // ARRANGE
+            
+            var createFooRequest = new CreateFooRequest
+            {
+                Name = Guid.NewGuid().ToString()
+            };
+
+            var insertCalls = _diverter
+                .Via<IFooRepository>()
+                .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
+                .Redirect<(Foo foo, __)>(Task.FromResult(false))
+                .Record();
+
+            // ACT
+            var response = await _fooClient.CreateFooAsync(createFooRequest);
+
+            // ASSERT
+            response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+            
+            (await insertCalls.Verify(async call =>
+            {
+                call.Args.foo.Name.ShouldBe(createFooRequest.Name);
+                (await call.Returned!.Value!).ShouldBe(false);
+            })).Count.ShouldBe(1);
         }
     }
 }

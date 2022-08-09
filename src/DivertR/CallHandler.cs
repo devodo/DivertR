@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
-    public class CallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
+    public class CallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class?
     {
         private readonly Func<IRedirectCall<TTarget>, object?> _redirectDelegate;
 

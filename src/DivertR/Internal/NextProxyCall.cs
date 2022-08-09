@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class NextProxyCall<TTarget> : IProxyCall<TTarget> where TTarget : class
+    internal class NextProxyCall<TTarget> : IProxyCall<TTarget> where TTarget : class?
     {
         private readonly IRelay _relay;
 

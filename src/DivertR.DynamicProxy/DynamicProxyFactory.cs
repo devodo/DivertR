@@ -9,7 +9,7 @@ namespace DivertR.DynamicProxy
         
         private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
 
-        public TTarget CreateProxy<TTarget>(IProxyCall<TTarget> proxyCall, TTarget? root = null) where TTarget : class
+        public TTarget CreateProxy<TTarget>(IProxyCall<TTarget> proxyCall, TTarget? root = null) where TTarget : class?
         {
             ValidateProxyTarget<TTarget>();
             var interceptor = new ProxyInterceptor<TTarget>(proxyCall, root);
@@ -26,16 +26,16 @@ namespace DivertR.DynamicProxy
             }
         }
 
-        private T CreateProxy<T>(IInterceptor interceptor) where T : class
+        private TTarget CreateProxy<TTarget>(IInterceptor interceptor) where TTarget : class?
         {
-            if (typeof(T).IsInterface)
+            if (typeof(TTarget).IsInterface)
             {
-                return _proxyGenerator.CreateInterfaceProxyWithoutTarget<T>(interceptor);
+                return _proxyGenerator.CreateInterfaceProxyWithoutTarget<TTarget>(interceptor);
             }
 
-            if (typeof(T).IsClass)
+            if (typeof(TTarget).IsClass)
             {
-                return _proxyGenerator.CreateClassProxy<T>(interceptor);
+                return _proxyGenerator.CreateClassProxy<TTarget>(interceptor);
             }
 
             throw new NotImplementedException();

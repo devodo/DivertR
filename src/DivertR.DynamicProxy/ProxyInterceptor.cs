@@ -2,7 +2,7 @@
 
 namespace DivertR.DynamicProxy
 {
-    public class ProxyInterceptor<TTarget> : IInterceptor where TTarget : class
+    public class ProxyInterceptor<TTarget> : IInterceptor where TTarget : class?
     {
         private readonly IProxyCall<TTarget> _proxyCall;
         private readonly TTarget? _root;
