@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace DivertR
 {
@@ -15,8 +16,12 @@ namespace DivertR
     
     public interface IRelay<TTarget> : IRelay where TTarget : class?
     {
+        [NotNull]
         TTarget Next { get; }
+        
+        [NotNull]
         TTarget Root { get; }
+        
         new IRedirectCall<TTarget> GetCurrentCall();
     }
 }

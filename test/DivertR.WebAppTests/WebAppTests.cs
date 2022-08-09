@@ -233,7 +233,6 @@ namespace DivertR.WebAppTests
         public async Task GiveFooExists_WhenCreateFooRequest_ThenRepoInsertReturnsFalse()
         {
             // ARRANGE
-            
             var createFooRequest = new CreateFooRequest
             {
                 Name = Guid.NewGuid().ToString()

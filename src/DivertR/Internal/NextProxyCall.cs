@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
@@ -13,7 +14,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Call(TTarget proxy, TTarget? root, MethodInfo method, CallArguments arguments)
+        public object? Call([DisallowNull] TTarget proxy, TTarget? root, MethodInfo method, CallArguments arguments)
         {
             var callInfo = new CallInfo<TTarget>(proxy, root, method, arguments);
             

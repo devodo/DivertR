@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace DivertR
 {
@@ -20,7 +21,11 @@ namespace DivertR
     {
         new ICallInfo<TTarget> CallInfo { get; }
         new IRelay<TTarget> Relay { get; }
+        
+        [NotNull]
         TTarget Next { get; }
+        
+        [NotNull]
         TTarget Root { get; }
     }
 }
