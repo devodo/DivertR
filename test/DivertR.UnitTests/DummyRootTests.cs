@@ -54,7 +54,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<Task>(null);
+            var result = proxy.EchoGeneric<Task?>(null);
 
             // ASSERT
             result.ShouldBe(Task.CompletedTask);
@@ -67,7 +67,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<Task<Task>>(null);
+            var result = proxy.EchoGeneric<Task<Task>?>(null);
 
             // ASSERT
             result!.Status.ShouldBe(TaskStatus.RanToCompletion);
@@ -81,7 +81,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<Task<object>>(null);
+            var result = proxy.EchoGeneric<Task<object>?>(null);
 
             // ASSERT
             var expectedResult = Task.FromResult<object>(null!);
@@ -97,7 +97,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<Task<Task<object>>>(null);
+            var result = proxy.EchoGeneric<Task<Task<object>>?>(null);
 
             // ASSERT
             var expectedResult = Task.FromResult(Task.FromResult<object>(null!));
@@ -113,7 +113,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<Task<int>>(null);
+            var result = proxy.EchoGeneric<Task<int>?>(null);
 
             // ASSERT
             var expectedResult = Task.FromResult<int>(default);
@@ -192,7 +192,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<object[]>(default);
+            var result = proxy.EchoGeneric<object[]?>(default);
 
             // ASSERT
             result.ShouldBe(Array.Empty<object>());
@@ -205,7 +205,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<object[][][]>(default);
+            var result = proxy.EchoGeneric<object[][][]?>(default);
 
             // ASSERT
             result.ShouldBe(Array.Empty<object[][]>());
@@ -218,7 +218,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<IEnumerable>(default);
+            var result = proxy.EchoGeneric<IEnumerable?>(default);
 
             // ASSERT
             result.ShouldBe(new ArrayList());
@@ -231,7 +231,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<IEnumerable<object>>(default);
+            var result = proxy.EchoGeneric<IEnumerable<object>?>(default);
 
             // ASSERT
             result.ShouldBe(Array.Empty<object>());
@@ -397,7 +397,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<Tuple<Task>>(default);
+            var result = proxy.EchoGeneric<Tuple<Task>?>(default);
 
             // ASSERT
             result!.Item1.ShouldBe(Task.CompletedTask);
@@ -410,7 +410,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<Tuple<Task, Task>>(default);
+            var result = proxy.EchoGeneric<Tuple<Task, Task>?>(default);
 
             // ASSERT
             result!.Item1.ShouldBe(Task.CompletedTask);
@@ -424,7 +424,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<Tuple<Task, Task, Task>>(default);
+            var result = proxy.EchoGeneric<Tuple<Task, Task, Task>?>(default);
 
             // ASSERT
             result!.Item1.ShouldBe(Task.CompletedTask);
@@ -439,7 +439,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<Tuple<Task, Task, Task, Task>>(default);
+            var result = proxy.EchoGeneric<Tuple<Task, Task, Task, Task>?>(default);
 
             // ASSERT
             result!.Item1.ShouldBe(Task.CompletedTask);
@@ -455,7 +455,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<Tuple<Task, Task, Task, Task, Task>>(default);
+            var result = proxy.EchoGeneric<Tuple<Task, Task, Task, Task, Task>?>(default);
 
             // ASSERT
             result!.Item1.ShouldBe(Task.CompletedTask);
@@ -472,7 +472,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<Tuple<Task, Task, Task, Task, Task, Task>>(default);
+            var result = proxy.EchoGeneric<Tuple<Task, Task, Task, Task, Task, Task>?>(default);
 
             // ASSERT
             result!.Item1.ShouldBe(Task.CompletedTask);
@@ -490,7 +490,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<Tuple<Task, Task, Task, Task, Task, Task, Task>>(default);
+            var result = proxy.EchoGeneric<Tuple<Task, Task, Task, Task, Task, Task, Task>?>(default);
 
             // ASSERT
             result!.Item1.ShouldBe(Task.CompletedTask);
@@ -509,7 +509,7 @@ namespace DivertR.UnitTests
             var proxy = _via.Proxy();
 
             // ACT
-            var result = proxy.EchoGeneric<Tuple<Task, Task, Task, Task, Task, Task, Task, Tuple<Task>>>(default);
+            var result = proxy.EchoGeneric<Tuple<Task, Task, Task, Task, Task, Task, Task, Tuple<Task>>?>(default);
 
             // ASSERT
             result!.Item1.ShouldBe(Task.CompletedTask);

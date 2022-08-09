@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class RedirectCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
+    internal class RedirectCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class?
     {
         private readonly Func<IRedirectCall<TTarget>, object?> _redirectDelegate;
 
@@ -19,7 +19,7 @@ namespace DivertR.Internal
         }
     }
     
-    internal class RedirectArgsCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
+    internal class RedirectArgsCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class?
     {
         private readonly Func<IRedirectCall<TTarget>, CallArguments, object?> _redirectDelegate;
 

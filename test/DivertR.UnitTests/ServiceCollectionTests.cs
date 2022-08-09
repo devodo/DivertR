@@ -102,7 +102,7 @@ namespace DivertR.UnitTests
         [Fact]
         public void ShouldNotProxyNullDependencies()
         {
-            _services.AddSingleton<IFoo>(_ => null);
+            _services.AddSingleton<IFoo>(_ => null!);
             _services.Divert(_diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetService<IFoo>();

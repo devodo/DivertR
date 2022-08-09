@@ -8,7 +8,7 @@
         new TReturn CallRoot(CallArguments args);
     }
     
-    public interface IFuncRelay<TTarget, out TReturn> : IRelay<TTarget> where TTarget : class
+    public interface IFuncRelay<TTarget, out TReturn> : IRelay<TTarget> where TTarget : class?
     {
         new TReturn CallNext();
         new TReturn CallNext(CallArguments args);

@@ -2,7 +2,7 @@
 
 namespace DivertR.Internal
 {
-    internal class CallConstraintWrapper<TTarget> : ICallConstraint<TTarget> where TTarget : class
+    internal class CallConstraintWrapper<TTarget> : ICallConstraint<TTarget> where TTarget : class?
     {
         private readonly ICallConstraint _callConstraint;
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using DivertR.Record;
 
@@ -59,7 +60,7 @@ namespace DivertR
     /// Strongly typed Via class used to create DivertR proxies of its type and to configure the proxy behaviour.
     /// </summary>
     /// <typeparam name="TTarget">The Via type.</typeparam>
-    public interface IVia<TTarget> : IVia where TTarget : class
+    public interface IVia<TTarget> : IVia where TTarget : class?
     {
         /// <summary>
         /// Reference to the Via <see cref="IRelay{TTarget}" /> chain of responsibility call pipeline.
@@ -71,12 +72,16 @@ namespace DivertR
         /// </summary>
         /// <param name="root">Optional root instance to proxy calls to.</param>
         /// <returns>The proxy instance.</returns>
+        [return: NotNull]
         TTarget Proxy(TTarget? root);
-
+        
+        [return: NotNull]
         new TTarget Proxy(object? root);
-
+        
+        [return: NotNull]
         new TTarget Proxy(bool withDummyRoot);
-
+        
+        [return: NotNull]
         new TTarget Proxy();
 
         /// <summary>
@@ -123,7 +128,7 @@ namespace DivertR
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <typeparam name="TReturn">The Expression return type</typeparam>
         /// <returns>The Redirect builder instance.</returns>
-        IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn?>> constraintExpression);
+        IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression);
         
         /// <summary>
         /// Creates a Redirect builder from an Expression with a call constraint that matches a member of <typeparamref name="TTarget"/> returning void />.

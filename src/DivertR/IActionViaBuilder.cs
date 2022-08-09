@@ -4,7 +4,7 @@ using DivertR.Record;
 
 namespace DivertR
 {
-    public interface IActionViaBuilder<TTarget> where TTarget : class
+    public interface IActionViaBuilder<TTarget> where TTarget : class?
     {
         IVia<TTarget> Via { get; }
         IActionRedirectBuilder<TTarget> RedirectBuilder { get; }
@@ -38,7 +38,7 @@ namespace DivertR
     }
     
     public interface IActionViaBuilder<TTarget, TArgs> : IActionViaBuilder<TTarget>
-        where TTarget : class
+        where TTarget : class?
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         new IActionRedirectBuilder<TTarget, TArgs> RedirectBuilder { get; }

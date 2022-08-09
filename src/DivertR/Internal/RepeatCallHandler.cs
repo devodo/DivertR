@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace DivertR.Internal
 {
-    internal class RepeatCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class
+    internal class RepeatCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class?
     {
         private readonly ICallHandler<TTarget> _innerCallHandler;
         private readonly int _repeatCount;

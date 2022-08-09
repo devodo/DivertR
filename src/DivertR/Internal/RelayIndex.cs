@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class RelayIndex<TTarget> where TTarget : class
+    internal class RelayIndex<TTarget> where TTarget : class?
     {
         private readonly IRedirectPlan _redirectPlan;
         private readonly int _index;

@@ -4,7 +4,7 @@ using DivertR.Record;
 
 namespace DivertR
 {
-    public interface IActionRedirectBuilder<TTarget> : IRedirectBuilder<TTarget> where TTarget : class
+    public interface IActionRedirectBuilder<TTarget> : IRedirectBuilder<TTarget> where TTarget : class?
     {
         new IActionRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
 
@@ -25,7 +25,7 @@ namespace DivertR
     }
     
     public interface IActionRedirectBuilder<TTarget, TArgs> : IActionRedirectBuilder<TTarget>
-        where TTarget : class
+        where TTarget : class?
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         IRedirect Build(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);

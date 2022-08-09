@@ -1,6 +1,6 @@
 ﻿namespace DivertR.Record
 {
-    public interface IRecordRedirect<TTarget> where TTarget : class
+    public interface IRecordRedirect<TTarget> where TTarget : class?
     {
         IRedirect Redirect { get; }
         public IRecordStream<TTarget> RecordStream { get; }

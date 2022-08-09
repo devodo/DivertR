@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class CallInfo<TTarget> : ICallInfo<TTarget> where TTarget : class
+    internal class CallInfo<TTarget> : ICallInfo<TTarget> where TTarget : class?
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CallInfo(TTarget proxy, TTarget? root, MethodInfo method, CallArguments arguments)
@@ -35,7 +35,7 @@ namespace DivertR.Internal
         object ICallInfo.Proxy
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Proxy;
+            get => Proxy!;
         }
 
         public MethodInfo Method

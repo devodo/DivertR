@@ -2,7 +2,7 @@
 
 namespace DivertR
 {
-    public interface IRedirectOptionsBuilder<TTarget> where TTarget : class
+    public interface IRedirectOptionsBuilder<TTarget> where TTarget : class?
     {
         IRedirectOptionsBuilder<TTarget> OrderWeight(int orderWeight);
         IRedirectOptionsBuilder<TTarget> OrderFirst();

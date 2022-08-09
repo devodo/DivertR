@@ -5,7 +5,7 @@ using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
-    internal class RedirectBuilder<TTarget> : IRedirectBuilder<TTarget> where TTarget : class
+    internal class RedirectBuilder<TTarget> : IRedirectBuilder<TTarget> where TTarget : class?
     {
         protected readonly ConcurrentBag<ICallConstraint<TTarget>> CallConstraints;
 

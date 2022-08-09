@@ -3,7 +3,7 @@ using DivertR.Record;
 
 namespace DivertR
 {
-    public interface IRedirectBuilder<TTarget> where TTarget : class
+    public interface IRedirectBuilder<TTarget> where TTarget : class?
     {
         IRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
         IRedirect Build(object? instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);

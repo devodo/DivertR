@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class FuncRedirectCall<TTarget, TReturn> : RedirectCall<TTarget>, IFuncRedirectCall<TTarget, TReturn> where TTarget : class
+    internal class FuncRedirectCall<TTarget, TReturn> : RedirectCall<TTarget>, IFuncRedirectCall<TTarget, TReturn> where TTarget : class?
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public FuncRedirectCall(IRedirectCall<TTarget> call) : base(call.Relay, call.CallInfo)
@@ -37,7 +37,7 @@ namespace DivertR.Internal
     }
 
     internal class FuncRedirectCall<TTarget, TReturn, TArgs> : FuncRedirectCall<TTarget, TReturn>, IFuncRedirectCall<TTarget, TReturn, TArgs>
-        where TTarget : class
+        where TTarget : class?
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

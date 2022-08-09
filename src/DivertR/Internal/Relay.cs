@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace DivertR.Internal
 {
-    internal class Relay<TTarget> : IRelay<TTarget> where TTarget : class
+    internal class Relay<TTarget> : IRelay<TTarget> where TTarget : class?
     {
         private readonly AsyncLocal<ImmutableStack<RelayIndex<TTarget>>> _relayIndexStack = new AsyncLocal<ImmutableStack<RelayIndex<TTarget>>>();
         

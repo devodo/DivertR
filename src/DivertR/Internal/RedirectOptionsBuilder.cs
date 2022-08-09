@@ -39,7 +39,7 @@ namespace DivertR.Internal
         }
     }
         
-    internal class RedirectOptionsBuilder<TTarget> : IRedirectOptionsBuilder<TTarget> where TTarget : class
+    internal class RedirectOptionsBuilder<TTarget> : IRedirectOptionsBuilder<TTarget> where TTarget : class?
     {
         private int? _orderWeight;
         private bool? _disableSatisfyStrict;

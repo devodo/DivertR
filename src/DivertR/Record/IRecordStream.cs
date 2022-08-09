@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace DivertR.Record
 {
-    public interface IRecordStream<TTarget> : IReadOnlyCollection<IRecordedCall<TTarget>> where TTarget : class
+    public interface IRecordStream<TTarget> : IReadOnlyCollection<IRecordedCall<TTarget>> where TTarget : class?
     {
         IEnumerable<IRecordedCall<TTarget>> To(ICallConstraint<TTarget>? callConstraint = null);
         IFuncCallStream<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression);

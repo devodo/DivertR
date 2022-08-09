@@ -68,7 +68,7 @@ namespace DivertR.Internal
     }
     
     internal class RedirectCall<TTarget> : RedirectCall, IRedirectCall<TTarget>
-        where TTarget : class
+        where TTarget : class?
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RedirectCall(IRelay<TTarget> relay, ICallInfo<TTarget> callInfo) : base(relay, callInfo)

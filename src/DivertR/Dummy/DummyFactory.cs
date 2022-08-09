@@ -18,7 +18,7 @@ namespace DivertR.Dummy
             RedirectRepository = redirectRepository;
         }
 
-        public TTarget Create<TTarget>(DiverterSettings diverterSettings) where TTarget : class
+        public TTarget Create<TTarget>(DiverterSettings diverterSettings) where TTarget : class?
         {
             var via = new Via<TTarget>(diverterSettings, RedirectRepository);
 

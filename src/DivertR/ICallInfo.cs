@@ -33,7 +33,7 @@ namespace DivertR
         public ICallInfo Create(MethodInfo method, CallArguments args);
     }
     
-    public interface ICallInfo<out TTarget> : ICallInfo where TTarget : class
+    public interface ICallInfo<out TTarget> : ICallInfo where TTarget : class?
     {
         new TTarget Proxy
         {

@@ -13,7 +13,7 @@ namespace DivertR
         object? CallRoot(CallArguments args);
     }
     
-    public interface IRelay<TTarget> : IRelay where TTarget : class
+    public interface IRelay<TTarget> : IRelay where TTarget : class?
     {
         TTarget Next { get; }
         TTarget Root { get; }

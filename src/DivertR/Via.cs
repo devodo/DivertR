@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using DivertR.Internal;
@@ -7,7 +8,7 @@ using DivertR.Record;
 namespace DivertR
 {
     /// <inheritdoc />
-    public class Via<TTarget> : IVia<TTarget> where TTarget : class
+    public class Via<TTarget> : IVia<TTarget> where TTarget : class?
     {
         private readonly IProxyFactory _proxyFactory;
         private readonly Relay<TTarget> _relay;
@@ -76,6 +77,7 @@ namespace DivertR
             return Proxy();
         }
         
+        [return: NotNull]
         public TTarget Proxy(object? root)
         {
             if (root != null && !(root is TTarget))
@@ -85,19 +87,22 @@ namespace DivertR
 
             return Proxy(root as TTarget);
         }
-
+        
+        [return: NotNull]
         public TTarget Proxy(TTarget? root)
         {
             return _proxyFactory.CreateProxy(_viaProxyCall, root);
         }
-
+        
+        [return: NotNull]
         public TTarget Proxy(bool withDummyRoot)
         {
             var defaultRoot = withDummyRoot ? ViaSet.Settings.DummyFactory.Create<TTarget>(ViaSet.Settings) : null;
             
             return Proxy(defaultRoot);
         }
-
+        
+        [return: NotNull]
         public TTarget Proxy()
         {
             return Proxy(ViaSet.Settings.DefaultWithDummyRoot);
@@ -142,7 +147,7 @@ namespace DivertR
             return new ViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.To(callConstraint));
         }
 
-        public IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn?>> constraintExpression)
+        public IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
         {
             return new FuncViaBuilder<TTarget, TReturn>(this, RedirectBuilder<TTarget>.To(constraintExpression));
         }
