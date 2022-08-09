@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
@@ -6,7 +7,7 @@ namespace DivertR.Internal
     internal class CallInfo<TTarget> : ICallInfo<TTarget> where TTarget : class?
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CallInfo(TTarget proxy, TTarget? root, MethodInfo method, CallArguments arguments)
+        public CallInfo([DisallowNull] TTarget proxy, TTarget? root, MethodInfo method, CallArguments arguments)
         {
             Proxy = proxy;
             Root = root;
@@ -14,6 +15,7 @@ namespace DivertR.Internal
             Arguments = arguments;
         }
         
+        [NotNull]
         public TTarget Proxy
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -35,7 +37,7 @@ namespace DivertR.Internal
         object ICallInfo.Proxy
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Proxy!;
+            get => Proxy;
         }
 
         public MethodInfo Method

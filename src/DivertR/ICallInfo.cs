@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace DivertR
@@ -35,6 +36,7 @@ namespace DivertR
     
     public interface ICallInfo<out TTarget> : ICallInfo where TTarget : class?
     {
+        [NotNull]
         new TTarget Proxy
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
