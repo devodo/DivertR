@@ -6,31 +6,36 @@ using DivertR.Record;
 namespace DivertR
 {
     /// <summary>
-    /// Vias are used to create DivertR proxies and configure proxy behaviour.
-    /// A Via instance has a target type and this is the type of the proxies it creates.
-    /// When a proxy is created it can be given a root instance of its type. By default the proxy forwards all its calls to this root instance.
-    /// Proxy behaviour is configured by inserting one or more <see cref="IRedirect" />s. Redirects can be added or removed at any time.
-    /// A Via can create multiple proxies and its configured redirects are applied to all its proxies.
+    /// Vias are used to create DivertR proxies and configure their behaviour.
+    /// A Via instance has a single, fixed target type and it creates proxies of this type.
+    ///
+    /// Proxy behaviour is configured by inserting one or more <see cref="IRedirect"/>s to the Via. The configured redirects are applied to all proxies created by the Via.
+    /// Redirects can be added or removed from the Via at any time allowing the proxy behaviour to be changed dynamically at runtime.
+    /// 
+    /// A proxy is created with a reference to root instance of its type and by default it forwards all its call to this root, i.e. when no redirects are configured on the Via.
+    /// If a root instance is not provided the proxy will be created with a dummy root that provides default return values on its members.
+    /// Optionally a proxy can also be created with a null root but in this case the proxy behaviour must be defined to handle any call received else
+    /// a <see cref="DiverterNullRootException"/> will be thrown.
     /// </summary>
     public interface IVia
     {
         /// <summary>
-        /// The Via identifier consisting of its type and optional name label.
+        /// The Via identifier that is a composite of the target type and an optional <see langword="string"/> group name.
         /// </summary>
         ViaId ViaId { get; }
         
         /// <summary>
-        /// The <see cref="IViaSet"/> of this Via. The ViaSet contains a collection of Vias each with a unique ViaId.
+        /// The <see cref="IViaSet"/> of this Via. The ViaSet contains a collection of Vias each with a unique <see cref="ViaId"/>.
         /// </summary>
         IViaSet ViaSet { get; }
         
         /// <summary>
-        /// The Via <see cref="IRelay" /> that is used to access the chain of responsibility redirect pipeline of proxy calls.
+        /// The Via <see cref="IRelay" /> that is used to access the chain of responsibility redirect pipeline within proxy calls.
         /// </summary>
         IRelay Relay { get; }
         
         /// <summary>
-        /// The Via's <see cref="IRedirectRepository" /> for storing and managing the redirect configuration.
+        /// The Via's <see cref="IRedirectRepository" /> for storing and managing the redirect configuration that determines proxy behaviour.
         /// </summary>
         IRedirectRepository RedirectRepository { get; }
 
@@ -65,9 +70,9 @@ namespace DivertR
         IVia Redirect(IRedirect redirect, Action<IRedirectOptionsBuilder>? optionsAction = null);
 
         /// <summary>
-        /// Reset the Via <see cref="IRedirectRepository" />.
+        /// Reset the Via <see cref="IRedirectRepository" /> removing all configured redirects and disabling strict mode.
         /// </summary>
-        /// <returns>The current <see cref="IVia"/> instance.</returns>
+        /// <returns>This Via instance.</returns>
         IVia Reset();
 
         /// <summary>
@@ -81,9 +86,9 @@ namespace DivertR
     }
     
     /// <summary>
-    /// Strongly typed Via class used to create DivertR proxies of its type and to configure the proxy behaviour.
+    /// Via interface with generic type defining the proxy target type.
     /// </summary>
-    /// <typeparam name="TTarget">The Via type.</typeparam>
+    /// <typeparam name="TTarget">The proxy target type.</typeparam>
     public interface IVia<TTarget> : IVia where TTarget : class?
     {
         /// <summary>
@@ -133,7 +138,7 @@ namespace DivertR
         new IVia<TTarget> Redirect(IRedirect redirect, Action<IRedirectOptionsBuilder>? optionsAction = null);
 
         /// <summary>
-        /// Reset the Via <see cref="IRedirectRepository" />.
+        /// Reset the Via <see cref="IRedirectRepository" /> removing all configured redirects and disabling strict mode.
         /// </summary>
         /// <returns>This Via instance.</returns>
         new IVia<TTarget> Reset();
@@ -156,23 +161,22 @@ namespace DivertR
         IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null);
         
         /// <summary>
-        /// Inserts a redirect that captures incoming calls from all proxies.
+        /// Inserts a record redirect that captures incoming calls from all proxies.
         /// By default record redirects are configured to not satisfy strict calls if strict mode is enabled.
         /// </summary>
         /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
-        /// <returns>An <see cref="IRecordStream{TTarget}"/> reference for retrieving and iterating the recorded calls.</returns>
+        /// <returns>An <see cref="IRecordStream{TTarget}"/> instance for retrieving and iterating the recorded calls.</returns>
         IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
         
         /// <summary>
-        /// Creates a Redirect builder. />
+        /// Creates a <see cref="IViaBuilder{TTarget}"/> instance that is used to insert redirects to this Via. />
         /// </summary>
         /// <param name="callConstraint">Optional call constraint <see cref="ICallConstraint{TTarget}"/>.</param>
         /// <returns>The builder instance.</returns>
-        /// 
         IViaBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null);
 
         /// <summary>
-        /// Creates a builder that can be used to insert redirects for calls matching the <paramref name="constraintExpression"/> expression.
+        /// Creates a <see cref="IFuncViaBuilder{TTarget, TReturn}"/> instance that is used to insert redirects to this Via for calls matching the <paramref name="constraintExpression"/> expression.
         /// </summary>
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <typeparam name="TReturn">The Expression return type</typeparam>
@@ -180,15 +184,15 @@ namespace DivertR
         IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression);
         
         /// <summary>
-        /// Creates a builder that can be used to insert redirects for void calls matching the <paramref name="constraintExpression"/> expression.
+        /// Creates a <see cref="IActionViaBuilder{TTarget}"/> that is used to insert redirects to this Via for void calls matching the <paramref name="constraintExpression"/> expression.
         /// </summary>
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <returns>The builder instance.</returns>
         IActionViaBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression);
         
         /// <summary>
-        /// Creates a builder that can be used to insert redirects for setter calls to matching the property <paramref name="memberExpression"/> expression
-        /// and the <paramref name="constraintExpression"/> expression.
+        /// Creates a <see cref="IActionViaBuilder{TTarget}"/> that is used to insert redirects to this Via for setter calls to matching the property <paramref name="memberExpression"/> expression
+        /// and setter value <paramref name="constraintExpression"/> expression.
         /// </summary>
         /// <param name="memberExpression">The expression for matching the property setter member.</param>
         /// <param name="constraintExpression">Optional constraint expression on the setter input argument. If null, the constraint defaults to match any value</param>
