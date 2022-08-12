@@ -776,5 +776,43 @@ namespace DivertR.UnitTests
                 return call;
             }).Count().ShouldBe(results.Count);
         }
+
+        [Fact]
+        public void GivenStrictModeEnabledAndRecordRedirect_WhenProxyCalled_ThenThrowsException()
+        {
+            // ARRANGE
+            var recordedCalls = _fooVia
+                .Strict()
+                .To(x => x.Name)
+                .Record();
+            
+            // ACT
+            var testAction = () => _proxy.Name;
+            
+            // ASSERT
+            var exception = testAction.ShouldThrow<StrictNotSatisfiedException>();
+            recordedCalls
+                .Verify(call => call.Returned!.Exception.ShouldBeSameAs(exception))
+                .Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public void GivenStrictModeEnabledAndRecordRedirectWithSatisfyStrictEnabled_WhenProxyCalled_ThenReturns()
+        {
+            // ARRANGE
+            var recordedCalls = _fooVia
+                .Strict()
+                .To(x => x.Name)
+                .Record(opt => opt.DisableSatisfyStrict(false));
+            
+            // ACT
+            var result = _proxy.Name;
+            
+            // ASSERT
+            result.ShouldBe(_foo.Name);
+            recordedCalls
+                .Verify(call => call.Returned!.Value.ShouldBe(_foo.Name))
+                .Count.ShouldBe(1);
+        }
     }
 }

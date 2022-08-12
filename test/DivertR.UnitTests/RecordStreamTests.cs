@@ -16,8 +16,7 @@ namespace DivertR.UnitTests
         public RecordStreamTests()
         {
             _recordStream = _via.Record(opt => opt
-                .OrderFirst()
-                .DisableSatisfyStrict());
+                .OrderFirst());
         }
         
         [Fact]
@@ -162,13 +161,12 @@ namespace DivertR.UnitTests
         public async Task GivenRecord_WithStrict_WhenNoMatchingRedirects_ThrowsStrictNotSatisfiedException()
         {
             // ARRANGE
-            _via.Strict();
-            _via
+            _via.Strict()
                 .To(x => x.EchoAsync(Is<string>.Match(m => m != "test")))
                 .Redirect<(string input, __)>(call => call.Relay.Next.EchoAsync(call.Args.input));
 
             // ACT
-            Func<Task<string>> testAction = () => _via.Proxy(new Foo()).EchoAsync("test");
+            var testAction = () => _via.Proxy(new Foo()).EchoAsync("test");
 
             // ASSERT
             await testAction.ShouldThrowAsync<StrictNotSatisfiedException>();

@@ -613,5 +613,50 @@ namespace DivertR.UnitTests
             objectReturn.ShouldBe("redirected");
             intReturn.ShouldBe(0);
         }
+        
+        [Fact]
+        public void GivenDummyCallStream_WhenProxyCalled_ShouldRecord()
+        {
+            // ARRANGE
+            var dummyCalls = _dummyFactory
+                .To(() => Is<string>.Return)
+                .Record();
+
+            var proxy = _via.Proxy();
+
+            // ACT
+            var result = proxy.EchoGeneric("hello");
+            var name = proxy.Name;
+
+            // ASSERT
+            var returns = new[] { result, name };
+            var index = 0;
+            dummyCalls
+                .Verify(call => call.Returned!.Value.ShouldBe(returns[index++]))
+                .Count.ShouldBe(2);
+        }
+        
+        [Fact]
+        public void GivenDummyRecordStream_WhenProxyCalled_ShouldRecord()
+        {
+            // ARRANGE
+            var dummyCalls = _dummyFactory
+                .To()
+                .Record();
+
+            var proxy = _via.Proxy();
+
+            // ACT
+            var result = proxy.EchoGeneric("hello");
+            var name = proxy.Name;
+
+            // ASSERT
+            var returns = new[] { result, name };
+            var index = 0;
+            dummyCalls
+                .To(() => Is<string>.Return)
+                .Verify(call => call.Returned!.Value.ShouldBe(returns[index++]))
+                .Count.ShouldBe(2);
+        }
     }
 }

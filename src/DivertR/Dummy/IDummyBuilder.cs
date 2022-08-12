@@ -1,4 +1,5 @@
 ﻿using System;
+using DivertR.Record;
 
 namespace DivertR.Dummy
 {
@@ -9,6 +10,7 @@ namespace DivertR.Dummy
         IDummyBuilder<TReturn> Redirect(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
         IDummyBuilder<TReturn> Redirect(Func<IFuncRedirectCall<TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
         IDummyBuilder<TReturn> Redirect(Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
+        IFuncCallStream<TReturn> Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
     }
     
     public interface IDummyBuilder
@@ -18,5 +20,6 @@ namespace DivertR.Dummy
         IDummyBuilder Redirect(Func<object> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
         IDummyBuilder Redirect(Func<IRedirectCall, object> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
         IDummyBuilder Redirect(Func<IRedirectCall, CallArguments, object> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
+        IRecordStream Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
     }
 }

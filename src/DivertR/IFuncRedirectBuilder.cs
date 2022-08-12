@@ -42,5 +42,6 @@ namespace DivertR
         IRedirect Build(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
         IRedirect Build(Func<IFuncRedirectCall<TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
         IRedirect Build(Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
+        new IFuncRecordRedirect<TReturn> Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
     }
 }

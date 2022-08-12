@@ -17,6 +17,7 @@ namespace DivertR.Record
     public interface IRecordStream : IReadOnlyCollection<IRecordedCall>
     {
         IEnumerable<IRecordedCall> To(ICallConstraint? callConstraint = null);
+        IFuncCallStream<TReturn> To<TReturn>(Expression<Func<TReturn>> constraintExpression);
         ICallStream<TMap> Map<TMap>(Func<IRecordedCall, TMap> mapper);
         ICallStream<TMap> Map<TMap>(Func<IRecordedCall, CallArguments, TMap> mapper);
     }

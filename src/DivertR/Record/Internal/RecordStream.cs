@@ -102,6 +102,20 @@ namespace DivertR.Record.Internal
             
             return _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
         }
+        
+        public IFuncCallStream<TReturn> To<TReturn>(Expression<Func<TReturn>> constraintExpression)
+        {
+            if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
+
+            var callValidator = CallExpressionParser.FromExpression(constraintExpression.Body);
+            var callConstraint = callValidator.CreateCallConstraint();
+            
+            var calls = _recordedCalls
+                .Where(x => callConstraint.IsMatch(x.CallInfo))
+                .Select(call => new FuncRecordedCall<TReturn>(call));
+
+            return new FuncCallStream<TReturn>(calls);
+        }
 
         public ICallStream<TMap> Map<TMap>(Func<IRecordedCall, TMap> mapper)
         {
