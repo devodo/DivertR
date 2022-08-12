@@ -168,4 +168,26 @@ namespace DivertR.Record.Internal
             return base.Verify(call => visitor.Invoke(call, call.Args));
         }
     }
+
+    internal class FuncCallStream<TReturn> : CallStream<IFuncRecordedCall<TReturn>>, IFuncCallStream<TReturn>
+    {
+        public FuncCallStream(IEnumerable<IFuncRecordedCall<TReturn>> calls) : base(calls)
+        {
+        }
+
+        public ICallStream<TMap> Map<TMap>(Func<IFuncRecordedCall<TReturn>, CallArguments, TMap> mapper)
+        {
+            return new CallStream<TMap>(Calls.Select(call => mapper.Invoke(call, call.Args)));
+        }
+
+        public IVerifySnapshot<IFuncRecordedCall<TReturn>> Verify(Action<IFuncRecordedCall<TReturn>, CallArguments> visitor)
+        {
+            return base.Verify(call => visitor.Invoke(call, call.Args));
+        }
+
+        public Task<IVerifySnapshot<IFuncRecordedCall<TReturn>>> Verify(Func<IFuncRecordedCall<TReturn>, CallArguments, Task> visitor)
+        {
+            return base.Verify(call => visitor.Invoke(call, call.Args));
+        }
+    }
 }

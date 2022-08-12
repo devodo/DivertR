@@ -23,4 +23,16 @@
             CallStream = callStream;
         }
     }
+    
+    public class FuncRecordRedirect<TReturn> : IFuncRecordRedirect<TReturn>
+    {
+        public IRedirect Redirect { get; }
+        public IFuncCallStream<TReturn> CallStream { get; }
+
+        public FuncRecordRedirect(IRedirect redirect, IFuncCallStream<TReturn> callStream)
+        {
+            Redirect = redirect;
+            CallStream = callStream;
+        }
+    }
 }

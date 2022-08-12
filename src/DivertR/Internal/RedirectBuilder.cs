@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using DivertR.Record;
 using DivertR.Record.Internal;
 
@@ -7,11 +7,11 @@ namespace DivertR.Internal
 {
     internal class RedirectBuilder<TTarget> : IRedirectBuilder<TTarget> where TTarget : class?
     {
-        protected readonly ConcurrentBag<ICallConstraint<TTarget>> CallConstraints;
+        protected readonly List<ICallConstraint<TTarget>> CallConstraints;
 
         public RedirectBuilder(ICallConstraint<TTarget>? callConstraint = null)
         {
-            CallConstraints = new ConcurrentBag<ICallConstraint<TTarget>>();
+            CallConstraints = new List<ICallConstraint<TTarget>>();
             
             if (callConstraint != null)
             {
@@ -19,7 +19,7 @@ namespace DivertR.Internal
             }
         }
 
-        protected RedirectBuilder(ConcurrentBag<ICallConstraint<TTarget>> callConstraints)
+        protected RedirectBuilder(List<ICallConstraint<TTarget>> callConstraints)
         {
             CallConstraints = callConstraints;
         }
@@ -57,14 +57,9 @@ namespace DivertR.Internal
 
         public IRedirect Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
-            var builder = new RedirectOptionsBuilder<TTarget>();
-            optionsAction?.Invoke(builder);
-            
-            var redirectOptions = builder.BuildOptions();
-            callHandler = builder.BuildCallHandler(callHandler);
-            var callConstraint = builder.BuildCallConstraint(new CompositeCallConstraint<TTarget>(CallConstraints));
-                
-            return new Redirect<TTarget>(callHandler, callConstraint, redirectOptions);
+            return RedirectOptionsBuilder<TTarget>
+                .Create(optionsAction)
+                .BuildRedirect(callHandler, new CompositeCallConstraint<TTarget>(CallConstraints));
         }
 
         public IRedirect Build(ICallHandler<TTarget> callHandler, IRedirectOptions redirectOptions)
@@ -75,7 +70,9 @@ namespace DivertR.Internal
         public IRecordRedirect<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
         {
             var recordHandler = new RecordCallHandler<TTarget>();
-            var redirect = Build(recordHandler, optionsAction);
+            var redirect = RedirectOptionsBuilder<TTarget>
+                .Create(optionsAction, disableSatisfyStrict: true)
+                .BuildRedirect(recordHandler, new CompositeCallConstraint<TTarget>(CallConstraints));
 
             return new RecordRedirect<TTarget>(redirect, recordHandler.RecordStream);
         }
@@ -83,11 +80,11 @@ namespace DivertR.Internal
     
     internal class RedirectBuilder : IRedirectBuilder
     {
-        private readonly ConcurrentBag<ICallConstraint> _callConstraints;
+        private readonly List<ICallConstraint> _callConstraints;
 
         public RedirectBuilder(ICallConstraint? callConstraint = null)
         {
-            _callConstraints = new ConcurrentBag<ICallConstraint>();
+            _callConstraints = new List<ICallConstraint>();
             
             if (callConstraint != null)
             {
@@ -95,7 +92,7 @@ namespace DivertR.Internal
             }
         }
 
-        protected RedirectBuilder(ConcurrentBag<ICallConstraint> callConstraints)
+        protected RedirectBuilder(List<ICallConstraint> callConstraints)
         {
             _callConstraints = callConstraints;
         }
@@ -133,10 +130,9 @@ namespace DivertR.Internal
 
         public IRedirect Build(ICallHandler callHandler, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var builder = new RedirectOptionsBuilder();
-            optionsAction?.Invoke(builder);
-
-            return Build(callHandler, builder.BuildOptions());
+            return RedirectOptionsBuilder
+                .Create(optionsAction)
+                .BuildRedirect(callHandler, new CompositeCallConstraint(_callConstraints));
         }
 
         public IRedirect Build(ICallHandler callHandler, IRedirectOptions redirectOptions)
@@ -147,7 +143,9 @@ namespace DivertR.Internal
         public IRecordRedirect Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
             var recordHandler = new RecordCallHandler();
-            var redirect = Build(recordHandler, optionsAction);
+            var redirect = RedirectOptionsBuilder
+                .Create(optionsAction, disableSatisfyStrict: true)
+                .BuildRedirect(recordHandler, new CompositeCallConstraint(_callConstraints));
 
             return new RecordRedirect(redirect, recordHandler.RecordStream);
         }

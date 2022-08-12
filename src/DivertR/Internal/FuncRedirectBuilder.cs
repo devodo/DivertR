@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using DivertR.Record;
 using DivertR.Record.Internal;
@@ -17,7 +17,7 @@ namespace DivertR.Internal
             CallValidator = callValidator;
         }
         
-        protected FuncRedirectBuilder(ICallValidator callValidator, ConcurrentBag<ICallConstraint<TTarget>> callConstraints)
+        protected FuncRedirectBuilder(ICallValidator callValidator, List<ICallConstraint<TTarget>> callConstraints)
             : base(callConstraints)
         {
             CallValidator = callValidator;
@@ -85,7 +85,7 @@ namespace DivertR.Internal
     {
         private readonly IValueTupleMapper _valueTupleMapper;
         
-        public FuncRedirectBuilder(ICallValidator callValidator, ConcurrentBag<ICallConstraint<TTarget>> callConstraints)
+        public FuncRedirectBuilder(ICallValidator callValidator, List<ICallConstraint<TTarget>> callConstraints)
             : base(callValidator, callConstraints)
         {
             _valueTupleMapper = ValueTupleMapperFactory.Create<TArgs>();
@@ -150,6 +150,15 @@ namespace DivertR.Internal
             var callHandler = new FuncArgsRedirectCallHandler<TReturn>(redirectDelegate);
             
             return base.Build(callHandler, optionsAction);
+        }
+
+        public new IFuncRecordRedirect<TReturn> Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
+        {
+            var recordRedirect = base.Record(optionsAction);
+            var calls = recordRedirect.RecordStream.Select(call => new FuncRecordedCall<TReturn>(call));
+            var callStream = new FuncCallStream<TReturn>(calls);
+                
+            return new FuncRecordRedirect<TReturn>(recordRedirect.Redirect, callStream);
         }
     }
 }

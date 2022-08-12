@@ -11,4 +11,10 @@
         IRedirect Redirect { get; }
         public IFuncCallStream<TTarget, TReturn, TArgs> CallStream { get; }
     }
+    
+    public interface IFuncRecordRedirect<TReturn>
+    {
+        IRedirect Redirect { get; }
+        public IFuncCallStream<TReturn> CallStream { get; }
+    }
 }

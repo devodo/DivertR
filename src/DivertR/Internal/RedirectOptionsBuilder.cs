@@ -8,6 +8,12 @@ namespace DivertR.Internal
     {
         private int? _orderWeight;
         private bool? _disableSatisfyStrict;
+
+        public RedirectOptionsBuilder(int? orderWeight = null, bool? disableSatisfyStrict = null)
+        {
+            _orderWeight = orderWeight;
+            _disableSatisfyStrict = disableSatisfyStrict;
+        }
         
         public IRedirectOptionsBuilder OrderWeight(int orderWeight)
         {
@@ -32,10 +38,20 @@ namespace DivertR.Internal
 
             return this;
         }
-
-        public IRedirectOptions BuildOptions()
+        
+        public IRedirect BuildRedirect(ICallHandler callHandler, ICallConstraint callConstraint)
         {
-            return new RedirectOptions(_orderWeight, _disableSatisfyStrict);
+            var redirectOptions = new RedirectOptions(_orderWeight, _disableSatisfyStrict);
+
+            return new Redirect(callHandler, callConstraint, redirectOptions);
+        }
+        
+        public static RedirectOptionsBuilder Create(Action<IRedirectOptionsBuilder>? optionsAction, int? orderWeight = null, bool? disableSatisfyStrict = null)
+        {
+            var builder = new RedirectOptionsBuilder(orderWeight, disableSatisfyStrict);
+            optionsAction?.Invoke(builder);
+
+            return builder;
         }
     }
         
@@ -44,11 +60,14 @@ namespace DivertR.Internal
         private int? _orderWeight;
         private bool? _disableSatisfyStrict;
         
-        private readonly ConcurrentStack<Func<ICallHandler<TTarget>, ICallHandler<TTarget>>> _callHandlerDecorators =
-            new ConcurrentStack<Func<ICallHandler<TTarget>, ICallHandler<TTarget>>>();
-        
-        private readonly ConcurrentStack<Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>>> _callConstraintDecorators =
-            new ConcurrentStack<Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>>>();
+        private readonly ConcurrentStack<Func<ICallHandler<TTarget>, ICallHandler<TTarget>>> _callHandlerDecorators = new();
+        private readonly ConcurrentStack<Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>>> _callConstraintDecorators = new();
+
+        public RedirectOptionsBuilder(int? orderWeight = null, bool? disableSatisfyStrict = false)
+        {
+            _orderWeight = orderWeight;
+            _disableSatisfyStrict = disableSatisfyStrict;
+        }
 
         public IRedirectOptionsBuilder<TTarget> OrderWeight(int orderWeight)
         {
@@ -98,9 +117,19 @@ namespace DivertR.Internal
             return DecorateCallHandler(callHandler => new SkipCallHandler<TTarget>(callHandler, skipCount));
         }
 
-        public IRedirectOptions BuildOptions()
+        public IRedirect BuildRedirect(ICallHandler<TTarget> callHandler, ICallConstraint<TTarget> callConstraint)
         {
-            return new RedirectOptions(_orderWeight, _disableSatisfyStrict);
+            var redirectOptions = new RedirectOptions(_orderWeight, _disableSatisfyStrict);
+
+            return new Redirect<TTarget>(BuildCallHandler(callHandler), BuildCallConstraint(callConstraint), redirectOptions);
+        }
+
+        public static RedirectOptionsBuilder<TTarget> Create(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction, int? orderWeight = null, bool? disableSatisfyStrict = false)
+        {
+            var builder = new RedirectOptionsBuilder<TTarget>(orderWeight, disableSatisfyStrict);
+            optionsAction?.Invoke(builder);
+
+            return builder;
         }
         
         public ICallHandler<TTarget> BuildCallHandler(ICallHandler<TTarget> callHandler)

@@ -37,4 +37,12 @@ namespace DivertR.Record
         Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>>> Verify<TNewArgs>(Func<IFuncRecordedCall<TTarget, TReturn, TNewArgs>, Task> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         Task<IVerifySnapshot<IFuncRecordedCall<TTarget, TReturn, TNewArgs>>> Verify<TNewArgs>(Func<IFuncRecordedCall<TTarget, TReturn, TNewArgs>, TNewArgs, Task> visitor) where TNewArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
+    
+    public interface IFuncCallStream<TReturn> : ICallStream<IFuncRecordedCall<TReturn>>
+    {
+        ICallStream<TMap> Map<TMap>(Func<IFuncRecordedCall<TReturn>, CallArguments, TMap> mapper);
+        
+        IVerifySnapshot<IFuncRecordedCall<TReturn>> Verify(Action<IFuncRecordedCall<TReturn>, CallArguments> visitor);
+        Task<IVerifySnapshot<IFuncRecordedCall<TReturn>>> Verify(Func<IFuncRecordedCall<TReturn>, CallArguments, Task> visitor);
+    }
 }

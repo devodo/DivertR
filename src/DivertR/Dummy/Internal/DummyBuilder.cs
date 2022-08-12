@@ -1,4 +1,5 @@
 ﻿using System;
+using DivertR.Record;
 
 namespace DivertR.Dummy.Internal
 {
@@ -51,6 +52,14 @@ namespace DivertR.Dummy.Internal
 
             return this;
         }
+        
+        public IFuncCallStream<TReturn> Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
+        {
+            var recordRedirect = _redirectBuilder.Record(optionsAction);
+            _redirectRepository.InsertRedirect(recordRedirect.Redirect);
+
+            return recordRedirect.CallStream;
+        }
     }
     
     internal class DummyBuilder : IDummyBuilder
@@ -101,6 +110,14 @@ namespace DivertR.Dummy.Internal
             _redirectRepository.InsertRedirect(redirect);
 
             return this;
+        }
+        
+        public IRecordStream Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
+        {
+            var recordRedirect = _redirectBuilder.Record(optionsAction);
+            _redirectRepository.InsertRedirect(recordRedirect.Redirect);
+
+            return recordRedirect.RecordStream;
         }
     }
 }
