@@ -4,18 +4,19 @@ namespace DivertR
 {
     public readonly struct ViaId : IEquatable<ViaId>
     {
-        public Type Type { get; }
-        public string Name { get; }
-
-        public ViaId(Type type, string name)
+        private readonly (Type type, string name) _id;
+        
+        public ViaId(Type type, string? name = null)
         {
-            Type = type;
-            Name = name;
+            _id = (type, name ?? string.Empty);
         }
+
+        public Type Type => _id.type;
+        public string Name => _id.name;
 
         public bool Equals(ViaId other)
         {
-            return Type == other.Type && Name == other.Name;
+            return _id.Equals(other._id);
         }
 
         public override bool Equals(object obj)
@@ -25,14 +26,7 @@ namespace DivertR
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                var hash = 17;
-                hash = hash * 31 + Type.GetHashCode();
-                hash = hash * 31 + Name.GetHashCode();
-
-                return hash;
-            }
+            return _id.GetHashCode();
         }
 
         public override string ToString()

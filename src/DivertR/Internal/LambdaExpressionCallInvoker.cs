@@ -10,8 +10,7 @@ namespace DivertR.Internal
 {
     internal class LambdaExpressionCallInvoker : ICallInvoker
     {
-        private readonly ConcurrentDictionary<MethodInfo, Func<object, object[], object?>> _delegateCache =
-            new ConcurrentDictionary<MethodInfo, Func<object, object[], object?>>(new ReferenceEqualityComparer<MethodInfo>());
+        private readonly ConcurrentDictionary<MethodId, Func<object, object[], object?>> _delegateCache = new();
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Invoke<TTarget>(TTarget target, MethodInfo method, CallArguments arguments)
@@ -29,7 +28,8 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Func<object, object[], object?> CreateDelegate(Type targetType, MethodInfo method)
         {
-            return _delegateCache.GetOrAdd(method, _ => ToDelegateInternal(method, targetType));
+            var methodId = new MethodId(targetType, method);
+            return _delegateCache.GetOrAdd(methodId, id => ToDelegateInternal(id.Method, id.TargetType));
         }
 
         private static Func<object, object[], object?> ToDelegateInternal(MethodInfo methodInfo, Type targetType, bool isDelegate = false)
@@ -126,9 +126,65 @@ namespace DivertR.Internal
 
         private class ByRefState
         {
-            public List<ParameterExpression> Variables { get; } = new List<ParameterExpression>();
-            public List<Expression> PreCall { get; } = new List<Expression>();
-            public List<Expression> PostCall { get; } = new List<Expression>();
+            public List<ParameterExpression> Variables { get; } = new();
+            public List<Expression> PreCall { get; } = new();
+            public List<Expression> PostCall { get; } = new();
+        }
+        
+        private readonly struct MethodId : IEquatable<MethodId>
+        {
+            private readonly (Type type, ReferenceEquatable<MethodInfo> method) _id;
+
+            public MethodId(Type targetType, MethodInfo method)
+            {
+                _id = (targetType, new ReferenceEquatable<MethodInfo>(method));
+            }
+
+            public MethodInfo Method => _id.method.Value;
+            
+            public Type TargetType => _id.type;
+
+            public bool Equals(MethodId other)
+            {
+                return _id.Equals(other._id);
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is MethodId other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return _id.GetHashCode();
+            }
+        }
+
+        private readonly struct ReferenceEquatable<T> : IEquatable<ReferenceEquatable<T>> where T : class
+        {
+            private readonly T _value;
+
+            public ReferenceEquatable(T value)
+            {
+                _value = value;
+            }
+
+            public T Value => _value;
+            
+            public bool Equals(ReferenceEquatable<T> other)
+            {
+                return ReferenceEquals(this._value, other._value);
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is ReferenceEquatable<T> other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return RuntimeHelpers.GetHashCode(_value);
+            }
         }
     }
 }
