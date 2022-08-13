@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace DivertR.DispatchProxy
@@ -6,10 +7,10 @@ namespace DivertR.DispatchProxy
     public class ProxyInvoker<TTarget> : IProxyInvoker where TTarget : class?
     {
         private readonly IProxyCall<TTarget> _proxyCall;
-        private readonly TTarget _proxy;
+        [NotNull] private readonly TTarget _proxy;
         private readonly TTarget? _root;
 
-        public ProxyInvoker(IProxyCall<TTarget> proxyCall, TTarget proxy, TTarget? root)
+        public ProxyInvoker(IProxyCall<TTarget> proxyCall, [DisallowNull] TTarget proxy, TTarget? root)
         {
             _proxyCall = proxyCall;
             _proxy = proxy;

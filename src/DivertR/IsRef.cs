@@ -14,7 +14,7 @@ namespace DivertR
     
     public class RefValue<T>
     {
-        internal static readonly RefValue<T> Instance = new RefValue<T>();
+        internal static readonly RefValue<T> Instance = new();
 
         private RefValue() { }
         

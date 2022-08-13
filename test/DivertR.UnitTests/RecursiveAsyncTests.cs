@@ -13,23 +13,23 @@ namespace DivertR.UnitTests
         [Fact]
         public async Task TestRecursiveAsync()
         {
-            const int input = 20;
+            const int Input = 20;
             var proxy = InitTestProxy();
-            var result = await proxy.GetNumber(input);
-            result.ShouldBe(Fibonacci(input) * 2);
+            var result = await proxy.GetNumber(Input);
+            result.ShouldBe(Fibonacci(Input) * 2);
         }
 
         [Fact]
         public async Task TestRecursiveAsyncMultiThreaded()
         {
-            const int input = 20;
-            const int taskCount = 10;
+            const int Input = 20;
+            const int TaskCount = 10;
             var proxy = InitTestProxy();
             
-            var tasks = Enumerable.Range(0, taskCount).Select(_ => 
-                Task.Run(() => proxy.GetNumber(input))).ToArray();
+            var tasks = Enumerable.Range(0, TaskCount).Select(_ => 
+                Task.Run(() => proxy.GetNumber(Input))).ToArray();
 
-            var controlResult = Fibonacci(input) * 2;
+            var controlResult = Fibonacci(Input) * 2;
             foreach (var task in tasks)
             {
                 (await task).ShouldBe(controlResult);
@@ -52,11 +52,9 @@ namespace DivertR.UnitTests
                 return await num1Task + await num2Task;
             });
 
-            var times2 = new AsyncNumber(async i =>
-                await _via.Relay.Root.GetNumber(i) + await _via.Relay.Next.GetNumber(i));
-
             _via
-                .Retarget(times2)
+                .To(x => x.GetNumber(Is<int>.Any))
+                .Redirect<(int i, __)>(async call => await call.Root.GetNumber(call.Args.i) + await _via.Relay.Next.GetNumber(call.Args.i))
                 .Retarget(fibonacci);
             
             return _via.Proxy(new AsyncNumber());
