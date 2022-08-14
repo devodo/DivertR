@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using DivertR.Internal;
+using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
@@ -17,7 +16,7 @@ namespace DivertR
             where TTarget : class?
             where TReturn : class?
         {
-            var proxyCache = new ConcurrentDictionary<object, TReturn>(new ReferenceEqualityComparer<object>());
+            var proxyCache = new ConditionalWeakTable<TReturn, TReturn>();
             var via = viaBuilder.Via.ViaSet.Via<TReturn>(name);
             
             TReturn RedirectDelegate(IFuncRedirectCall<TTarget, TReturn> call)
@@ -28,8 +27,13 @@ namespace DivertR
                 {
                     return null!;
                 }
-                
-                return proxyCache.GetOrAdd(callReturn, x => via.Proxy(x));
+
+                return proxyCache.GetValue(callReturn, x =>
+                {
+                    var proxy = via.Proxy(x);
+
+                    return proxy;
+                });
             }
 
             var redirect = viaBuilder.RedirectBuilder.Build(RedirectDelegate, optionsAction);
