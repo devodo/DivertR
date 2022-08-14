@@ -17,7 +17,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDivert_ShouldDefaultToRoot()
+        public void GivenRedirectVia_ShouldDefaultToRoot()
         {
             // ARRANGE
             _via.To(x => x.GetFoo()).RedirectVia();
@@ -30,7 +30,7 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public void GivenDivertRedirect_ShouldDivertAndRedirect()
+        public void GivenRedirectVia_withRedirect_ShouldRedirect()
         {
             // ARRANGE
             var fooVia = _via
@@ -47,7 +47,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenParentViaReset_DivertShouldStillRedirect()
+        public void GivenParentViaReset_RedirectViaShouldStillRedirect()
         {
             // ARRANGE
             var fooVia = _via
@@ -66,7 +66,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenResetDivertViaGroup_ShouldResetDivert()
+        public void GivenResetRedirectViaGroup_ShouldReset()
         {
             // ARRANGE
             var fooVia = _via
@@ -85,7 +85,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenResetAll_ShouldResetDivert()
+        public void GivenResetAll_ShouldResetRedirectVia()
         {
             // ARRANGE
             var fooVia = _via
@@ -104,15 +104,15 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRedirectDivert_ShouldRedirectAndDivert()
+        public void GivenRedirectVia_WithRedirect_ShouldRedirect()
         {
             // ARRANGE
-            var divertedVia = _via
+            var redirectVia = _via
                 .To(x => x.EchoGeneric(Is<IList<string>>.Any))
                 .Redirect<(IList<string> input, __)>((_, args) => args.input.Select(x => $"redirect: {x}").ToList())
                 .RedirectVia();
             
-            divertedVia
+            redirectVia
                 .To(x => x[Is<int>.Any])
                 .Redirect<(int index, __)>((call, args) => call.Next[args.index] + " diverted");
 
@@ -194,6 +194,47 @@ namespace DivertR.UnitTests
             
             // ASSERT
             result.ShouldBeNull();
+        }
+        
+        [Fact]
+        public void GivenMultipleRedirectVias_ShouldRedirect()
+        {
+            // ARRANGE
+            var numberVia1 = _via
+                .To(x => x.EchoGeneric(Is<INumber>.Any))
+                .RedirectVia("via1");
+            
+            var numberVia2 = _via
+                .To(x => x.EchoGeneric(Is<INumber>.Any))
+                .RedirectVia("via2");
+
+            numberVia1
+                .To(x => x.GetNumber(Is<int>.Any))
+                .Redirect<(int input, __)>(call =>
+                {
+                    var result = call.CallNext() + call.Args.input * 10;
+                    return result;
+                });
+            
+            numberVia2
+                .To(x => x.GetNumber(Is<int>.Any))
+                .Redirect<(int input, __)>(call =>
+                {
+                    var result = call.CallNext() + call.Args.input * 100;
+                    return result;
+                });
+
+            var number = new Number();
+            var numberProxy1 = _proxy.EchoGeneric<INumber>(number);
+            var numberProxy2 = _proxy.EchoGeneric<INumber>(number);
+            
+            // ACT
+            var result1 = numberProxy1.GetNumber(1);
+            var result2 = numberProxy2.GetNumber(2);
+
+            // ASSERT
+            result1.ShouldBe(111);
+            result2.ShouldBe(222);
         }
     }
 }
