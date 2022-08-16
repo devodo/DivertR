@@ -162,4 +162,63 @@ namespace DivertR
             return new ActionViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.ToSet(memberExpression, constraintExpression));
         }
     }
+
+    public static class Via
+    {
+        private static readonly ProxyViaMap ProxyViaMap = new();
+        
+        /// <summary>
+        /// Creates a Via proxy instance.
+        /// </summary>
+        /// <param name="root">The root instance the proxy will wrap and relay calls to by default.</param>
+        /// <typeparam name="TTarget">The proxy target type.</typeparam>
+        /// <returns>The proxy instance.</returns>
+        public static TTarget Proxy<TTarget>(TTarget? root) where TTarget : class?
+        {
+            return Proxy<TTarget>(via => via.Proxy(root));
+        }
+        
+        /// <summary>
+        /// Creates a Via proxy instance with no given root instance.
+        /// </summary>
+        /// <param name="withDummyRoot">Flag to specify if the proxy should be created with either a dummy or a null root.</param>
+        /// <typeparam name="TTarget">The proxy target type.</typeparam>
+        /// <returns>The proxy instance.</returns>
+        public static TTarget Proxy<TTarget>(bool withDummyRoot) where TTarget : class?
+        {
+            return Proxy<TTarget>(via => via.Proxy(withDummyRoot));
+        }
+        
+        /// <summary>
+        /// Creates a Via proxy instance with no given root instance.
+        /// By default the proxy is created with a dummy root with members that return default values.
+        /// The default behaviour can be changed to create with null root by setting the <see cref="DiverterSettings.DefaultWithDummyRoot" /> boolean flag.
+        /// </summary>
+        /// <typeparam name="TTarget">The proxy target type.</typeparam>
+        /// <returns>The proxy instance.</returns>
+        public static TTarget Proxy<TTarget>() where TTarget : class?
+        {
+            return Proxy<TTarget>(via => via.Proxy());
+        }
+        
+        /// <summary>
+        /// Retrieves the proxy instance's Via that controls its behaviour.
+        /// </summary>
+        /// <param name="proxy">The Via proxy instance.</param>
+        /// <typeparam name="TTarget">The proxy and Via target type.</typeparam>
+        /// <returns>The Via instance.</returns>
+        public static IVia<TTarget> From<TTarget>(TTarget proxy) where TTarget : class
+        {
+            return ProxyViaMap.GetVia(proxy);
+        }
+        
+        private static TTarget Proxy<TTarget>(Func<Via<TTarget>, TTarget> createProxy) where TTarget : class?
+        {
+            var via = new Via<TTarget>();
+            var proxy = createProxy(via);
+            ProxyViaMap.AddVia(proxy!, via);
+
+            return proxy;
+        }
+    }
 }

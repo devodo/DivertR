@@ -6,9 +6,9 @@ namespace DivertR
 {
     public class DiverterSettings
     {
-        private static readonly object GlobalLock = new object();
+        private static readonly object GlobalLock = new();
         private static readonly ICallInvoker DefaultCallInvoker = new LambdaExpressionCallInvoker();
-        private static DiverterSettings GlobalSettings = new DiverterSettings();
+        private static DiverterSettings GlobalSettings = new();
         
         
         public IProxyFactory ProxyFactory { get; }
