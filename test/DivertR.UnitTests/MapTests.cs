@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DivertR.Record;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -193,8 +194,15 @@ namespace DivertR.UnitTests
             // ASSERT
             results.ShouldBe(inputs.Select(x => $"test{x} diverted"));
             calls.Count.ShouldBe(inputs.Count);
-
+            
             var count = 0;
+            (await calls.VerifyAsync(call =>
+            {
+                call.Input.ShouldBe($"test{count}");
+                call.Result.ShouldBe($"test{count++} diverted");
+            })).Count.ShouldBe(inputs.Count);
+
+            count = 0;
             (await calls.Verify(async call =>
             {
                 (await call).Input.ShouldBe($"test{count}");
@@ -214,10 +222,11 @@ namespace DivertR.UnitTests
                 .To(x => x.EchoAsync(Is<string>.Any))
                 .Redirect<(string input, __)>(call => Task.FromResult(call.Args.input + " diverted"))
                 .Record()
-                .Map(call => new
+                .Map(async call => new
                 {
                     Input = call.Args.input,
-                    Result = call.Returned!.Value
+                    Result = await call.Returned!.Value!,
+                    AsyncResult = call.Returned!.Value
                 });
 
             // ACT
@@ -230,12 +239,21 @@ namespace DivertR.UnitTests
             // ASSERT
             results.ShouldBe(inputs.Select(x => $"test{x} diverted"));
             calls.Count.ShouldBe(inputs.Count);
-
+            
             var count = 0;
-            (await calls.Verify(async call =>
+            (await calls.VerifyAsync(async call =>
             {
                 call.Input.ShouldBe($"test{count}");
-                (await call.Result!).ShouldBe($"test{count++} diverted");
+                call.Result.ShouldBe($"test{count} diverted");
+                (await call.AsyncResult).ShouldBe($"test{count++} diverted");
+            })).Count.ShouldBe(inputs.Count);
+
+            count = 0;
+            (await calls.Verify(async call =>
+            {
+                (await call).Input.ShouldBe($"test{count}");
+                (await call).Result.ShouldBe($"test{count} diverted");
+                (await (await call).AsyncResult).ShouldBe($"test{count++} diverted");
             })).Count.ShouldBe(inputs.Count);
         }
         
