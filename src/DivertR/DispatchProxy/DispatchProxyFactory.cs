@@ -8,7 +8,7 @@
             
             IProxyInvoker CreateProxyInvoker(TTarget proxy)
             {
-                return new ProxyInvoker<TTarget>(proxyCall, proxy, root);
+                return new ProxyInvoker<TTarget>(proxyCall, proxy!, root);
             }
             
             return DiverterDispatchProxy.Create<TTarget>(CreateProxyInvoker);
