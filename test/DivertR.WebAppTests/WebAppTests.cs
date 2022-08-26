@@ -24,7 +24,7 @@ namespace DivertR.WebAppTests
         }
 
         [Fact]
-        public async Task GivenFooExistsInRepo_WhenGetFoo_ThenReturnFooContent_WithOk200()
+        public async Task GivenFooExistsInRepo_WhenGetFoo_ThenReturnsFoo_WithOk200()
         {
             // ARRANGE
             var foo = new Foo
@@ -48,7 +48,7 @@ namespace DivertR.WebAppTests
         }
         
         [Fact]
-        public async Task GivenAnyFooExistsInRepo_WhenGetFoo_ThenReturnFooContent_WithOk200()
+        public async Task GivenAnyFooExistsInRepo_WhenGetFoo_ThenReturnsFoot_WithOk200()
         {
             // ARRANGE
             var fooId = Guid.NewGuid();
@@ -83,7 +83,8 @@ namespace DivertR.WebAppTests
             // Insert foo directly into the repository
             var fooRepository = _services.GetRequiredService<IFooRepository>();
             (await fooRepository.TryInsertFooAsync(foo)).ShouldBeTrue();
-
+            
+            // Record all repo calls
             var fooRepoCalls = _diverter
                 .Via<IFooRepository>()
                 .Record();
@@ -94,7 +95,7 @@ namespace DivertR.WebAppTests
             // ASSERT
             response.Content.ShouldBeEquivalentTo(foo);
             
-            // Verify repo read call
+            // Verify repo get method called correctly
             (await fooRepoCalls
                 .To(x => x.GetFooAsync(Is<Guid>.Any))
                 .Verify<(Guid fooId, __)>(async call =>
