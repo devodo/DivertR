@@ -1,9 +1,9 @@
-name: publish
+name: package
 
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v*.*.*'
 
 jobs:
   linux-build:
@@ -26,5 +26,5 @@ jobs:
     - name: Pack DivertR
       run: dotnet pack --configuration Release --output ./artifacts ./src/DivertR/DivertR.csproj
     - name: Nuget Push
-      run: dotnet nuget push ./artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
+      run: dotnet nuget push ./artifacts/*.nupkg --source "https://nuget.pkg.github.com/devodo/index.json" --api-key ${{ secrets.PACKAGE_REPOSITORY_TOKEN }}
   
