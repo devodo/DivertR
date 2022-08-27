@@ -1,4 +1,4 @@
-name: publish
+name: package
 
 on:
   push:
@@ -26,5 +26,5 @@ jobs:
     - name: Pack DivertR
       run: dotnet pack --configuration Release --output ./artifacts ./src/DivertR/DivertR.csproj
     - name: Nuget Push
-      run: dotnet nuget push ./artifacts/*.nupkg --source "github" --api-key ${{ secrets.PACKAGE_REPOSITORY_TOKEN }}
+      run: dotnet nuget push ./artifacts/*.nupkg --source "https://nuget.pkg.github.com/devodo/index.json" --api-key ${{ secrets.PACKAGE_REPOSITORY_TOKEN }}
   
