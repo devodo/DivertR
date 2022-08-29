@@ -1,26 +1,26 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using DivertR.Internal;
 
 namespace DivertR.Record.Internal
 {
-    internal class RecordStream<TTarget> : IRecordStream<TTarget> where TTarget : class?
+    internal class RecordStream<TTarget> : CallStream<IRecordedCall<TTarget>>, IRecordStream<TTarget> where TTarget : class?
     {
-        private readonly IReadOnlyCollection<RecordedCall<TTarget>> _recordedCalls;
-
-        public RecordStream(IReadOnlyCollection<RecordedCall<TTarget>> recordedCalls)
+        public RecordStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls) : base(recordedCalls)
         {
-            _recordedCalls = recordedCalls ?? throw new ArgumentNullException(nameof(recordedCalls));
         }
         
-        public IEnumerable<IRecordedCall<TTarget>> To(ICallConstraint<TTarget>? callConstraint = null)
+        public IRecordStream<TTarget> To(ICallConstraint<TTarget>? callConstraint = null)
         {
-            callConstraint ??= TrueCallConstraint<TTarget>.Instance;
-            
-            return _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
+            if (callConstraint == null)
+            {
+                return this;
+            }
+
+            return new RecordStream<TTarget>(Calls.Where(x => callConstraint.IsMatch(x.CallInfo)));
         }
         
         public IFuncCallStream<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> lambdaExpression)
@@ -29,7 +29,7 @@ namespace DivertR.Record.Internal
 
             var callValidator = CallExpressionParser.FromExpression(lambdaExpression.Body);
             var callConstraint = callValidator.CreateCallConstraint();
-            var calls = _recordedCalls
+            var calls = Calls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
                 .Select(call => new FuncRecordedCall<TTarget, TReturn>(call));
 
@@ -42,7 +42,7 @@ namespace DivertR.Record.Internal
 
             var callValidator = CallExpressionParser.FromExpression(lambdaExpression.Body);
             var callConstraint = callValidator.CreateCallConstraint();
-            var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
+            var calls = Calls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
             return new ActionCallStream<TTarget>(calls, callValidator);
         }
@@ -59,14 +59,9 @@ namespace DivertR.Record.Internal
 
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
             var callConstraint = parsedCall.CreateCallConstraint();
-            var calls = _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
+            var calls = Calls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
             return new ActionCallStream<TTarget>(calls, parsedCall);
-        }
-
-        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, TMap> mapper)
-        {
-            return new CallStream<TMap>(this.Select(mapper));
         }
 
         public ICallStream<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, CallArguments, TMap> mapper)
@@ -74,33 +69,31 @@ namespace DivertR.Record.Internal
             return new CallStream<TMap>(this.Select(call => mapper.Invoke(call, call.Args)));
         }
 
-        public int Count => _recordedCalls.Count;
-
-        public IEnumerator<IRecordedCall<TTarget>> GetEnumerator()
+        public IVerifySnapshot<IRecordedCall<TTarget>> Verify(Action<IRecordedCall<TTarget>, CallArguments> visitor)
         {
-            return _recordedCalls.GetEnumerator();
+            return base.Verify(call => visitor.Invoke(call, call.Args));
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public Task<IVerifySnapshot<IRecordedCall<TTarget>>> Verify(Func<IRecordedCall<TTarget>, CallArguments, Task> visitor)
         {
-            return GetEnumerator();
+            return base.Verify(call => visitor.Invoke(call, call.Args));
         }
     }
     
-    internal class RecordStream : IRecordStream
+    internal class RecordStream : CallStream<IRecordedCall>, IRecordStream
     {
-        private readonly IReadOnlyCollection<RecordedCall> _recordedCalls;
-
-        public RecordStream(IReadOnlyCollection<RecordedCall> recordedCalls)
+        public RecordStream(IEnumerable<IRecordedCall> recordedCalls) : base(recordedCalls)
         {
-            _recordedCalls = recordedCalls ?? throw new ArgumentNullException(nameof(recordedCalls));
         }
 
-        public IEnumerable<IRecordedCall> To(ICallConstraint? callConstraint = null)
+        public IRecordStream To(ICallConstraint? callConstraint = null)
         {
-            callConstraint ??= TrueCallConstraint.Instance;
-            
-            return _recordedCalls.Where(x => callConstraint.IsMatch(x.CallInfo));
+            if (callConstraint == null)
+            {
+                return this;
+            }
+
+            return new RecordStream(Calls.Where(x => callConstraint.IsMatch(x.CallInfo)));
         }
         
         public IFuncCallStream<TReturn> To<TReturn>(Expression<Func<TReturn>> constraintExpression)
@@ -110,33 +103,26 @@ namespace DivertR.Record.Internal
             var callValidator = CallExpressionParser.FromExpression(constraintExpression.Body);
             var callConstraint = callValidator.CreateCallConstraint();
             
-            var calls = _recordedCalls
+            var calls = Calls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
                 .Select(call => new FuncRecordedCall<TReturn>(call));
 
             return new FuncCallStream<TReturn>(calls);
         }
-
-        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall, TMap> mapper)
-        {
-            return new CallStream<TMap>(this.Select(mapper));
-        }
-
+        
         public ICallStream<TMap> Map<TMap>(Func<IRecordedCall, CallArguments, TMap> mapper)
         {
             return new CallStream<TMap>(this.Select(call => mapper.Invoke(call, call.Args)));
         }
 
-        public int Count => _recordedCalls.Count;
-
-        public IEnumerator<IRecordedCall> GetEnumerator()
+        public IVerifySnapshot<IRecordedCall> Verify(Action<IRecordedCall, CallArguments> visitor)
         {
-            return _recordedCalls.GetEnumerator();
+            return base.Verify(call => visitor.Invoke(call, call.Args));
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public Task<IVerifySnapshot<IRecordedCall>> Verify(Func<IRecordedCall, CallArguments, Task> visitor)
         {
-            return GetEnumerator();
+            return base.Verify(call => visitor.Invoke(call, call.Args));
         }
     }
 }

@@ -397,5 +397,39 @@ namespace DivertR.UnitTests
             await Task.WhenAll(calls);
             calls.Count.ShouldBe(inputs.Count);
         }
+        
+        [Fact]
+        public void GivenRecordedCalls_ShouldVerifyCalls()
+        {
+            // ARRANGE
+            var inputs = Enumerable
+                .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
+                .ToList();
+            
+            _via
+                .To(x => x.Echo(Is<string>.Any))
+                .Redirect(() => Guid.NewGuid().ToString());
+
+            var fooProxy = _via.Proxy();
+
+            // ACT
+            var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
+
+            // ASSERT
+            var index = 0;
+            _recordStream.Verify(call =>
+            {
+                call.Returned!.Value.ShouldBe(outputs[index]);
+                call.Args[0].ShouldBe(inputs[index++]);
+            }).Count.ShouldBe(inputs.Count);
+
+            var index2 = 0;
+            _recordStream.Verify((call, args) =>
+            {
+                call.Returned!.Value.ShouldBe(outputs[index2]);
+                call.Args[0].ShouldBe(inputs[index2]);
+                args[0].ShouldBe(inputs[index2++]);
+            }).Count.ShouldBe(inputs.Count);
+        }
     }
 }
