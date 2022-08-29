@@ -12,7 +12,12 @@ namespace DivertR.Record.Internal
 
         public CallStream(IEnumerable<T> calls)
         {
-            Calls = calls;
+            Calls = calls ?? throw new ArgumentNullException(nameof(calls));
+        }
+
+        public ICallStream<T> Where(Func<T, bool> predicate)
+        {
+            return new CallStream<T>(Calls.Where(predicate));
         }
 
         public ICallStream<TMap> Map<TMap>(Func<T, TMap> mapper)

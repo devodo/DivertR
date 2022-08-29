@@ -6,6 +6,7 @@ namespace DivertR.Record
 {
     public interface ICallStream<T> : IReadOnlyCollection<T>
     {
+        ICallStream<T> Where(Func<T, bool> predicate);
         ICallStream<TMap> Map<TMap>(Func<T, TMap> mapper);
         IVerifySnapshot<T> Verify();
         IVerifySnapshot<T> Verify(Action<T> visitor);

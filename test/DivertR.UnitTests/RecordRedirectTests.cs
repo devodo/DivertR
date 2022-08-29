@@ -814,5 +814,27 @@ namespace DivertR.UnitTests
                 .Verify(call => call.Returned!.Value.ShouldBe(_foo.Name))
                 .Count.ShouldBe(1);
         }
+        
+        [Fact]
+        public void GivenRecordCalls_WhenWhereCalled_ThenFiltersCalls()
+        {
+            // ARRANGE
+            var inputs = Enumerable.Range(0, 10)
+                .Select(_ => Guid.NewGuid().ToString())
+                .ToArray();
+
+            var calls = _fooVia
+                .To(x => x.Echo(Is<string>.Any))
+                .Redirect<(string input, __)>(call => call.Args.input)
+                .Record();
+            
+            // ACT
+            var results = inputs.Select(input => _proxy.Echo(input)).ToArray();
+
+            // ASSERT
+            calls
+                .Where(call => call.Args.input == results[5])
+                .Verify(call => call.Args.input.ShouldBe(results[5])).Count.ShouldBe(1);
+        }
     }
 }
