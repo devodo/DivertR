@@ -58,7 +58,7 @@ namespace DivertR.UnitTests
             _via = viaSet.Via<INumber>();
             _proxy = _via.Proxy(new Number(i => i + 100));
         }
-        
+
         [Fact]
         public void GivenRefParameterRedirect_ShouldUpdateRefInput()
         {
@@ -301,6 +301,86 @@ namespace DivertR.UnitTests
             // ASSERT
             result.ShouldBe(10);
             input.ShouldBe(5);
+        }
+        
+        [Fact]
+        public void GivenCallNextRedirect_ShouldRedirect()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.RefOutNumber(ref IsRef<int>.Any, out IsRef<int>.Any))
+                .Redirect<(Ref<int> input, Ref<int> output)>(call =>
+                {
+                    var result = call.CallNext();
+
+                    call.Args.input.Value = (int) call.CallInfo.Arguments[0] + 1;
+                    call.Args.output.Value = (int) call.CallInfo.Arguments[1] + 2;
+                    
+                    return result + 10;
+                });
+
+            // ACT
+            int input = 5;
+            int output;
+            var result = _proxy.RefOutNumber(ref input, out output);
+            
+            // ASSERT
+            result.ShouldBe(15);
+            input.ShouldBe(6);
+            output.ShouldBe(107);
+        }
+        
+        [Fact]
+        public void GivenCallNextRedirectWithArgs_ShouldRedirect()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.RefOutNumber(ref IsRef<int>.Any, out IsRef<int>.Any))
+                .Redirect<(Ref<int> input, Ref<int> output)>(call =>
+                {
+                    var args = call.CallInfo.Arguments.ToArray();
+                    var result = call.CallNext(args);
+
+                    call.Args.input.Value = (int) args[0] + 1;
+                    call.Args.output.Value = (int) args[1] + 2;
+                    
+                    return result + 10;
+                });
+
+            // ACT
+            int input = 5;
+            int output;
+            var result = _proxy.RefOutNumber(ref input, out output);
+            
+            // ASSERT
+            result.ShouldBe(15);
+            input.ShouldBe(6);
+            output.ShouldBe(107);
+        }
+        
+        [Fact]
+        public void GivenRedirectValueTupleWithTypeAndDiscards_ShouldRedirect()
+        {
+            // ARRANGE
+            _via
+                .To(x => x.RefOutNumber(ref IsRef<int>.Any, out IsRef<int>.Any))
+                .Redirect<(__, Ref<int> output, __)>(call =>
+                {
+                    var input = (int) call.CallInfo.Arguments[0];
+                    var result = call.Next.RefOutNumber(ref input, out call.Args.output.Value);
+                    call.Args.output.Value += 1;
+
+                    return result + 10;
+                });
+
+            // ACT
+            int input = 5;
+            int output;
+            var result = _proxy.RefOutNumber(ref input, out output);
+            
+            // ASSERT
+            result.ShouldBe(input + 10);
+            output.ShouldBe(input + 101);
         }
     }
 }

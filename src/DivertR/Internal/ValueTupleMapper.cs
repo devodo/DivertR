@@ -34,7 +34,7 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object ToTuple(Span<object> args)
         {
-            return new ValueTuple<T1>((T1) args[0]);
+            return new ValueTuple<T1>(args.Map<T1>(0));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -50,32 +50,7 @@ namespace DivertR.Internal
         {
         }
     }
-    
-    internal class ValueTupleMapperDiscard<T1> : IValueTupleMapper
-    {
-        private static readonly Type[] ArgTypes = { typeof(T1) };
-        public Type[] ArgumentTypes => ArgTypes;
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object ToTuple(Span<object> args)
-        {
-            return ((T1) args[0], __.Instance);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object?[] ToObjectArray(object boxedTuple)
-        {
-            var valueTuple = (ValueTuple<T1, __>) boxedTuple;
 
-            return new object?[] { valueTuple.Item1 };
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteBackReferences(Span<object> args, object boxedTuple)
-        {
-        }
-    }
-    
     internal class ValueTupleMapper<T1, T2> : IValueTupleMapper
     {
         private static readonly Type[] ArgTypes = { typeof(T1), typeof(T2) };
@@ -84,7 +59,7 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object ToTuple(Span<object> args)
         {
-            return ((T1) args[0], (T2) args[1]);
+            return (args.Map<T1>(0), args.Map<T2>(1));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -109,7 +84,7 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object ToTuple(Span<object> args)
         {
-            return ((T1) args[0], (T2) args[1], (T3) args[2]);
+            return (args.Map<T1>(0), args.Map<T2>(1), args.Map<T3>(2));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -134,7 +109,7 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object ToTuple(Span<object> args)
         {
-            return ((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3]);
+            return (args.Map<T1>(0), args.Map<T2>(1), args.Map<T3>(2), args.Map<T4>(3));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -159,7 +134,7 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object ToTuple(Span<object> args)
         {
-            return ((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3], (T5) args[4]);
+            return (args.Map<T1>(0), args.Map<T2>(1), args.Map<T3>(2), args.Map<T4>(3), args.Map<T5>(4));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -184,7 +159,7 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object ToTuple(Span<object> args)
         {
-            return ((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3], (T5) args[4], (T6) args[5]);
+            return (args.Map<T1>(0), args.Map<T2>(1), args.Map<T3>(2), args.Map<T4>(3), args.Map<T5>(4), args.Map<T6>(5));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -209,7 +184,7 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object ToTuple(Span<object> args)
         {
-            return ((T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3], (T5) args[4], (T6) args[5], (T7) args[6]);
+            return (args.Map<T1>(0), args.Map<T2>(1), args.Map<T3>(2), args.Map<T4>(3), args.Map<T5>(4), args.Map<T6>(5), args.Map<T7>(6));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -247,9 +222,10 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object ToTuple(Span<object> args)
         {
-            var rest = (TRest) NestedMapper.ToTuple(args.Slice(7));
+            var argsRest = args.Length > 7 ? args.Slice(7) : Span<object>.Empty;
+            var rest = (TRest) NestedMapper.ToTuple(argsRest);
             return new ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>(
-                (T1) args[0], (T2) args[1], (T3) args[2], (T4) args[3], (T5) args[4], (T6) args[5], (T7) args[6], rest);
+                args.Map<T1>(0), args.Map<T2>(1), args.Map<T3>(2), args.Map<T4>(3), args.Map<T5>(4), args.Map<T6>(5), args.Map<T7>(6), rest);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -264,7 +240,22 @@ namespace DivertR.Internal
         public void WriteBackReferences(Span<object> args, object boxedTuple)
         {
             var valueTuple = (ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>) boxedTuple;
-            NestedMapper.WriteBackReferences(args.Slice(7), valueTuple.Rest);
+            var argsRest = args.Length > 7 ? args.Slice(7) : Span<object>.Empty;
+            NestedMapper.WriteBackReferences(argsRest, valueTuple.Rest);
+        }
+    }
+    
+    internal static class MapTypeOrDiscardExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Map<T>(this Span<object> args, int index)
+        {
+            if (typeof(T) == typeof(__))
+            {
+                return (T) (object) __.Instance;
+            }
+
+            return (T) args[index];
         }
     }
 }

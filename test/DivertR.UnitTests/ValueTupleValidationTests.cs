@@ -30,6 +30,19 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenInvalidRefArgumentType_ShouldThrowException()
+        {
+            // ARRANGE
+            var builder = _via.To(x => x.Echo(Is<string>.Any));
+
+            // ACT
+            Action testAction = () => builder.Redirect<(Ref<int> input, __)>(call => call.Args.input.Value.ToString());
+
+            // ASSERT
+            _output.WriteLine($"{testAction.ShouldThrow<DiverterValidationException>()}");
+        }
+        
+        [Fact]
         public void GivenTooManyArgumentTypes_ShouldThrowException()
         {
             // ARRANGE
@@ -64,7 +77,7 @@ namespace DivertR.UnitTests
             var builder = new Via<INumber>().To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any));
 
             // ACT
-            Action testAction = () => builder.Redirect<(int input, int output)>(_ => { });
+            Action testAction = () => builder.Redirect<(int input, int output, __)>(_ => { });
 
             // ASSERT
             _output.WriteLine($"{testAction.ShouldThrow<DiverterValidationException>()}");

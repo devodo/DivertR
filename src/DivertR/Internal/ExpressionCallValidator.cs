@@ -115,12 +115,19 @@ namespace DivertR.Internal
                     }
                 }
 
-                yield return (isValid, $"{(isValid ? "---" : "***")} [{index}:{parameterTypeName ?? "???"}] {message}");
+                var paramType = parameterTypeName ?? (argumentType.type == typeof(__) ? "__" : "???");
+
+                yield return (isValid, $"{(isValid ? "  =" : "  *")} [{index}:{paramType}] {message}");
             }
         }
 
         private static bool IsArgumentTypeValid((Type type, ParameterInfo? parameter) test, ParameterInfo? parameter, bool isStrict = true)
         {
+            if (test.type == typeof(__))
+            {
+                return true;
+            }
+            
             if (parameter == null)
             {
                 return false;
