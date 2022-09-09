@@ -2,7 +2,7 @@
 {
     public class __
     {
-        internal static readonly __ Instance = new __();
+        internal static readonly __ Instance = new();
         
         private __() { }
     }

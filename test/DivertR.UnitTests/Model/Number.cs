@@ -47,6 +47,13 @@ namespace DivertR.UnitTests.Model
             output = _numberFactory(input);
         }
 
+        public int RefOutNumber(ref int input, out int output)
+        {
+            output = _numberFactory(input);
+            
+            return input;
+        }
+
         public void RefArrayNumber(ref int[] inputs)
         {
             var replacement = new int[inputs.Length];

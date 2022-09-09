@@ -23,22 +23,18 @@ namespace DivertR.Internal
         {
             return MapperCache.GetOrAdd(typeof(TArgs), valueTupleType =>
             {
-                if (!IsValueTuple(valueTupleType))
+                if (valueTupleType == typeof(ValueTuple))
+                {
+                    return new ValueTupleMapper();
+                }
+                
+                if (!IsGenericValueTuple(valueTupleType))
                 {
                     throw new DiverterException($"Type {valueTupleType.Name} is not a ValueTuple type");
                 }
-
-                Type mapperType;
-                if (valueTupleType.GenericTypeArguments.Length == 2 && valueTupleType.GenericTypeArguments[1] == typeof(__))
-                {
-                    var factoryTypeDefinition = typeof(ValueTupleMapperDiscard<>);
-                    mapperType = factoryTypeDefinition.MakeGenericType(valueTupleType.GenericTypeArguments[0]);
-                }
-                else
-                {
-                    var factoryTypeDefinition = ValueTupleMapperTypes[valueTupleType.GenericTypeArguments.Length];
-                    mapperType = factoryTypeDefinition.MakeGenericType(valueTupleType.GenericTypeArguments);
-                }
+                
+                var factoryTypeDefinition = ValueTupleMapperTypes[valueTupleType.GenericTypeArguments.Length];
+                var mapperType = factoryTypeDefinition.MakeGenericType(valueTupleType.GenericTypeArguments);
             
                 const BindingFlags ActivatorFlags = BindingFlags.Public | BindingFlags.Instance;
                 var mapper = (IValueTupleMapper) Activator.CreateInstance(mapperType, ActivatorFlags, null, null, default);
@@ -54,7 +50,7 @@ namespace DivertR.Internal
             });
         }
 
-        private static bool IsValueTuple(Type type)
+        private static bool IsGenericValueTuple(Type type)
         {
             if (!type.IsGenericType)
             {
