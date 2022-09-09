@@ -15,7 +15,7 @@ namespace DivertR.Record.Internal
             Calls = calls ?? throw new ArgumentNullException(nameof(calls));
         }
 
-        public ICallStream<T> Where(Func<T, bool> predicate)
+        public ICallStream<T> Filter(Func<T, bool> predicate)
         {
             return new CallStream<T>(Calls.Where(predicate));
         }

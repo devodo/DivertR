@@ -5,7 +5,7 @@ namespace DivertR.Dummy
 {
     public interface IDummyBuilder<TReturn>
     {
-        IDummyBuilder<TReturn> AddConstraint(ICallConstraint callConstraint);
+        IDummyBuilder<TReturn> Filter(ICallConstraint callConstraint);
         IDummyBuilder<TReturn> Redirect(TReturn instance, Action<IRedirectOptionsBuilder>? optionsAction = null);
         IDummyBuilder<TReturn> Redirect(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
         IDummyBuilder<TReturn> Redirect(Func<IFuncRedirectCall<TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
@@ -15,7 +15,7 @@ namespace DivertR.Dummy
     
     public interface IDummyBuilder
     {
-        IDummyBuilder AddConstraint(ICallConstraint callConstraint);
+        IDummyBuilder Filter(ICallConstraint callConstraint);
         IDummyBuilder Redirect(object instance, Action<IRedirectOptionsBuilder>? optionsAction = null);
         IDummyBuilder Redirect(Func<object> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
         IDummyBuilder Redirect(Func<IRedirectCall, object> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);

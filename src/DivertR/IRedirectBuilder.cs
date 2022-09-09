@@ -5,7 +5,7 @@ namespace DivertR
 {
     public interface IRedirectBuilder<TTarget> where TTarget : class?
     {
-        IRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
+        IRedirectBuilder<TTarget> Filter(ICallConstraint<TTarget> callConstraint);
         IRedirect Build(object? instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         IRedirect Build(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         IRedirect Build(Func<IRedirectCall<TTarget>, object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
@@ -17,7 +17,7 @@ namespace DivertR
     
     public interface IRedirectBuilder
     {
-        IRedirectBuilder AddConstraint(ICallConstraint callConstraint);
+        IRedirectBuilder Filter(ICallConstraint callConstraint);
         IRedirect Build(object? instance, Action<IRedirectOptionsBuilder>? optionsAction = null);
         IRedirect Build(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
         IRedirect Build(Func<IRedirectCall, object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);

@@ -14,9 +14,9 @@ namespace DivertR.Dummy.Internal
             _redirectBuilder = redirectBuilder;
         }
         
-        public IDummyBuilder<TReturn> AddConstraint(ICallConstraint callConstraint)
+        public IDummyBuilder<TReturn> Filter(ICallConstraint callConstraint)
         {
-            _redirectBuilder.AddConstraint(callConstraint);
+            _redirectBuilder.Filter(callConstraint);
 
             return this;
         }
@@ -73,9 +73,9 @@ namespace DivertR.Dummy.Internal
             _redirectBuilder = redirectBuilder;
         }
         
-        public IDummyBuilder AddConstraint(ICallConstraint callConstraint)
+        public IDummyBuilder Filter(ICallConstraint callConstraint)
         {
-            _redirectBuilder.AddConstraint(callConstraint);
+            _redirectBuilder.Filter(callConstraint);
 
             return this;
         }

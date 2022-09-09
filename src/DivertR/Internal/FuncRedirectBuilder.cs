@@ -23,9 +23,9 @@ namespace DivertR.Internal
             CallValidator = callValidator;
         } 
         
-        public new IFuncRedirectBuilder<TTarget, TReturn> AddConstraint(ICallConstraint<TTarget> callConstraint)
+        public new IFuncRedirectBuilder<TTarget, TReturn> Filter(ICallConstraint<TTarget> callConstraint)
         {
-            base.AddConstraint(callConstraint);
+            base.Filter(callConstraint);
 
             return this;
         }
@@ -121,9 +121,9 @@ namespace DivertR.Internal
         {
         }
 
-        public new IFuncRedirectBuilder<TReturn> AddConstraint(ICallConstraint callConstraint)
+        public new IFuncRedirectBuilder<TReturn> Filter(ICallConstraint callConstraint)
         {
-            base.AddConstraint(callConstraint);
+            base.Filter(callConstraint);
 
             return this;
         }

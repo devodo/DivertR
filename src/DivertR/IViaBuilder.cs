@@ -8,7 +8,7 @@ namespace DivertR
         IVia<TTarget> Via { get; }
         IRedirectBuilder<TTarget> RedirectBuilder { get; }
         
-        IViaBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint);
+        IViaBuilder<TTarget> Filter(ICallConstraint<TTarget> callConstraint);
         IViaBuilder<TTarget> Redirect(object? instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         IViaBuilder<TTarget> Redirect(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
         IViaBuilder<TTarget> Redirect(Func<IRedirectCall<TTarget>, object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);

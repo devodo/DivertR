@@ -833,7 +833,7 @@ namespace DivertR.UnitTests
 
             // ASSERT
             calls
-                .Where(call => call.Args.input == results[5])
+                .Filter(call => call.Args.input == results[5])
                 .Verify(call => call.Args.input.ShouldBe(results[5])).Count.ShouldBe(1);
         }
     }
