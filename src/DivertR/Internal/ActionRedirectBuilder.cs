@@ -22,9 +22,9 @@ namespace DivertR.Internal
             CallValidator = callValidator;
         }
         
-        public new IActionRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint)
+        public new IActionRedirectBuilder<TTarget> Filter(ICallConstraint<TTarget> callConstraint)
         {
-            base.AddConstraint(callConstraint);
+            base.Filter(callConstraint);
 
             return this;
         }

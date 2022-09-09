@@ -475,7 +475,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.EchoGeneric(Is<object>.Any))
-                .AddConstraint(new MatchCallConstraint<IFoo>(callInfo => callInfo.Method.GetGenericArguments()[0] == typeof(object)))
+                .Filter(new MatchCallConstraint<IFoo>(callInfo => callInfo.Method.GetGenericArguments()[0] == typeof(object)))
                 .Redirect<(object i, __)>(call => $"{call.Args.i} - {_via.Relay.Next.Name}");
 
             // ACT
@@ -903,7 +903,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _via
                 .To(x => x.Echo(Is<string>.Any))
-                .AddConstraint(new CallConstraint<IFoo>(call => (string) call.Arguments[0] != "ignore"))
+                .Filter(new CallConstraint<IFoo>(call => (string) call.Arguments[0] != "ignore"))
                 .Redirect<(string input, __)>(call => call.CallNext(new[] { $"{call.Args.input} redirected" }));
 
             var proxy = _via.Proxy(new Foo());

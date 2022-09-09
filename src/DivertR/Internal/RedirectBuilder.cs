@@ -24,7 +24,7 @@ namespace DivertR.Internal
             CallConstraints = callConstraints;
         }
 
-        public IRedirectBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint)
+        public IRedirectBuilder<TTarget> Filter(ICallConstraint<TTarget> callConstraint)
         {
             CallConstraints.Add(callConstraint);
 
@@ -97,7 +97,7 @@ namespace DivertR.Internal
             _callConstraints = callConstraints;
         }
 
-        public IRedirectBuilder AddConstraint(ICallConstraint callConstraint)
+        public IRedirectBuilder Filter(ICallConstraint callConstraint)
         {
             _callConstraints.Add(callConstraint);
 

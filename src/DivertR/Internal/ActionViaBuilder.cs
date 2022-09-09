@@ -14,9 +14,9 @@ namespace DivertR.Internal
 
         public new IActionRedirectBuilder<TTarget> RedirectBuilder { get; }
 
-        public new IActionViaBuilder<TTarget> AddConstraint(ICallConstraint<TTarget> callConstraint)
+        public new IActionViaBuilder<TTarget> Filter(ICallConstraint<TTarget> callConstraint)
         {
-            base.AddConstraint(callConstraint);
+            base.Filter(callConstraint);
 
             return this;
         }
