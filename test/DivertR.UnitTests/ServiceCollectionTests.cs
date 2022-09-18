@@ -109,5 +109,63 @@ namespace DivertR.UnitTests
             
             foo.ShouldBeNull();
         }
+        
+        [Fact]
+        public void ShouldDisposeDecoratedInstances()
+        {
+            _services.AddTransient<INothing>(_ => new TestDisposable());
+            _services.AddTransient<INothing, TestDisposable>();
+            _services.AddScoped<INothing, TestDisposable>();
+            _services.AddScoped<INothing>(_ => new TestDisposable());
+            
+            var diverter = new Diverter().Register<INothing>();
+            _services.Divert(diverter);
+            
+            var provider = _services.BuildServiceProvider();
+            using (var scope = provider.CreateScope())
+            {
+                scope.ServiceProvider.GetServices<INothing>();
+                TestDisposable.DisposeCount.ShouldBe(0);
+            }
+            
+            TestDisposable.DisposeCount.ShouldBe(4);
+        }
+
+        private interface INothing
+        {
+        }
+
+        private class TestDisposable : INothing, IDisposable
+        {
+            private static readonly object LockObject = new();
+            private static int Count;
+            private bool _isDisposed;
+
+            public static int DisposeCount
+            {
+                get
+                {
+                    lock (LockObject)
+                    {
+                        return Count;
+                    }
+                }
+            }
+
+            public void Dispose()
+            {
+                lock (LockObject)
+                {
+                    if (_isDisposed)
+                    {
+                        throw new Exception("Already disposed");
+                    }
+
+                    _isDisposed = true;
+                    
+                    Count++;
+                }
+            }
+        }
     }
 }
