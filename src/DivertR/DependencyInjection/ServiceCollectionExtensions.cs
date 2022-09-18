@@ -38,13 +38,24 @@ namespace DivertR.DependencyInjection
             return services
                 .Select((descriptor, index) =>
                 {
+                    if (descriptor.ServiceType is TypePointer)
+                    {
+                        return null;
+                    }
+                    
                     if (!registeredVias.TryGetValue(descriptor.ServiceType, out var via))
                     {
                         return null;
                     }
+                    
+                    var typePointer = new TypePointer(descriptor.ServiceType);
+                    var proxyFactory = CreateViaProxyFactory(typePointer, via);
 
-                    var proxyFactory = CreateViaProxyFactory(descriptor, via);
-                    void DecorateAction() => services[index] = ServiceDescriptor.Describe(descriptor.ServiceType, proxyFactory, descriptor.Lifetime);
+                    void DecorateAction()
+                    {
+                        services.Add(descriptor.ToPointerDescriptor(typePointer));
+                        services[index] = new ServiceDescriptor(descriptor.ServiceType, proxyFactory, descriptor.Lifetime);
+                    }
 
                     return new
                     {
@@ -58,30 +69,35 @@ namespace DivertR.DependencyInjection
                     grp => grp.Select(x => x!.Action));
         }
 
-        private static Func<IServiceProvider, object?> CreateViaProxyFactory(ServiceDescriptor descriptor, IVia via)
+        private static ServiceDescriptor ToPointerDescriptor(this ServiceDescriptor original, Type typePointer)
+        {
+            if (original.ImplementationType != null)
+            {
+                return new ServiceDescriptor(typePointer, original.ImplementationType, original.Lifetime);
+            }
+
+            if (original.ImplementationFactory != null)
+            {
+                return new ServiceDescriptor(typePointer, original.ImplementationFactory, original.Lifetime);
+            }
+
+            if (original.ImplementationInstance != null)
+            {
+                return new ServiceDescriptor(typePointer, original.ImplementationInstance);
+            }
+
+            throw new ArgumentException($"No ServiceDescriptor implementation defined on {original.ServiceType}", nameof(original));
+        }
+        
+        private static Func<IServiceProvider, object?> CreateViaProxyFactory(Type typePointer, IVia via)
         {
             object? ProxyFactory(IServiceProvider provider)
             {
-                var instance = GetServiceInstance(provider, descriptor);
+                var instance = provider.GetService(typePointer);
                 return via.ViaSet.Settings.DependencyFactory.Create(via, instance);
             }
 
             return ProxyFactory;
-        }
-        
-        private static object GetServiceInstance(IServiceProvider provider, ServiceDescriptor descriptor)
-        {
-            if (descriptor.ImplementationInstance != null)
-            {
-                return descriptor.ImplementationInstance;
-            }
-
-            if (descriptor.ImplementationType != null)
-            {
-                return ActivatorUtilities.GetServiceOrCreateInstance(provider, descriptor.ImplementationType);
-            }
-
-            return descriptor.ImplementationFactory(provider);
         }
     }
 }
