@@ -74,7 +74,7 @@ namespace DivertR.DependencyInjection
             {
                 var root = rootFactory.Invoke(provider);
                 
-                return via.ViaSet.Settings.DependencyFactory.Create(via, root);
+                return via.ViaSet.Settings.ViaProxyDecorator.Decorate(via, root);
             };
         }
         

@@ -1,8 +1,8 @@
 ﻿namespace DivertR.Internal
 {
-    internal class DependencyFactory : IDependencyFactory
+    internal class ViaProxyDecorator : IViaProxyDecorator
     {
-        public object? Create(IVia via, object? original)
+        public object? Decorate(IVia via, object? original)
         {
             if (original == null)
             {
