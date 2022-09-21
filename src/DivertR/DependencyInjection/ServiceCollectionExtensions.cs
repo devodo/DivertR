@@ -48,12 +48,9 @@ namespace DivertR.DependencyInjection
                         return null;
                     }
                     
-                    var typePointer = new TypePointer(descriptor.ServiceType);
-                    var proxyFactory = CreateViaProxyFactory(typePointer, via);
-
                     void DecorateAction()
                     {
-                        services.Add(descriptor.ToPointerDescriptor(typePointer));
+                        var proxyFactory = CreateViaProxyFactory(services, descriptor, via);
                         services[index] = new ServiceDescriptor(descriptor.ServiceType, proxyFactory, descriptor.Lifetime);
                     }
 
@@ -68,36 +65,55 @@ namespace DivertR.DependencyInjection
                 .ToDictionary(grp => grp.Key, 
                     grp => grp.Select(x => x!.Action));
         }
-
-        private static ServiceDescriptor ToPointerDescriptor(this ServiceDescriptor original, Type typePointer)
+        
+        private static Func<IServiceProvider, object?> CreateViaProxyFactory(IServiceCollection services, ServiceDescriptor descriptor, IVia via)
         {
-            if (original.ImplementationType != null)
+            var rootFactory = CreateRootFactory(services, descriptor);
+            
+            return provider =>
             {
-                return new ServiceDescriptor(typePointer, original.ImplementationType, original.Lifetime);
-            }
-
-            if (original.ImplementationFactory != null)
-            {
-                return new ServiceDescriptor(typePointer, original.ImplementationFactory, original.Lifetime);
-            }
-
-            if (original.ImplementationInstance != null)
-            {
-                return new ServiceDescriptor(typePointer, original.ImplementationInstance);
-            }
-
-            throw new ArgumentException($"No ServiceDescriptor implementation defined on {original.ServiceType}", nameof(original));
+                var root = rootFactory.Invoke(provider);
+                
+                return via.ViaSet.Settings.DependencyFactory.Create(via, root);
+            };
         }
         
-        private static Func<IServiceProvider, object?> CreateViaProxyFactory(Type typePointer, IVia via)
+        private static Func<IServiceProvider, object?> CreateRootFactory(IServiceCollection services, ServiceDescriptor descriptor)
         {
-            object? ProxyFactory(IServiceProvider provider)
-            {
-                var instance = provider.GetService(typePointer);
-                return via.ViaSet.Settings.DependencyFactory.Create(via, instance);
-            }
+            var isDisposable = typeof(IDisposable).IsAssignableFrom(descriptor.ServiceType) ||
+                               typeof(IAsyncDisposable).IsAssignableFrom(descriptor.ServiceType);
+            
+            return !isDisposable
+                ? CreateDisposingRootFactory(services, descriptor)
+                : CreateNonDisposingRootFactory(descriptor);
+        }
 
-            return ProxyFactory;
+        private static Func<IServiceProvider, object?> CreateDisposingRootFactory(IServiceCollection services, ServiceDescriptor descriptor)
+        {
+            var typePointer = new TypePointer(descriptor.ServiceType);
+            
+            var pointerDescriptor = descriptor switch
+            {
+                { ImplementationType: not null } => new ServiceDescriptor(typePointer, descriptor.ImplementationType, descriptor.Lifetime),
+                { ImplementationFactory: not null } => new ServiceDescriptor(typePointer, descriptor.ImplementationFactory, descriptor.Lifetime),
+                { ImplementationInstance: not null } => new ServiceDescriptor(typePointer, descriptor.ImplementationInstance),
+                _ => throw new ArgumentException($"No ServiceDescriptor implementation defined on {descriptor.ServiceType}", nameof(descriptor))
+            };
+            
+            services.Add(pointerDescriptor);
+
+            return provider => provider.GetService(typePointer);
+        }
+        
+        private static Func<IServiceProvider, object?> CreateNonDisposingRootFactory(ServiceDescriptor descriptor)
+        {
+            return descriptor switch
+            {
+                { ImplementationType: not null } => provider => ActivatorUtilities.GetServiceOrCreateInstance(provider, descriptor.ImplementationType),
+                { ImplementationFactory: not null } => descriptor.ImplementationFactory,
+                { ImplementationInstance: not null } => _ => descriptor.ImplementationInstance,
+                _ => throw new ArgumentException($"No ServiceDescriptor implementation defined on {descriptor.ServiceType}", nameof(descriptor))
+            };
         }
     }
 }
