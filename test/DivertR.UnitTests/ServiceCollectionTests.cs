@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using DivertR.DependencyInjection;
 using DivertR.UnitTests.Model;
 using Microsoft.Extensions.DependencyInjection;
@@ -111,60 +113,161 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void ShouldDisposeDecoratedInstances()
+        public void ContainerShouldDisposeNonDisposableDecoratedInstances()
         {
-            _services.AddTransient<INothing>(_ => new TestDisposable());
-            _services.AddTransient<INothing, TestDisposable>();
-            _services.AddScoped<INothing, TestDisposable>();
-            _services.AddScoped<INothing>(_ => new TestDisposable());
+            using var disposeContext = new DisposeContext();
+            _services.AddSingleton(disposeContext);
+
+            for (var i = 0; i < 2; i++)
+            {
+                _services.AddTransient<ITestNonDisposable>(provider => new TestDisposable(provider.GetRequiredService<DisposeContext>()));
+                _services.AddTransient<ITestNonDisposable, TestDisposable>();
+                _services.AddScoped<ITestNonDisposable, TestDisposable>();
+                _services.AddScoped<ITestNonDisposable>(provider => new TestDisposable(provider.GetRequiredService<DisposeContext>()));
+            }
             
-            var diverter = new Diverter().Register<INothing>();
+            var diverter = new Diverter().Register<ITestNonDisposable>();
             _services.Divert(diverter);
             
             var provider = _services.BuildServiceProvider();
             using (var scope = provider.CreateScope())
             {
-                scope.ServiceProvider.GetServices<INothing>();
-                TestDisposable.DisposeCount.ShouldBe(0);
+                scope.ServiceProvider.GetServices<ITestNonDisposable>();
+                disposeContext.DisposeCount.ShouldBe(0);
             }
             
-            TestDisposable.DisposeCount.ShouldBe(4);
+            disposeContext.DisposeCount.ShouldBe(8);
+        }
+        
+        [Fact]
+        public void ContainerShouldNotDisposeDisposableInstances()
+        {
+            using var disposeContext = new DisposeContext();
+            _services.AddSingleton(disposeContext);
+
+            for (var i = 0; i < 2; i++)
+            {
+                _services.AddTransient<ITestDisposable>(provider => new TestDisposable(provider.GetRequiredService<DisposeContext>()));
+                _services.AddTransient<ITestDisposable, TestDisposable>();
+                _services.AddScoped<ITestDisposable, TestDisposable>();
+                _services.AddScoped<ITestDisposable>(provider => new TestDisposable(provider.GetRequiredService<DisposeContext>()));
+            }
+            
+            var diverter = new Diverter().Register<ITestDisposable>();
+            _services.Divert(diverter);
+
+            var disposeCalls = diverter
+                .Via<ITestDisposable>()
+                .To(x => x.Dispose())
+                .Redirect(() => { })
+                .Record();
+            
+            var provider = _services.BuildServiceProvider();
+            using (var scope = provider.CreateScope())
+            {
+                scope.ServiceProvider.GetServices<ITestDisposable>();
+                disposeContext.DisposeCount.ShouldBe(0);
+            }
+            
+            disposeContext.DisposeCount.ShouldBe(0);
+            disposeCalls.Count.ShouldBe(8);
+        }
+        
+        [Fact]
+        public async Task ContainerShouldNotDisposeAsyncDisposableInstances()
+        {
+            using var disposeContext = new DisposeContext();
+            _services.AddSingleton(disposeContext);
+
+            for (var i = 0; i < 2; i++)
+            {
+                _services.AddTransient<ITestAsyncDisposable>(provider => new TestDisposable(provider.GetRequiredService<DisposeContext>()));
+                _services.AddTransient<ITestAsyncDisposable, TestDisposable>();
+                _services.AddScoped<ITestAsyncDisposable, TestDisposable>();
+                _services.AddScoped<ITestAsyncDisposable>(provider => new TestDisposable(provider.GetRequiredService<DisposeContext>()));
+            }
+            
+            var diverter = new Diverter().Register<ITestAsyncDisposable>();
+            _services.Divert(diverter);
+
+            var disposeCalls = diverter
+                .Via<ITestAsyncDisposable>()
+                .To(x => x.DisposeAsync())
+                .Redirect(() => new ValueTask())
+                .Record();
+            
+            var provider = _services.BuildServiceProvider();
+            await using (var scope = provider.CreateAsyncScope())
+            {
+                scope.ServiceProvider.GetServices<ITestAsyncDisposable>();
+                disposeContext.DisposeCount.ShouldBe(0);
+            }
+            
+            disposeContext.DisposeCount.ShouldBe(0);
+            disposeCalls.Count.ShouldBe(8);
         }
 
-        private interface INothing
+        private interface ITestNonDisposable
+        {
+        }
+        
+        private interface ITestDisposable : IDisposable
+        {
+        }
+        
+        private interface ITestAsyncDisposable : IAsyncDisposable
         {
         }
 
-        private class TestDisposable : INothing, IDisposable
+        private class TestDisposable : ITestNonDisposable, ITestDisposable, ITestAsyncDisposable
         {
-            private static readonly object LockObject = new();
-            private static int Count;
+            private readonly DisposeContext _disposeContext;
             private bool _isDisposed;
 
-            public static int DisposeCount
+
+            public TestDisposable(DisposeContext disposeContext)
             {
-                get
-                {
-                    lock (LockObject)
-                    {
-                        return Count;
-                    }
-                }
+                _disposeContext = disposeContext;
             }
 
             public void Dispose()
             {
-                lock (LockObject)
+                if (_isDisposed)
                 {
-                    if (_isDisposed)
-                    {
-                        throw new Exception("Already disposed");
-                    }
-
-                    _isDisposed = true;
-                    
-                    Count++;
+                    throw new Exception("Already disposed");
                 }
+
+                _isDisposed = true;
+                _disposeContext.AddDispose();
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                Dispose();
+                
+                return new ValueTask();
+            }
+        }
+
+        private class DisposeContext : IDisposable
+        {
+            private static readonly object LockObject = new();
+
+            public DisposeContext()
+            {
+                Monitor.Enter(LockObject);
+            }
+            
+            public int DisposeCount { get; private set; }
+
+            public void AddDispose()
+            {
+                DisposeCount++;
+            }
+            
+            public void Dispose()
+            {
+                Monitor.Exit(LockObject);
             }
         }
     }
