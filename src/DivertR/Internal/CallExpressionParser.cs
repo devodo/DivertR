@@ -26,7 +26,7 @@ namespace DivertR.Internal
                 return FromProperty(memberExpression, null);
             }
 
-            throw new ArgumentException($"Only property MemberExpression valid but was: {expression.GetType()}", nameof(expression));
+            throw new ArgumentException($"Only property MemberExpression valid but got: {expression.GetType()}", nameof(expression));
         }
         
         public static ICallValidator FromPropertySetter(MemberExpression propertyExpression, Expression? valueExpression)
@@ -35,7 +35,7 @@ namespace DivertR.Internal
 
             if (propertyExpression.Member is not PropertyInfo property)
             {
-                throw new ArgumentException($"Member expression must be of type PropertyInfo but got: {propertyExpression.Member.GetType()}", nameof(propertyExpression));
+                throw new ArgumentException($"Member property must be of type PropertyInfo but got: {propertyExpression.Member.GetType()}", nameof(propertyExpression));
             }
             
             var methodInfo = property.GetSetMethod(true);
@@ -54,7 +54,7 @@ namespace DivertR.Internal
 
             if (methodInfo.DeclaringType == null || !methodInfo.DeclaringType.IsAssignableFrom(targetType))
             {
-                throw new ArgumentException($"Declaring type of MethodCallExpression {methodInfo.DeclaringType} is not assignable from the Via target type: {targetType}", nameof(expression));
+                throw new ArgumentException($"The method declaring type {methodInfo.DeclaringType} is not assignable from the Via target type: {targetType}", nameof(expression));
             }
             
             var parameterInfos = methodInfo.GetParameters();
@@ -78,7 +78,7 @@ namespace DivertR.Internal
             {
                 if (property.Name != nameof(Is<object>.Return))
                 {
-                    throw new ArgumentException($"Only the property Is<T>.{nameof(Is<object>.Return)} may be used as an expression return value", nameof(expression));
+                    throw new ArgumentException($"Only Is<T>.{nameof(Is<object>.Return)} may be used as a return constraint property", nameof(expression));
                 }
                 
                 return new ReturnCallValidator(property.PropertyType);
@@ -86,12 +86,12 @@ namespace DivertR.Internal
 
             if (targetType == null)
             {
-                throw new ArgumentException($"Only the return value property Is<T>.{nameof(Is<object>.Return)} is valid here", nameof(expression));
+                throw new ArgumentException($"Only the property Is<T>.{nameof(Is<object>.Return)} may be used as a return constraint value in this context", nameof(expression));
             }
             
             if (property.DeclaringType == null || !property.DeclaringType.IsAssignableFrom(targetType))
             {
-                throw new ArgumentException($"Declaring type of MethodCallExpression {property.DeclaringType} is not assignable from the Via target type: {targetType}", nameof(expression));
+                throw new ArgumentException($"The property declaring type {property.DeclaringType} is not assignable from the Via target type: {targetType}", nameof(expression));
             }
             
             var methodInfo = property.GetGetMethod(true);
