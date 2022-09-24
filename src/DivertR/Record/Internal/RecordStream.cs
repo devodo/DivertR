@@ -27,7 +27,7 @@ namespace DivertR.Record.Internal
         {
             if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
-            var callValidator = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            var callValidator = CallExpressionParser.FromExpression<TTarget>(lambdaExpression.Body);
             var callConstraint = callValidator.CreateCallConstraint();
             var calls = Calls
                 .Where(x => callConstraint.IsMatch(x.CallInfo))
@@ -40,7 +40,7 @@ namespace DivertR.Record.Internal
         {
             if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
 
-            var callValidator = CallExpressionParser.FromExpression(lambdaExpression.Body);
+            var callValidator = CallExpressionParser.FromExpression<TTarget>(lambdaExpression.Body);
             var callConstraint = callValidator.CreateCallConstraint();
             var calls = Calls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
@@ -100,7 +100,7 @@ namespace DivertR.Record.Internal
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
-            var callValidator = CallExpressionParser.FromExpression(constraintExpression.Body);
+            var callValidator = CallExpressionParser.FromProperty(constraintExpression.Body);
             var callConstraint = callValidator.CreateCallConstraint();
             
             var calls = Calls

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using DivertR.UnitTests.Model;
 using Moq;
@@ -7,63 +8,10 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class ViaRedirectTests
+    public class ViaBuilderTests
     {
         private readonly IVia<IFoo> _via = new Via<IFoo>();
-
-        [Fact]
-        public void GivenNoRedirects_ShouldDefaultToRoot()
-        {
-            // ARRANGE
-            var original = new Foo("hello foo");
-            var proxy = _via.Proxy(original);
-
-            // ACT
-            var name = proxy.Name;
-
-            // ASSERT
-            name.ShouldBe(original.Name);
-        }
         
-        [Fact]
-        public void GivenValidRootObjectType_WhenCreateProxyObject_ShouldCreateProxy()
-        {
-            // ARRANGE
-            var original = new Foo();
-
-            // ACT
-            var proxy = (IFoo) ((IVia) _via).Proxy(original);
-
-            // ASSERT
-            proxy.Name.ShouldBe(original.Name);
-        }
-        
-        [Fact]
-        public void GivenProxyWithNullRoot_WhenProxyMemberCalled_ShouldThrowException()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(null);
-
-            // ACT
-            Func<object> testAction = () => proxy.Name;
-
-            // ASSERT
-            testAction.ShouldThrow<DiverterNullRootException>();
-        }
-        
-        [Fact]
-        public void GivenInvalidRootObjectType_WhenCreateProxyObject_ShouldThrowArgumentException()
-        {
-            // ARRANGE
-            var invalidOriginal = new object();
-
-            // ACT
-            Func<object> testAction = () => _via.Proxy(invalidOriginal);
-
-            // ASSERT
-            testAction.ShouldThrow<ArgumentException>();
-        }
-
         [Fact]
         public void GivenValueRedirect_ShouldRedirect()
         {
@@ -79,20 +27,6 @@ namespace DivertR.UnitTests
             name.ShouldBe(redirectMessage);
         }
 
-        [Fact]
-        public void GivenStrictModeWithNoRedirect_ShouldThrowException()
-        {
-            // ARRANGE
-            _via.Strict();
-            var proxy = _via.Proxy(new Foo("hello foo"));
-
-            // ACT
-            Func<string> testAction = () => proxy.Name;
-
-            // ASSERT
-            testAction.ShouldThrow<DiverterException>();
-        }
-        
         [Fact]
         public void GivenRedirect_WhenReset_ShouldDefaultToRoot()
         {
@@ -335,6 +269,40 @@ namespace DivertR.UnitTests
             // ASSERT
             message.ShouldBe("hello foo test");
         }
+        
+        [Fact]
+        public void GivenRedirectWithArgumentConstraintAsArrayIndexer_WhenCallMatches_ShouldRedirect()
+        {
+            // ARRANGE
+            var arguments = new[] { "test" };
+            _via
+                .To(x => x.Echo(arguments[0]))
+                .Redirect(() => "matched");
+
+            // ACT
+            var proxy = _via.Proxy();
+            var result = proxy.Echo("test");
+
+            // ASSERT
+            result.ShouldBe("matched");
+        }
+        
+        [Fact]
+        public void GivenRedirectWithArgumentConstraintAsListIndexer_WhenCallMatches_ShouldRedirect()
+        {
+            // ARRANGE
+            var arguments = new List<string> { "test" };
+            _via
+                .To(x => x.Echo(arguments[0]))
+                .Redirect(() => "matched");
+
+            // ACT
+            var proxy = _via.Proxy();
+            var result = proxy.Echo("test");
+
+            // ASSERT
+            result.ShouldBe("matched");
+        }
 
         [Fact]
         public void GivenSubTypeIsAnyExpressionRedirect_WhenCallSubTypeNotMatch_ShouldNotRedirect()
@@ -435,6 +403,30 @@ namespace DivertR.UnitTests
 
             // ASSERT
             proxy.Name.ShouldBe("New test set");
+        }
+        
+        [Fact]
+        public void GivenVia_WhenToSetBuilderWithIsRefAnyConstraint_ThenThrowsArgumentException()
+        {
+            // ARRANGE
+
+            // ACT
+            var testAction = () => _via.ToSet(x => x.Name, () => IsRef<string>.Any);
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
+        }
+        
+        [Fact]
+        public void GivenVia_WhenToSetBuilderWithIsRefMatchConstraint_ThenThrowsArgumentException()
+        {
+            // ARRANGE
+
+            // ACT
+            var testAction = () => _via.ToSet(x => x.Name, () => IsRef<string>.Match(m => true).Value);
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
         }
         
         [Fact]
@@ -858,6 +850,140 @@ namespace DivertR.UnitTests
 
             // ASSERT
             result.ShouldBe("relay " + original.Name);
+        }
+        
+        [Fact]
+        public void GivenVia_WhenIsAnyForReturnMatch_ThenThrowsArgumentException()
+        {
+            // ARRANGE
+            
+            // ACT
+            var testAction = () => _via.To(x => Is<string>.Any);
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
+        }
+        
+        [Fact]
+        public void GivenVia_WhenIsMatchForReturnMatch_ThenThrowsArgumentException()
+        {
+            // ARRANGE
+            
+            // ACT
+            var testAction = () => _via.To(x => Is<string>.Match(m => true));
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
+        }
+        
+        [Fact]
+        public void GivenVia_WhenIsRefAnyForReturnMatch_ThenThrowsArgumentException()
+        {
+            // ARRANGE
+            
+            // ACT
+            var testAction = () => _via.To(x => IsRef<string>.Any);
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
+        }
+        
+        [Fact]
+        public void GivenVia_WhenIsRefMatchValueForReturnMatch_ThenThrowsArgumentException()
+        {
+            // ARRANGE
+            
+            // ACT
+            var testAction = () => _via.To(x => IsRef<string>.Match(m => true).Value);
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
+        }
+        
+        [Fact]
+        public void GivenVia_WhenIsRefMatchForReturnMatch_ThenThrowsArgumentException()
+        {
+            // ARRANGE
+            
+            // ACT
+            var testAction = () => _via.To(x => IsRef<string>.Match(m => true));
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
+        }
+        
+        [Fact]
+        public void GivenVia_WhenConstantForReturnMatch_ThenThrowsArgumentException()
+        {
+            // ARRANGE
+
+            // ACT
+            var testAction = () => _via.To(x => "test");
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
+        }
+        
+        [Fact]
+        public void GivenVia_WhenMethodForReturnMatch_ThenThrowsArgumentException()
+        {
+            // ARRANGE
+            var arguments = new List<string> { "test" };
+
+            // ACT
+            var testAction = () => _via.To(x => arguments[0]);
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
+        }
+        
+        [Fact]
+        public void GivenVia_WhenPropertyForReturnMatch_ThenThrowsArgumentException()
+        {
+            // ARRANGE
+            var foo = new Foo();
+            
+            // ACT
+            var testAction = () => _via.To(x => foo.Name);
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
+        }
+        
+        [Fact]
+        public void GivenVia_WhenAddRedirectWithReturnMatchParameter_ThenThrowsArgumentException()
+        {
+            // ARRANGE
+
+            // ACT
+            var testAction = () => _via.To(x => x.Echo(Is<string>.Return));
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
+        }
+        
+        [Fact]
+        public void GivenVia_WhenAddRedirectWithIsRefAnyParameter_ThenThrowsArgumentException()
+        {
+            // ARRANGE
+
+            // ACT
+            var testAction = () => _via.To(x => x.Echo(IsRef<string>.Any));
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
+        }
+        
+        [Fact]
+        public void GivenVia_WhenAddRedirectWithIsRefMatchParameter_ThenThrowsArgumentException()
+        {
+            // ARRANGE
+
+            // ACT
+            var testAction = () => _via.To(x => x.Echo(IsRef<string>.Match(m => true).Value));
+
+            // ASSERT
+            testAction.ShouldThrow<ArgumentException>();
         }
 
         [Fact]
