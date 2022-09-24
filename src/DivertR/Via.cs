@@ -157,7 +157,7 @@ namespace DivertR
             return new ActionViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.To(constraintExpression));
         }
         
-        public IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty?>> constraintExpression)
+        public IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
         {
             return new ActionViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.ToSet(memberExpression, constraintExpression));
         }

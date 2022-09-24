@@ -19,12 +19,11 @@ namespace DivertR.Internal
             };
         }
         
-        public static ICallValidator FromPropertySetter(MemberExpression propertyExpression, Expression valueExpression)
+        public static ICallValidator FromPropertySetter(MemberExpression propertyExpression, Expression? valueExpression)
         {
             if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
-            if (valueExpression == null) throw new ArgumentNullException(nameof(valueExpression));
-            
-            if (!(propertyExpression.Member is PropertyInfo property))
+
+            if (propertyExpression.Member is not PropertyInfo property)
             {
                 throw new ArgumentException($"Member expression must be of type PropertyInfo but got: {propertyExpression.Member.GetType()}", nameof(propertyExpression));
             }
@@ -32,7 +31,9 @@ namespace DivertR.Internal
             var methodInfo = property.GetSetMethod(true);
             var parameterInfos = methodInfo.GetParameters();
             var methodConstraint = CreateMethodConstraint(methodInfo);
-            var argumentConstraints = CreateArgumentConstraints(parameterInfos, new[] { valueExpression });
+            var argumentConstraints = valueExpression == null 
+                ? new[] { TrueArgumentConstraint.Instance }
+                : CreateArgumentConstraints(parameterInfos, new[] { valueExpression });
 
             return new ExpressionCallValidator(methodInfo, parameterInfos, methodConstraint, argumentConstraints);
         }
@@ -51,7 +52,7 @@ namespace DivertR.Internal
         {
             if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
             
-            if (!(propertyExpression.Member is PropertyInfo property))
+            if (propertyExpression.Member is not PropertyInfo property)
             {
                 throw new ArgumentException($"Member expression must be of type PropertyInfo but got: {propertyExpression.Member.GetType()}", nameof(propertyExpression));
             }
