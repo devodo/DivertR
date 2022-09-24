@@ -26,7 +26,7 @@ namespace DivertR.Internal
                 return FromProperty(memberExpression, null);
             }
 
-            throw new ArgumentException($"Only property MemberExpression valid but got: {expression.GetType()}", nameof(expression));
+            throw new ArgumentException($"Must be a property MemberExpression but got: {expression.GetType()}", nameof(expression));
         }
         
         public static ICallValidator FromPropertySetter(MemberExpression propertyExpression, Expression? valueExpression)
@@ -35,7 +35,7 @@ namespace DivertR.Internal
 
             if (propertyExpression.Member is not PropertyInfo property)
             {
-                throw new ArgumentException($"Member property must be of type PropertyInfo but got: {propertyExpression.Member.GetType()}", nameof(propertyExpression));
+                throw new ArgumentException($"The expression Member property must be of type PropertyInfo but got: {propertyExpression.Member.GetType()}", nameof(propertyExpression));
             }
             
             var methodInfo = property.GetSetMethod(true);
@@ -181,7 +181,7 @@ namespace DivertR.Internal
                 case MethodCallExpression callExpression
                     when callExpression.Method.DeclaringType?.FullName == "Moq.It":
                     {
-                        throw new ArgumentException("Moq.It argument syntax is not supported by DivertR");
+                        throw new ArgumentException("Moq.It argument match syntax is not supported by DivertR");
                     }
                 
                 default:
