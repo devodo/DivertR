@@ -141,9 +141,9 @@ namespace DivertR
         /// Creates a Redirect builder from an Expression with a call constraint that matches a property setter member of <typeparamref name="TTarget"/> />.
         /// </summary>
         /// <param name="memberExpression">The expression for matching the property setter member.</param>
-        /// <param name="constraintExpression">The call constraint expression for the input value of the setter.</param>
+        /// <param name="constraintExpression">Optional constraint expression on the setter input argument. If null, the constraint defaults to match any value</param>
         /// <typeparam name="TProperty">The member type of the property setter.</typeparam>
         /// <returns>The Redirect builder instance.</returns>
-        IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty?>> constraintExpression);
+        IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null);
     }
 }

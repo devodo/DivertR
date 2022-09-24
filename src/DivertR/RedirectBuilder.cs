@@ -31,17 +31,17 @@ namespace DivertR
             return new ActionRedirectBuilder<TTarget>(callValidator, callConstraint.Of<TTarget>());
         }
 
-        public static IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty?>> constraintExpression)
+        public static IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
         {
             if (memberExpression.Body == null) throw new ArgumentNullException(nameof(memberExpression));
-            if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
+            if (constraintExpression is { Body: null }) throw new ArgumentNullException(nameof(constraintExpression));
 
             if (!(memberExpression.Body is MemberExpression propertyExpression))
             {
                 throw new ArgumentException("Must be a property member expression", nameof(memberExpression));
             }
 
-            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, constraintExpression.Body);
+            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, constraintExpression?.Body);
             var callConstraint = parsedCall.CreateCallConstraint();
 
             return new ActionRedirectBuilder<TTarget>(parsedCall, callConstraint.Of<TTarget>());

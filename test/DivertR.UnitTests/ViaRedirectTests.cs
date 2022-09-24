@@ -404,6 +404,22 @@ namespace DivertR.UnitTests
             // ASSERT
             result.ShouldBe("matched");
         }
+        
+        [Fact]
+        public void GivenSetPropertyRedirectWithNoValueConstraint_WhenValueMatches_ShouldRedirect()
+        {
+            // ARRANGE
+            _via
+                .ToSet(x => x.Name)
+                .Redirect<(string value, __)>(call => call.Relay.Root.Name = $"New {call.Args.value} set");
+
+            // ACT
+            var proxy = _via.Proxy(new Foo("hello foo"));
+            proxy.Name = "test";
+
+            // ASSERT
+            proxy.Name.ShouldBe("New test set");
+        }
 
         [Fact]
         public void GivenSetPropertyRedirect_WhenValueMatches_ShouldRedirect()

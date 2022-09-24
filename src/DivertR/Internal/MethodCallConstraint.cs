@@ -5,12 +5,12 @@ namespace DivertR.Internal
     internal class MethodCallConstraint : ICallConstraint
     {
         private readonly IMethodConstraint _methodConstraint;
-        private readonly IArgumentConstraint[] _argumentConditions;
+        private readonly IArgumentConstraint[] _argumentConstraints;
 
-        public MethodCallConstraint(IMethodConstraint methodConstraint, IArgumentConstraint[] argumentConditions)
+        public MethodCallConstraint(IMethodConstraint methodConstraint, IArgumentConstraint[] argumentConstraints)
         {
             _methodConstraint = methodConstraint;
-            _argumentConditions = argumentConditions;
+            _argumentConstraints = argumentConstraints;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -21,14 +21,14 @@ namespace DivertR.Internal
                 return false;
             }
 
-            if (_argumentConditions.Length != callInfo.Arguments.Count)
+            if (_argumentConstraints.Length != callInfo.Arguments.Count)
             {
                 return false;
             }
 
-            for (var i = 0; i < _argumentConditions.Length; i++)
+            for (var i = 0; i < _argumentConstraints.Length; i++)
             {
-                if (!_argumentConditions[i].IsMatch(callInfo.Arguments[i]))
+                if (!_argumentConstraints[i].IsMatch(callInfo.Arguments[i]))
                 {
                     return false;
                 }
