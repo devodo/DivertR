@@ -15,7 +15,7 @@ namespace DivertR
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
-            var callValidator = CallExpressionParser.FromExpression(constraintExpression.Body);
+            var callValidator = CallExpressionParser.FromExpression<TTarget>(constraintExpression.Body);
             var callConstraint = callValidator.CreateCallConstraint();
             
             return new FuncRedirectBuilder<TTarget, TReturn>(callValidator, callConstraint.Of<TTarget>());
@@ -25,7 +25,7 @@ namespace DivertR
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
-            var callValidator = CallExpressionParser.FromExpression(constraintExpression.Body);
+            var callValidator = CallExpressionParser.FromExpression<TTarget>(constraintExpression.Body);
             var callConstraint = callValidator.CreateCallConstraint();
             
             return new ActionRedirectBuilder<TTarget>(callValidator, callConstraint.Of<TTarget>());
@@ -59,7 +59,7 @@ namespace DivertR
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
-            var callValidator = CallExpressionParser.FromExpression(constraintExpression.Body);
+            var callValidator = CallExpressionParser.FromProperty(constraintExpression.Body);
             var callConstraint = callValidator.CreateCallConstraint();
             
             return new FuncRedirectBuilder<TReturn>(callConstraint);
