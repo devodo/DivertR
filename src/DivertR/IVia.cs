@@ -26,7 +26,7 @@ namespace DivertR
         IRelay Relay { get; }
         
         /// <summary>
-        /// Retrieve the current proxy redirect configuration.
+        /// The <see cref="IRedirectRepository" /> containing the current proxy redirect configuration.
         /// </summary>
         IRedirectRepository RedirectRepository { get; }
 
@@ -38,9 +38,26 @@ namespace DivertR
         /// <returns>The proxy instance.</returns>
         object Proxy(object? root);
         
+        /// <summary>
+        /// Create a Via proxy instance with no provided root instance.
+        /// </summary>
+        /// <param name="withDummyRoot">Specifies if the proxy should be created with a dummy root or not.</param>
+        /// <returns>The proxy instance.</returns>
         object Proxy(bool withDummyRoot);
         
+        /// <summary>
+        /// Create a Via proxy instance with no provided root instance. By default the proxy will be created with a dummy root but this can be configured in the <see cref="DiverterSettings"/>
+        /// </summary>
+        /// <returns>The proxy instance.</returns>
         object Proxy();
+        
+        /// <summary>
+        /// Insert a redirect into this Via.
+        /// </summary>
+        /// <param name="redirect">The redirect instance.</param>
+        /// <param name="optionsAction">Optional redirect options builder action.</param>
+        /// <returns></returns>
+        IVia Redirect(IRedirect redirect, Action<IRedirectOptionsBuilder>? optionsAction = null);
 
         /// <summary>
         /// Reset the Via.
@@ -75,12 +92,27 @@ namespace DivertR
         [return: NotNull]
         TTarget Proxy(TTarget? root);
         
+        /// <summary>
+        /// Create a Via proxy object without needing to specify the compile time Via type.
+        /// </summary>
+        /// <param name="root">Optional root instance to proxy calls to.</param>
+        /// <exception cref="System.ArgumentException">Thrown if <paramref name="root"/> is not the Via type.</exception>
+        /// <returns>The proxy instance.</returns>
         [return: NotNull]
         new TTarget Proxy(object? root);
         
+        /// <summary>
+        /// Create a Via proxy instance with no provided root instance.
+        /// </summary>
+        /// <param name="withDummyRoot">Specifies if the proxy should be created with a dummy root or not.</param>
+        /// <returns>The proxy instance.</returns>
         [return: NotNull]
         new TTarget Proxy(bool withDummyRoot);
         
+        /// <summary>
+        /// Create a Via proxy instance with no provided root instance. By default the proxy will be created with a dummy root but this can be configured in the <see cref="DiverterSettings"/>
+        /// </summary>
+        /// <returns>The proxy instance.</returns>
         [return: NotNull]
         new TTarget Proxy();
 
@@ -104,7 +136,7 @@ namespace DivertR
         /// <param name="target">The target instance to redirect call to.</param>
         /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
         /// <returns>The Redirect builder instance.</returns>
-        IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null);
         
         /// <summary>
         /// Inserts a redirect that captures incoming calls from all proxies.
@@ -112,7 +144,7 @@ namespace DivertR
         /// </summary>
         /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
         /// <returns>An <see cref="IRecordStream{TTarget}"/> reference for retrieving and iterating the recorded calls.</returns>
-        IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
         
         /// <summary>
         /// Creates a Redirect builder. />

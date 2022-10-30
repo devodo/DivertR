@@ -6,15 +6,17 @@ namespace DivertR.Internal
 {
     internal class RedirectOptionsBuilder : IRedirectOptionsBuilder
     {
-        private int? _orderWeight;
-        private bool? _disableSatisfyStrict;
+        private int _orderWeight;
+        private bool _disableSatisfyStrict;
+        
+        private readonly ConcurrentStack<Func<IRedirect, IRedirect>> _redirectDecorators = new();
 
-        public RedirectOptionsBuilder(int? orderWeight = null, bool? disableSatisfyStrict = null)
+        private RedirectOptionsBuilder(int orderWeight = 0, bool disableSatisfyStrict = false)
         {
             _orderWeight = orderWeight;
             _disableSatisfyStrict = disableSatisfyStrict;
         }
-        
+
         public IRedirectOptionsBuilder OrderWeight(int orderWeight)
         {
             _orderWeight = orderWeight;
@@ -38,128 +40,53 @@ namespace DivertR.Internal
 
             return this;
         }
-        
-        public IRedirect BuildRedirect(ICallHandler callHandler, ICallConstraint callConstraint)
-        {
-            var redirectOptions = new RedirectOptions(_orderWeight, _disableSatisfyStrict);
 
-            return new Redirect(callHandler, callConstraint, redirectOptions);
+        public IRedirectOptionsBuilder Decorate(Func<IRedirect, IRedirect> decorator)
+        {
+            _redirectDecorators.Push(decorator);
+
+            return this;
+        }
+
+        public IRedirectOptionsBuilder Repeat(int repeatCount)
+        {
+            return Decorate(redirect => new RepeatRedirectDecorator(redirect, repeatCount));
         }
         
-        public static RedirectOptionsBuilder Create(Action<IRedirectOptionsBuilder>? optionsAction, int? orderWeight = null, bool? disableSatisfyStrict = null)
+        public IRedirectOptionsBuilder Skip(int skipCount)
+        {
+            return Decorate(redirect => new SkipRedirectDecorator(redirect, skipCount));
+        }
+        
+        public static IRedirectOptions Create(Action<IRedirectOptionsBuilder>? optionsAction, int orderWeight = 0, bool disableSatisfyStrict = false)
         {
             var builder = new RedirectOptionsBuilder(orderWeight, disableSatisfyStrict);
             optionsAction?.Invoke(builder);
 
-            return builder;
-        }
-    }
-        
-    internal class RedirectOptionsBuilder<TTarget> : IRedirectOptionsBuilder<TTarget> where TTarget : class?
-    {
-        private int? _orderWeight;
-        private bool? _disableSatisfyStrict;
-        
-        private readonly ConcurrentStack<Func<ICallHandler<TTarget>, ICallHandler<TTarget>>> _callHandlerDecorators = new();
-        private readonly ConcurrentStack<Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>>> _callConstraintDecorators = new();
-
-        public RedirectOptionsBuilder(int? orderWeight = null, bool? disableSatisfyStrict = false)
-        {
-            _orderWeight = orderWeight;
-            _disableSatisfyStrict = disableSatisfyStrict;
-        }
-
-        public IRedirectOptionsBuilder<TTarget> OrderWeight(int orderWeight)
-        {
-            _orderWeight = orderWeight;
-
-            return this;
-        }
-
-        public IRedirectOptionsBuilder<TTarget> OrderFirst()
-        {
-            return OrderWeight(int.MaxValue);
-        }
-
-        public IRedirectOptionsBuilder<TTarget> OrderLast()
-        {
-            return OrderWeight(int.MinValue);
-        }
-
-        public IRedirectOptionsBuilder<TTarget> DisableSatisfyStrict(bool disableStrict = true)
-        {
-            _disableSatisfyStrict = disableStrict;
-
-            return this;
-        }
-
-        public IRedirectOptionsBuilder<TTarget> DecorateCallHandler(Func<ICallHandler<TTarget>, ICallHandler<TTarget>> decorator)
-        {
-            _callHandlerDecorators.Push(decorator);
-
-            return this;
-        }
-
-        public IRedirectOptionsBuilder<TTarget> DecorateCallConstraint(Func<ICallConstraint<TTarget>, ICallConstraint<TTarget>> decorator)
-        {
-            _callConstraintDecorators.Push(decorator);
-
-            return this;
-        }
-
-        public IRedirectOptionsBuilder<TTarget> Repeat(int repeatCount)
-        {
-            return DecorateCallHandler(callHandler => new RepeatCallHandler<TTarget>(callHandler, repeatCount));
+            return builder.BuildOptions();
         }
         
-        public IRedirectOptionsBuilder<TTarget> Skip(int skipCount)
+        private IRedirectOptions BuildOptions()
         {
-            return DecorateCallHandler(callHandler => new SkipCallHandler<TTarget>(callHandler, skipCount));
-        }
-
-        public IRedirect BuildRedirect(ICallHandler<TTarget> callHandler, ICallConstraint<TTarget> callConstraint)
-        {
-            var redirectOptions = new RedirectOptions(_orderWeight, _disableSatisfyStrict);
-
-            return new Redirect<TTarget>(BuildCallHandler(callHandler), BuildCallConstraint(callConstraint), redirectOptions);
-        }
-
-        public static RedirectOptionsBuilder<TTarget> Create(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction, int? orderWeight = null, bool? disableSatisfyStrict = false)
-        {
-            var builder = new RedirectOptionsBuilder<TTarget>(orderWeight, disableSatisfyStrict);
-            optionsAction?.Invoke(builder);
-
-            return builder;
+            return new RedirectOptions(_orderWeight, _disableSatisfyStrict, BuildRedirectDecorator());
         }
         
-        public ICallHandler<TTarget> BuildCallHandler(ICallHandler<TTarget> callHandler)
+        private Func<IRedirect, IRedirect>? BuildRedirectDecorator()
         {
-            if (!_callHandlerDecorators.Any())
+            if (!_redirectDecorators.Any())
             {
-                return callHandler;
-            }
-            
-            foreach (var decorator in _callHandlerDecorators.Reverse())
-            {
-                callHandler = decorator.Invoke(callHandler);
+                return null;
             }
 
-            return callHandler;
-        }
-
-        public ICallConstraint<TTarget> BuildCallConstraint(ICallConstraint<TTarget> callConstraint)
-        {
-            if (!_callConstraintDecorators.Any())
+            return redirect =>
             {
-                return callConstraint;
-            }
-            
-            foreach (var decorator in _callConstraintDecorators.Reverse())
-            {
-                callConstraint = decorator.Invoke(callConstraint);
-            }
+                foreach (var decorator in _redirectDecorators.Reverse())
+                {
+                    redirect = decorator.Invoke(redirect);
+                }
 
-            return callConstraint;
+                return redirect;
+            };
         }
     }
 }

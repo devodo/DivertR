@@ -8,27 +8,15 @@ namespace DivertR
         private readonly ICallHandler _callHandler;
         private readonly ICallConstraint _callConstraint;
 
-        public Redirect(ICallHandler callHandler, ICallConstraint callConstraint, IRedirectOptions? redirectOptions = null)
+        public Redirect(ICallHandler callHandler, ICallConstraint? callConstraint = null)
         {
             _callHandler = callHandler ?? throw new ArgumentNullException(nameof(callHandler));
-            _callConstraint = callConstraint ?? throw new ArgumentNullException(nameof(callConstraint));
-            
-            redirectOptions ??= RedirectOptions.Default;
-            OrderWeight = redirectOptions.OrderWeight ?? 0;
-            DisableSatisfyStrict = redirectOptions.DisableSatisfyStrict ?? false;
+            _callConstraint = callConstraint ?? TrueCallConstraint.Instance;
         }
         
-        public Redirect(ICallHandler callHandler, IRedirectOptions? redirectOptions = null)
-            : this(callHandler, TrueCallConstraint.Instance, redirectOptions)
+        public Redirect(ICallHandler callHandler)
+            : this(callHandler, TrueCallConstraint.Instance)
         {
-        }
-
-        public int OrderWeight { get; }
-
-        public bool DisableSatisfyStrict
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -49,33 +37,21 @@ namespace DivertR
         private readonly ICallHandler<TTarget> _callHandler;
         private readonly ICallConstraint<TTarget> _callConstraint;
 
-        public Redirect(ICallHandler<TTarget> callHandler, ICallConstraint<TTarget> callConstraint, IRedirectOptions? redirectOptions = null)
+        public Redirect(ICallHandler<TTarget> callHandler, ICallConstraint<TTarget>? callConstraint = null)
         {
             _callHandler = callHandler ?? throw new ArgumentNullException(nameof(callHandler));
-            _callConstraint = callConstraint ?? throw new ArgumentNullException(nameof(callConstraint));
-            
-            redirectOptions ??= RedirectOptions.Default;
-            OrderWeight = redirectOptions.OrderWeight ?? 0;
-            DisableSatisfyStrict = redirectOptions.DisableSatisfyStrict ?? false;
+            _callConstraint = callConstraint ?? TrueCallConstraint<TTarget>.Instance;
         }
         
-        public Redirect(ICallHandler<TTarget> callHandler, IRedirectOptions? redirectOptions = null)
-            : this(callHandler, TrueCallConstraint<TTarget>.Instance, redirectOptions)
+        public Redirect(ICallHandler<TTarget> callHandler)
+            : this(callHandler, TrueCallConstraint<TTarget>.Instance)
         {
-        }
-
-        public int OrderWeight { get; }
-
-        public bool DisableSatisfyStrict
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(ICallInfo callInfo)
         {
-            if (!(callInfo is ICallInfo<TTarget> callOfTTarget))
+            if (callInfo is not ICallInfo<TTarget> callOfTTarget)
             {
                 throw new ArgumentException($"Redirect target type {typeof(TTarget)} invalid for ICallInfo type: {callInfo.GetType()}", nameof(callInfo));
             }
@@ -86,7 +62,7 @@ namespace DivertR
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Handle(IRedirectCall call)
         {
-            if (!(call is IRedirectCall<TTarget> callOfTTarget))
+            if (call is not IRedirectCall<TTarget> callOfTTarget)
             {
                 throw new ArgumentException($"Redirect target type {typeof(TTarget)} invalid for IRedirectCall type: {call.GetType()}", nameof(call));
             }

@@ -1,26 +1,34 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace DivertR.Internal
 {
-    internal class RepeatCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class?
+    internal class RepeatRedirectDecorator : IRedirect
     {
-        private readonly ICallHandler<TTarget> _innerCallHandler;
+        private readonly IRedirect _innerRedirect;
         private readonly int _repeatCount;
         private long _callCount;
 
-        public RepeatCallHandler(ICallHandler<TTarget> innerCallHandler, int repeatCount)
+        public RepeatRedirectDecorator(IRedirect innerRedirect, int repeatCount)
         {
             if (repeatCount < 0)
             {
                 throw new ArgumentException("Must be greater than or equal to zero", nameof(repeatCount));
             }
             
-            _innerCallHandler = innerCallHandler;
+            _innerRedirect = innerRedirect;
             _repeatCount = repeatCount;
         }
-
-        public object? Handle(IRedirectCall<TTarget> call)
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsMatch(ICallInfo callInfo)
+        {
+            return true;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Handle(IRedirectCall call)
         {
             var count = Interlocked.Increment(ref _callCount);
 
@@ -30,7 +38,7 @@ namespace DivertR.Internal
             }
 
             return count <= _repeatCount 
-                ? _innerCallHandler.Handle(call)
+                ? _innerRedirect.Handle(call)
                 : call.Relay.CallNext();
         }
     }

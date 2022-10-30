@@ -1,4 +1,5 @@
-﻿using DivertR.UnitTests.Model;
+﻿using DivertR.DynamicProxy;
+using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
 
@@ -11,7 +12,7 @@ namespace DivertR.UnitTests
 #else
         // Due to a known issue DispatchProxy does not support in byref parameters prior to .NET 6
         // https://github.com/dotnet/runtime/issues/47522
-        private static readonly DiverterSettings DiverterSettings = new(proxyFactory: new DynamicProxy.DynamicProxyFactory());
+        private static readonly DiverterSettings DiverterSettings = new(proxyFactory: new DynamicProxyFactory());
 #endif
         private readonly IVia<INumberIn> _via = new ViaSet(DiverterSettings).Via<INumberIn>();
 

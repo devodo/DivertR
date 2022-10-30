@@ -21,53 +21,59 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IViaBuilder<TTarget> Redirect(object? instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IViaBuilder<TTarget> Redirect(object? instance, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var redirect = RedirectBuilder.Build(instance, optionsAction);
-            Via.RedirectRepository.InsertRedirect(redirect);
+            var redirect = RedirectBuilder.Build(instance);
+            InsertRedirect(redirect, optionsAction);
 
             return this;
         }
 
-        public IViaBuilder<TTarget> Redirect(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IViaBuilder<TTarget> Redirect(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
-            Via.RedirectRepository.InsertRedirect(redirect);
+            var redirect = RedirectBuilder.Build(redirectDelegate);
+            InsertRedirect(redirect, optionsAction);
 
             return this;
         }
 
-        public IViaBuilder<TTarget> Redirect(Func<IRedirectCall<TTarget>, object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IViaBuilder<TTarget> Redirect(Func<IRedirectCall<TTarget>, object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
-            Via.RedirectRepository.InsertRedirect(redirect);
+            var redirect = RedirectBuilder.Build(redirectDelegate);
+            InsertRedirect(redirect, optionsAction);
 
             return this;
         }
 
-        public IViaBuilder<TTarget> Redirect(Func<IRedirectCall<TTarget>, CallArguments, object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IViaBuilder<TTarget> Redirect(Func<IRedirectCall<TTarget>, CallArguments, object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var redirect = RedirectBuilder.Build(redirectDelegate, optionsAction);
-            Via.RedirectRepository.InsertRedirect(redirect);
+            var redirect = RedirectBuilder.Build(redirectDelegate);
+            InsertRedirect(redirect, optionsAction);
 
             return this;
         }
 
-        public IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
             ICallHandler<TTarget> callHandler = new TargetCallHandler<TTarget>(target, Via.ViaSet.Settings.CallInvoker);
-            var redirect = RedirectBuilder.Build(callHandler, optionsAction);
-            Via.RedirectRepository.InsertRedirect(redirect);
+            var redirect = RedirectBuilder.Build(callHandler);
+            InsertRedirect(redirect, optionsAction);
 
             return this;
         }
 
-        public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            var recordRedirect = RedirectBuilder.Record(optionsAction);
-            Via.RedirectRepository.InsertRedirect(recordRedirect.Redirect);
+            var recordRedirect = RedirectBuilder.Record();
+            InsertRedirect(recordRedirect.Redirect, optionsAction, disableSatisfyStrict: true);
 
             return recordRedirect.RecordStream;
+        }
+
+        protected void InsertRedirect(IRedirect redirect, Action<IRedirectOptionsBuilder>? optionsAction, bool disableSatisfyStrict = false)
+        {
+            var options = RedirectOptionsBuilder.Create(optionsAction, disableSatisfyStrict: disableSatisfyStrict);
+            Via.RedirectRepository.InsertRedirect(redirect, options);
         }
     }
 }

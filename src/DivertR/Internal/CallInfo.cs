@@ -52,24 +52,24 @@ namespace DivertR.Internal
             get;
         }
         
-        public ICallInfo<TTarget> Create(MethodInfo method, CallArguments args)
+        public ICallInfo<TTarget> Clone(MethodInfo method, CallArguments args)
         {
             return new CallInfo<TTarget>(Proxy, Root, method, args);
         }
 
-        public ICallInfo<TTarget> Create(CallArguments args)
+        public ICallInfo<TTarget> Clone(CallArguments args)
         {
             return new CallInfo<TTarget>(Proxy, Root, Method, args);
         }
 
-        ICallInfo ICallInfo.Create(MethodInfo method, CallArguments args)
+        ICallInfo ICallInfo.Clone(MethodInfo method, CallArguments args)
         {
-            return Create(method, args);
+            return Clone(method, args);
         }
 
-        ICallInfo ICallInfo.Create(CallArguments args)
+        ICallInfo ICallInfo.Clone(CallArguments args)
         {
-            return Create(args);
+            return Clone(args);
         }
     }
 }

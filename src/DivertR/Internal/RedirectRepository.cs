@@ -1,24 +1,17 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
     internal class RedirectRepository : IRedirectRepository
     {
-        private readonly ConcurrentStack<RedirectPlan> _redirectPlans = new ConcurrentStack<RedirectPlan>();
-        private readonly object _lockObject = new object();
+        private readonly ConcurrentStack<RedirectPlan> _redirectPlans = new();
+        private readonly object _lockObject = new();
 
         public RedirectRepository()
         {
             _redirectPlans.Push(Internal.RedirectPlan.Empty);
-        }
-        
-        public RedirectRepository(IEnumerable<IRedirect> redirects)
-        {
-            var redirectPlan = Internal.RedirectPlan.Empty.InsertRedirects(redirects);
-            _redirectPlans.Push(redirectPlan);
         }
 
         public IRedirectPlan RedirectPlan
@@ -36,28 +29,36 @@ namespace DivertR.Internal
             } 
         }
 
-        public void InsertRedirect(IRedirect redirect)
+        public IRedirectRepository InsertRedirect(IRedirect redirect, IRedirectOptions? redirectOptions = null)
         {
-            MutateRedirectPlan(original => original.InsertRedirect(redirect));
-        }
-        
-        public void InsertRedirects(IEnumerable<IRedirect> redirects)
-        {
-            MutateRedirectPlan(original => original.InsertRedirects(redirects));
-        }
-        
-        public void SetStrictMode(bool isStrict = true)
-        {
-            MutateRedirectPlan(original => original.SetStrictMode(isStrict));
+            var container = new RedirectContainer(redirect, redirectOptions ?? RedirectOptions.Default);
+            
+            return InsertRedirect(container);
         }
 
-        public void Reset()
+        public IRedirectRepository InsertRedirect(IRedirectContainer redirect)
+        {
+            MutateRedirectPlan(original => original.InsertRedirect(redirect));
+
+            return this;
+        }
+
+        public IRedirectRepository SetStrictMode(bool isStrict = true)
+        {
+            MutateRedirectPlan(original => original.SetStrictMode(isStrict));
+
+            return this;
+        }
+
+        public IRedirectRepository Reset()
         {
             lock (_lockObject)
             {
                 _redirectPlans.Clear();
                 _redirectPlans.Push(Internal.RedirectPlan.Empty);
             }
+
+            return this;
         }
 
         private void MutateRedirectPlan(Func<RedirectPlan, RedirectPlan> mutateAction)

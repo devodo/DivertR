@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
@@ -10,15 +9,23 @@ namespace DivertR
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
-        
+
         /// <summary>
         /// Insert a <see cref="IRedirect"/> instance />.
         /// </summary>
         /// <param name="redirect">The redirect.</param>
-        void InsertRedirect(IRedirect redirect);
+        /// <param name="redirectOptions">Optional redirect options.</param>
+        /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
+        IRedirectRepository InsertRedirect(IRedirect redirect, IRedirectOptions? redirectOptions = null);
         
-        void InsertRedirects(IEnumerable<IRedirect> redirects);
-        void SetStrictMode(bool isStrict = true);
-        void Reset();
+        /// <summary>
+        /// Insert a <see cref="IRedirectContainer"/> instance />.
+        /// </summary>
+        /// <param name="redirect">The redirect container.</param>
+        /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
+        IRedirectRepository InsertRedirect(IRedirectContainer redirect);
+        
+        IRedirectRepository SetStrictMode(bool isStrict = true);
+        IRedirectRepository Reset();
     }
 }

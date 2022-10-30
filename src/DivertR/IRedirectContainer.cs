@@ -1,17 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
-    public interface IRedirectPlan
+    public interface IRedirectContainer
     {
-        IReadOnlyList<IRedirectContainer> Stack
+        IRedirect Redirect
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
-
-        bool IsStrictMode
+        
+        IRedirectOptions Options
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;

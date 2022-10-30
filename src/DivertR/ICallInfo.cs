@@ -30,8 +30,8 @@ namespace DivertR
             get;
         }
 
-        public ICallInfo Create(CallArguments args);
-        public ICallInfo Create(MethodInfo method, CallArguments args);
+        public ICallInfo Clone(CallArguments args);
+        public ICallInfo Clone(MethodInfo method, CallArguments args);
     }
     
     public interface ICallInfo<out TTarget> : ICallInfo where TTarget : class?
@@ -49,7 +49,7 @@ namespace DivertR
             get;
         }
         
-        new ICallInfo<TTarget> Create(MethodInfo method, CallArguments args);
-        new ICallInfo<TTarget> Create(CallArguments args);
+        new ICallInfo<TTarget> Clone(MethodInfo method, CallArguments args);
+        new ICallInfo<TTarget> Clone(CallArguments args);
     }
 }
