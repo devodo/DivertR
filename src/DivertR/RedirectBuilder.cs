@@ -16,9 +16,9 @@ namespace DivertR
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
             var callValidator = CallExpressionParser.FromExpression<TTarget>(constraintExpression.Body);
-            var callConstraint = callValidator.CreateCallConstraint();
+            var callConstraint = new CallConstraintWrapper<TTarget>(callValidator.CreateCallConstraint());
             
-            return new FuncRedirectBuilder<TTarget, TReturn>(callValidator, callConstraint.Of<TTarget>());
+            return new FuncRedirectBuilder<TTarget, TReturn>(callValidator, callConstraint);
         }
 
         public static IActionRedirectBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
@@ -26,9 +26,9 @@ namespace DivertR
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
             var callValidator = CallExpressionParser.FromExpression<TTarget>(constraintExpression.Body);
-            var callConstraint = callValidator.CreateCallConstraint();
+            var callConstraint = new CallConstraintWrapper<TTarget>(callValidator.CreateCallConstraint());
             
-            return new ActionRedirectBuilder<TTarget>(callValidator, callConstraint.Of<TTarget>());
+            return new ActionRedirectBuilder<TTarget>(callValidator, callConstraint);
         }
 
         public static IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
@@ -42,9 +42,9 @@ namespace DivertR
             }
 
             var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, constraintExpression?.Body);
-            var callConstraint = parsedCall.CreateCallConstraint();
+            var callConstraint = new CallConstraintWrapper<TTarget>(parsedCall.CreateCallConstraint());
 
-            return new ActionRedirectBuilder<TTarget>(parsedCall, callConstraint.Of<TTarget>());
+            return new ActionRedirectBuilder<TTarget>(parsedCall, callConstraint);
         }
     }
 

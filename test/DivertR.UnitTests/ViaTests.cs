@@ -73,7 +73,22 @@ namespace DivertR.UnitTests
             Func<string> testAction = () => proxy.Name;
 
             // ASSERT
-            testAction.ShouldThrow<DiverterException>();
+            testAction.ShouldThrow<StrictNotSatisfiedException>();
+        }
+        
+        [Fact]
+        public void GivenStrictModeWithRedirect_ShouldNotThrowException()
+        {
+            // ARRANGE
+            _via.Strict();
+            _via.To(x => x.Name).Redirect("divert");
+            var proxy = _via.Proxy(new Foo("hello foo"));
+
+            // ACT
+            var result = proxy.Name;
+
+            // ASSERT
+            result.ShouldBe("divert");
         }
     }
 }

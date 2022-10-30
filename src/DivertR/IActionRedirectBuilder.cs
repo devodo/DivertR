@@ -8,17 +8,17 @@ namespace DivertR
     {
         new IActionRedirectBuilder<TTarget> Filter(ICallConstraint<TTarget> callConstraint);
 
-        IRedirect Build(Action redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
-        IRedirect Build(Action<IActionRedirectCall<TTarget>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
-        IRedirect Build(Action<IActionRedirectCall<TTarget>, CallArguments> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        IRedirect Build(Action redirectDelegate);
+        IRedirect Build(Action<IActionRedirectCall<TTarget>> redirectDelegate);
+        IRedirect Build(Action<IActionRedirectCall<TTarget>, CallArguments> redirectDelegate);
         
-        IRedirect Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        IRedirect Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
-        IRedirect Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        IRedirect Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> redirectDelegate)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
-        new IActionRecordRedirect<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        new IActionRecordRedirect<TTarget> Record();
 
         IActionRedirectBuilder<TTarget, TArgs> Args<TArgs>()
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
@@ -28,9 +28,9 @@ namespace DivertR
         where TTarget : class?
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        IRedirect Build(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
-        IRedirect Build(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        IRedirect Build(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate);
+        IRedirect Build(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> redirectDelegate);
         
-        new IActionRecordRedirect<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null);
+        new IActionRecordRedirect<TTarget, TArgs> Record();
     }
 }

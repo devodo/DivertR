@@ -1,26 +1,34 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace DivertR.Internal
 {
-    internal class SkipCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class?
+    internal class SkipRedirectDecorator : IRedirect
     {
-        private readonly ICallHandler<TTarget> _innerCallHandler;
+        private readonly IRedirect _innerRedirect;
         private readonly int _skipCount;
         private long _callCount;
 
-        public SkipCallHandler(ICallHandler<TTarget> innerCallHandler, int skipCount)
+        public SkipRedirectDecorator(IRedirect innerRedirect, int skipCount)
         {
             if (skipCount < 0)
             {
                 throw new ArgumentException("Must be greater than or equal to zero", nameof(skipCount));
             }
             
-            _innerCallHandler = innerCallHandler;
+            _innerRedirect = innerRedirect;
             _skipCount = skipCount;
         }
-
-        public object? Handle(IRedirectCall<TTarget> call)
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsMatch(ICallInfo callInfo)
+        {
+            return true;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Handle(IRedirectCall call)
         {
             var count = Interlocked.Increment(ref _callCount);
 
@@ -30,7 +38,7 @@ namespace DivertR.Internal
             }
 
             return count > _skipCount 
-                ? _innerCallHandler.Handle(call)
+                ? _innerRedirect.Handle(call)
                 : call.Relay.CallNext();
         }
     }

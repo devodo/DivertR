@@ -10,7 +10,8 @@ namespace DivertR.Dummy
         public DummyFactory()
         {
             var redirect = new Redirect(new DummyCallHandler());
-            RedirectRepository = new RedirectRepository(new[] { redirect });
+            RedirectRepository = new RedirectRepository();
+            RedirectRepository.InsertRedirect(redirect);
         }
         
         public DummyFactory(IRedirectRepository redirectRepository)

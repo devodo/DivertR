@@ -23,20 +23,20 @@ namespace DivertR.Internal
         public IRedirect Redirect
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _redirectPlan.Redirects[_index];
+            get => _redirectPlan.Stack[_index].Redirect;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RelayIndex<TTarget>? Create(IRedirectPlan redirectPlan, ICallInfo<TTarget> callInfo)
         {
-            var index = GetNextIndex(-1, redirectPlan.Redirects, callInfo);
+            var index = GetNextIndex(-1, redirectPlan.Stack, callInfo);
 
             if (index == -1)
             {
                 return null;
             }
 
-            var strictSatisfied = !redirectPlan.IsStrictMode || !redirectPlan.Redirects[index].DisableSatisfyStrict;
+            var strictSatisfied = !redirectPlan.IsStrictMode || !redirectPlan.Stack[index].Options.DisableSatisfyStrict;
             
             return new RelayIndex<TTarget>(redirectPlan, index, callInfo, strictSatisfied);
         }
@@ -53,26 +53,26 @@ namespace DivertR.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RelayIndex<TTarget>? MoveNext(ICallInfo<TTarget> callInfo)
         {
-            var index = GetNextIndex(_index, _redirectPlan.Redirects, callInfo);
+            var index = GetNextIndex(_index, _redirectPlan.Stack, callInfo);
 
             if (index == -1)
             {
                 return null;
             }
 
-            var strictSatisfied = StrictSatisfied || !_redirectPlan.Redirects[index].DisableSatisfyStrict;
+            var strictSatisfied = StrictSatisfied || !_redirectPlan.Stack[index].Options.DisableSatisfyStrict;
 
             return new RelayIndex<TTarget>(_redirectPlan, index, callInfo, strictSatisfied);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetNextIndex(int index, IReadOnlyList<IRedirect> redirects, ICallInfo callInfo)
+        private static int GetNextIndex(int index, IReadOnlyList<IRedirectContainer> stack, ICallInfo callInfo)
         {
             var startIndex = index + 1;
 
-            for (var i = startIndex; i < redirects.Count; i++)
+            for (var i = startIndex; i < stack.Count; i++)
             {
-                if (!redirects[i].IsMatch(callInfo))
+                if (!stack[i].Redirect.IsMatch(callInfo))
                 {
                     continue;
                 }

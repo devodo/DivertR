@@ -31,50 +31,40 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IRedirect Build(object? instance, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRedirect Build(object? instance)
         {
-            return Build(_ => instance, optionsAction);
+            return Build(_ => instance);
         }
 
-        public IRedirect Build(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRedirect Build(Func<object?> redirectDelegate)
         {
-            return Build(_ => redirectDelegate.Invoke(), optionsAction);
+            return Build(_ => redirectDelegate.Invoke());
         }
 
-        public IRedirect Build(Func<IRedirectCall<TTarget>, object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRedirect Build(Func<IRedirectCall<TTarget>, object?> redirectDelegate)
         {
             var callHandler = new RedirectCallHandler<TTarget>(redirectDelegate);
             
-            return Build(callHandler, optionsAction);
+            return Build(callHandler);
         }
 
-        public IRedirect Build(Func<IRedirectCall<TTarget>, CallArguments, object?> redirectDelegate, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRedirect Build(Func<IRedirectCall<TTarget>, CallArguments, object?> redirectDelegate)
         {
             var callHandler = new RedirectArgsCallHandler<TTarget>(redirectDelegate);
             
-            return Build(callHandler, optionsAction);
+            return Build(callHandler);
         }
 
-        public IRedirect Build(ICallHandler<TTarget> callHandler, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRedirect Build(ICallHandler<TTarget> callHandler)
         {
-            return RedirectOptionsBuilder<TTarget>
-                .Create(optionsAction)
-                .BuildRedirect(callHandler, new CompositeCallConstraint<TTarget>(CallConstraints));
-        }
-
-        public IRedirect Build(ICallHandler<TTarget> callHandler, IRedirectOptions redirectOptions)
-        {
-            return new Redirect<TTarget>(callHandler, new CompositeCallConstraint<TTarget>(CallConstraints), redirectOptions);
+            return new Redirect<TTarget>(callHandler, new CompositeCallConstraint<TTarget>(CallConstraints));
         }
         
-        public IRecordRedirect<TTarget> Record(Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public IRecordRedirect<TTarget> Record()
         {
             var recordHandler = new RecordCallHandler<TTarget>();
-            var redirect = RedirectOptionsBuilder<TTarget>
-                .Create(optionsAction, disableSatisfyStrict: true)
-                .BuildRedirect(recordHandler, new CompositeCallConstraint<TTarget>(CallConstraints));
 
-            return new RecordRedirect<TTarget>(redirect, recordHandler.RecordStream);
+            return new RecordRedirect<TTarget>(Build(recordHandler), recordHandler.RecordStream);
         }
     }
     
@@ -104,50 +94,40 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IRedirect Build(object? instance, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IRedirect Build(object? instance)
         {
-            return Build(_ => instance, optionsAction);
+            return Build(_ => instance);
         }
 
-        public IRedirect Build(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IRedirect Build(Func<object?> redirectDelegate)
         {
-            return Build(_ => redirectDelegate.Invoke(), optionsAction);
+            return Build(_ => redirectDelegate.Invoke());
         }
 
-        public IRedirect Build(Func<IRedirectCall, object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IRedirect Build(Func<IRedirectCall, object?> redirectDelegate)
         {
             var callHandler = new RedirectCallHandler(redirectDelegate);
             
-            return Build(callHandler, optionsAction);
+            return Build(callHandler);
         }
 
-        public IRedirect Build(Func<IRedirectCall, CallArguments, object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IRedirect Build(Func<IRedirectCall, CallArguments, object?> redirectDelegate)
         {
             var callHandler = new RedirectArgsCallHandler(redirectDelegate);
             
-            return Build(callHandler, optionsAction);
+            return Build(callHandler);
         }
 
-        public IRedirect Build(ICallHandler callHandler, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IRedirect Build(ICallHandler callHandler)
         {
-            return RedirectOptionsBuilder
-                .Create(optionsAction)
-                .BuildRedirect(callHandler, new CompositeCallConstraint(_callConstraints));
+            return new Redirect(callHandler, new CompositeCallConstraint(_callConstraints));
         }
 
-        public IRedirect Build(ICallHandler callHandler, IRedirectOptions redirectOptions)
-        {
-            return new Redirect(callHandler, new CompositeCallConstraint(_callConstraints), redirectOptions);
-        }
-        
-        public IRecordRedirect Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IRecordRedirect Record()
         {
             var recordHandler = new RecordCallHandler();
-            var redirect = RedirectOptionsBuilder
-                .Create(optionsAction, disableSatisfyStrict: true)
-                .BuildRedirect(recordHandler, new CompositeCallConstraint(_callConstraints));
 
-            return new RecordRedirect(redirect, recordHandler.RecordStream);
+            return new RecordRedirect(Build(recordHandler), recordHandler.RecordStream);
         }
     }
 }

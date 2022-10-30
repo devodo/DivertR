@@ -1036,7 +1036,7 @@ namespace DivertR.UnitTests
 
             // ASSERT
             redirectPlan.IsStrictMode.ShouldBe(false);
-            redirectPlan.Redirects.Count.ShouldBe(Num);
+            redirectPlan.Stack.Count.ShouldBe(Num);
         }
         
         [Fact]

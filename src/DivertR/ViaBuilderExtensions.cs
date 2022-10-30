@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using DivertR.Internal;
 
 namespace DivertR
 {
     public static class ViaBuilderExtensions
     {
-        public static IVia<TReturn> RedirectVia<TTarget, TReturn>(this IFuncViaBuilder<TTarget, TReturn> viaBuilder, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public static IVia<TReturn> RedirectVia<TTarget, TReturn>(this IFuncViaBuilder<TTarget, TReturn> viaBuilder, Action<IRedirectOptionsBuilder>? optionsAction = null)
             where TTarget : class?
             where TReturn : class?
         {
             return viaBuilder.RedirectVia(null, optionsAction);
         }
 
-        public static IVia<TReturn> RedirectVia<TTarget, TReturn>(this IFuncViaBuilder<TTarget, TReturn> viaBuilder, string? name, Action<IRedirectOptionsBuilder<TTarget>>? optionsAction = null)
+        public static IVia<TReturn> RedirectVia<TTarget, TReturn>(this IFuncViaBuilder<TTarget, TReturn> viaBuilder, string? name, Action<IRedirectOptionsBuilder>? optionsAction = null)
             where TTarget : class?
             where TReturn : class?
         {
@@ -36,8 +37,9 @@ namespace DivertR
                 });
             }
 
-            var redirect = viaBuilder.RedirectBuilder.Build(RedirectDelegate, optionsAction);
-            viaBuilder.Via.RedirectRepository.InsertRedirect(redirect);
+            var redirect = viaBuilder.RedirectBuilder.Build(RedirectDelegate);
+            var options = RedirectOptionsBuilder.Create(optionsAction);
+            viaBuilder.Via.RedirectRepository.InsertRedirect(redirect, options);
 
             return via;
         }

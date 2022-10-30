@@ -4,14 +4,6 @@ namespace DivertR
 {
     public interface IRedirect
     {
-        int OrderWeight { get; }
-
-        bool DisableSatisfyStrict
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool IsMatch(ICallInfo callInfo);
 
