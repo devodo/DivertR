@@ -56,7 +56,7 @@ namespace DivertR
         /// </summary>
         /// <param name="redirect">The redirect instance.</param>
         /// <param name="optionsAction">Optional redirect options builder action.</param>
-        /// <returns></returns>
+        /// <returns>The current <see cref="IVia"/> instance.</returns>
         IVia Redirect(IRedirect redirect, Action<IRedirectOptionsBuilder>? optionsAction = null);
 
         /// <summary>
@@ -115,6 +115,31 @@ namespace DivertR
         /// <returns>The proxy instance.</returns>
         [return: NotNull]
         new TTarget Proxy();
+        
+        /// <summary>
+        /// Insert a redirect into this Via.
+        /// </summary>
+        /// <param name="redirect">The redirect instance.</param>
+        /// <param name="optionsAction">Optional redirect options builder action.</param>
+        /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
+        new IVia<TTarget> Redirect(IRedirect redirect, Action<IRedirectOptionsBuilder>? optionsAction = null);
+        
+        /// <summary>
+        /// Create and insert a redirect (with no <see cref="ICallConstraint{TTarget}"/>) to the given <paramref name="target"/>
+        /// into the Via <see cref="IRedirectRepository" />.
+        /// </summary>
+        /// <param name="target">The target instance to redirect call to.</param>
+        /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
+        /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
+        IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null);
+        
+        /// <summary>
+        /// Inserts a redirect that captures incoming calls from all proxies.
+        /// By default record redirects are configured to not satisfy strict calls if strict mode is enabled.
+        /// </summary>
+        /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
+        /// <returns>An <see cref="IRecordStream{TTarget}"/> reference for retrieving and iterating the recorded calls.</returns>
+        IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
 
         /// <summary>
         /// Reset the Via <see cref="IRedirectRepository" />.
@@ -129,23 +154,6 @@ namespace DivertR
         /// <returns>The current <see cref="IVia{TTarget}"/> instance.</returns>
         new IVia<TTarget> Strict(bool? isStrict = true);
 
-        /// <summary>
-        /// Create and insert a redirect (with no <see cref="ICallConstraint{TTarget}"/>) to the given <paramref name="target"/>
-        /// into the Via <see cref="IRedirectRepository" />.
-        /// </summary>
-        /// <param name="target">The target instance to redirect call to.</param>
-        /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
-        /// <returns>The Redirect builder instance.</returns>
-        IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        
-        /// <summary>
-        /// Inserts a redirect that captures incoming calls from all proxies.
-        /// By default record redirects are configured to not satisfy strict calls if strict mode is enabled.
-        /// </summary>
-        /// <param name="optionsAction">An optional builder action for configuring redirect options.</param>
-        /// <returns>An <see cref="IRecordStream{TTarget}"/> reference for retrieving and iterating the recorded calls.</returns>
-        IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
-        
         /// <summary>
         /// Creates a Redirect builder. />
         /// </summary>
