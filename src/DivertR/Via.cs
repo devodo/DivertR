@@ -108,12 +108,17 @@ namespace DivertR
             return Proxy(ViaSet.Settings.DefaultWithDummyRoot);
         }
         
-        public IVia Redirect(IRedirect redirect, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia<TTarget> Redirect(IRedirect redirect, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
             var options = RedirectOptionsBuilder.Create(optionsAction);
             RedirectRepository.InsertRedirect(redirect, options);
 
             return this;
+        }
+        
+        IVia IVia.Redirect(IRedirect redirect, Action<IRedirectOptionsBuilder>? optionsAction)
+        {
+            return Redirect(redirect, optionsAction);
         }
 
         IVia IVia.Reset()
@@ -140,9 +145,11 @@ namespace DivertR
             return this;
         }
         
-        public IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null)
         {
-            return To().Retarget(target, optionsAction);
+            To().Retarget(target, optionsAction);
+
+            return this;
         }
         
         public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
