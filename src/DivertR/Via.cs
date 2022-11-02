@@ -91,7 +91,9 @@ namespace DivertR
         [return: NotNull]
         public TTarget Proxy(TTarget? root)
         {
-            return _proxyFactory.CreateProxy(_viaProxyCall, root);
+            var proxy = _proxyFactory.CreateProxy(_viaProxyCall, root);
+            
+            return ViaSet.Settings.ViaProxyDecorator.Decorate(this, proxy);
         }
         
         [return: NotNull]
@@ -180,7 +182,7 @@ namespace DivertR
 
     public static class Via
     {
-        private static readonly ProxyViaMap ProxyViaMap = new();
+        internal static readonly ProxyViaMap ProxyViaMap = new();
         
         /// <summary>
         /// Creates a Via proxy instance.
@@ -230,10 +232,8 @@ namespace DivertR
         private static TTarget Proxy<TTarget>(Func<Via<TTarget>, TTarget> createProxy) where TTarget : class?
         {
             var via = new Via<TTarget>();
-            var proxy = createProxy(via);
-            ProxyViaMap.AddVia(proxy!, via);
-
-            return proxy;
+            
+            return createProxy(via);
         }
     }
 }
