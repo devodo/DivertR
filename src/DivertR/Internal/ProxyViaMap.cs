@@ -2,11 +2,11 @@
 
 namespace DivertR.Internal
 {
-    internal class ProxyViaMap
+    internal class ProxyViaMap : IProxyViaMap
     {
         private readonly ConditionalWeakTable<object, IVia> _viaMap = new();
 
-        public void AddVia(object proxy, IVia via)
+        public void AddVia(IVia via, object proxy)
         {
             _viaMap.Add(proxy, via);
         }

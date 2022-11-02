@@ -1,7 +1,10 @@
-﻿namespace DivertR
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace DivertR
 {
     public interface IViaProxyDecorator
     {
-        object? Decorate(IVia via, object? original);
+        [return: NotNull]
+        TTarget Decorate<TTarget>(IVia via, [DisallowNull] TTarget proxy) where TTarget : class?;
     }
 }

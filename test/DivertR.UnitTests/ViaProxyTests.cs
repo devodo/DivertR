@@ -73,6 +73,20 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenNonStaticallyCreatedViaProxy_WhenStaticViaFrom_ShouldReturnVia()
+        {
+            // ARRANGE
+            var via = new Via<IFoo>();
+            var proxy = via.Proxy(new Foo());
+            
+            // ACT
+            var fromVia = Via.From(proxy);
+
+            // ASSERT
+            fromVia.ShouldBeSameAs(via);
+        }
+        
+        [Fact]
         public void GivenStaticViaProxyWithStaticallyCreatedRedirect_WhenProxyCalled_ShouldRedirect()
         {
             // ARRANGE
