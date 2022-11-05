@@ -33,7 +33,7 @@ namespace DivertR.UnitTests.Model
         void GenericAction<T1, T2, T3, T4, T5, T6, T7, T8>(T1 i1, T2 i2, T3 i3, T4 i4, T5 i5, T6 i6, T7 i7, T8 i8);
 
         Task<string> EchoAsync(string input);
-        
+        T EchoGenericRef<T>(ref T input);
         ValueTask<string> EchoValueAsync(string input);
         ValueTask<string> EchoValueSync(string input);
         

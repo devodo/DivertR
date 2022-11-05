@@ -34,6 +34,8 @@ namespace DivertR
         public static IActionRedirectBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
         {
             if (memberExpression.Body == null) throw new ArgumentNullException(nameof(memberExpression));
+
+            constraintExpression ??= (() => Is<TProperty>.Any);
             if (constraintExpression is { Body: null }) throw new ArgumentNullException(nameof(constraintExpression));
 
             if (!(memberExpression.Body is MemberExpression propertyExpression))
@@ -41,7 +43,7 @@ namespace DivertR
                 throw new ArgumentException("Must be a property member expression", nameof(memberExpression));
             }
 
-            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, constraintExpression?.Body);
+            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, constraintExpression.Body);
             var callConstraint = new CallConstraintWrapper<TTarget>(parsedCall.CreateCallConstraint());
 
             return new ActionRedirectBuilder<TTarget>(parsedCall, callConstraint);

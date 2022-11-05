@@ -142,6 +142,11 @@ namespace DivertR.UnitTests.Model
             return Echo(input);
         }
 
+        public T EchoGenericRef<T>(ref T input)
+        {
+            throw new NotImplementedException();
+        }
+
         public async ValueTask<string> EchoValueAsync(string input)
         {
             return await EchoAsync(input);

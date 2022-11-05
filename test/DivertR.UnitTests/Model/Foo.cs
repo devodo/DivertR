@@ -137,6 +137,11 @@ namespace DivertR.UnitTests.Model
             return Echo(input);
         }
 
+        public T EchoGenericRef<T>(ref T input)
+        {
+            return input;
+        }
+
         public async ValueTask<string> EchoValueAsync(string input)
         {
             await Task.Yield();
