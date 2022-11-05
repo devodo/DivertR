@@ -236,12 +236,7 @@ namespace DivertR.Internal
 
         private static IMethodConstraint CreateMethodConstraint(MethodInfo methodInfo)
         {
-            if (!methodInfo.IsGenericMethod)
-            {
-                return new EqualsMethodConstraint(methodInfo);
-            }
-
-            return new GenericMethodConstraint(methodInfo);
+            return new SameMethodConstraint(methodInfo);
         }
     }
 }

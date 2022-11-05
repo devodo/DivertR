@@ -516,28 +516,11 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenGenericInputRedirect_WhenAssignableGenericType_ShouldRedirect()
+        public void GivenGenericInputRedirect_WhenAssignableGenericType_ShouldNotRedirect()
         {
             // ARRANGE
             _via
                 .To(x => x.EchoGeneric(Is<object>.Any))
-                .Redirect<(object i, __)>(call => $"{call.Args.i} - {_via.Relay.Next.Name}");
-
-            // ACT
-            var proxy = _via.Proxy(new Foo("foo"));
-            var result = proxy.EchoGeneric("Hello");
-
-            // ASSERT
-            result.ShouldBe("Hello - foo");
-        }
-        
-        [Fact]
-        public void GivenGenericInputRedirect_WhenAssignableGenericTypeWithAdditionalConstraint_ShouldNotRedirect()
-        {
-            // ARRANGE
-            _via
-                .To(x => x.EchoGeneric(Is<object>.Any))
-                .Filter(new MatchCallConstraint<IFoo>(callInfo => callInfo.Method.GetGenericArguments()[0] == typeof(object)))
                 .Redirect<(object i, __)>(call => $"{call.Args.i} - {_via.Relay.Next.Name}");
 
             // ACT
@@ -547,9 +530,9 @@ namespace DivertR.UnitTests
             // ASSERT
             result.ShouldBe("Hello");
         }
-        
+
         [Fact]
-        public void GivenGenericInputRedirect_WhenAssignableGenericTypeWithMatchConstraint_ShouldNotRedirect()
+        public void GivenGenericInputRedirect_WhenTypeMatchConstraintFails_ShouldNotRedirect()
         {
             // ARRANGE
             _via
@@ -558,7 +541,7 @@ namespace DivertR.UnitTests
 
             // ACT
             var proxy = _via.Proxy(new Foo("foo"));
-            var result = proxy.EchoGeneric("Hello");
+            var result = proxy.EchoGeneric<object>("Hello");
 
             // ASSERT
             result.ShouldBe("Hello");
