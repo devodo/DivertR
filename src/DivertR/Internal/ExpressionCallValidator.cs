@@ -10,13 +10,11 @@ namespace DivertR.Internal
         private readonly IMethodConstraint _methodConstraint;
         private readonly IArgumentConstraint[] _argumentConstraints;
         private readonly MethodInfo _method;
-        private readonly ParameterInfo[] _parameterInfos;
 
 
-        internal ExpressionCallValidator(MethodInfo method, ParameterInfo[] parameterInfos, IMethodConstraint methodConstraint, IArgumentConstraint[] argumentConstraints)
+        internal ExpressionCallValidator(MethodInfo method, IMethodConstraint methodConstraint, IArgumentConstraint[] argumentConstraints)
         {
             _method = method;
-            _parameterInfos = parameterInfos;
             _methodConstraint = methodConstraint;
             _argumentConstraints = argumentConstraints;
         }
@@ -49,7 +47,7 @@ namespace DivertR.Internal
         
         private string GetMethodParameterSignature()
         {
-            var methodParameters = string.Join(", ", _parameterInfos.Select(x => x.ParameterType.Name));
+            var methodParameters = string.Join(", ", _argumentConstraints.Select(x => x.Parameter.ParameterType.Name));
 
             string? genericArguments = null;
             
@@ -64,27 +62,25 @@ namespace DivertR.Internal
 
         private IEnumerable<(bool isValid, string? message)> ValidateArgumentTypes((Type type, ParameterInfo? parameter)[] argumentTypes, bool isStrict)
         {
-            var parameterTypes = _parameterInfos
-                .Select(x => x)
+            var argumentConstraints = _argumentConstraints
                 .Concat(Enumerable
-                    .Range(0, Math.Max(0, argumentTypes.Length - _parameterInfos.Length))
-                    .Select(_ => (ParameterInfo?) null));
-            
+                    .Range(0, Math.Max(0, argumentTypes.Length - _argumentConstraints.Length))
+                    .Select(_ => (IArgumentConstraint?) null));
+
             var argTypes = argumentTypes
-                .Select(x => x)
                 .Concat(Enumerable
-                    .Range(0, Math.Max(0, _parameterInfos.Length - argumentTypes.Length))
+                    .Range(0, Math.Max(0, _argumentConstraints.Length - argumentTypes.Length))
                     .Select(_ => ((Type type, ParameterInfo? parameter)) default));
 
-            var zip = parameterTypes
-                .Zip(argTypes, (parameterType, argumentType) => (parameterType, argumentType))
-                .Select((x, i) => (x.parameterType, x.argumentType, i));
+            var zip = argumentConstraints
+                .Zip(argTypes, (argumentConstraint, argumentType) => (argumentConstraint, argumentType))
+                .Select((x, i) => (x.argumentConstraint, x.argumentType, i));
 
-            foreach (var (parameter, argumentType, index) in zip)
+            foreach (var (argumentConstraint, argumentType, index) in zip)
             {
-                var isValid = IsArgumentTypeValid(argumentType, parameter, isStrict);
+                var isValid = IsArgumentTypeValid(argumentType, argumentConstraint, isStrict);
                 
-                var parameterTypeName = parameter?.ParameterType.Name;
+                var parameterTypeName = argumentConstraint?.Parameter.ParameterType.Name;
                 var argumentTypeName = argumentType.type?.Name;
                 
                 string message;
@@ -97,15 +93,15 @@ namespace DivertR.Internal
                 {
                     if (parameterTypeName == argumentTypeName)
                     {
-                        parameterTypeName = parameter?.ParameterType.FullName;
+                        parameterTypeName = argumentConstraint?.Parameter.ParameterType.FullName;
                         argumentTypeName = argumentType.type?.FullName;
                     }
                     
-                    if (parameter != null && argumentType.type != null)
+                    if (argumentConstraint != null && argumentType.type != null)
                     {
-                        message = $"invalid assignment from ({argumentTypeName})";
+                        message = $"invalid assignment to ({argumentTypeName})";
                     }
-                    else if (parameter == null)
+                    else if (argumentConstraint == null)
                     {
                         message = $"parameter index out of range";
                     }
@@ -121,14 +117,14 @@ namespace DivertR.Internal
             }
         }
 
-        private static bool IsArgumentTypeValid((Type type, ParameterInfo? parameter) test, ParameterInfo? parameter, bool isStrict = true)
+        private static bool IsArgumentTypeValid((Type type, ParameterInfo? parameter) test, IArgumentConstraint? argumentConstraint, bool isStrict = true)
         {
             if (test.type == typeof(__))
             {
                 return true;
             }
             
-            if (parameter == null)
+            if (argumentConstraint == null)
             {
                 return false;
             }
@@ -138,15 +134,15 @@ namespace DivertR.Internal
                 return !isStrict;
             }
 
-            if (!parameter.ParameterType.IsByRef)
+            if (!argumentConstraint.Parameter.ParameterType.IsByRef)
             {
-                return IsTypeValid(test.type, parameter.ParameterType);
+                return IsTypeValid(test.type, argumentConstraint.Parameter.ParameterType, argumentConstraint.ArgumentType);
             }
 
-            return IsRefTypeValid(test, parameter);
+            return IsRefTypeValid(test, argumentConstraint);
         }
         
-        private static bool IsTypeValid(Type testType, Type parameterType)
+        private static bool IsTypeValid(Type testType, Type parameterType, Type? argumentType = null)
         {
             if (ReferenceEquals(testType, parameterType))
             {
@@ -158,12 +154,17 @@ namespace DivertR.Internal
                 return true;
             }
 
+            if (argumentType != null && testType.IsAssignableFrom(argumentType))
+            {
+                return true;
+            }
+
             return false;
         }
 
-        private static bool IsRefTypeValid((Type type, ParameterInfo? parameter) test, ParameterInfo parameter)
+        private static bool IsRefTypeValid((Type type, ParameterInfo? parameter) test, IArgumentConstraint argumentConstraint)
         {
-            if (!parameter.ParameterType.IsByRef)
+            if (!argumentConstraint.Parameter.ParameterType.IsByRef)
             {
                 return false;
             }
@@ -175,7 +176,7 @@ namespace DivertR.Internal
                     return false;
                 }
 
-                return test.parameter.IsOut == parameter.IsOut && test.parameter.IsIn == parameter.IsIn;
+                return test.parameter.IsOut == argumentConstraint.Parameter.IsOut && test.parameter.IsIn == argumentConstraint.Parameter.IsIn;
             }
             
             if (!test.type.IsGenericType ||
@@ -185,7 +186,7 @@ namespace DivertR.Internal
                 return false;
             }
 
-            var elementType = parameter.ParameterType.GetElementType();
+            var elementType = argumentConstraint.Parameter.ParameterType.GetElementType();
 
             if (elementType == null)
             {

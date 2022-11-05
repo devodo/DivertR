@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
@@ -6,11 +8,17 @@ namespace DivertR.Internal
     {
         private readonly object? _constantValue;
 
-        public ConstantArgumentConstraint(object? constantValue)
+        public ConstantArgumentConstraint(ParameterInfo parameter, object? constantValue)
         {
+            Parameter = parameter;
             _constantValue = constantValue;
+            ArgumentType = _constantValue?.GetType();
         }
         
+        public ParameterInfo Parameter { get; }
+
+        public Type? ArgumentType { get; }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(object? argument)
         {

@@ -322,6 +322,60 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenSubTypeIsSpecialisedAnyExpressionRedirect_WhenCallSubTypeMatch_ShouldRedirect()
+        {
+            // ARRANGE
+            var via = new Via<IFoo>();
+            
+            via
+                .To(x => x.EchoGeneric<object>(Is<int>.Any))
+                .Redirect<(int input, __)>(call => call.Args.input + 1);
+
+            // ACT
+            var proxy = via.Proxy(new Foo());
+            var result = proxy.EchoGeneric<object>(1);
+
+            // ASSERT
+            result.ShouldBe(2);
+        }
+        
+        [Fact]
+        public void GivenSubTypeIsSpecialisedMatchExpressionRedirect_WhenCallSubTypeMatch_ShouldRedirect()
+        {
+            // ARRANGE
+            var via = new Via<IFoo>();
+            
+            via
+                .To(x => x.EchoGeneric<object>(Is<int>.Match(m => true)))
+                .Redirect<(int input, __)>(call => call.Args.input + 1);
+
+            // ACT
+            var proxy = via.Proxy(new Foo());
+            var result = proxy.EchoGeneric<object>(1);
+
+            // ASSERT
+            result.ShouldBe(2);
+        }
+        
+        [Fact]
+        public void GivenSubTypeIsSpecialisedNullableAnyExpressionRedirect_WhenCallSubTypeMatch_ShouldRedirect()
+        {
+            // ARRANGE
+            var via = new Via<IFoo>();
+            
+            via
+                .To(x => x.EchoGeneric<object>(Is<int?>.Any!))
+                .Redirect<(int? input, __)>(call => call.Args.input!.Value + 1);
+
+            // ACT
+            var proxy = via.Proxy(new Foo());
+            var result = proxy.EchoGeneric<object>(1);
+
+            // ASSERT
+            result.ShouldBe(2);
+        }
+        
+        [Fact]
         public void GivenSubTypeIsMatchExpressionRedirect_WhenCallSubTypeNotMatch_ShouldNotRedirect()
         {
             // ARRANGE

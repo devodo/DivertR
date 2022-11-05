@@ -29,7 +29,7 @@ namespace DivertR.Internal
             throw new ArgumentException($"Must be a property MemberExpression but got: {expression.GetType()}", nameof(expression));
         }
         
-        public static ICallValidator FromPropertySetter(MemberExpression propertyExpression, Expression? valueExpression)
+        public static ICallValidator FromPropertySetter(MemberExpression propertyExpression, Expression valueExpression)
         {
             if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
 
@@ -41,11 +41,9 @@ namespace DivertR.Internal
             var methodInfo = property.GetSetMethod(true);
             var parameterInfos = methodInfo.GetParameters();
             var methodConstraint = CreateMethodConstraint(methodInfo);
-            var argumentConstraints = valueExpression == null 
-                ? new[] { TrueArgumentConstraint.Instance }
-                : CreateArgumentConstraints(parameterInfos, new[] { valueExpression });
+            var argumentConstraints = CreateArgumentConstraints(parameterInfos, new[] { valueExpression });
 
-            return new ExpressionCallValidator(methodInfo, parameterInfos, methodConstraint, argumentConstraints);
+            return new ExpressionCallValidator(methodInfo, methodConstraint, argumentConstraints);
         }
         
         private static ExpressionCallValidator FromMethodCall(MethodCallExpression expression, Type targetType)
@@ -61,7 +59,7 @@ namespace DivertR.Internal
             var argumentConstraints = CreateArgumentConstraints(parameterInfos, expression.Arguments);
             var methodConstraint = CreateMethodConstraint(methodInfo);
             
-            return new ExpressionCallValidator(methodInfo, parameterInfos, methodConstraint, argumentConstraints);
+            return new ExpressionCallValidator(methodInfo, methodConstraint, argumentConstraints);
         }
 
         private static ICallValidator FromProperty(MemberExpression expression, Type? targetType)
@@ -95,10 +93,9 @@ namespace DivertR.Internal
             }
             
             var methodInfo = property.GetGetMethod(true);
-            var parameterInfos = methodInfo.GetParameters();
             var methodConstraint = CreateMethodConstraint(methodInfo);
             
-            return new ExpressionCallValidator(methodInfo, parameterInfos, methodConstraint, Array.Empty<IArgumentConstraint>());
+            return new ExpressionCallValidator(methodInfo, methodConstraint, Array.Empty<IArgumentConstraint>());
         }
         
         private static IArgumentConstraint[] CreateArgumentConstraints(ParameterInfo[] parameterInfos, IReadOnlyCollection<Expression> arguments)
@@ -145,17 +142,18 @@ namespace DivertR.Internal
             switch (argument)
             {
                 case ConstantExpression constantExpression:
-                    return new ConstantArgumentConstraint(constantExpression.Value);
-
+                    return new ConstantArgumentConstraint(parameterInfo, constantExpression.Value);
+                
                 case MemberExpression memberExpression
                     when IsDiverterArgument(memberExpression.Member, parameterInfo):
                     {
-                        if (memberExpression.Member.Name != nameof(Is<object>.Any))
-                        {
-                            throw new ArgumentException($"Only the property Is<T>.{nameof(Is<object>.Any)} may be used in this context as a method argument value");
-                        }
-                        
-                        return BuildTypeMatchConstraint(memberExpression.Member.DeclaringType!.GenericTypeArguments[0]);
+                        return BuildTypeMatchConstraint(parameterInfo, memberExpression.Member);
+                    }
+                
+                case UnaryExpression { Operand: MemberExpression memberExpression }
+                    when IsDiverterArgument(memberExpression.Member, parameterInfo):
+                    {
+                        return BuildTypeMatchConstraint(parameterInfo, memberExpression.Member);
                     }
 
                 case MethodCallExpression callExpression
@@ -164,7 +162,16 @@ namespace DivertR.Internal
                          callExpression.Arguments[0] is LambdaExpression lambdaExpression &&
                          lambdaExpression.ReturnType == typeof(bool):
                     {
-                        return BuildLambdaMatchConstraint(callExpression.Type, lambdaExpression);
+                        return BuildLambdaMatchConstraint(parameterInfo, callExpression.Type, lambdaExpression);
+                    }
+                
+                case UnaryExpression { Operand: MethodCallExpression callExpression }
+                    when IsDiverterArgument(callExpression.Method, parameterInfo) &&
+                         callExpression.Arguments.Any() &&
+                         callExpression.Arguments[0] is LambdaExpression lambdaExpression &&
+                         lambdaExpression.ReturnType == typeof(bool):
+                    {
+                        return BuildLambdaMatchConstraint(parameterInfo, callExpression.Type, lambdaExpression);
                     }
                 
                 case MemberExpression { Expression: MethodCallExpression callExpression }
@@ -175,7 +182,7 @@ namespace DivertR.Internal
                          callExpression.Arguments[0] is LambdaExpression lambdaExpression &&
                          lambdaExpression.ReturnType == typeof(bool):
                     {
-                        return BuildLambdaMatchConstraint(callExpression.Type.GenericTypeArguments[0], lambdaExpression);
+                        return BuildLambdaMatchConstraint(parameterInfo, callExpression.Type.GenericTypeArguments[0], lambdaExpression);
                     }
 
                 case MethodCallExpression callExpression
@@ -188,30 +195,42 @@ namespace DivertR.Internal
                     {
                         var value = Expression.Lambda(argument).Compile().DynamicInvoke();
                         
-                        return new ConstantArgumentConstraint(value);
+                        return new ConstantArgumentConstraint(parameterInfo, value);
                     }
             }
         }
-
-        private static IArgumentConstraint BuildLambdaMatchConstraint(Type argumentType, LambdaExpression matchExpression)
+        
+        private static IArgumentConstraint BuildLambdaMatchConstraint(ParameterInfo parameterInfo, Type argumentType, LambdaExpression matchExpression)
         {
-            const BindingFlags ActivatorFlags = BindingFlags.Public | BindingFlags.Instance;
-            var lambdaType = typeof(LambdaArgumentConstraint<>).MakeGenericType(argumentType);
-            
-            return (IArgumentConstraint) Activator.CreateInstance(lambdaType, ActivatorFlags, null, new object[] { matchExpression }, default);
+            var constraintFactory = GetArgumentConstraintFactory(argumentType);
+
+            return constraintFactory.CreateLambdaArgumentConstraint(parameterInfo, matchExpression);
+        }
+
+        private static IArgumentConstraint BuildTypeMatchConstraint(ParameterInfo parameterInfo, MemberInfo member)
+        {
+            if (member.Name != nameof(Is<object>.Any))
+            {
+                throw new ArgumentException($"Only the property Is<T>.{nameof(Is<object>.Any)} may be used in this context as a method argument value");
+            }
+                        
+            var argumentType = member.DeclaringType!.GenericTypeArguments[0];
+            var constraintFactory = GetArgumentConstraintFactory(argumentType);
+
+            return constraintFactory.CreateTypeArgumentConstraint(parameterInfo);
         }
         
-        private static readonly ConcurrentDictionary<Type, IArgumentConstraint> TypeMatchConstraintCache = new();
-        
-        private static IArgumentConstraint BuildTypeMatchConstraint(Type argumentType)
+        private static readonly ConcurrentDictionary<Type, IArgumentConstraintFactory> ArgumentConstraintFactoryCache = new();
+
+        private static IArgumentConstraintFactory GetArgumentConstraintFactory(Type argumentType)
         {
             const BindingFlags ActivatorFlags = BindingFlags.Public | BindingFlags.Instance;
-
-            return TypeMatchConstraintCache.GetOrAdd(argumentType, argType =>
+            
+            return ArgumentConstraintFactoryCache.GetOrAdd(argumentType, argType =>
             {
-                var lambdaType = typeof(TypeArgumentConstraint<>).MakeGenericType(argType);
+                var lambdaType = typeof(ArgumentConstraintFactory<>).MakeGenericType(argType);
 
-                return (IArgumentConstraint) Activator.CreateInstance(lambdaType, ActivatorFlags, null, null, default);
+                return (IArgumentConstraintFactory) Activator.CreateInstance(lambdaType, ActivatorFlags, null, null, default);
             });
         }
 

@@ -222,5 +222,31 @@ namespace DivertR.UnitTests
             result.ShouldBe(10);
             input.ShouldBe(5);
         }
+        
+        [Fact]
+        public void GivenGenericRefParameter_ShouldRedirect()
+        {
+            // ARRANGE
+            var fooVia = new Via<IFoo>();
+
+            fooVia
+                .To(x => x.EchoGenericRef(ref IsRef<int>.Any))
+                .Redirect<(Ref<int> input, __)>(call =>
+                {
+                    var input = call.Args.input.Value;
+                    call.Args.input.Value = 10;
+
+                    return input;
+                });
+
+            // ACT
+            int input = 5;
+            var proxy = fooVia.Proxy();
+            var result = proxy.EchoGenericRef(ref input);
+
+            // ASSERT
+            result.ShouldBe(5);
+            input.ShouldBe(10);
+        }
     }
 }

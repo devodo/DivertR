@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
@@ -8,11 +9,16 @@ namespace DivertR.Internal
     {
         private readonly Func<TArgument, bool> _matchFunc;
 
-        public LambdaArgumentConstraint(LambdaExpression lambdaExpression)
+        public LambdaArgumentConstraint(ParameterInfo parameter, LambdaExpression lambdaExpression)
         {
+            Parameter = parameter;
             _matchFunc = (Func<TArgument, bool>) lambdaExpression.Compile();
         }
         
+        public ParameterInfo Parameter { get; }
+
+        public Type ArgumentType => typeof(TArgument);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMatch(object? argument)
         {
