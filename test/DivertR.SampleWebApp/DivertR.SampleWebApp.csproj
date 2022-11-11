@@ -5,7 +5,7 @@
     <LangVersion>10</LangVersion>
     <AssemblyName>DivertR.SampleWebApp</AssemblyName>
     <RootNamespace>DivertR.SampleWebApp</RootNamespace>
-    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   

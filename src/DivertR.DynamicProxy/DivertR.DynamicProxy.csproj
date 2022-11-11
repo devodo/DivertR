@@ -3,17 +3,20 @@
   <PropertyGroup>
     <Title>DivertR.DynamicProxy</Title>
     <Authors>David Naylor</Authors>
-    <Description>DivertR DynamicProxy plugin with class support</Description>
+    <Description>
+      A DivertR IProxyFactory implementation using Castle DynamicProxy with suuport for proxying class types.
+      The in-built proxy factory is based on DispatchProxy and therefore only supports proxying interfaces. The proxy factory to use can be specified in DiverterSettings.
+    </Description>
     <Copyright>MIT Copyright (c) David Naylor</Copyright>
     <PackageProjectUrl>https://github.com/devodo/DivertR</PackageProjectUrl>
-    <PackageTags>divert diverter divertr dynamicproxy</PackageTags>
+    <PackageTags>divert diverter divertr dynamicproxy proxy factory via class mock</PackageTags>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
     <PackageId>DivertR.DynamicProxy</PackageId>
     <Product>DivertR.DynamicProxy</Product>
     <MinVerTagPrefix>v</MinVerTagPrefix>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PublishRepositoryUrl>https://github.com/devodo/DivertR</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -27,8 +30,8 @@
 
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="4.3.1" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-    <PackageReference Include="MinVer" Version="2.5.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    <PackageReference Include="MinVer" Version="4.2.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

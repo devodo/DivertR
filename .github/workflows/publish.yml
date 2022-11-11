@@ -20,11 +20,14 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore --configuration Release
     - name: Test
-      run: dotnet test --no-build --verbosity normal -f net6.0
+      run: dotnet test --no-build --no-restore --configuration Release --verbosity normal -f net6.0
     - name: Pack DivertR
-      run: dotnet pack --configuration Release --output ./artifacts ./src/DivertR/DivertR.csproj
+      run: |
+        dotnet pack --no-build --no-restore --configuration Release --output ./artifacts/DivertR ./src/DivertR/DivertR.csproj
+        dotnet pack --no-build --no-restore --configuration Release --output ./artifacts/DivertR.DynamicProxy ./src/DivertR.DynamicProxy/DivertR.DynamicProxy.csproj
     - name: Nuget Push
-      run: dotnet nuget push ./artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
-  
+      run: |
+        dotnet nuget push ./artifacts/DivertR/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
+        dotnet nuget push ./artifacts/DivertR.DynamicProxy/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
