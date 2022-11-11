@@ -11,7 +11,7 @@ namespace DivertR.DemoApp
         string Name { get; set; }
         string Echo(string input);
         Task<string> EchoAsync(string input);
-        T EchoGeneric<T>(T input);
+        T Echo<T>(T input);
     }
 
     public interface IBar
@@ -21,7 +21,7 @@ namespace DivertR.DemoApp
 
     public class Foo : IFoo
     {
-        public string Name { get; set; } = "original";
+        public string Name { get; set; } = "Foo";
     
         public string Echo(string input)
         {
@@ -34,7 +34,7 @@ namespace DivertR.DemoApp
             return $"{Name}: {input}";
         }
 
-        public T EchoGeneric<T>(T input)
+        public T Echo<T>(T input)
         {
             return input;
         }
@@ -136,6 +136,17 @@ namespace DivertR.DemoApp
             
             Console.WriteLine(await foo.EchoAsync("Hello")); // "Foo1: Hello - Async"
             Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello - Async"
+
+            fooVia
+                .To(x => x.Echo(Is<int>.Any))
+                .Redirect(call => call.CallNext() + 10);
+
+            fooVia
+                .To(x => x.Echo(Is<Task<int>>.Any))
+                .Redirect(async call => await call.CallNext() + 100);
+            
+            Console.WriteLine(foo.Echo(5)); // 15
+            Console.WriteLine(await foo.Echo(Task.FromResult(50))); // 150
         }
     }
 }
