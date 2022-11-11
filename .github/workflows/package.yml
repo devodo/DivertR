@@ -22,9 +22,11 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal -f net6.0
+      run: dotnet test --no-build --no-restore --verbosity normal -f net6.0
     - name: Pack DivertR
-      run: dotnet pack --configuration Release --output ./artifacts ./src/DivertR/DivertR.csproj
+      run: dotnet pack --no-build --no-restore --configuration Release --output ./artifacts ./src/DivertR/DivertR.csproj 
+    - name: Pack DivertR.DynamicProxy
+      run: dotnet pack --no-build --no-restore --configuration Release --output ./artifacts ./src/DivertR.DynamicProxy/DivertR.DynamicProxy.csproj
     - name: Nuget Push
       run: dotnet nuget push ./artifacts/*.nupkg --source "https://nuget.pkg.github.com/devodo/index.json" --api-key ${{ secrets.PACKAGE_REPOSITORY_TOKEN }}
   
