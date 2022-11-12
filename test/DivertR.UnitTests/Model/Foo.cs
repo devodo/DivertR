@@ -5,6 +5,8 @@ namespace DivertR.UnitTests.Model
 {
     public class Foo : IFoo
     {
+        private readonly string _createdName;
+        
         public Foo() : this("original")
         {
         }
@@ -12,11 +14,17 @@ namespace DivertR.UnitTests.Model
         public Foo(string name)
         {
             Name = name;
+            _createdName = name;
+            CreatedName = name;
         }
 
         public string Name { get; set; }
 
         public object? LastAction { get; set; }
+
+        public string CreatedNameBacked => _createdName;
+
+        public string CreatedName { get; }
 
         public virtual string NameVirtual
         {

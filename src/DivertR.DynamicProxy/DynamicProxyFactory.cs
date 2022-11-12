@@ -1,23 +1,27 @@
 ﻿using System;
+using System.Reflection;
 using Castle.DynamicProxy;
 
 namespace DivertR.DynamicProxy
 {
     public class DynamicProxyFactory : IProxyFactory
     {
-        public static readonly DynamicProxyFactory Instance = new DynamicProxyFactory();
-        
-        private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
+        private readonly ProxyGenerator _proxyGenerator = new();
+        private readonly bool _copyRootFields;
+
+        public DynamicProxyFactory(bool copyRootFields = true)
+        {
+            _copyRootFields = copyRootFields;
+        }
 
         public TTarget CreateProxy<TTarget>(IProxyCall<TTarget> proxyCall, TTarget? root = null) where TTarget : class?
         {
             ValidateProxyTarget<TTarget>();
             var interceptor = new ProxyInterceptor<TTarget>(proxyCall, root);
 
-            return CreateProxy<TTarget>(interceptor);
+            return CreateProxy(interceptor, root);
         }
         
-
         public void ValidateProxyTarget<TTarget>()
         {
             if (!(typeof(TTarget).IsInterface || typeof(TTarget).IsClass))
@@ -26,7 +30,7 @@ namespace DivertR.DynamicProxy
             }
         }
 
-        private TTarget CreateProxy<TTarget>(IInterceptor interceptor) where TTarget : class?
+        private TTarget CreateProxy<TTarget>(IInterceptor interceptor, TTarget? root) where TTarget : class?
         {
             if (typeof(TTarget).IsInterface)
             {
@@ -35,10 +39,28 @@ namespace DivertR.DynamicProxy
 
             if (typeof(TTarget).IsClass)
             {
-                return _proxyGenerator.CreateClassProxy<TTarget>(interceptor);
+                var proxy = _proxyGenerator.CreateClassProxy<TTarget>(interceptor);
+
+                if (_copyRootFields && root != null)
+                {
+                    CopyFields(root, proxy);
+                }
+
+                return proxy;
             }
 
             throw new NotImplementedException();
+        }
+
+        private static void CopyFields<TTarget>(TTarget src, TTarget dest)
+        {
+            const BindingFlags FieldFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
+            foreach (var field in typeof(TTarget).GetFields(FieldFlags))
+            {
+                var fieldValue = field.GetValue(src);
+                field.SetValue(dest, fieldValue);
+            }
         }
     }
 }
