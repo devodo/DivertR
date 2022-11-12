@@ -186,7 +186,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenDummyRootProxy_WhenCallHasArrayReturn_ShouldReturnEmptyArray()
+        public void GivenDummyRootProxy_WhenCallHasArrayReturn_ShouldReturnNull()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -195,11 +195,11 @@ namespace DivertR.UnitTests
             var result = proxy.EchoGeneric<object[]?>(default);
 
             // ASSERT
-            result.ShouldBe(Array.Empty<object>());
+            result.ShouldBeNull();
         }
         
         [Fact]
-        public void GivenDummyRootProxy_WhenCallHasMultiDimensionalArrayReturn_ShouldReturnEmptyArray()
+        public void GivenDummyRootProxy_WhenCallHasMultiDimensionalArrayReturn_ShouldReturnNull()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -208,11 +208,11 @@ namespace DivertR.UnitTests
             var result = proxy.EchoGeneric<object[][][]?>(default);
 
             // ASSERT
-            result.ShouldBe(Array.Empty<object[][]>());
+            result.ShouldBeNull();
         }
 
         [Fact]
-        public void GivenDummyRootProxy_WhenCallHasIEnumerableReturn_ShouldReturnEmptyIEnumerable()
+        public void GivenDummyRootProxy_WhenCallHasIEnumerableReturn_ShouldReturnNull()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -221,11 +221,11 @@ namespace DivertR.UnitTests
             var result = proxy.EchoGeneric<IEnumerable?>(default);
 
             // ASSERT
-            result.ShouldBe(new ArrayList());
+            result.ShouldBeNull();
         }
         
         [Fact]
-        public void GivenDummyRootProxy_WhenCallHasTypedIEnumerableReturn_ShouldReturnEmptyIEnumerable()
+        public void GivenDummyRootProxy_WhenCallHasTypedIEnumerableReturn_ShouldReturnNull()
         {
             // ARRANGE
             var proxy = _via.Proxy();
@@ -234,7 +234,7 @@ namespace DivertR.UnitTests
             var result = proxy.EchoGeneric<IEnumerable<object>?>(default);
 
             // ASSERT
-            result.ShouldBe(Array.Empty<object>());
+            result.ShouldBeNull();
         }
         
         [Fact]
