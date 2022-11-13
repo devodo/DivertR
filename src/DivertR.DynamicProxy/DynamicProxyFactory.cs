@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Reflection;
 using Castle.DynamicProxy;
 
 namespace DivertR.DynamicProxy
 {
     public class DynamicProxyFactory : IProxyFactory
     {
-        private readonly ProxyGenerator _proxyGenerator = new();
+        private readonly CustomProxyGenerator _proxyGenerator = new();
         private readonly bool _copyRootFields;
 
         public DynamicProxyFactory(bool copyRootFields = true)
@@ -37,30 +36,17 @@ namespace DivertR.DynamicProxy
                 return _proxyGenerator.CreateInterfaceProxyWithoutTarget<TTarget>(interceptor);
             }
 
-            if (typeof(TTarget).IsClass)
+            if (!typeof(TTarget).IsClass)
             {
-                var proxy = _proxyGenerator.CreateClassProxy<TTarget>(interceptor);
-
-                if (_copyRootFields && root != null)
-                {
-                    CopyFields(root, proxy);
-                }
-
-                return proxy;
+                throw new InvalidOperationException("Only interface and class types are supported");
             }
 
-            throw new NotImplementedException();
-        }
-
-        private static void CopyFields<TTarget>(TTarget src, TTarget dest)
-        {
-            const BindingFlags FieldFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-
-            foreach (var field in typeof(TTarget).GetFields(FieldFlags))
+            if (_copyRootFields && root != null)
             {
-                var fieldValue = field.GetValue(src);
-                field.SetValue(dest, fieldValue);
+                return _proxyGenerator.CreateClassProxyWithRootFields(root, interceptor);
             }
+
+            return _proxyGenerator.CreateClassProxy<TTarget>(interceptor);
         }
     }
 }

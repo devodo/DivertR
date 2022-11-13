@@ -6,6 +6,7 @@ namespace DivertR.UnitTests.Model
     public class Foo : IFoo
     {
         private readonly string _createdName;
+        public string? _publicField;
         
         public Foo() : this("original")
         {

@@ -146,5 +146,32 @@ namespace DivertR.UnitTests
             // ASSERT
             testAction.ShouldThrow<DiverterValidationException>();
         }
+        
+        [Fact]
+        public void GivenClassProxy_WhenProxyDerivedClass_ShouldCopyPrivateField()
+        {
+            // ARRANGE
+            var original = new DerivedFoo("hello foo", "other");
+            original._publicField = "test";
+            var via = new Via<DerivedFoo>(new DiverterSettings(proxyFactory: new DynamicProxyFactory()));
+
+            // ACT
+            var proxy = via.Proxy(original);
+
+            // ASSERT
+            proxy.CreatedName.ShouldBe(original.CreatedName);
+            proxy.AltName.ShouldBe(original.AltName);
+            proxy._publicField.ShouldBe(original._publicField);
+        }
+
+        public class DerivedFoo : Foo
+        {
+            public DerivedFoo(string name, string altName) : base(name)
+            {
+                AltName = altName;
+            }
+            
+            public string AltName { get; }
+        }
     }
 }
