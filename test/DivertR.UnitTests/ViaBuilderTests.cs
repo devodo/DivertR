@@ -460,7 +460,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenVia_WhenToSetBuilderWithIsRefAnyConstraint_ThenThrowsArgumentException()
+        public void GivenVia_WhenToSetBuilderWithIsRefAnyConstraint_ThenThrowsException()
         {
             // ARRANGE
 
@@ -468,11 +468,11 @@ namespace DivertR.UnitTests
             var testAction = () => _via.ToSet(x => x.Name, () => IsRef<string>.Any);
 
             // ASSERT
-            testAction.ShouldThrow<ArgumentException>();
+            testAction.ShouldThrow<DiverterValidationException>();
         }
         
         [Fact]
-        public void GivenVia_WhenToSetBuilderWithIsRefMatchConstraint_ThenThrowsArgumentException()
+        public void GivenVia_WhenToSetBuilderWithIsRefMatchConstraint_ThenThrowsException()
         {
             // ARRANGE
 
@@ -480,7 +480,7 @@ namespace DivertR.UnitTests
             var testAction = () => _via.ToSet(x => x.Name, () => IsRef<string>.Match(m => true).Value);
 
             // ASSERT
-            testAction.ShouldThrow<ArgumentException>();
+            testAction.ShouldThrow<DiverterValidationException>();
         }
         
         [Fact]
@@ -988,7 +988,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenVia_WhenAddRedirectWithReturnMatchParameter_ThenThrowsArgumentException()
+        public void GivenVia_WhenAddRedirectWithReturnMatchParameter_ThenThrowsException()
         {
             // ARRANGE
 
@@ -996,11 +996,11 @@ namespace DivertR.UnitTests
             var testAction = () => _via.To(x => x.Echo(Is<string>.Return));
 
             // ASSERT
-            testAction.ShouldThrow<ArgumentException>();
+            testAction.ShouldThrow<DiverterValidationException>();
         }
         
         [Fact]
-        public void GivenVia_WhenAddRedirectWithIsRefAnyParameter_ThenThrowsArgumentException()
+        public void GivenVia_WhenAddRedirectWithIsRefAnyParameter_ThenThrowsException()
         {
             // ARRANGE
 
@@ -1008,11 +1008,11 @@ namespace DivertR.UnitTests
             var testAction = () => _via.To(x => x.Echo(IsRef<string>.Any));
 
             // ASSERT
-            testAction.ShouldThrow<ArgumentException>();
+            testAction.ShouldThrow<DiverterValidationException>();
         }
         
         [Fact]
-        public void GivenVia_WhenAddRedirectWithIsRefMatchParameter_ThenThrowsArgumentException()
+        public void GivenVia_WhenAddRedirectWithIsRefMatchParameter_ThenThrowsException()
         {
             // ARRANGE
 
@@ -1020,7 +1020,7 @@ namespace DivertR.UnitTests
             var testAction = () => _via.To(x => x.Echo(IsRef<string>.Match(m => true).Value));
 
             // ASSERT
-            testAction.ShouldThrow<ArgumentException>();
+            testAction.ShouldThrow<DiverterValidationException>();
         }
 
         [Fact]
@@ -1105,7 +1105,7 @@ namespace DivertR.UnitTests
             Action testAction = () => _via.To(x => x.Echo(It.IsAny<string>()));
 
             // ASSERT
-            testAction.ShouldThrow<ArgumentException>();
+            testAction.ShouldThrow<DiverterValidationException>();
         }
         
         [Fact]
@@ -1117,7 +1117,7 @@ namespace DivertR.UnitTests
             Action testAction = () => _via.To(x => x.Echo(It.Is<string>(m => true)));
 
             // ASSERT
-            testAction.ShouldThrow<ArgumentException>();
+            testAction.ShouldThrow<DiverterValidationException>();
         }
         
         [Fact]

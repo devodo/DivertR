@@ -29,7 +29,7 @@ namespace DivertR.Internal
             throw new ArgumentException($"Must be a property MemberExpression but got: {expression.GetType()}", nameof(expression));
         }
         
-        public static ICallValidator FromPropertySetter(MemberExpression propertyExpression, Expression valueExpression)
+        public static ICallValidator FromPropertySetter<TTarget>(MemberExpression propertyExpression, Expression valueExpression)
         {
             if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
 
@@ -39,6 +39,7 @@ namespace DivertR.Internal
             }
             
             var methodInfo = property.GetSetMethod(true);
+            ValidateCanRedirect(methodInfo, typeof(TTarget));
             var parameterInfos = methodInfo.GetParameters();
             var methodConstraint = CreateMethodConstraint(methodInfo);
             var argumentConstraints = CreateArgumentConstraints(parameterInfos, new[] { valueExpression });
@@ -54,6 +55,8 @@ namespace DivertR.Internal
             {
                 throw new ArgumentException($"The method declaring type {methodInfo.DeclaringType} is not assignable from the Via target type: {targetType}", nameof(expression));
             }
+
+            ValidateCanRedirect(methodInfo, targetType);
             
             var parameterInfos = methodInfo.GetParameters();
             var argumentConstraints = CreateArgumentConstraints(parameterInfos, expression.Arguments);
@@ -91,11 +94,27 @@ namespace DivertR.Internal
             {
                 throw new ArgumentException($"The property declaring type {property.DeclaringType} is not assignable from the Via target type: {targetType}", nameof(expression));
             }
-            
+
             var methodInfo = property.GetGetMethod(true);
+            ValidateCanRedirect(methodInfo, targetType);
             var methodConstraint = CreateMethodConstraint(methodInfo);
             
             return new ExpressionCallValidator(methodInfo, methodConstraint, Array.Empty<IArgumentConstraint>());
+        }
+
+        private static void ValidateCanRedirect(MethodInfo methodInfo, Type targetType)
+        {
+            if (targetType.IsInterface)
+            {
+                return;
+            }
+
+            if ((methodInfo.IsVirtual && !methodInfo.IsFinal) || methodInfo.IsAbstract)
+            {
+                return;
+            }
+            
+            throw new DiverterValidationException($"Member '{methodInfo.Name}' cannot be redirected. Only interface members or virtual or abstract class members are valid");
         }
         
         private static IArgumentConstraint[] CreateArgumentConstraints(ParameterInfo[] parameterInfos, IReadOnlyCollection<Expression> arguments)
@@ -128,7 +147,7 @@ namespace DivertR.Internal
             {
                 if (!parameterInfo.ParameterType.IsByRef)
                 {
-                    throw new ArgumentException($"IsRef<T> argument used with parameter '{parameterInfo}' that is not ByRef");
+                    throw new DiverterValidationException($"IsRef<T> argument used with parameter '{parameterInfo}' that is not ByRef");
                 }
 
                 return true;
@@ -188,7 +207,7 @@ namespace DivertR.Internal
                 case MethodCallExpression callExpression
                     when callExpression.Method.DeclaringType?.FullName == "Moq.It":
                     {
-                        throw new ArgumentException("Moq.It argument match syntax is not supported by DivertR");
+                        throw new DiverterValidationException("Moq.It argument match syntax is not supported by DivertR");
                     }
                 
                 default:
@@ -211,7 +230,7 @@ namespace DivertR.Internal
         {
             if (member.Name != nameof(Is<object>.Any))
             {
-                throw new ArgumentException($"Only the property Is<T>.{nameof(Is<object>.Any)} may be used in this context as a method argument value");
+                throw new DiverterValidationException($"Only the property Is<T>.{nameof(Is<object>.Any)} may be used in this context as a method argument value");
             }
                         
             var argumentType = member.DeclaringType!.GenericTypeArguments[0];

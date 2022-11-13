@@ -5,19 +5,22 @@ namespace DivertR.DynamicProxy
 {
     public class DynamicProxyFactory : IProxyFactory
     {
-        public static readonly DynamicProxyFactory Instance = new DynamicProxyFactory();
-        
-        private readonly ProxyGenerator _proxyGenerator = new ProxyGenerator();
+        private readonly CustomProxyGenerator _proxyGenerator = new();
+        private readonly bool _copyRootFields;
+
+        public DynamicProxyFactory(bool copyRootFields = true)
+        {
+            _copyRootFields = copyRootFields;
+        }
 
         public TTarget CreateProxy<TTarget>(IProxyCall<TTarget> proxyCall, TTarget? root = null) where TTarget : class?
         {
             ValidateProxyTarget<TTarget>();
             var interceptor = new ProxyInterceptor<TTarget>(proxyCall, root);
 
-            return CreateProxy<TTarget>(interceptor);
+            return CreateProxy(interceptor, root);
         }
         
-
         public void ValidateProxyTarget<TTarget>()
         {
             if (!(typeof(TTarget).IsInterface || typeof(TTarget).IsClass))
@@ -26,19 +29,24 @@ namespace DivertR.DynamicProxy
             }
         }
 
-        private TTarget CreateProxy<TTarget>(IInterceptor interceptor) where TTarget : class?
+        private TTarget CreateProxy<TTarget>(IInterceptor interceptor, TTarget? root) where TTarget : class?
         {
             if (typeof(TTarget).IsInterface)
             {
                 return _proxyGenerator.CreateInterfaceProxyWithoutTarget<TTarget>(interceptor);
             }
 
-            if (typeof(TTarget).IsClass)
+            if (!typeof(TTarget).IsClass)
             {
-                return _proxyGenerator.CreateClassProxy<TTarget>(interceptor);
+                throw new InvalidOperationException("Only interface and class types are supported");
             }
 
-            throw new NotImplementedException();
+            if (_copyRootFields && root != null)
+            {
+                return _proxyGenerator.CreateClassProxyWithRootFields(root, interceptor);
+            }
+
+            return _proxyGenerator.CreateClassProxy<TTarget>(interceptor);
         }
     }
 }

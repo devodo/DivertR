@@ -43,7 +43,7 @@ namespace DivertR
                 throw new ArgumentException("Must be a property member expression", nameof(memberExpression));
             }
 
-            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, constraintExpression.Body);
+            var parsedCall = CallExpressionParser.FromPropertySetter<TTarget>(propertyExpression, constraintExpression.Body);
             var callConstraint = new CallConstraintWrapper<TTarget>(parsedCall.CreateCallConstraint());
 
             return new ActionRedirectBuilder<TTarget>(parsedCall, callConstraint);

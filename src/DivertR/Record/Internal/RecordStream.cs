@@ -52,12 +52,12 @@ namespace DivertR.Record.Internal
             if (lambdaExpression.Body == null) throw new ArgumentNullException(nameof(lambdaExpression));
             if (valueExpression.Body == null) throw new ArgumentNullException(nameof(valueExpression));
 
-            if (!(lambdaExpression.Body is MemberExpression propertyExpression))
+            if (lambdaExpression.Body is not MemberExpression propertyExpression)
             {
                 throw new ArgumentException("Must be a property member expression", nameof(propertyExpression));
             }
 
-            var parsedCall = CallExpressionParser.FromPropertySetter(propertyExpression, valueExpression.Body);
+            var parsedCall = CallExpressionParser.FromPropertySetter<TTarget>(propertyExpression, valueExpression.Body);
             var callConstraint = parsedCall.CreateCallConstraint();
             var calls = Calls.Where(x => callConstraint.IsMatch(x.CallInfo));
 
