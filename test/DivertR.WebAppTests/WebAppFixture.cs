@@ -5,6 +5,7 @@ using DivertR.DependencyInjection;
 using DivertR.SampleWebApp;
 using DivertR.SampleWebApp.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
 using Refit;
 using Xunit.Abstractions;
@@ -24,7 +25,7 @@ namespace DivertR.WebAppTests
         {
             _webApplicationFactory = new WebApplicationFactory<Startup>().WithWebHostBuilder(builder =>
             {
-                builder.ConfigureServices(services =>
+                builder.ConfigureTestServices(services =>
                 {
                     services.Divert(_diverter);
                 });

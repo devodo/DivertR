@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using DivertR.SampleWebApp.Model;
@@ -48,10 +49,10 @@ namespace DivertR.WebAppTests
         }
         
         [Fact]
-        public async Task GivenAnyFooExistsInRepo_WhenGetFoo_ThenReturnsFoot_WithOk200()
+        public async Task GivenAllFoosExistInRepo_WhenConcurrentGetFoo_ThenReturnsFoos_WithOk200()
         {
             // ARRANGE
-            var fooId = Guid.NewGuid();
+            var fooIds = Enumerable.Range(0, 5).Select(_ => Guid.NewGuid()).ToArray();
             
             _diverter
                 .Via<IFooRepository>()
@@ -63,11 +64,12 @@ namespace DivertR.WebAppTests
                 }));
             
             // ACT
-            var response = await _fooClient.GetFooAsync(fooId);
+            var responses = await Task.WhenAll(fooIds.Select(fooId => _fooClient.GetFooAsync(fooId)));
             
             // ASSERT
-            response.Content.Id.ShouldBe(fooId);
-            response.Content.Name.ShouldBe($"{fooId}");
+            responses.ShouldAllBe(response => response.StatusCode == HttpStatusCode.OK);
+            responses.Select(response => response.Content.Id).ShouldBe(fooIds);
+            responses.Select(response => response.Content.Name).ShouldBe(fooIds.Select(fooId => $"{fooId}"));
         }
         
         [Fact]
@@ -132,7 +134,7 @@ namespace DivertR.WebAppTests
         }
 
         [Fact]
-        public async Task GiveFooNotExists_WhenCreateFooRequest_ThenInsertsFooAndReturn201CreatedWithLocationHeader()
+        public async Task GiveFooDoesNotExist_WhenCreateFoo_ThenInsertsFooAndReturn201CreatedWithLocationHeader()
         {
             // ARRANGE
             var createFooRequest = new CreateFooRequest
@@ -150,7 +152,8 @@ namespace DivertR.WebAppTests
                 .Redirect<(Foo foo, __)>(async (call, args) =>
                 {
                     insertedFoo = args.foo;
-                    insertResult = await call.Next.TryInsertFooAsync(args.foo);
+                    insertResult = await call.CallNext();
+                    
                     return insertResult.Value;
                 });
 
