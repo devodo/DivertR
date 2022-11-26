@@ -115,6 +115,9 @@ diverter.ResetAll();
 Console.WriteLine(bar.Name); // "MrBar"
 ```
 
+`RedirectVia` intercepts the method return values and wraps them as proxies created from a Via.
+It returns this Via that can then be used to control the behaviour of the proxy wrappers.
+
 # Proxy Lifetime
 
 DivertR aims to leave the original system behaviour unchanged and therefore 
