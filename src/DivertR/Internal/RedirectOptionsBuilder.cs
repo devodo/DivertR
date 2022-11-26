@@ -8,6 +8,7 @@ namespace DivertR.Internal
     {
         private int _orderWeight;
         private bool _disableSatisfyStrict;
+        private bool _isPersistent;
         
         private readonly ConcurrentStack<Func<IRedirect, IRedirect>> _redirectDecorators = new();
 
@@ -40,6 +41,13 @@ namespace DivertR.Internal
 
             return this;
         }
+        
+        public IRedirectOptionsBuilder Persist(bool isPersistent = true)
+        {
+            _isPersistent = isPersistent;
+
+            return this;
+        }
 
         public IRedirectOptionsBuilder Decorate(Func<IRedirect, IRedirect> decorator)
         {
@@ -68,7 +76,7 @@ namespace DivertR.Internal
         
         private IRedirectOptions BuildOptions()
         {
-            return new RedirectOptions(_orderWeight, _disableSatisfyStrict, BuildRedirectDecorator());
+            return new RedirectOptions(_orderWeight, _disableSatisfyStrict, _isPersistent, BuildRedirectDecorator());
         }
         
         private Func<IRedirect, IRedirect>? BuildRedirectDecorator()

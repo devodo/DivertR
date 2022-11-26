@@ -107,16 +107,16 @@ namespace DivertR
             return this;
         }
         
-        public IDiverter ResetAll()
+        public IDiverter ResetAll(bool includePersistent = false)
         {
-            ViaSet.ResetAll();
+            ViaSet.ResetAll(includePersistent);
             
             return this;
         }
 
-        public IDiverter Reset(string? name = null)
+        public IDiverter Reset(string? name = null, bool includePersistent = false)
         {
-            ViaSet.Reset(name);
+            ViaSet.Reset(name, includePersistent);
 
             return this;
         }

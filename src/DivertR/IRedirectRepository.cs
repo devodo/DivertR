@@ -26,6 +26,6 @@ namespace DivertR
         IRedirectRepository InsertRedirect(IRedirectContainer redirect);
         
         IRedirectRepository SetStrictMode(bool isStrict = true);
-        IRedirectRepository Reset();
+        IRedirectRepository Reset(bool includePersistent = false);
     }
 }

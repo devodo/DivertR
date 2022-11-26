@@ -8,6 +8,7 @@ namespace DivertR
         IRedirectOptionsBuilder OrderFirst();
         IRedirectOptionsBuilder OrderLast();
         IRedirectOptionsBuilder DisableSatisfyStrict(bool disableStrict = true);
+        IRedirectOptionsBuilder Persist(bool isPersistent = true);
         
         IRedirectOptionsBuilder Decorate(Func<IRedirect, IRedirect> decorator);
         IRedirectOptionsBuilder Repeat(int repeatCount);

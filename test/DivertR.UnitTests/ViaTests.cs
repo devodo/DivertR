@@ -90,5 +90,140 @@ namespace DivertR.UnitTests
             // ASSERT
             result.ShouldBe("divert");
         }
+        
+        [Fact]
+        public void GivenPersistentRedirect_ShouldRedirect()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy(new Foo("foo"));
+            
+            _via
+                .To(x => x.Name)
+                .Redirect(call => call.CallNext() + " changed", opt => opt.Persist());
+            
+            // ACT
+            var name = proxy.Name;
+
+            // ASSERT
+            name.ShouldBe("foo changed");
+        }
+        
+        [Fact]
+        public void GivenPersistentRedirect_WhenReset_ShouldNotRemoveRedirect()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy(new Foo("foo"));
+            
+            _via
+                .To(x => x.Name)
+                .Redirect(call => call.CallNext() + " changed", opt => opt.Persist());
+            
+            // ACT
+            _via.Reset();
+
+            // ASSERT
+            proxy.Name.ShouldBe("foo changed");
+        }
+        
+        [Fact]
+        public void GivenPersistentRedirect_WhenResetIncludingPersistent_ShouldRemoveRedirect()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy(new Foo("foo"));
+            
+            _via
+                .To(x => x.Name)
+                .Redirect(call => call.CallNext() + " changed", opt => opt.Persist());
+            
+            // ACT
+            _via.Reset(includePersistent: true);
+
+            // ASSERT
+            proxy.Name.ShouldBe("foo");
+        }
+        
+        [Fact]
+        public void GivenPersistentRedirectFollowedByNormalRedirect_ShouldRedirectChain()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy(new Foo("foo"));
+            
+            _via
+                .To(x => x.Name)
+                .Redirect(call => call.CallNext() + " changed", opt => opt.Persist());
+            
+            _via
+                .To(x => x.Name)
+                .Redirect(call => call.CallNext() + " again");
+            
+            // ACT
+            var name = proxy.Name;
+
+            // ASSERT
+            name.ShouldBe("foo changed again");
+        }
+        
+        [Fact]
+        public void GivenPersistentRedirectFollowedByNormalRedirect_WhenViaReset_ShouldKeepPersistentRedirect()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy(new Foo("foo"));
+            
+            _via
+                .To(x => x.Name)
+                .Redirect(call => call.CallNext() + " changed", opt => opt.Persist());
+            
+            _via
+                .To(x => x.Name)
+                .Redirect(call => call.CallNext() + " again");
+            
+            // ACT
+            _via.Reset();
+
+            // ASSERT
+            proxy.Name.ShouldBe("foo changed");
+        }
+        
+        [Fact]
+        public void GivenPersistentRedirectFollowedByNormalRedirect_WhenViaResetIncludingPersistent_ShouldResetAll()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy(new Foo("foo"));
+            
+            _via
+                .To(x => x.Name)
+                .Redirect(call => call.CallNext() + " changed", opt => opt.Persist());
+            
+            _via
+                .To(x => x.Name)
+                .Redirect(call => call.CallNext() + " again");
+            
+            // ACT
+            _via.Reset(includePersistent: true);
+
+            // ASSERT
+            proxy.Name.ShouldBe("foo");
+        }
+        
+        [Fact]
+        public void GivenNormalRedirectFollowedByPersistentRedirect_WhenViaReset_ShouldKeepPersistentRedirect()
+        {
+            // ARRANGE
+            var proxy = _via.Proxy(new Foo("foo"));
+            
+            _via
+                .To(x => x.Name)
+                .Redirect(call => call.CallNext() + " changed");
+            
+            _via
+                .To(x => x.Name)
+                .Redirect(call => call.CallNext() + " persistent", opt => opt.Persist());
+            
+            // ACT
+            _via.Reset();
+
+            // ASSERT
+            proxy.Name.ShouldBe("foo persistent");
+        }
     }
 }

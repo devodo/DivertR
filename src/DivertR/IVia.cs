@@ -72,8 +72,9 @@ namespace DivertR
         /// <summary>
         /// Reset the Via <see cref="IRedirectRepository" /> removing all configured redirects and disabling strict mode.
         /// </summary>
+        /// <param name="includePersistent">Optionally also reset persistent redirects.</param>
         /// <returns>This Via instance.</returns>
-        IVia Reset();
+        IVia Reset(bool includePersistent = false);
 
         /// <summary>
         /// Set strict mode on the Via.
@@ -140,8 +141,9 @@ namespace DivertR
         /// <summary>
         /// Reset the Via <see cref="IRedirectRepository" /> removing all configured redirects and disabling strict mode.
         /// </summary>
+        /// <param name="includePersistent">Optionally also reset persistent redirects.</param>
         /// <returns>This Via instance.</returns>
-        new IVia<TTarget> Reset();
+        new IVia<TTarget> Reset(bool includePersistent = false);
         
         /// <summary>
         /// Set strict mode on the Via.

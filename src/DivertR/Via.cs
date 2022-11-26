@@ -123,9 +123,9 @@ namespace DivertR
             return Redirect(redirect, optionsAction);
         }
 
-        IVia IVia.Reset()
+        IVia IVia.Reset(bool includePersistent)
         {
-            return Reset();
+            return Reset(includePersistent);
         }
 
         IVia IVia.Strict(bool? isStrict)
@@ -133,9 +133,9 @@ namespace DivertR
             return Strict(isStrict);
         }
 
-        public IVia<TTarget> Reset()
+        public IVia<TTarget> Reset(bool includePersistent = false)
         {
-            RedirectRepository.Reset();
+            RedirectRepository.Reset(includePersistent);
 
             return this;
         }
