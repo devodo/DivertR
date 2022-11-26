@@ -86,14 +86,16 @@ namespace DivertR
         /// <summary>
         /// Reset all registered <see cref="IVia" />s.
         /// </summary>
+        /// <param name="includePersistent">Optionally also reset persistent redirects.</param>
         /// <returns>The current <see cref="IDiverter"/> instance.</returns>
-        IDiverter ResetAll();
+        IDiverter ResetAll(bool includePersistent = false);
         
         /// <summary>
         /// Reset registered <see cref="IVia" /> group.
         /// </summary>
         /// <param name="name">The Via group name.</param>
+        /// <param name="includePersistent">Optionally also reset persistent redirects.</param>
         /// <returns>The current <see cref="IDiverter"/> instance.</returns>
-        IDiverter Reset(string? name = null);
+        IDiverter Reset(string? name = null, bool includePersistent = false);
     }
 }

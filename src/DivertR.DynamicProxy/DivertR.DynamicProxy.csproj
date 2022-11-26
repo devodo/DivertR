@@ -4,7 +4,7 @@
     <Title>DivertR.DynamicProxy</Title>
     <Authors>David Naylor</Authors>
     <Description>
-      A DivertR IProxyFactory implementation using Castle DynamicProxy with suuport for proxying class types.
+      A DivertR IProxyFactory implementation using Castle DynamicProxy with support for proxying class types.
       The in-built proxy factory is based on DispatchProxy and therefore only supports proxying interfaces. The proxy factory to use can be specified in DiverterSettings.
     </Description>
     <Copyright>MIT Copyright (c) David Naylor</Copyright>

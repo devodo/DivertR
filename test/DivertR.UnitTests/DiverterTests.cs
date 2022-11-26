@@ -37,11 +37,47 @@ namespace DivertR.UnitTests
             var via = _diverter.Via<IFoo>();
             var subject = via.Proxy(original);
             
-            via.Retarget(new FooAlt(() => $"{via.Relay.Next} me"));
-            via.Retarget(new FooAlt(() => $"{via.Relay.Next} again"));
+            via.Retarget(new FooAlt(() => $"{via.Relay.CallNext()} me"));
+            via.Retarget(new FooAlt(() => $"{via.Relay.CallNext()} again"));
 
             // ACT
             _diverter.ResetAll();
+            
+            // ASSERT
+            subject.Name.ShouldBe(original.Name);
+        }
+        
+        [Fact]
+        public void GivenPersistentRedirects_WhenResetAll_ShouldNotReset()
+        {
+            // ARRANGE
+            var original = new Foo("hello foo");
+            var via = _diverter.Via<IFoo>();
+            var subject = via.Proxy(original);
+            
+            via.Retarget(new FooAlt(() => $"{via.Relay.CallNext()} me"), opt => opt.Persist());
+            via.Retarget(new FooAlt(() => $"{via.Relay.CallNext()} again"), opt => opt.Persist());
+
+            // ACT
+            _diverter.ResetAll();
+            
+            // ASSERT
+            subject.Name.ShouldBe("hello foo me again");
+        }
+        
+        [Fact]
+        public void GivenPersistentRedirects_WhenResetAllIncludingPersistent_ShouldReset()
+        {
+            // ARRANGE
+            var original = new Foo("hello foo");
+            var via = _diverter.Via<IFoo>();
+            var subject = via.Proxy(original);
+            
+            via.Retarget(new FooAlt(() => $"{via.Relay.CallNext()} me"), opt => opt.Persist());
+            via.Retarget(new FooAlt(() => $"{via.Relay.CallNext()} again"), opt => opt.Persist());
+
+            // ACT
+            _diverter.ResetAll(includePersistent: true);
             
             // ASSERT
             subject.Name.ShouldBe(original.Name);
@@ -55,11 +91,47 @@ namespace DivertR.UnitTests
             var via = _diverter.Via<IFoo>();
             var subject = via.Proxy(original);
             
-            via.Retarget(new FooAlt(() => $"{via.Relay.Next} me"));
-            via.Retarget(new FooAlt(() => $"{via.Relay.Next} again"));
+            via.Retarget(new FooAlt(() => $"{via.Relay.CallNext()} me"));
+            via.Retarget(new FooAlt(() => $"{via.Relay.CallNext()} again"));
 
             // ACT
             _diverter.Reset();
+            
+            // ASSERT
+            subject.Name.ShouldBe(original.Name);
+        }
+        
+        [Fact]
+        public void GivenPersistentRedirects_WhenResetGroup_ShouldNotReset()
+        {
+            // ARRANGE
+            var original = new Foo("hello foo");
+            var via = _diverter.Via<IFoo>();
+            var subject = via.Proxy(original);
+            
+            via.Retarget(new FooAlt(() => $"{via.Relay.CallNext()} me"), opt => opt.Persist());
+            via.Retarget(new FooAlt(() => $"{via.Relay.CallNext()} again"), opt => opt.Persist());
+
+            // ACT
+            _diverter.Reset();
+            
+            // ASSERT
+            subject.Name.ShouldBe("hello foo me again");
+        }
+        
+        [Fact]
+        public void GivenPersistentRedirects_WhenResetGroupIncludingPersistent_ShouldReset()
+        {
+            // ARRANGE
+            var original = new Foo("hello foo");
+            var via = _diverter.Via<IFoo>();
+            var subject = via.Proxy(original);
+            
+            via.Retarget(new FooAlt(() => $"{via.Relay.CallNext()} me"), opt => opt.Persist());
+            via.Retarget(new FooAlt(() => $"{via.Relay.CallNext()} again"), opt => opt.Persist());
+
+            // ACT
+            _diverter.Reset(includePersistent: true);
             
             // ASSERT
             subject.Name.ShouldBe(original.Name);

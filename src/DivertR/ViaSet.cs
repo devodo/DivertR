@@ -4,10 +4,10 @@ using System.Reflection;
 
 namespace DivertR
 {
+    /// <inheritdoc />
     public class ViaSet : IViaSet
     {
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<Type, IVia>> _viaGroups =
-            new ConcurrentDictionary<string, ConcurrentDictionary<Type, IVia>>();
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<Type, IVia>> _viaGroups = new();
         
         public ViaSet(DiverterSettings? settings = null)
         {
@@ -45,31 +45,24 @@ namespace DivertR
             return viaGroup.GetOrAdd(viaId.Type, CreateVia);
         }
 
-        public IVia? Reset(ViaId viaId)
-        {
-            var viaGroup = GetViaGroup(viaId.Name);
-            
-            return viaGroup.TryGetValue(viaId.Type, out var via) ? via.Reset() : null;
-        }
-
-        public IViaSet Reset(string? name = null)
+        public IViaSet Reset(string? name = null, bool includePersistent = false)
         {
             var viaGroup = GetViaGroup(name);
             foreach (var via in viaGroup.Values)
             {
-                via.Reset();
+                via.Reset(includePersistent);
             }
 
             return this;
         }
 
-        public IViaSet ResetAll()
+        public IViaSet ResetAll(bool includePersistent = false)
         {
             foreach (var viaGroup in _viaGroups.Values)
             {
                 foreach (var via in viaGroup.Values)
                 {
-                    via.Reset();
+                    via.Reset(includePersistent);
                 }
             }
 
