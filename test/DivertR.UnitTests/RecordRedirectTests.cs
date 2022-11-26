@@ -816,7 +816,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenRecordCalls_WhenWhereCalled_ThenFiltersCalls()
+        public void GivenRecordCalls_WhenFilterCalled_ThenFiltersCalls()
         {
             // ARRANGE
             var inputs = Enumerable.Range(0, 10)
@@ -835,6 +835,37 @@ namespace DivertR.UnitTests
             calls
                 .Filter(call => call.Args.input == results[5])
                 .Verify(call => call.Args.input.ShouldBe(results[5])).Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public void GivenRecordCalls_WhenForeachCalled_ThenIteratesCalls()
+        {
+            // ARRANGE
+            var inputs = Enumerable.Range(0, 10)
+                .Select(_ => Guid.NewGuid().ToString())
+                .ToArray();
+
+            var calls = _fooVia
+                .To(x => x.Echo(Is<string>.Any))
+                .Redirect<(string input, __)>(call => call.Args.input)
+                .Record();
+            
+            // ACT
+            var results = inputs.Select(input => _proxy.Echo(input)).ToArray();
+
+            // ASSERT
+            var count = 0;
+            calls.Verify()
+                .ForEach(call =>
+                {
+                    call.Returned!.Value!.ShouldBe(results[count]);
+                    call.Returned!.Value!.ShouldBe(inputs[count++]);
+                })
+                .ForEach((call, i) =>
+                {
+                    call.Returned!.Value!.ShouldBe(results[i]);
+                    call.Returned!.Value!.ShouldBe(inputs[i]);
+                }).Count.ShouldBe(inputs.Length);
         }
     }
 }
