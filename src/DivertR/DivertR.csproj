@@ -3,10 +3,10 @@
   <PropertyGroup>
     <Title>DivertR</Title>
     <Authors>David Naylor</Authors>
-    <Description>.NET Dependency Injection Diversion - Facilitating an integrated approach to testing by making it easy to hotswap test code in and out at the DI layer.</Description>
+    <Description>.NET mocking framework for integration testing</Description>
     <Copyright>MIT Copyright (c) David Naylor</Copyright>
     <PackageProjectUrl>https://github.com/devodo/DivertR</PackageProjectUrl>
-    <PackageTags>test testing divert diverter diversion redirect retarget relay intercept via substitute mock spy proxy di dependency injection</PackageTags>
+    <PackageTags>divert divertr diverter via redirect retarget relay reset test testing proxy mock mocking intercept substitute spy di dependency injection webapplicationfactory testserver</PackageTags>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>

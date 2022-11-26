@@ -10,7 +10,9 @@ DivertR was born out of the need to efficiently modify DI configurations between
 It has grown into a framework that facilitates testing of wired up systems, bringing a familiar unit/mocking testing style into the realm of component and integration testing,
 by providing features to conveniently substitute dependency behaviour (including error conditions) and verify inputs and outputs from recorded call information.
 
-# Interfaces Only
+# DispatchProxy
 
-DivertR uses the .NET Standard [DispatchProxy](https://learn.microsoft.com/en-us/dotnet/api/system.reflection.dispatchproxy) to build proxies and this is limited to interface types only.
-Although other proxy generators that support classes such as DynamicProxy can be used, calls to non-virtual members cannot be intercepted and this can cause inconsistent behaviour e.g. when wrapping root instances.
+The default DivertR proxy factory is implemented using [System.Reflection.DispatchProxy](https://learn.microsoft.com/en-us/dotnet/api/system.reflection.dispatchproxy). As this is part of the .NET Standard 2.1, DivertR therefore does not have any dependencies on external libraries however it is limited to proxying interface types only.
+
+If class proxies are required, [DivertR.DynamicProxy](../src/DivertR.DynamicProxy/README.md) is an alternative proxy factory implemented using [Castle DynamicProxy](http://www.castleproject.org/projects/dynamicproxy/) that does support classes.
+However, when proxying classes, care should be taken as only calls to non-virtual members cannot be intercepted, this can cause inconsistent behaviour e.g. when wrapping root instances.

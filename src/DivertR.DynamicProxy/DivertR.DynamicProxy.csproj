@@ -4,12 +4,11 @@
     <Title>DivertR.DynamicProxy</Title>
     <Authors>David Naylor</Authors>
     <Description>
-      A DivertR IProxyFactory implementation using Castle DynamicProxy with support for proxying class types.
-      The in-built proxy factory is based on DispatchProxy and therefore only supports proxying interfaces. The proxy factory to use can be specified in DiverterSettings.
+      A DivertR proxy factory implementation that supports proxying class types using Castle DynamicProxy
     </Description>
     <Copyright>MIT Copyright (c) David Naylor</Copyright>
     <PackageProjectUrl>https://github.com/devodo/DivertR</PackageProjectUrl>
-    <PackageTags>divert diverter divertr dynamicproxy proxy factory via class mock</PackageTags>
+    <PackageTags>divert diverter divertr castle dynamicproxy proxy factory via class mock mocking</PackageTags>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
