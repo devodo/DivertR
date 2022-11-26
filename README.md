@@ -84,6 +84,6 @@ For more examples and a demonstration of setting up a test harness for a WebApp 
 or follow below for a quickstart:
 
 * [Vias](./docs/Via.md) for creating and configuring proxies.
-* [Recording and Verifying](./docs/Verify.md) calls.
 * [Dependency Injection](./docs/DI.md) integration.
+* [Recording and Verifying](./docs/Verify.md) calls.
 * [About](./docs/About.md) DivertR.
