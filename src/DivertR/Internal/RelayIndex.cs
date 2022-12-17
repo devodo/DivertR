@@ -66,7 +66,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetNextIndex(int index, IReadOnlyList<IViaContainer> vias, ICallInfo callInfo)
+        private static int GetNextIndex(int index, IReadOnlyList<IConfiguredVia> vias, ICallInfo callInfo)
         {
             var startIndex = index + 1;
 

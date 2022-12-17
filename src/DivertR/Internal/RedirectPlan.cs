@@ -7,23 +7,23 @@ namespace DivertR.Internal
 {
     internal class RedirectPlan : IRedirectPlan
     {
-        public static readonly RedirectPlan Empty = new(ImmutableStack<IViaContainer>.Empty, false);
+        public static readonly RedirectPlan Empty = new(ImmutableStack<IConfiguredVia>.Empty, false);
         
-        private readonly ImmutableStack<IViaContainer> _viaStack;
+        private readonly ImmutableStack<IConfiguredVia> _viaStack;
 
-        private RedirectPlan(ImmutableStack<IViaContainer> viaStack, bool isStrictMode)
+        private RedirectPlan(ImmutableStack<IConfiguredVia> viaStack, bool isStrictMode)
             : this(viaStack, isStrictMode, OrderVias(viaStack))
         {
         }
         
-        private RedirectPlan(ImmutableStack<IViaContainer> viaStack, bool isStrictMode, IReadOnlyList<IViaContainer> vias)
+        private RedirectPlan(ImmutableStack<IConfiguredVia> viaStack, bool isStrictMode, IReadOnlyList<IConfiguredVia> vias)
         {
             _viaStack = viaStack;
             IsStrictMode = isStrictMode;
             Vias = vias;
         }
 
-        public IReadOnlyList<IViaContainer> Vias
+        public IReadOnlyList<IConfiguredVia> Vias
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
@@ -35,7 +35,7 @@ namespace DivertR.Internal
             get;
         }
 
-        private static IReadOnlyList<IViaContainer> OrderVias(ImmutableStack<IViaContainer> viaStack)
+        private static IReadOnlyList<IConfiguredVia> OrderVias(ImmutableStack<IConfiguredVia> viaStack)
         {
             return viaStack
                 .Select((via, i) => (via, i))
@@ -44,9 +44,9 @@ namespace DivertR.Internal
                 .ToArray();
         }
         
-        internal RedirectPlan InsertVia(IViaContainer via)
+        internal RedirectPlan InsertVia(IConfiguredVia configuredVia)
         {
-            var mutatedStack = _viaStack.Push(via);
+            var mutatedStack = _viaStack.Push(configuredVia);
             
             return new RedirectPlan(mutatedStack, IsStrictMode);
         }
@@ -56,11 +56,11 @@ namespace DivertR.Internal
             return new RedirectPlan(_viaStack, isStrict, Vias);
         }
         
-        private class ViaComparer : IComparer<(IViaContainer via, int stackOrder)>
+        private class ViaComparer : IComparer<(IConfiguredVia via, int stackOrder)>
         {
             public static readonly ViaComparer Instance = new();
             
-            public int Compare((IViaContainer via, int stackOrder) x, (IViaContainer via, int stackOrder) y)
+            public int Compare((IConfiguredVia via, int stackOrder) x, (IConfiguredVia via, int stackOrder) y)
             {
                 var weightComparison = x.via.Options.OrderWeight.CompareTo(y.via.Options.OrderWeight);
                 

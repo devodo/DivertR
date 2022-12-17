@@ -5,12 +5,18 @@ namespace DivertR
 {
     public interface IRedirectPlan
     {
-        IReadOnlyList<IViaContainer> Vias
+        /// <summary>
+        /// The ordered list of configured vias.
+        /// </summary>
+        IReadOnlyList<IConfiguredVia> Vias
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
-
+        
+        /// <summary>
+        /// Boolean flag to indicate if strict mode is enabled or disabled.
+        /// </summary>
         bool IsStrictMode
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

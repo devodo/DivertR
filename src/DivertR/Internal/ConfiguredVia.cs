@@ -2,9 +2,9 @@
 
 namespace DivertR.Internal
 {
-    internal class ViaContainer : IViaContainer
+    internal class ConfiguredVia : IConfiguredVia
     {
-        public ViaContainer(IVia via, IViaOptions viaOptions)
+        public ConfiguredVia(IVia via, IViaOptions viaOptions)
         {
             Via = viaOptions.ViaDecorator?.Invoke(via) ?? via;
             Options = viaOptions;

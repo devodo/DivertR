@@ -2,7 +2,7 @@
 
 namespace DivertR
 {
-    public interface IViaContainer
+    public interface IConfiguredVia
     {
         IVia Via
         {

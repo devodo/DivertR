@@ -145,8 +145,7 @@ namespace DivertR
         
         /// <summary>
         /// Set strict mode on the Redirect.
-        /// If strict is enabled on the Redirect and a call to its proxies does not hit a configured <see cref="IVia"/>
-        /// then a <see cref="StrictNotSatisfiedException"/> is thrown.
+        /// If strict is enabled on the Redirect and a call to its proxies does not hit a configured <see cref="IVia"/> then a <see cref="StrictNotSatisfiedException"/> is thrown.
         /// </summary>
         /// <param name="isStrict">Optional bool to specify enable/disable of strict mode.</param>
         /// <returns>This Redirect instance.</returns>

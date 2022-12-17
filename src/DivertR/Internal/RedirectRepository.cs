@@ -33,23 +33,23 @@ namespace DivertR.Internal
             } 
         }
 
-        public IRedirectRepository InsertVia(IVia redirect, IViaOptions? redirectOptions = null)
+        public IRedirectRepository InsertVia(IVia via, IViaOptions? viaOptions = null)
         {
-            var container = new ViaContainer(redirect, redirectOptions ?? ViaOptions.Default);
+            var configuredVia = new ConfiguredVia(via, viaOptions ?? ViaOptions.Default);
             
-            return InsertVia(container);
+            return InsertVia(configuredVia);
         }
 
-        public IRedirectRepository InsertVia(IViaContainer redirect)
+        public IRedirectRepository InsertVia(IConfiguredVia configuredVia)
         {
             lock (_lockObject)
             {
-                if (redirect.Options.IsPersistent)
+                if (configuredVia.Options.IsPersistent)
                 {
-                    _persistentPlan = _persistentPlan.InsertVia(redirect);
+                    _persistentPlan = _persistentPlan.InsertVia(configuredVia);
                 }
 
-                MutatePlan(original => original.InsertVia(redirect));
+                MutatePlan(original => original.InsertVia(configuredVia));
             }
 
             return this;
