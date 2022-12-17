@@ -1,95 +1,74 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using DivertR.Record;
+using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
     internal class ActionViaBuilder<TTarget> : ViaBuilder<TTarget>, IActionViaBuilder<TTarget> where TTarget : class?
     {
-        public ActionViaBuilder(IVia<TTarget> via, IActionRedirectBuilder<TTarget> redirectBuilder)
-            : base(via, redirectBuilder)
+        protected readonly ICallValidator CallValidator;
+
+        public ActionViaBuilder(ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
+            : base(callConstraint)
         {
-            RedirectBuilder = redirectBuilder;
+            CallValidator = callValidator;
         }
-
-        public new IActionRedirectBuilder<TTarget> RedirectBuilder { get; }
-
+        
+        protected ActionViaBuilder(ICallValidator callValidator, List<ICallConstraint<TTarget>> callConstraints)
+            : base(callConstraints)
+        {
+            CallValidator = callValidator;
+        }
+        
         public new IActionViaBuilder<TTarget> Filter(ICallConstraint<TTarget> callConstraint)
         {
             base.Filter(callConstraint);
 
             return this;
         }
-
-        public IActionViaBuilder<TTarget> Redirect(Action redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        
+        public IVia Build(Action viaDelegate)
         {
-            var redirect = RedirectBuilder.Build(redirectDelegate);
-            InsertRedirect(redirect, optionsAction);
-
-            return this;
+            return Build(_ => viaDelegate.Invoke());
         }
 
-        public IActionViaBuilder<TTarget> Redirect(Action<IActionRedirectCall<TTarget>> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia Build(Action<IActionRedirectCall<TTarget>> viaDelegate)
         {
-            var redirect = RedirectBuilder.Build(redirectDelegate);
-            InsertRedirect(redirect, optionsAction);
-            
-            return this;
+            var callHandler = new ActionCallHandler<TTarget>(viaDelegate);
+
+            return base.Build(callHandler);
         }
 
-        public IActionViaBuilder<TTarget> Redirect(Action<IActionRedirectCall<TTarget>, CallArguments> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia Build(Action<IActionRedirectCall<TTarget>, CallArguments> viaDelegate)
         {
-            var redirect = RedirectBuilder.Build(redirectDelegate);
-            InsertRedirect(redirect, optionsAction);
-            
-            return this;
+            var callHandler = new ActionCallHandlerArgs<TTarget>(viaDelegate);
+
+            return base.Build(callHandler);
         }
 
-        public IActionViaBuilder<TTarget, TArgs> Redirect<TArgs>(Action redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IVia Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> viaDelegate) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return Args<TArgs>().Redirect(redirectDelegate, optionsAction);
+            return Args<TArgs>().Build(viaDelegate);
         }
 
-        public IActionViaBuilder<TTarget, TArgs> Redirect<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public IVia Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> viaDelegate) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            return Args<TArgs>().Redirect(redirectDelegate, optionsAction);
+            return Args<TArgs>().Build(viaDelegate);
         }
 
-        public IActionViaBuilder<TTarget, TArgs> Redirect<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public new IActionRecordVia<TTarget> Record()
         {
-            return Args<TArgs>().Redirect(redirectDelegate, optionsAction);
-        }
-
-        public new IActionViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null)
-        {
-            base.Retarget(target, optionsAction);
-
-            return this;
-        }
-
-        public IActionViaBuilder<TTarget, TArgs> Retarget<TArgs>(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
-        {
-            return Args<TArgs>().Retarget(target, optionsAction);
+            var recordVia = base.Record();
+            var callStream = new ActionCallStream<TTarget>(recordVia.RecordStream, CallValidator);
+                
+            return new ActionRecordVia<TTarget>(recordVia.Via, callStream);
         }
 
         public IActionViaBuilder<TTarget, TArgs> Args<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            var builder = RedirectBuilder.Args<TArgs>();
-            
-            return new ActionViaBuilder<TTarget, TArgs>(Via, builder);
-        }
-
-        public new IActionCallStream<TTarget> Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
-        {
-            var recordRedirect = RedirectBuilder.Record();
-            InsertRedirect(recordRedirect.Redirect, optionsAction, disableSatisfyStrict: true);
-
-            return recordRedirect.CallStream;
-        }
-
-        public IActionCallStream<TTarget, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
-        {
-            return Args<TArgs>().Record(optionsAction);
+            return new ActionViaBuilder<TTarget, TArgs>(CallValidator, CallConstraints);
         }
     }
 
@@ -97,50 +76,35 @@ namespace DivertR.Internal
         where TTarget : class?
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        public ActionViaBuilder(IVia<TTarget> via, IActionRedirectBuilder<TTarget, TArgs> redirectBuilder)
-            : base(via, redirectBuilder)
+        private readonly IValueTupleMapper _valueTupleMapper;
+        
+        public ActionViaBuilder(ICallValidator callValidator, List<ICallConstraint<TTarget>> callConstraints)
+            : base(callValidator, callConstraints)
         {
-            RedirectBuilder = redirectBuilder;
+            _valueTupleMapper = ValueTupleMapperFactory.Create<TArgs>();
+            CallValidator.Validate(_valueTupleMapper);
         }
 
-        public new IActionRedirectBuilder<TTarget, TArgs> RedirectBuilder { get; }
-
-        public new IActionViaBuilder<TTarget, TArgs> Redirect(Action redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia Build(Action<IActionRedirectCall<TTarget, TArgs>> viaDelegate)
         {
-            base.Redirect(redirectDelegate, optionsAction);
-
-            return this;
-        }
-
-        public IActionViaBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget, TArgs>> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
-        {
-            var redirect = RedirectBuilder.Build(redirectDelegate);
-            InsertRedirect(redirect, optionsAction);
+            var callHandler = new ActionCallHandler<TTarget, TArgs>(_valueTupleMapper, viaDelegate);
             
-            return this;
+            return base.Build(callHandler);
         }
 
-        public IActionViaBuilder<TTarget, TArgs> Redirect(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia Build(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> viaDelegate)
         {
-            var redirect = RedirectBuilder.Build(redirectDelegate);
-            InsertRedirect(redirect, optionsAction);
+            var callHandler = new ActionCallHandlerArgs<TTarget, TArgs>(_valueTupleMapper, viaDelegate);
             
-            return this;
+            return base.Build(callHandler);
         }
 
-        public new IActionViaBuilder<TTarget, TArgs> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public new IActionRecordVia<TTarget, TArgs> Record()
         {
-            base.Retarget(target, optionsAction);
-
-            return this;
-        }
-
-        public new IActionCallStream<TTarget, TArgs> Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
-        {
-            var recordRedirect = RedirectBuilder.Record();
-            InsertRedirect(recordRedirect.Redirect, optionsAction, disableSatisfyStrict: true);
-
-            return recordRedirect.CallStream;
+            var recordVia = base.Record();
+            var callStream = recordVia.CallStream.Args<TArgs>();
+                
+            return new ActionRecordVia<TTarget, TArgs>(recordVia.Via, callStream);
         }
     }
 }

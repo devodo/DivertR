@@ -4,40 +4,24 @@ using DivertR.Record;
 
 namespace DivertR
 {
-    public interface IFuncViaBuilder<TTarget, TReturn> where TTarget : class?
+    public interface IFuncViaBuilder<TTarget, TReturn> : IViaBuilder<TTarget> where TTarget : class?
     {
-        IVia<TTarget> Via { get; }
-        IFuncRedirectBuilder<TTarget, TReturn> RedirectBuilder { get; }
-        IFuncViaBuilder<TTarget, TReturn> Filter(ICallConstraint<TTarget> callConstraint);
-        
-        IFuncViaBuilder<TTarget, TReturn> Redirect(TReturn instance, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IFuncViaBuilder<TTarget, TReturn> Redirect(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IFuncViaBuilder<TTarget, TReturn> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IFuncViaBuilder<TTarget, TReturn> Redirect(Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
+        new IFuncViaBuilder<TTarget, TReturn> Filter(ICallConstraint<TTarget> callConstraint);
 
-        IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(TReturn instance, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        IVia Build(TReturn instance);
+        IVia Build(Func<TReturn> viaDelegate);
+        IVia Build(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> viaDelegate);
+        IVia Build(Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> viaDelegate);
+        
+        IVia Build<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
-        IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
-            where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        
-        IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
-            where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        
-        IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        IVia Build<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> viaDelegate)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
 
-        IFuncViaBuilder<TTarget, TReturn> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        
-        IFuncViaBuilder<TTarget, TReturn, TArgs> Retarget<TArgs>(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null)
-            where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        new IFuncRecordVia<TTarget, TReturn> Record();
 
         IFuncViaBuilder<TTarget, TReturn, TArgs> Args<TArgs>()
-            where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-
-        IFuncCallStream<TTarget, TReturn> Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
-        
-        IFuncCallStream<TTarget, TReturn, TArgs> Record<TArgs>(Action<IRedirectOptionsBuilder>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
 
@@ -45,16 +29,19 @@ namespace DivertR
         where TTarget : class?
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        new IFuncRedirectBuilder<TTarget, TReturn, TArgs> RedirectBuilder { get; }
-        
-        new IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(TReturn instance, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        new IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
+        IVia Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate);
+        IVia Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> viaDelegate);
+        new IFuncRecordVia<TTarget, TReturn, TArgs> Record();
+    }
 
-        IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IFuncViaBuilder<TTarget, TReturn, TArgs> Redirect(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
+    public interface IFuncViaBuilder<TReturn> : IViaBuilder
+    {
+        new IFuncViaBuilder<TReturn> Filter(ICallConstraint callConstraint);
         
-        new IFuncViaBuilder<TTarget, TReturn, TArgs> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null);
-       
-        new IFuncCallStream<TTarget, TReturn, TArgs> Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
+        IVia Build(TReturn instance);
+        IVia Build(Func<TReturn> viaDelegate);
+        IVia Build(Func<IFuncRedirectCall<TReturn>, TReturn> viaDelegate);
+        IVia Build(Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> viaDelegate);
+        new IFuncRecordVia<TReturn> Record();
     }
 }

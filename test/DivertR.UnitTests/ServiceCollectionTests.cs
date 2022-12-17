@@ -23,7 +23,7 @@ namespace DivertR.UnitTests
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
-            _diverter.Via<IFoo>().To(x => x.Name).Redirect("Diverted");
+            _diverter.Redirect<IFoo>().To(x => x.Name).Via("Diverted");
             
             foo.Name.ShouldBe("Diverted");
         }
@@ -36,7 +36,7 @@ namespace DivertR.UnitTests
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
-            _diverter.Via<IFoo>().To(x => x.Name).Redirect("Diverted");
+            _diverter.Redirect<IFoo>().To(x => x.Name).Via("Diverted");
             
             foo.Name.ShouldBe("Diverted");
         }
@@ -49,7 +49,7 @@ namespace DivertR.UnitTests
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
-            _diverter.Via<IFoo>().To(x => x.Name).Redirect("Diverted");
+            _diverter.Redirect<IFoo>().To(x => x.Name).Via("Diverted");
             
             foo.Name.ShouldBe("Diverted");
         }
@@ -70,9 +70,9 @@ namespace DivertR.UnitTests
             _services.Divert(_diverter);
             var provider = _services.BuildServiceProvider();
 
-            _diverter.Via<IFoo>()
+            _diverter.Redirect<IFoo>()
                 .To(x => x.Name)
-                .Redirect(() => "Diverted: " + _diverter.Via<IFoo>().Relay.Next.Name);
+                .Via(() => "Diverted: " + _diverter.Redirect<IFoo>().Relay.Next.Name);
             
             var fooInstances = provider.GetServices<IFoo>().ToList();
             
@@ -80,16 +80,16 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenResolvedInstancesBeforeAndAfterRegisteringRedirect_ShouldRedirect()
+        public void GivenResolvedInstancesBeforeAndAfterRegisteringVia_ShouldRedirect()
         {
-            var via = _diverter.Via<IFoo>();
+            var redirect = _diverter.Redirect<IFoo>();
             
             _services.AddTransient<IFoo, Foo>();
             _services.Divert(_diverter);
             var provider = _services.BuildServiceProvider();
             
             var fooBefore = provider.GetRequiredService<IFoo>();
-            via.To(x => x.Name).Redirect("Diverted");
+            redirect.To(x => x.Name).Via("Diverted");
             var fooAfter = provider.GetRequiredService<IFoo>();
             
             fooBefore.Name.ShouldBe("Diverted");
@@ -157,9 +157,9 @@ namespace DivertR.UnitTests
             _services.Divert(diverter);
 
             var disposeCalls = diverter
-                .Via<ITestDisposable>()
+                .Redirect<ITestDisposable>()
                 .To(x => x.Dispose())
-                .Redirect(() => { })
+                .Via(() => { })
                 .Record();
             
             var provider = _services.BuildServiceProvider();
@@ -191,9 +191,9 @@ namespace DivertR.UnitTests
             _services.Divert(diverter);
 
             var disposeCalls = diverter
-                .Via<ITestAsyncDisposable>()
+                .Redirect<ITestAsyncDisposable>()
                 .To(x => x.DisposeAsync())
-                .Redirect(() => new ValueTask())
+                .Via(() => new ValueTask())
                 .Record();
             
             var provider = _services.BuildServiceProvider();

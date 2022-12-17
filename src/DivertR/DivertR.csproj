@@ -6,7 +6,7 @@
     <Description>.NET mocking framework for integration testing</Description>
     <Copyright>MIT Copyright (c) David Naylor</Copyright>
     <PackageProjectUrl>https://github.com/devodo/DivertR</PackageProjectUrl>
-    <PackageTags>divert divertr diverter via redirect retarget relay reset test testing proxy mock mocking intercept substitute spy di dependency injection webapplicationfactory testserver</PackageTags>
+    <PackageTags>divert divertr diverter redirect via retarget relay reset record integration component test testing proxy mock mocking intercept substitute spy di dependency injection webapplicationfactory testserver</PackageTags>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>

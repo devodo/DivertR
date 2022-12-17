@@ -1,37 +1,37 @@
 ﻿namespace DivertR.Record.Internal
 {
-    public class FuncRecordRedirect<TTarget, TReturn> : IFuncRecordRedirect<TTarget, TReturn> where TTarget : class?
+    public class FuncRecordVia<TTarget, TReturn> : IFuncRecordVia<TTarget, TReturn> where TTarget : class?
     {
-        public IRedirect Redirect { get; }
+        public IVia Via { get; }
         public IFuncCallStream<TTarget, TReturn> CallStream { get; }
 
-        public FuncRecordRedirect(IRedirect redirect, IFuncCallStream<TTarget, TReturn> callStream)
+        public FuncRecordVia(IVia via, IFuncCallStream<TTarget, TReturn> callStream)
         {
-            Redirect = redirect;
+            Via = via;
             CallStream = callStream;
         }
     }
 
-    public class FuncRecordRedirect<TTarget, TReturn, TArgs> : IFuncRecordRedirect<TTarget, TReturn, TArgs> where TTarget : class?
+    public class FuncRecordVia<TTarget, TReturn, TArgs> : IFuncRecordVia<TTarget, TReturn, TArgs> where TTarget : class?
     {
-        public IRedirect Redirect { get; }
+        public IVia Via { get; }
         public IFuncCallStream<TTarget, TReturn, TArgs> CallStream { get; }
 
-        public FuncRecordRedirect(IRedirect redirect, IFuncCallStream<TTarget, TReturn, TArgs> callStream)
+        public FuncRecordVia(IVia via, IFuncCallStream<TTarget, TReturn, TArgs> callStream)
         {
-            Redirect = redirect;
+            Via = via;
             CallStream = callStream;
         }
     }
     
-    public class FuncRecordRedirect<TReturn> : IFuncRecordRedirect<TReturn>
+    public class FuncRecordVia<TReturn> : IFuncRecordVia<TReturn>
     {
-        public IRedirect Redirect { get; }
+        public IVia Via { get; }
         public IFuncCallStream<TReturn> CallStream { get; }
 
-        public FuncRecordRedirect(IRedirect redirect, IFuncCallStream<TReturn> callStream)
+        public FuncRecordVia(IVia via, IFuncCallStream<TReturn> callStream)
         {
-            Redirect = redirect;
+            Via = via;
             CallStream = callStream;
         }
     }

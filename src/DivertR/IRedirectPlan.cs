@@ -5,7 +5,7 @@ namespace DivertR
 {
     public interface IRedirectPlan
     {
-        IReadOnlyList<IRedirectContainer> Stack
+        IReadOnlyList<IViaContainer> Vias
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;

@@ -1,25 +1,25 @@
 ﻿namespace DivertR.Record.Internal
 {
-    public class ActionRecordRedirect<TTarget> : IActionRecordRedirect<TTarget> where TTarget : class?
+    public class ActionRecordVia<TTarget> : IActionRecordVia<TTarget> where TTarget : class?
     {
-        public IRedirect Redirect { get; }
+        public IVia Via { get; }
         public IActionCallStream<TTarget> CallStream { get; }
 
-        public ActionRecordRedirect(IRedirect redirect, IActionCallStream<TTarget> callStream)
+        public ActionRecordVia(IVia via, IActionCallStream<TTarget> callStream)
         {
-            Redirect = redirect;
+            Via = via;
             CallStream = callStream;
         }
     }
 
-    public class ActionRecordRedirect<TTarget, TArgs> : IActionRecordRedirect<TTarget, TArgs> where TTarget : class?
+    public class ActionRecordVia<TTarget, TArgs> : IActionRecordVia<TTarget, TArgs> where TTarget : class?
     {
-        public IRedirect Redirect { get; }
+        public IVia Via { get; }
         public IActionCallStream<TTarget, TArgs> CallStream { get; }
 
-        public ActionRecordRedirect(IRedirect redirect, IActionCallStream<TTarget, TArgs> callStream)
+        public ActionRecordVia(IVia via, IActionCallStream<TTarget, TArgs> callStream)
         {
-            Redirect = redirect;
+            Via = via;
             CallStream = callStream;
         }
     }

@@ -10,12 +10,12 @@ namespace DivertR.UnitTests
 {
     public class RecordStreamTests
     {
-        private readonly IVia<IFoo> _via = new Via<IFoo>();
+        private readonly IRedirect<IFoo> _redirect = new Redirect<IFoo>();
         private readonly IRecordStream<IFoo> _recordStream;
 
         public RecordStreamTests()
         {
-            _recordStream = _via.Record(opt => opt
+            _recordStream = _redirect.Record(opt => opt
                 .OrderFirst());
         }
         
@@ -27,11 +27,11 @@ namespace DivertR.UnitTests
                 .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
                 .ToList();
             
-            _via
+            _redirect
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect(() => Guid.NewGuid().ToString());
+                .Via(() => Guid.NewGuid().ToString());
 
-            var fooProxy = _via.Proxy();
+            var fooProxy = _redirect.Proxy();
 
             // ACT
             var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
@@ -62,11 +62,11 @@ namespace DivertR.UnitTests
                 .Range(0, 20).Select((i, _) => $"{i}")
                 .ToList();
             
-            _via
+            _redirect
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect(() => Guid.NewGuid().ToString());
+                .Via(() => Guid.NewGuid().ToString());
 
-            var fooProxy = _via.Proxy();
+            var fooProxy = _redirect.Proxy();
             var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
 
             // ACT
@@ -90,15 +90,15 @@ namespace DivertR.UnitTests
         public void GivenRecordCalls_WhenException_ShouldRecordException()
         {
             // ARRANGE
-            _via
+            _redirect
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect(() => throw new Exception("test"));
+                .Via(() => throw new Exception("test"));
 
             // ACT
             Exception? caughtException = null;
             try
             {
-                _via.Proxy().Echo("test");
+                _redirect.Proxy().Echo("test");
             }
             catch (Exception ex)
             {
@@ -120,9 +120,9 @@ namespace DivertR.UnitTests
         public async Task GivenRecordCalls_WhenAsyncException_ShouldRecordReturnTask()
         {
             // ARRANGE
-            _via
+            _redirect
                 .To(x => x.EchoAsync(Is<string>.Any))
-                .Redirect(async () =>
+                .Via(async () =>
                 {
                     await Task.Yield();
                     throw new Exception("test");
@@ -132,7 +132,7 @@ namespace DivertR.UnitTests
             Exception? caughtException = null;
             try
             {
-                await _via.Proxy().EchoAsync("test");
+                await _redirect.Proxy().EchoAsync("test");
             }
             catch (Exception ex)
             {
@@ -158,15 +158,15 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenRecord_WithStrict_WhenNoMatchingRedirects_ThrowsStrictNotSatisfiedException()
+        public async Task GivenRecord_WithStrict_WhenNoMatchingVias_ThrowsStrictNotSatisfiedException()
         {
             // ARRANGE
-            _via.Strict()
+            _redirect.Strict()
                 .To(x => x.EchoAsync(Is<string>.Match(m => m != "test")))
-                .Redirect<(string input, __)>(call => call.Relay.Next.EchoAsync(call.Args.input));
+                .Via<(string input, __)>(call => call.Relay.Next.EchoAsync(call.Args.input));
 
             // ACT
-            var testAction = () => _via.Proxy(new Foo()).EchoAsync("test");
+            var testAction = () => _redirect.Proxy(new Foo()).EchoAsync("test");
 
             // ASSERT
             await testAction.ShouldThrowAsync<StrictNotSatisfiedException>();
@@ -181,16 +181,16 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenRecord_WithStrict_WhenMatchingRedirect_Redirects()
+        public async Task GivenRecordWithStrict_WhenMatchingVia_ShouldRedirect()
         {
             // ARRANGE
-            _via.Strict();
-            _via
+            _redirect.Strict();
+            _redirect
                 .To(x => x.EchoAsync("test"))
-                .Redirect<(string input, __)>(async call => await call.Relay.Next.EchoAsync(call.Args.input) + " diverted");
+                .Via<(string input, __)>(async call => await call.Relay.Next.EchoAsync(call.Args.input) + " diverted");
 
             // ACT
-            var result = await _via.Proxy(new Foo()).EchoAsync("test");
+            var result = await _redirect.Proxy(new Foo()).EchoAsync("test");
 
             // ASSERT
             result.ShouldBe("original: test diverted");
@@ -212,11 +212,11 @@ namespace DivertR.UnitTests
                 .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
                 .ToList();
             
-            _via
+            _redirect
                 .To(x => x.SetName(Is<string>.Any))
-                .Redirect(() => { });
+                .Via(() => { });
 
-            var fooProxy = _via.Proxy();
+            var fooProxy = _redirect.Proxy();
 
             // ACT
             inputs.ForEach(x => fooProxy.SetName(x));
@@ -239,11 +239,11 @@ namespace DivertR.UnitTests
         public void GivenProxyCallsToPropertyGetter_ShouldRecord()
         {
             // ARRANGE
-            _via
+            _redirect
                 .To(x => x.Name)
-                .Redirect(() => Guid.NewGuid().ToString());
+                .Via(() => Guid.NewGuid().ToString());
 
-            var fooProxy = _via.Proxy();
+            var fooProxy = _redirect.Proxy();
 
             // ACT
             var outputs = Enumerable
@@ -270,11 +270,11 @@ namespace DivertR.UnitTests
                 .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
                 .ToList();
             
-            _via
+            _redirect
                 .ToSet(x => x.Name, () => Is<string>.Any)
-                .Redirect(() => { });
+                .Via(() => { });
 
-            var fooProxy = _via.Proxy();
+            var fooProxy = _redirect.Proxy();
 
             // ACT
             inputs.ForEach(x => fooProxy.Name = x);
@@ -304,11 +304,11 @@ namespace DivertR.UnitTests
                 .Range(0, 20).Select((i, _) => $"{i}")
                 .ToList();
             
-            _via
+            _redirect
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect(() => Guid.NewGuid().ToString());
+                .Via(() => Guid.NewGuid().ToString());
 
-            var fooProxy = _via.Proxy();
+            var fooProxy = _redirect.Proxy();
 
             var recordedCalls = _recordStream
                 .To(x => x.Echo(Is<string>.Any));
@@ -341,16 +341,16 @@ namespace DivertR.UnitTests
                 .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
                 .ToList();
             
-            _via
+            _redirect
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect(() => Guid.NewGuid().ToString());
+                .Via(() => Guid.NewGuid().ToString());
 
             var mappedCalls = _recordStream
                 .To(x => x.Echo(Is<string>.Any))
                 .Args<(string input, __)>()
                 .Map((call, args) => new { Input = args.input, Result = call.Returned });
 
-            var fooProxy = _via.Proxy();
+            var fooProxy = _redirect.Proxy();
 
             // ACT
             var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();
@@ -372,16 +372,16 @@ namespace DivertR.UnitTests
                 .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
                 .ToList();
             
-            _via
+            _redirect
                 .To(x => x.EchoAsync(Is<string>.Any))
-                .Redirect(() => Task.FromResult(Guid.NewGuid().ToString()));
+                .Via(() => Task.FromResult(Guid.NewGuid().ToString()));
 
             var mappedCalls = _recordStream
                 .To(x => x.EchoAsync(Is<string>.Any))
                 .Args<(string input, __)>()
                 .Map((call, args) => new { Input = args.input, Result = call.Returned });
 
-            var fooProxy = _via.Proxy();
+            var fooProxy = _redirect.Proxy();
 
             // ACT
             var outputs = inputs.Select(x => fooProxy.EchoAsync(x)).ToList();
@@ -406,11 +406,11 @@ namespace DivertR.UnitTests
                 .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
                 .ToList();
             
-            _via
+            _redirect
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect(() => Guid.NewGuid().ToString());
+                .Via(() => Guid.NewGuid().ToString());
 
-            var fooProxy = _via.Proxy();
+            var fooProxy = _redirect.Proxy();
 
             // ACT
             var outputs = inputs.Select(x => fooProxy.Echo(x)).ToList();

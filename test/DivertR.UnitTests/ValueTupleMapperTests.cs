@@ -10,24 +10,24 @@ namespace DivertR.UnitTests
 {
     public class ValueTupleMapperTests
     {
-        private readonly IVia<IFoo> _via = new Via<IFoo>();
+        private readonly IRedirect<IFoo> _redirect = new Redirect<IFoo>();
         private readonly IFoo _proxy;
 
         public ValueTupleMapperTests()
         {
-            _proxy = _via.Proxy(new Foo("MrFoo"));
+            _proxy = _redirect.Proxy(new Foo("MrFoo"));
         }
 
         [Fact]
-        public void GivenRedirectValueTupleWithTypeAndDiscards_ShouldMap()
+        public void GivenViaValueTupleWithTypeAndDiscards_ShouldMap()
         {
             // ARRANGE
-            _via
+            _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<string>.Any, Is<bool>.Any))
-                .Redirect<(__, string input, __)>(call =>
+                .Via<(__, string input, __)>(call =>
                 {
                     var args = call.CallInfo.Arguments.ToArray();
-                    args[1] = $"{call.Args.input} redirected";
+                    args[1] = $"{call.Args.input} viaed";
 
                     return call.CallNext(args);
                 });
@@ -36,19 +36,19 @@ namespace DivertR.UnitTests
             var result = _proxy.EchoGeneric(1, "hello", true);
             
             // ASSERT
-            result.ShouldBe((1, "hello redirected", true));
+            result.ShouldBe((1, "hello viaed", true));
         }
         
         [Fact]
-        public void GivenRedirectValueTupleWithLessTypeAndDiscards_ShouldMap()
+        public void GivenViaValueTupleWithLessTypeAndDiscards_ShouldMap()
         {
             // ARRANGE
-            _via
+            _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<string>.Any, Is<bool>.Any))
-                .Redirect<(__, string input)>(call =>
+                .Via<(__, string input)>(call =>
                 {
                     var args = call.CallInfo.Arguments.ToArray();
-                    args[1] = $"{args[1]} redirected";
+                    args[1] = $"{args[1]} viaed";
 
                     return call.CallNext(args);
                 });
@@ -57,19 +57,19 @@ namespace DivertR.UnitTests
             var result = _proxy.EchoGeneric(1, "hello", true);
             
             // ASSERT
-            result.ShouldBe((1, "hello redirected", true));
+            result.ShouldBe((1, "hello viaed", true));
         }
         
         [Fact]
-        public void GivenRedirectValueTupleWithMoreTypeAndDiscards_ShouldMap()
+        public void GivenViaValueTupleWithMoreTypeAndDiscards_ShouldMap()
         {
             // ARRANGE
-            _via
+            _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<string>.Any, Is<bool>.Any))
-                .Redirect<(__, string input, bool input2, __)>(call =>
+                .Via<(__, string input, bool input2, __)>(call =>
                 {
                     var args = call.CallInfo.Arguments.ToArray();
-                    args[1] = $"{args[1]} redirected";
+                    args[1] = $"{args[1]} viaed";
 
                     return call.CallNext(args);
                 });
@@ -78,11 +78,11 @@ namespace DivertR.UnitTests
             var result = _proxy.EchoGeneric(1, "hello", true);
             
             // ASSERT
-            result.ShouldBe((1, "hello redirected", true));
+            result.ShouldBe((1, "hello viaed", true));
         }
         
         [Fact]
-        public void GivenRedirectValueTupleWithOnlyDiscards_ShouldIgnore()
+        public void GivenViaValueTupleWithOnlyDiscards_ShouldIgnore()
         {
             // ARRANGE
 
@@ -96,19 +96,19 @@ namespace DivertR.UnitTests
                 return call.CallNext(args);
             }
 
-            _via
+            _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<string>.Any, Is<bool>.Any))
-                .Redirect<ValueTuple>(Callback)
-                .Redirect<ValueTuple<__>>(Callback)
-                .Redirect<(__, __)>(Callback)
-                .Redirect<(__, __, __)>(Callback)
-                .Redirect<(__, __, __, __)>(Callback)
-                .Redirect<(__, __, __, __, __)>(Callback)
-                .Redirect<(__, __, __, __, __, __)>(Callback)
-                .Redirect<(__, __, __, __, __, __, __)>(Callback)
-                .Redirect<(__, __, __, __, __, __, __, __)>(Callback)
-                .Redirect<(__, __, __, __, __, __, __, __, __)>(Callback)
-                .Redirect<(__, __, __, __, __, __, __, __, __, __)>(Callback);
+                .Via<ValueTuple>(Callback)
+                .Via<ValueTuple<__>>(Callback)
+                .Via<(__, __)>(Callback)
+                .Via<(__, __, __)>(Callback)
+                .Via<(__, __, __, __)>(Callback)
+                .Via<(__, __, __, __, __)>(Callback)
+                .Via<(__, __, __, __, __, __)>(Callback)
+                .Via<(__, __, __, __, __, __, __)>(Callback)
+                .Via<(__, __, __, __, __, __, __, __)>(Callback)
+                .Via<(__, __, __, __, __, __, __, __, __)>(Callback)
+                .Via<(__, __, __, __, __, __, __, __, __, __)>(Callback);
 
             // ACT
             var result = _proxy.EchoGeneric(1, "hello", true);

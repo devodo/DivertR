@@ -1,25 +1,25 @@
 ﻿namespace DivertR.Record.Internal
 {
-    internal class RecordRedirect<TTarget> : IRecordRedirect<TTarget> where TTarget : class?
+    internal class RecordVia<TTarget> : IRecordVia<TTarget> where TTarget : class?
     {
-        public IRedirect Redirect { get; }
+        public IVia Via { get; }
         public IRecordStream<TTarget> RecordStream { get; }
 
-        public RecordRedirect(IRedirect redirect, IRecordStream<TTarget> recordStream)
+        public RecordVia(IVia via, IRecordStream<TTarget> recordStream)
         {
-            Redirect = redirect;
+            Via = via;
             RecordStream = recordStream;
         }
     }
     
-    internal class RecordRedirect : IRecordRedirect
+    internal class RecordVia : IRecordVia
     {
-        public IRedirect Redirect { get; }
+        public IVia Via { get; }
         public IRecordStream RecordStream { get; }
 
-        public RecordRedirect(IRedirect redirect, IRecordStream recordStream)
+        public RecordVia(IVia via, IRecordStream recordStream)
         {
-            Redirect = redirect;
+            Via = via;
             RecordStream = recordStream;
         }
     }

@@ -11,8 +11,8 @@ namespace DivertR.DependencyInjection
         {
             var decorateActions = CreateDecorateActions(services, diverter, name);
 
-            var missingTypes = diverter.RegisteredVias(name)
-                .Select(x => x.ViaId.Type)
+            var missingTypes = diverter.RegisteredRedirects(name)
+                .Select(x => x.RedirectId.Type)
                 .Where(x => !decorateActions.ContainsKey(x))
                 .Select(x => x.FullName)
                 .ToArray();
@@ -33,7 +33,7 @@ namespace DivertR.DependencyInjection
 
         private static Dictionary<Type, IEnumerable<Action>> CreateDecorateActions(IServiceCollection services, IDiverter diverter, string? name)
         {
-            var registeredVias = diverter.RegisteredVias(name).ToDictionary(x => x.ViaId.Type);
+            var registeredRedirects = diverter.RegisteredRedirects(name).ToDictionary(x => x.RedirectId.Type);
 
             return services
                 .Select((descriptor, index) =>
@@ -43,14 +43,14 @@ namespace DivertR.DependencyInjection
                         return null;
                     }
                     
-                    if (!registeredVias.TryGetValue(descriptor.ServiceType, out var via))
+                    if (!registeredRedirects.TryGetValue(descriptor.ServiceType, out var redirect))
                     {
                         return null;
                     }
                     
                     void DecorateAction()
                     {
-                        var proxyFactory = CreateViaProxyFactory(services, descriptor, via);
+                        var proxyFactory = CreateRedirectProxyFactory(services, descriptor, redirect);
                         services[index] = new ServiceDescriptor(descriptor.ServiceType, proxyFactory, descriptor.Lifetime);
                     }
 
@@ -66,7 +66,7 @@ namespace DivertR.DependencyInjection
                     grp => grp.Select(x => x!.Action));
         }
         
-        private static Func<IServiceProvider, object?> CreateViaProxyFactory(IServiceCollection services, ServiceDescriptor descriptor, IVia via)
+        private static Func<IServiceProvider, object?> CreateRedirectProxyFactory(IServiceCollection services, ServiceDescriptor descriptor, IRedirect redirect)
         {
             var rootFactory = CreateRootFactory(services, descriptor);
             
@@ -74,7 +74,7 @@ namespace DivertR.DependencyInjection
             {
                 var root = rootFactory.Invoke(provider);
                 
-                return via.ViaSet.Settings.DiverterProxyDecorator.Decorate(via, root);
+                return redirect.RedirectSet.Settings.DiverterProxyDecorator.Decorate(redirect, root);
             };
         }
         

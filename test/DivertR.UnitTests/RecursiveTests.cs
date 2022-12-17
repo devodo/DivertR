@@ -8,7 +8,7 @@ namespace DivertR.UnitTests
 {
     public class RecursiveTests
     {
-        private readonly IVia<INumber> _via = new Via<INumber>();
+        private readonly IRedirect<INumber> _redirect = new Redirect<INumber>();
 
         [Fact]
         public void TestRecursiveSync()
@@ -56,24 +56,24 @@ namespace DivertR.UnitTests
         
         private INumber InitTestProxy()
         {
-            var proxy = _via.Proxy(new Number());
+            var proxy = _redirect.Proxy(new Number());
 
             var fibonacci = new Number(i =>
             {
                 if (i < 2)
                 {
-                    return _via.Relay.Next.GetNumber(i);
+                    return _redirect.Relay.Next.GetNumber(i);
                 }
 
                 return proxy.GetNumber(i - 1) + proxy.GetNumber(i - 2);
             });
 
-            _via
+            _redirect
                 .To(x => x.GetNumber(Is<int>.Any))
-                .Redirect<(int i, __)>(call => call.Relay.Root.GetNumber(call.Args.i) + _via.Relay.Next.GetNumber(call.Args.i))
+                .Via<(int i, __)>(call => call.Relay.Root.GetNumber(call.Args.i) + _redirect.Relay.Next.GetNumber(call.Args.i))
                 .Retarget(fibonacci);
 
-            return _via.Proxy(new Number());
+            return _redirect.Proxy(new Number());
         }
 
         private static int Fibonacci(int n)

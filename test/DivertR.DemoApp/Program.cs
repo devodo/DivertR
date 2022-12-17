@@ -66,10 +66,10 @@ namespace DivertR.DemoApp
 
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello"
             
-            IVia<IFoo> fooVia = diverter.Via<IFoo>();
-            fooVia
+            IRedirect<IFoo> fooRedirect = diverter.Redirect<IFoo>();
+            fooRedirect
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect<(string input, __)>(call => $"{call.Args.input} DivertR");
+                .Via<(string input, __)>(call => $"{call.Args.input} DivertR");
   
             Console.WriteLine(foo.Echo("Hello")); // "Hello DivertR"
             
@@ -77,14 +77,14 @@ namespace DivertR.DemoApp
             foo2.Name = "Foo2";
             Console.WriteLine(foo2.Echo("Hello")); // "Hello DivertR"
 
-            fooVia.Reset();
+            fooRedirect.Reset();
   
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello"
             
-            fooVia
+            fooRedirect
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect<(string input, __)>(call =>
+                .Via<(string input, __)>(call =>
                 {
                     // run test code before
                     // ...
@@ -96,54 +96,54 @@ namespace DivertR.DemoApp
                     // run test code after
                     // ...
     
-                    return $"{message} - Redirected";
+                    return $"{message} - Viaed";
                 });
   
-            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Redirected"
-            Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Redirected"
+            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Viaed"
+            Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Viaed"
             
             var mock = new Mock<IFoo>();
             mock
                 .Setup(x => x.Echo(It.IsAny<string>()))
-                .Returns((string input) => $"{fooVia.Relay.Next.Echo(input)} - Mocked");
+                .Returns((string input) => $"{fooRedirect.Relay.Next.Echo(input)} - Mocked");
 
-            fooVia
+            fooRedirect
                 .To() // Default matches all calls
                 .Retarget(mock.Object);
     
-            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Redirected - Mocked"
-            Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Redirected - Mocked"
+            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Viaed - Mocked"
+            Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Viaed - Mocked"
             
-            fooVia
+            fooRedirect
                 .Reset()
                 .Retarget(mock.Object);
             
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Mocked"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Mocked"
             
-            fooVia
+            fooRedirect
                 .To(x => x.Echo(Is<string>.Any))
-                .Redirect<(string input, __)>(call => $"{call.Root.Echo(call.Args.input)} - Skipped");
+                .Via<(string input, __)>(call => $"{call.Root.Echo(call.Args.input)} - Skipped");
   
             Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Skipped"
             Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Skipped"
 
             diverter.ResetAll();
 
-            fooVia
+            fooRedirect
                 .To(x => x.EchoAsync(Is<string>.Any))
-                .Redirect<(string input, __)>(async call => $"{await call.Next.EchoAsync(call.Args.input)} - Async");
+                .Via<(string input, __)>(async call => $"{await call.Next.EchoAsync(call.Args.input)} - Async");
             
             Console.WriteLine(await foo.EchoAsync("Hello")); // "Foo1: Hello - Async"
             Console.WriteLine(await foo2.EchoAsync("Hello")); // "Foo2: Hello - Async"
 
-            fooVia
+            fooRedirect
                 .To(x => x.Echo(Is<int>.Any))
-                .Redirect(call => call.CallNext() + 10);
+                .Via(call => call.CallNext() + 10);
 
-            fooVia
+            fooRedirect
                 .To(x => x.Echo(Is<Task<int>>.Any))
-                .Redirect(async call => await call.CallNext() + 100);
+                .Via(async call => await call.CallNext() + 100);
             
             Console.WriteLine(foo.Echo(5)); // 15
             Console.WriteLine(await foo.Echo(Task.FromResult(50))); // 150

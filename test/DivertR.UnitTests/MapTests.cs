@@ -10,25 +10,25 @@ namespace DivertR.UnitTests
 {
     public class MapTests
     {
-        private readonly IVia<IFoo> _via = new Via<IFoo>();
+        private readonly IRedirect<IFoo> _redirect = new Redirect<IFoo>();
         private readonly IFoo _proxy;
 
         public MapTests()
         {
-            _proxy = _via.Proxy(new Foo());
+            _proxy = _redirect.Proxy(new Foo());
         }
 
         [Fact]
-        public void GivenStructMapRedirect_ShouldRecordAndMapCalls()
+        public void GivenStructMapVia_ShouldRecordAndMapCalls()
         {
             // ARRANGE
             var inputs = Enumerable
                 .Range(0, 20).Select(_ => Guid.NewGuid())
                 .ToList();
 
-            var echoes = _via
+            var echoes = _redirect
                 .To(x => x.EchoGeneric(Is<Guid>.Any))
-                .Redirect<(Guid input, __)>(_ => Guid.NewGuid())
+                .Via<(Guid input, __)>(_ => Guid.NewGuid())
                 .Record()
                 .Map(call => new { Input = call.Args.input, Returned = call.Returned?.Value ?? Guid.Empty });
 
@@ -42,14 +42,14 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenStructMapWithNoRedirect_ShouldRecordAndMapCalls()
+        public void GivenStructMapWithNoVia_ShouldRecordAndMapCalls()
         {
             // ARRANGE
             var inputs = Enumerable
                 .Range(0, 20).Select(_ => Guid.NewGuid())
                 .ToList();
 
-            var echoes = _via
+            var echoes = _redirect
                 .To(x => x.EchoGeneric(Is<Guid>.Any))
                 .Record<(Guid input, __)>()
                 .Map(call => new { Input = call.Args.input, Returned = call.Returned?.Value ?? Guid.Empty });
@@ -71,14 +71,14 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenStructMapWithNoRedirectAndNoArgs_ShouldRecordAndMapCalls()
+        public void GivenStructMapWithNoViaAndNoArgs_ShouldRecordAndMapCalls()
         {
             // ARRANGE
             var inputs = Enumerable
                 .Range(0, 20).Select(_ => Guid.NewGuid())
                 .ToList();
 
-            var echoes = _via
+            var echoes = _redirect
                 .To(x => x.EchoGeneric(Is<Guid>.Any))
                 .Record()
                 .Map(call => new { Input = (Guid) call.Args[0], Returned = call.Returned?.Value ?? Guid.Empty });
@@ -93,16 +93,16 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenStructMapRedirect_WhenException_ShouldRecordAndMapException()
+        public void GivenStructMapVia_WhenException_ShouldRecordAndMapException()
         {
             // ARRANGE
             var inputs = Enumerable
                 .Range(0, 20).Select(_ => Guid.NewGuid())
                 .ToList();
 
-            var builder = _via.To(x => x.EchoGeneric(Is<Guid>.Any));
+            var builder = _redirect.To(x => x.EchoGeneric(Is<Guid>.Any));
             var echoes = builder
-                .Redirect<(Guid input, __)>(call => throw new Exception($"{call.Args.input}"))
+                .Via<(Guid input, __)>(call => throw new Exception($"{call.Args.input}"))
                 .Record()
                 .Map(call => new
                 {
@@ -136,19 +136,19 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenMapRedirect_WhenOutCall_ShouldRecordAndMap()
+        public void GivenMapVia_WhenOutParameterCall_ShouldRecordAndMap()
         {
             // ARRANGE
             var inputs = Enumerable
                 .Range(0, 20).Select(i => i)
                 .ToList();
 
-            var numberVia = new Via<INumber>();
-            var numberProxy = numberVia.Proxy(new Number(x => x * 10));
+            var numberRedirect = new Redirect<INumber>();
+            var numberProxy = numberRedirect.Proxy(new Number(x => x * 10));
 
-            var results = numberVia
+            var results = numberRedirect
                 .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
-                .Redirect<(int input, Ref<int> output)>(call => call.Relay.Next.OutNumber(call.Args.input, out call.Args.output.Value))
+                .Via<(int input, Ref<int> output)>(call => call.Relay.Next.OutNumber(call.Args.input, out call.Args.output.Value))
                 .Record()
                 .Map((_, args) => new { args.input, output = args.output.Value });
 
@@ -166,16 +166,16 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenTaskMapRedirect_ShouldVerifyAsync()
+        public async Task GivenTaskMapVia_ShouldVerifyAsync()
         {
             // ARRANGE
             var inputs = Enumerable
                 .Range(0, 20).Select(i => i)
                 .ToList();
             
-            var calls = _via
+            var calls = _redirect
                 .To(x => x.EchoAsync(Is<string>.Any))
-                .Redirect<(string input, __)>(call => Task.FromResult(call.Args.input + " diverted"))
+                .Via<(string input, __)>(call => Task.FromResult(call.Args.input + " diverted"))
                 .Record()
                 .Map(async (call, args) => new
                 {
@@ -210,16 +210,16 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenMapTypedFuncRedirect_ShouldVerifyAsync()
+        public async Task GivenMapTypedFuncVia_ShouldVerifyAsync()
         {
             // ARRANGE
             var inputs = Enumerable
                 .Range(0, 20).Select(i => i)
                 .ToList();
             
-            var calls = _via
+            var calls = _redirect
                 .To(x => x.EchoAsync(Is<string>.Any))
-                .Redirect<(string input, __)>(call => Task.FromResult(call.Args.input + " diverted"))
+                .Via<(string input, __)>(call => Task.FromResult(call.Args.input + " diverted"))
                 .Record()
                 .Map(async call => new
                 {
@@ -257,16 +257,16 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenMapFuncRedirect_ShouldVerifyAsync()
+        public async Task GivenMapFuncVia_ShouldVerifyAsync()
         {
             // ARRANGE
             var inputs = Enumerable
                 .Range(0, 20).Select(i => i)
                 .ToList();
             
-            var calls = _via
+            var calls = _redirect
                 .To(x => x.EchoAsync(Is<string>.Any))
-                .Redirect(call => Task.FromResult($"{call.Args[0]} diverted"))
+                .Via(call => Task.FromResult($"{call.Args[0]} diverted"))
                 .Record()
                 .Map((call, args) => new
                 {
@@ -294,14 +294,14 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenMapTypedActionRedirect_ShouldVerifyAsync()
+        public void GivenMapTypedActionVia_ShouldVerifyAsync()
         {
             // ARRANGE
             var input = Guid.NewGuid().ToString();
             
-            var calls = _via
+            var calls = _redirect
                 .To(x => x.SetName(Is<string>.Any))
-                .Redirect<(string input, __)>((call, args) =>
+                .Via<(string input, __)>((call, args) =>
                 {
                     call.Next.SetName($"{args.input} diverted");
                 })
@@ -336,14 +336,14 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenMapActionRedirect_ShouldVerifyAsync()
+        public void GivenMapActionVia_ShouldVerifyAsync()
         {
             // ARRANGE
             var input = Guid.NewGuid().ToString();
             
-            var calls = _via
+            var calls = _redirect
                 .To(x => x.SetName(Is<string>.Any))
-                .Redirect((call, args) =>
+                .Via((call, args) =>
                 {
                     call.Next.SetName($"{args[0]} diverted");
                 })
@@ -397,7 +397,7 @@ namespace DivertR.UnitTests
                 .Range(0, 20).Select(_ => Guid.NewGuid().ToString())
                 .ToList();
 
-            var echoes = _via
+            var echoes = _redirect
                 .To(new MatchCallConstraint<IFoo>(call => call.Method.Name == nameof(IFoo.Echo)))
                 .Record()
                 .Map((_, args) => new { Input = args[0] });
@@ -419,10 +419,10 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public async Task GivenClassRedirectBuilderWithNoArgs_ShouldMap()
+        public async Task GivenClassViaBuilderWithNoArgs_ShouldMap()
         {
             // ARRANGE
-            var calls = _via
+            var calls = _redirect
                 .To(x => x.EchoAsync(Is<string>.Any))
                 .Record()
                 .Map(async call => new

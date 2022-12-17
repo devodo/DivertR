@@ -1,14 +1,14 @@
 ﻿namespace DivertR.Record
 {
-    public interface IRecordRedirect<TTarget> where TTarget : class?
+    public interface IRecordVia<TTarget> where TTarget : class?
     {
-        IRedirect Redirect { get; }
+        IVia Via { get; }
         public IRecordStream<TTarget> RecordStream { get; }
     }
     
-    public interface IRecordRedirect
+    public interface IRecordVia
     {
-        IRedirect Redirect { get; }
+        IVia Via { get; }
         public IRecordStream RecordStream { get; }
     }
 }

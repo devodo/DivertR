@@ -5,15 +5,23 @@ namespace DivertR
 {
     public interface IViaBuilder<TTarget> where TTarget : class?
     {
-        IVia<TTarget> Via { get; }
-        IRedirectBuilder<TTarget> RedirectBuilder { get; }
-        
         IViaBuilder<TTarget> Filter(ICallConstraint<TTarget> callConstraint);
-        IViaBuilder<TTarget> Redirect(object? instance, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IViaBuilder<TTarget> Redirect(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IViaBuilder<TTarget> Redirect(Func<IRedirectCall<TTarget>, object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IViaBuilder<TTarget> Redirect(Func<IRedirectCall<TTarget>, CallArguments, object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
+        IVia Build(object? instance);
+        IVia Build(Func<object?> viaDelegate);
+        IVia Build(Func<IRedirectCall<TTarget>, object?> viaDelegate);
+        IVia Build(Func<IRedirectCall<TTarget>, CallArguments, object?> viaDelegate);
+        IVia Build(ICallHandler<TTarget> callHandler);
+        IRecordVia<TTarget> Record();
+    }
+    
+    public interface IViaBuilder
+    {
+        IViaBuilder Filter(ICallConstraint callConstraint);
+        IVia Build(object? instance);
+        IVia Build(Func<object?> viaDelegate);
+        IVia Build(Func<IRedirectCall, object?> viaDelegate);
+        IVia Build(Func<IRedirectCall, CallArguments, object?> viaDelegate);
+        IVia Build(ICallHandler callHandler);
+        IRecordVia Record();
     }
 }

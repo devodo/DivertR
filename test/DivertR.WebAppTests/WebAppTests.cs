@@ -35,9 +35,9 @@ namespace DivertR.WebAppTests
             };
 
             _diverter
-                .Via<IFooRepository>()
+                .Redirect<IFooRepository>()
                 .To(x => x.GetFooAsync(foo.Id))
-                .Redirect(Task.FromResult<Foo?>(foo));
+                .Via(Task.FromResult<Foo?>(foo));
 
             // ACT
             var response = await _fooClient.GetFooAsync(foo.Id);
@@ -55,9 +55,9 @@ namespace DivertR.WebAppTests
             var fooIds = Enumerable.Range(0, 5).Select(_ => Guid.NewGuid()).ToArray();
             
             _diverter
-                .Via<IFooRepository>()
+                .Redirect<IFooRepository>()
                 .To(x => x.GetFooAsync(Is<Guid>.Any))
-                .Redirect<(Guid fooId, __)>(call => Task.FromResult<Foo?>(new Foo
+                .Via<(Guid fooId, __)>(call => Task.FromResult<Foo?>(new Foo
                 {
                     Id = call.Args.fooId,
                     Name = $"{call.Args.fooId}"
@@ -88,7 +88,7 @@ namespace DivertR.WebAppTests
             
             // Record all repo calls
             var fooRepoCalls = _diverter
-                .Via<IFooRepository>()
+                .Redirect<IFooRepository>()
                 .Record();
 
             // ACT
@@ -114,9 +114,9 @@ namespace DivertR.WebAppTests
             var fooId = Guid.NewGuid();
 
             var getFooCalls = _diverter
-                .Via<IFooRepository>()
+                .Redirect<IFooRepository>()
                 .To(x => x.GetFooAsync(fooId))
-                .Redirect<(Guid fooId, __)>(Task.FromResult<Foo?>(null))
+                .Via<(Guid fooId, __)>(Task.FromResult<Foo?>(null))
                 .Record();
             
             // ACT
@@ -146,10 +146,10 @@ namespace DivertR.WebAppTests
             bool? insertResult = null;
 
             _diverter
-                .Via<IFooRepository>()
+                .Redirect<IFooRepository>()
                 .Strict()
                 .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
-                .Redirect<(Foo foo, __)>(async (call, args) =>
+                .Via<(Foo foo, __)>(async (call, args) =>
                 {
                     insertedFoo = args.foo;
                     insertResult = await call.CallNext();
@@ -180,13 +180,13 @@ namespace DivertR.WebAppTests
             };
 
             var createFooIdCalls = _diverter
-                .Via<IFooIdGenerator>()
+                .Redirect<IFooIdGenerator>()
                 .To(x => x.Create())
-                .Redirect(fooId)
+                .Via(fooId)
                 .Record();
 
             var insertCalls = _diverter
-                .Via<IFooRepository>()
+                .Redirect<IFooRepository>()
                 .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
                 .Record<(Foo foo, __)>();
 
@@ -216,9 +216,9 @@ namespace DivertR.WebAppTests
             var testException = new Exception("test");
 
             var recordedCalls = _diverter
-                .Via<IFooRepository>()
+                .Redirect<IFooRepository>()
                 .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
-                .Redirect<(Foo foo, __)>(() => throw testException)
+                .Via<(Foo foo, __)>(() => throw testException)
                 .Record();
 
             // ACT
@@ -243,9 +243,9 @@ namespace DivertR.WebAppTests
             };
 
             var insertCalls = _diverter
-                .Via<IFooRepository>()
+                .Redirect<IFooRepository>()
                 .To(x => x.TryInsertFooAsync(Is<Foo>.Any))
-                .Redirect<(Foo foo, __)>(Task.FromResult(false))
+                .Via<(Foo foo, __)>(Task.FromResult(false))
                 .Record();
 
             // ACT

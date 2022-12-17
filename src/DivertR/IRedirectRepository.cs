@@ -11,19 +11,19 @@ namespace DivertR
         }
 
         /// <summary>
-        /// Insert a <see cref="IRedirect"/> instance />.
+        /// Insert a <see cref="IVia"/> instance />.
         /// </summary>
-        /// <param name="redirect">The redirect.</param>
+        /// <param name="redirect">The redirect to insert.</param>
         /// <param name="redirectOptions">Optional redirect options.</param>
         /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
-        IRedirectRepository InsertRedirect(IRedirect redirect, IRedirectOptions? redirectOptions = null);
+        IRedirectRepository InsertVia(IVia redirect, IViaOptions? redirectOptions = null);
         
         /// <summary>
-        /// Insert a <see cref="IRedirectContainer"/> instance />.
+        /// Insert a <see cref="IViaContainer"/> instance />.
         /// </summary>
         /// <param name="redirect">The redirect container.</param>
         /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
-        IRedirectRepository InsertRedirect(IRedirectContainer redirect);
+        IRedirectRepository InsertVia(IViaContainer redirect);
         
         IRedirectRepository SetStrictMode(bool isStrict = true);
         IRedirectRepository Reset(bool includePersistent = false);

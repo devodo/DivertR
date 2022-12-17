@@ -7,128 +7,128 @@ namespace DivertR.Dummy.Internal
     internal class DummyBuilder<TReturn> : IDummyBuilder<TReturn>
     {
         private readonly IRedirectRepository _redirectRepository;
-        private readonly IFuncRedirectBuilder<TReturn> _redirectBuilder;
+        private readonly IFuncViaBuilder<TReturn> _viaBuilder;
 
-        public DummyBuilder(IRedirectRepository redirectRepository, IFuncRedirectBuilder<TReturn> redirectBuilder)
+        public DummyBuilder(IRedirectRepository redirectRepository, IFuncViaBuilder<TReturn> viaBuilder)
         {
             _redirectRepository = redirectRepository;
-            _redirectBuilder = redirectBuilder;
+            _viaBuilder = viaBuilder;
         }
         
         public IDummyBuilder<TReturn> Filter(ICallConstraint callConstraint)
         {
-            _redirectBuilder.Filter(callConstraint);
+            _viaBuilder.Filter(callConstraint);
 
             return this;
         }
 
-        public IDummyBuilder<TReturn> Redirect(TReturn instance, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IDummyBuilder<TReturn> Via(TReturn instance, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(instance);
-            var options = RedirectOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertRedirect(redirect, options);
+            var via = _viaBuilder.Build(instance);
+            var options = ViaOptionsBuilder.Create(optionsAction);
+            _redirectRepository.InsertVia(via, options);
 
             return this;
         }
 
-        public IDummyBuilder<TReturn> Redirect(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IDummyBuilder<TReturn> Via(Func<TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(redirectDelegate);
-            var options = RedirectOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertRedirect(redirect, options);
+            var via = _viaBuilder.Build(viaDelegate);
+            var options = ViaOptionsBuilder.Create(optionsAction);
+            _redirectRepository.InsertVia(via, options);
 
             return this;
         }
 
-        public IDummyBuilder<TReturn> Redirect(Func<IFuncRedirectCall<TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IDummyBuilder<TReturn> Via(Func<IFuncRedirectCall<TReturn>, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(redirectDelegate);
-            var options = RedirectOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertRedirect(redirect, options);
+            var via = _viaBuilder.Build(viaDelegate);
+            var options = ViaOptionsBuilder.Create(optionsAction);
+            _redirectRepository.InsertVia(via, options);
 
             return this;
         }
 
-        public IDummyBuilder<TReturn> Redirect(Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IDummyBuilder<TReturn> Via(Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(redirectDelegate);
-            var options = RedirectOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertRedirect(redirect, options);
+            var via = _viaBuilder.Build(viaDelegate);
+            var options = ViaOptionsBuilder.Create(optionsAction);
+            _redirectRepository.InsertVia(via, options);
 
             return this;
         }
         
-        public IFuncCallStream<TReturn> Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IFuncCallStream<TReturn> Record(Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var recordRedirect = _redirectBuilder.Record();
-            var options = RedirectOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertRedirect(recordRedirect.Redirect, options);
+            var recordVia = _viaBuilder.Record();
+            var options = ViaOptionsBuilder.Create(optionsAction);
+            _redirectRepository.InsertVia(recordVia.Via, options);
 
-            return recordRedirect.CallStream;
+            return recordVia.CallStream;
         }
     }
     
     internal class DummyBuilder : IDummyBuilder
     {
         private readonly IRedirectRepository _redirectRepository;
-        private readonly IRedirectBuilder _redirectBuilder;
+        private readonly IViaBuilder _viaBuilder;
 
-        public DummyBuilder(IRedirectRepository redirectRepository, IRedirectBuilder redirectBuilder)
+        public DummyBuilder(IRedirectRepository redirectRepository, IViaBuilder viaBuilder)
         {
             _redirectRepository = redirectRepository;
-            _redirectBuilder = redirectBuilder;
+            _viaBuilder = viaBuilder;
         }
         
         public IDummyBuilder Filter(ICallConstraint callConstraint)
         {
-            _redirectBuilder.Filter(callConstraint);
+            _viaBuilder.Filter(callConstraint);
 
             return this;
         }
 
-        public IDummyBuilder Redirect(object instance, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IDummyBuilder Via(object instance, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(instance);
-            var options = RedirectOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertRedirect(redirect, options);
+            var via = _viaBuilder.Build(instance);
+            var options = ViaOptionsBuilder.Create(optionsAction);
+            _redirectRepository.InsertVia(via, options);
 
             return this;
         }
 
-        public IDummyBuilder Redirect(Func<object> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IDummyBuilder Via(Func<object> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(redirectDelegate);
-            var options = RedirectOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertRedirect(redirect, options);
+            var via = _viaBuilder.Build(viaDelegate);
+            var options = ViaOptionsBuilder.Create(optionsAction);
+            _redirectRepository.InsertVia(via, options);
 
             return this;
         }
 
-        public IDummyBuilder Redirect(Func<IRedirectCall, object> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IDummyBuilder Via(Func<IRedirectCall, object> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(redirectDelegate);
-            var options = RedirectOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertRedirect(redirect, options);
+            var via = _viaBuilder.Build(viaDelegate);
+            var options = ViaOptionsBuilder.Create(optionsAction);
+            _redirectRepository.InsertVia(via, options);
 
             return this;
         }
 
-        public IDummyBuilder Redirect(Func<IRedirectCall, CallArguments, object> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IDummyBuilder Via(Func<IRedirectCall, CallArguments, object> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var redirect = _redirectBuilder.Build(redirectDelegate);
-            var options = RedirectOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertRedirect(redirect, options);
+            var via = _viaBuilder.Build(viaDelegate);
+            var options = ViaOptionsBuilder.Create(optionsAction);
+            _redirectRepository.InsertVia(via, options);
 
             return this;
         }
         
-        public IRecordStream Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IRecordStream Record(Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var recordRedirect = _redirectBuilder.Record();
-            var options = RedirectOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertRedirect(recordRedirect.Redirect, options);
+            var recordVia = _viaBuilder.Record();
+            var options = ViaOptionsBuilder.Create(optionsAction);
+            _redirectRepository.InsertVia(recordVia.Via, options);
 
-            return recordRedirect.RecordStream;
+            return recordVia.RecordStream;
         }
     }
 }
