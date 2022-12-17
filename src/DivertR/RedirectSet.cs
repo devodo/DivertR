@@ -13,9 +13,11 @@ namespace DivertR
         {
             Settings = settings ?? DiverterSettings.Global;
         }
-
+        
+        /// <inheritdoc />
         public DiverterSettings Settings { get; }
-
+        
+        /// <inheritdoc />
         public IRedirect<TTarget> Redirect<TTarget>(string? name = null) where TTarget : class?
         {
             var redirectId = RedirectId.From<TTarget>(name);
@@ -25,6 +27,7 @@ namespace DivertR
             return (IRedirect<TTarget>) redirect;
         }
         
+        /// <inheritdoc />
         public IRedirect Redirect(Type targetType, string? name = null)
         {
             var redirectId = RedirectId.From(targetType, name);
@@ -44,7 +47,8 @@ namespace DivertR
             
             return redirectGroup.GetOrAdd(redirectId.Type, CreateRedirect);
         }
-
+        
+        /// <inheritdoc />
         public IRedirectSet Reset(string? name = null, bool includePersistent = false)
         {
             var redirectGroup = GetRedirectGroup(name);
@@ -55,7 +59,8 @@ namespace DivertR
 
             return this;
         }
-
+        
+        /// <inheritdoc />
         public IRedirectSet ResetAll(bool includePersistent = false)
         {
             foreach (var redirectGroup in _redirectGroups.Values)
@@ -68,7 +73,8 @@ namespace DivertR
 
             return this;
         }
-
+        
+        /// <inheritdoc />
         public IRedirectSet Strict(string? name = null)
         {
             var redirectGroup = GetRedirectGroup(name);
@@ -79,7 +85,8 @@ namespace DivertR
 
             return this;
         }
-
+        
+        /// <inheritdoc />
         public IRedirectSet StrictAll()
         {
             foreach (var redirectGroup in _redirectGroups.Values)

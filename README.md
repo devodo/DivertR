@@ -14,7 +14,7 @@ Install DivertR as a [NuGet package](https://www.nuget.org/packages/DivertR):
 Install-Package DivertR
 ```
 
-Or redirect the .NET command line interface:
+Or via the .NET command line interface:
 
 ```sh
 dotnet add package DivertR
@@ -24,7 +24,7 @@ dotnet add package DivertR
 
 1. Test double proxy framework for mocking, faking, stubbing, spying, etc. [[more]](./docs/Redirect.md)
 2. Proxies that wrap and forward to root (original) instances so tests run against the integrated system whilst modifying and spying on specific parts as needed. [[more]](./docs/Redirect.md#proxy)
-3. A lightweight, fluent interface for configuring proxies to via calls to delegates or substitute instances. [[more]](./docs/Redirect.md#via)
+3. A lightweight, fluent interface for configuring proxies to redirect calls to delegates or substitute instances. [[more]](./docs/Redirect.md#via)
 4. Dynamic update and reset of proxies in a running application enabling changes between tests without requiring restart and initialisation overhead. [[more]](./docs/Redirect.md#reset)
 5. Leveraging .NET ValueTuple types for specifying named and strongly typed call arguments that can be passed and reused e.g. in call verifications. [[more]](./docs/Redirect.md#named-arguments)
 6. Method call interception and diversion with optional relay back to the original target. [[more]](./docs/Redirect.md#relay)
@@ -50,7 +50,7 @@ public async Task GivenFooExistsInRepo_WhenGetFoo_ThenReturnsFoo_WithOk200()
     _diverter
         .Redirect<IFooRepository>() // Redirect IFooRepository calls 
         .To(x => x.GetFooAsync(foo.Id)) // matching this method and argument
-        .Via(() => Task.FromResult(foo)); // redirect this delegate
+        .Via(() => Task.FromResult(foo)); // via this delegate
 
     // ACT
     var response = await _fooClient.GetFooAsync(foo.Id);

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace DivertR
 {
     /// <summary>
-    /// The primary DivertR interface for managing an <see cref="IRedirect"/> collection.
+    /// The primary DivertR interface for registering and managing an <see cref="IRedirect"/> collection.
     /// </summary>
     public interface IDiverter
     {

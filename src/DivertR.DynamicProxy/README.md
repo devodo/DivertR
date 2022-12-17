@@ -13,7 +13,7 @@ Install DivertR as a [NuGet package](https://www.nuget.org/packages/DivertR):
 Install-Package DivertR
 ```
 
-Or redirect the .NET command line interface:
+Or via the .NET command line interface:
 
 ```sh
 dotnet add package DivertR

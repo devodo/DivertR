@@ -58,7 +58,7 @@ from the `Diverter` instance and adding a *via*:
 // Obtain the underlying Redirect from the diverter instance
 IRedirect<IFoo> fooRedirect = diverter.Redirect<IFoo>(); 
 
-fooRedirect~~~~
+fooRedirect
     .To(x => x.Name)
     .Via(call => $"{call.Root.Name} diverted");
 
