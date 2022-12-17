@@ -6,7 +6,7 @@ namespace DivertR
     public interface IRedirectPlan
     {
         /// <summary>
-        /// The ordered list of configured vias.
+        /// The ordered list of configured Vias.
         /// </summary>
         IReadOnlyList<IConfiguredVia> Vias
         {

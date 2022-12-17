@@ -13,15 +13,15 @@ namespace DivertR
         /// <summary>
         /// Insert a <see cref="IVia"/> instance />.
         /// </summary>
-        /// <param name="via">The via to insert.</param>
-        /// <param name="viaOptions">Optional via options.</param>
+        /// <param name="via">The Via to insert.</param>
+        /// <param name="viaOptions">Optional Via options.</param>
         /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
         IRedirectRepository InsertVia(IVia via, IViaOptions? viaOptions = null);
         
         /// <summary>
         /// Insert a <see cref="IConfiguredVia"/> instance />.
         /// </summary>
-        /// <param name="configuredVia">The via container.</param>
+        /// <param name="configuredVia">The configured Via.</param>
         /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
         IRedirectRepository InsertVia(IConfiguredVia configuredVia);
         

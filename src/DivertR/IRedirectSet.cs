@@ -26,14 +26,14 @@ namespace DivertR
         /// Reset the specified group of <see cref="IRedirect" />s in this set.
         /// </summary>
         /// <param name="name">The Redirect group name.</param>
-        /// <param name="includePersistent">Optionally also reset persistent redirects.</param>
+        /// <param name="includePersistent">Optionally also reset persistent Redirects.</param>
         /// <returns>The current <see cref="IDiverter"/> instance.</returns>
         IRedirectSet Reset(string? name = null, bool includePersistent = false);
         
         /// <summary>
         /// Reset all <see cref="IRedirect" />s in this set.
         /// </summary>
-        /// <param name="includePersistent">Optionally also reset persistent redirects.</param>
+        /// <param name="includePersistent">Optionally also reset persistent Redirects.</param>
         /// <returns>The current <see cref="IDiverter"/> instance.</returns>
         IRedirectSet ResetAll(bool includePersistent = false);
         

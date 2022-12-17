@@ -55,8 +55,8 @@ There are some special cases such as `Task` types are returned as `null` valued 
 # Via
 
 `Via` instances are added to a `Redirect` to control the way its proxies behave.
-Proxy calls are diverted and passed to the via for handling.
-A fluent interface is provided on the Redirect for building and adding vias to itself:
+Proxy calls are diverted and passed to the Vias for handling.
+A fluent interface is provided on the Redirect for building and adding Vias to itself:
 
 ```csharp
 var foo = new Foo("MrFoo");
@@ -66,7 +66,7 @@ var fooRedirect = new Redirect<IFoo>();
 var fooProxy = fooRedirect.Proxy(foo);
 Console.WriteLine(fooProxy.Name); // "MrFoo"
 
-// Add a via to the Redirect
+// Add a Via to the Redirect
 fooRedirect
     .To(x => x.Name)         // 1. Match expression
     .Via(() => "Hello Via"); // 2. Via delegate
@@ -74,13 +74,13 @@ fooRedirect
 Console.WriteLine(fooProxy.Name); // "Hello Via"
 ```
 
-The via intercepts any proxy calls matching the `To` expression 1. and diverts them to the `Via` delegate 2.
+The Via intercepts any proxy calls matching the `To` expression 1. and diverts them to the `Via` delegate 2.
 
 Vias can be added to a Redirect at any time and apply immediately to all its existing proxies as well as any created afterwards.
 
 # Reset
 
-A Redirect can be *reset* which removes all its redirects, reverting its proxies to their original behaviour:
+A Redirect can be *reset* which removes all its Vias, reverting its proxies to their original behaviour:
 
 ```csharp
 fooRedirect.To(x => x.Name).Via("diverted");
@@ -92,18 +92,18 @@ Console.WriteLine(fooProxy.Name);  // "MrFoo"
 ```
 
 Reset can be called at any time and is applied immediately to all of the Redirect's proxies.
-By adding redirects and resetting, proxy behaviour can be modified at runtime allowing a running process to be altered between tests, e.g. to avoid restart and initialisation overhead.
+By adding Vias and resetting, proxy behaviour can be modified at runtime allowing a running process to be altered between tests, e.g. to avoid restart and initialisation overhead.
 
 After a Redirect is reset its proxies are in their default, transparent state of forwarding all calls to their root instances.
-This enables a pattern of testing where proxy behaviour is modified with redirects and then the system is reset to its original state between tests.
+This enables a pattern of testing where proxy behaviour is modified with Vias and then the system is reset to its original state between tests.
 
 # Method parameters
 
-Via intercept rules can be configured based on the values of method parameters and call arguments values can be used by via delegates.
+Via intercept match rules can be configured on method parameters using call argument values and these can also be passed to Via delegates.
 
 ## Parameter matching
 
-If the via `To` expression specifies a method with parameters, these are matched to call arguments as follows:
+If the Via `To` expression specifies a method with parameters, these are matched to call arguments as follows:
 
 ```csharp
 // Match calls to the Echo method with any argument value
@@ -128,7 +128,7 @@ Console.WriteLine(fooProxy.Echo("three")); // "equal"
 
 ## Call arguments
 
-Proxy call arguments can be passed to the via delegate as follows:
+Proxy call arguments can be passed to the Via delegate as follows:
 
 ```csharp
 fooRedirect
@@ -160,11 +160,11 @@ then the discard type `__` must be used to provide a second dummy parameter.
 
 # Relay
 
-A special feature of redirects is their ability to control how calls are forwarded or *relayed* back to proxy root instances. 
+A special feature of Redirects is their ability to control how calls are forwarded or *relayed* back to proxy root instances. 
 
 ## Relay root
 
-The via delegate can *relay* calls back to the proxy root by calling the `Relay.Root` property:
+The Via delegate can *relay* calls back to the proxy root by calling the `Relay.Root` property:
 
 ```csharp
 fooRedirect
@@ -183,15 +183,15 @@ Console.WriteLine(fooProxy.Name); // "MrFoo relayed"
 
 ## Relay next
 
-Any number of redirects can be added to a Redirect. When redirects are added they are pushed onto a stack (with the last added at the top).
+Any number of Vias can be added to a Redirect. When Vias are added they are pushed onto a stack (with the last added at the top).
 
 ![Via Stack](./assets/images/Via_Stack.svg)
 
-Proxy calls are traversed through the stack from top to bottom. If a call matches the `To` constraint it is passed to the via delegate for handling.
-If no redirects match, the call falls through the stack to the root instance.
+Proxy calls are traversed through the stack from top to bottom. If a call matches the `To` constraint it is passed to the Via delegate for handling.
+If no Vias match, the call falls through the stack to the root instance.
 
 Via delegates can relay the call directly to the root as in the previous example
-but they can also continue the call down the via stack by calling the `Relay.Next` property as follows:
+but they can also continue the call down the Via stack by calling the `Relay.Next` property as follows:
 
 ```csharp
 fooRedirect
@@ -204,13 +204,13 @@ Console.WriteLine(fooRoot.Name); // "MrFoo"
 Console.WriteLine(fooProxy.Name); // "MrFoo 1 2 3"
 ```
 
-> The `Relay.Next` property is a proxy that relays calls to the next via that matches.
-> If no redirects match it will relay to the root.
+> The `Relay.Next` property is a proxy that relays calls to the next Via that matches.
+> If no Vias match it will relay to the root.
 > The Root and Next properties can also be accessed directly from the call argument for convenience.
 
 ## Call forwarding
 
-A via can call `CallRoot()` to forward the call to the target method of the root instance:
+A Via can call `CallRoot()` to forward the call to the target method of the root instance:
 
 ```csharp
 fooRedirect
@@ -221,7 +221,7 @@ Console.WriteLine(fooRoot.Name); // "MrFoo"
 Console.WriteLine(fooProxy.Name); // "MrFoo 1"
 ```
 
-Or the call can be forwarded down the via stack using `CallNext()`:
+Or the call can be forwarded down the Via stack using `CallNext()`:
 
 ```csharp
 fooRedirect
@@ -253,11 +253,11 @@ fooRedirect
 Console.WriteLine(fooProxy.Echo("me")); // "you"
 ```
 
-# Via methods
+# Method variations
 
 ## Async methods
 
-Async is fully supported by DivertR and via delegates can be added to `Task` or `ValueTask` methods using the standard C# `async` syntax:
+Async is fully supported by DivertR and Via delegates can be added to `Task` or `ValueTask` methods using the standard C# `async` syntax:
 
 ```csharp
 fooRedirect
@@ -272,7 +272,7 @@ fooRedirect
 
 ## Property Getters and Setters
 
-Vias for property getters, [demonstrated earlier](#via), are added using the same `To` syntax as for standard methods. However, to indicate a via is for a property setter, the `ToSet` method is used instead:
+Vias for property getters, [demonstrated earlier](#via), are added using the same `To` syntax as for standard methods. However, to indicate a Via is for a property setter, the `ToSet` method is used instead:
 
 ```csharp
 fooRedirect
@@ -283,7 +283,7 @@ fooRedirect
     });
 ```
 
-By default the via above will match any setter value input but the `ToSet` method accepts a second parameter as a value match expression using the usual [parameter matching](#parameter-matching) syntax:
+By default the Via above will match any setter value input but the `ToSet` method accepts a second parameter as a value match expression using the usual [parameter matching](#parameter-matching) syntax:
 
 ```csharp
 fooRedirect
@@ -299,7 +299,7 @@ Console.WriteLine(fooProxy.Name); // "Me changed"
 
 ## Void methods
 
-For via methods that return `void`, the same `Redirect` fluent interface syntax is used, only the delegate provided is an `Action` rather than a `Func`:
+For methods that return `void`, the same `Redirect` fluent interface syntax is used, only the `Via` delegate provided is an `Action` rather than a `Func`:
 
 ```csharp
 fooRedirect
@@ -312,11 +312,12 @@ fooRedirect
 
 ## Generic methods
 
+Generic method Vias are declared using the same fluent syntax ands are matched on the specified generic type arguments.
+
 ```csharp
 fooRedirect
     .To(x => x.Echo<int>(Is<int>.Any))
     .Via(call => call.CallNext() * 2);
-
 ```
 
 ## Throwing exceptions
@@ -361,8 +362,8 @@ fooRedirect.Retarget(mock.Object);
 Console.WriteLine(fooProxy.Echo("hello"));  // "hello mock"
 ```
 
-When a `Retarget` is added it is also pushed onto the Redirect via stack.
-Retarget substitutes are also able to relay calls to the proxy root or next via from the Redirect's `Relay` property:
+When a `Retarget` is added it is also pushed onto the Redirect Via stack.
+Retarget substitutes are also able to relay calls to the proxy root or next Via from the Redirect's `Relay` property:
 
 ```csharp
 IFoo next = fooRedirect.Relay.Next;
@@ -376,7 +377,7 @@ Console.WriteLine(fooProxy.Name);  // "MrFoo two mock"
 
 # Strict mode
 
-Enable *strict mode* on a Redirect to ensure only methods with registered redirects are allowed to be called:
+Enable *strict mode* on a Redirect to ensure only methods with matching Vias are allowed to be called:
 
 ```csharp
 fooRedirect.Strict(); // enables strict mode
@@ -389,6 +390,6 @@ fooProxy.Echo("me"); // throws StrictNotSatisfiedException
 fooProxy.Echo("ok"); // "ok" 
 ```
 
-When strict mode is enabled a `StrictNotSatisfiedException` is thrown if a call is made to a proxy and does not match any redirects.
+When strict mode is enabled a `StrictNotSatisfiedException` is thrown if a call is made to a proxy and does not match any Vias.
 
 Strict mode is disabled when a Redirect is created or [reset](#reset).

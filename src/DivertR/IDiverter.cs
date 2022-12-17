@@ -86,7 +86,7 @@ namespace DivertR
         /// <summary>
         /// Reset all registered <see cref="IRedirect" />s.
         /// </summary>
-        /// <param name="includePersistent">Optionally also reset persistent redirects.</param>
+        /// <param name="includePersistent">Optionally also reset persistent Redirects.</param>
         /// <returns>The current <see cref="IDiverter"/> instance.</returns>
         IDiverter ResetAll(bool includePersistent = false);
         
@@ -94,7 +94,7 @@ namespace DivertR
         /// Reset registered <see cref="IRedirect" /> group.
         /// </summary>
         /// <param name="name">The Redirect group name.</param>
-        /// <param name="includePersistent">Optionally also reset persistent redirects.</param>
+        /// <param name="includePersistent">Optionally also reset persistent Redirects.</param>
         /// <returns>The current <see cref="IDiverter"/> instance.</returns>
         IDiverter Reset(string? name = null, bool includePersistent = false);
     }

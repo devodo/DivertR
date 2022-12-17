@@ -12,7 +12,7 @@ namespace DivertR
     /// The inserted Vias are applied to all proxies created by the Redirect.
     /// Vias can be added or removed from the Redirect at any time allowing the proxy behaviour to be changed dynamically at runtime.
     /// 
-    /// When a proxy is created it can be given a reference to a root instance of its type and by default it forwards all its call to this root, i.e. when no vias are configured on the Redirect.
+    /// When a proxy is created it can be given a reference to a root instance of its type and by default it forwards all its call to this root, i.e. when no Vias are configured on the Redirect.
     /// If a root instance is not provided the proxy will be created with a dummy root that provides default return values on its members.
     /// Optionally a proxy can also be created with a null root but in this case the proxy behaviour must be defined to handle any call received else a <see cref="DiverterNullRootException"/> will be thrown.
     /// </summary>
@@ -63,7 +63,7 @@ namespace DivertR
         /// <summary>
         /// Inserts an <see cref="IVia"/> into this Redirect.
         /// </summary>
-        /// <param name="via">The via instance.</param>
+        /// <param name="via">The Via instance.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
         /// <returns>This Redirect instance.</returns>
         IRedirect Via(IVia via, Action<IViaOptionsBuilder>? optionsAction = null);
@@ -131,7 +131,7 @@ namespace DivertR
         /// <summary>
         /// Insert a <see cref="IVia"/> into this Redirect.
         /// </summary>
-        /// <param name="redirect">The redirect instance to insert.</param>
+        /// <param name="redirect">The Redirect instance to insert.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
         /// <returns>This Redirect instance.</returns>
         new IRedirect<TTarget> Via(IVia redirect, Action<IViaOptionsBuilder>? optionsAction = null);
@@ -152,7 +152,7 @@ namespace DivertR
         new IRedirect<TTarget> Strict(bool? isStrict = true);
 
         /// <summary>
-        /// Inserts a retarget via with no call constraints (therefore all calls will be viaed).
+        /// Inserts a retarget Via with no call constraints (therefore all calls will be matched and retargeted).
         /// </summary>
         /// <param name="target">The target instance to retarget calls to.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
@@ -160,8 +160,8 @@ namespace DivertR
         IRedirect<TTarget> Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null);
         
         /// <summary>
-        /// Inserts a record via that captures incoming calls from all proxies.
-        /// By default record redirects are configured to not satisfy strict calls if strict mode is enabled.
+        /// Inserts a record Via that captures incoming calls from all proxies.
+        /// By default record Redirects are configured to not satisfy strict calls if strict mode is enabled.
         /// </summary>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
         /// <returns>An <see cref="IRecordStream{TTarget}"/> instance for retrieving and iterating the recorded calls.</returns>

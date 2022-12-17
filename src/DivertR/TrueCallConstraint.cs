@@ -4,7 +4,7 @@ namespace DivertR
 {
     public class TrueCallConstraint : ICallConstraint
     {
-        public static readonly TrueCallConstraint Instance = new TrueCallConstraint();
+        public static readonly TrueCallConstraint Instance = new();
         
         private TrueCallConstraint() { }
         
@@ -17,7 +17,7 @@ namespace DivertR
     
     public class TrueCallConstraint<TTarget> : ICallConstraint<TTarget> where TTarget : class?
     {
-        public static readonly TrueCallConstraint<TTarget> Instance = new TrueCallConstraint<TTarget>();
+        public static readonly TrueCallConstraint<TTarget> Instance = new();
         
         private TrueCallConstraint() { }
         

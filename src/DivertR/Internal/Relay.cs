@@ -168,7 +168,7 @@ namespace DivertR.Internal
             {
                 if (redirectPlan.IsStrictMode)
                 {
-                    throw new StrictNotSatisfiedException("Strict mode is enabled and the call did not match any redirects");
+                    throw new StrictNotSatisfiedException("Strict mode is enabled and the call did not match any Redirects");
                 }
                 
                 return CallRoot(callInfo);
@@ -213,7 +213,7 @@ namespace DivertR.Internal
             if (relayIndexStack == null || relayIndexStack.IsEmpty)
             {
                 // The AsyncLocal value has not been initialised in the current context, therefore the caller in not within a call on this Relay.
-                throw new DiverterException("Access to this member is only valid within the context of a via call");
+                throw new DiverterException("Access to this member is only valid within the context of a Via call");
             }
 
             return relayIndexStack;
@@ -224,7 +224,7 @@ namespace DivertR.Internal
         {
             if (!relayIndex.StrictSatisfied)
             {
-                throw new StrictNotSatisfiedException("Strict mode is enabled and the call did not match any redirects");
+                throw new StrictNotSatisfiedException("Strict mode is enabled and the call did not match any Redirects");
             }
         }
 
