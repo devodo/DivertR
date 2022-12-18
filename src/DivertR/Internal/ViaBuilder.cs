@@ -1,79 +1,133 @@
 ﻿using System;
+using System.Collections.Generic;
 using DivertR.Record;
+using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
     internal class ViaBuilder<TTarget> : IViaBuilder<TTarget> where TTarget : class?
     {
-        public ViaBuilder(IVia<TTarget> via, IRedirectBuilder<TTarget> redirectBuilder)
+        protected readonly List<ICallConstraint<TTarget>> CallConstraints;
+
+        public ViaBuilder(ICallConstraint<TTarget>? callConstraint = null)
         {
-            Via = via;
-            RedirectBuilder = redirectBuilder;
+            CallConstraints = new List<ICallConstraint<TTarget>>();
+            
+            if (callConstraint != null)
+            {
+                CallConstraints.Add(callConstraint);
+            }
         }
 
-        public IVia<TTarget> Via { get; }
-        public IRedirectBuilder<TTarget> RedirectBuilder { get; }
+        protected ViaBuilder(List<ICallConstraint<TTarget>> callConstraints)
+        {
+            CallConstraints = callConstraints;
+        }
 
         public IViaBuilder<TTarget> Filter(ICallConstraint<TTarget> callConstraint)
         {
-            RedirectBuilder.Filter(callConstraint);
+            CallConstraints.Add(callConstraint);
 
             return this;
         }
 
-        public IViaBuilder<TTarget> Redirect(object? instance, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia Build(object? instance)
         {
-            var redirect = RedirectBuilder.Build(instance);
-            InsertRedirect(redirect, optionsAction);
+            return Build(_ => instance);
+        }
+
+        public IVia Build(Func<object?> viaDelegate)
+        {
+            return Build(_ => viaDelegate.Invoke());
+        }
+
+        public IVia Build(Func<IRedirectCall<TTarget>, object?> viaDelegate)
+        {
+            var callHandler = new CallHandler<TTarget>(viaDelegate);
+            
+            return Build(callHandler);
+        }
+
+        public IVia Build(Func<IRedirectCall<TTarget>, CallArguments, object?> viaDelegate)
+        {
+            var callHandler = new CallHandlerArgs<TTarget>(viaDelegate);
+            
+            return Build(callHandler);
+        }
+
+        public IVia Build(ICallHandler<TTarget> callHandler)
+        {
+            return new Via<TTarget>(callHandler, new CompositeCallConstraint<TTarget>(CallConstraints));
+        }
+        
+        public IRecordVia<TTarget> Record()
+        {
+            var recordHandler = new RecordCallHandler<TTarget>();
+
+            return new RecordVia<TTarget>(Build(recordHandler), recordHandler.RecordStream);
+        }
+    }
+    
+    internal class ViaBuilder : IViaBuilder
+    {
+        private readonly List<ICallConstraint> _callConstraints;
+
+        public ViaBuilder(ICallConstraint? callConstraint = null)
+        {
+            _callConstraints = new List<ICallConstraint>();
+            
+            if (callConstraint != null)
+            {
+                _callConstraints.Add(callConstraint);
+            }
+        }
+
+        protected ViaBuilder(List<ICallConstraint> callConstraints)
+        {
+            _callConstraints = callConstraints;
+        }
+
+        public IViaBuilder Filter(ICallConstraint callConstraint)
+        {
+            _callConstraints.Add(callConstraint);
 
             return this;
         }
 
-        public IViaBuilder<TTarget> Redirect(Func<object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia Build(object? instance)
         {
-            var redirect = RedirectBuilder.Build(redirectDelegate);
-            InsertRedirect(redirect, optionsAction);
-
-            return this;
+            return Build(_ => instance);
         }
 
-        public IViaBuilder<TTarget> Redirect(Func<IRedirectCall<TTarget>, object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia Build(Func<object?> viaDelegate)
         {
-            var redirect = RedirectBuilder.Build(redirectDelegate);
-            InsertRedirect(redirect, optionsAction);
-
-            return this;
+            return Build(_ => viaDelegate.Invoke());
         }
 
-        public IViaBuilder<TTarget> Redirect(Func<IRedirectCall<TTarget>, CallArguments, object?> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia Build(Func<IRedirectCall, object?> viaDelegate)
         {
-            var redirect = RedirectBuilder.Build(redirectDelegate);
-            InsertRedirect(redirect, optionsAction);
-
-            return this;
+            var callHandler = new CallHandler(viaDelegate);
+            
+            return Build(callHandler);
         }
 
-        public IViaBuilder<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia Build(Func<IRedirectCall, CallArguments, object?> viaDelegate)
         {
-            ICallHandler<TTarget> callHandler = new TargetCallHandler<TTarget>(target, Via.ViaSet.Settings.CallInvoker);
-            var redirect = RedirectBuilder.Build(callHandler);
-            InsertRedirect(redirect, optionsAction);
-
-            return this;
+            var callHandler = new CallHandlerArgs(viaDelegate);
+            
+            return Build(callHandler);
         }
 
-        public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
+        public IVia Build(ICallHandler callHandler)
         {
-            var recordRedirect = RedirectBuilder.Record();
-            InsertRedirect(recordRedirect.Redirect, optionsAction, disableSatisfyStrict: true);
-
-            return recordRedirect.RecordStream;
+            return new Via(callHandler, new CompositeCallConstraint(_callConstraints));
         }
 
-        protected void InsertRedirect(IRedirect redirect, Action<IRedirectOptionsBuilder>? optionsAction, bool disableSatisfyStrict = false)
+        public IRecordVia Record()
         {
-            var options = RedirectOptionsBuilder.Create(optionsAction, disableSatisfyStrict: disableSatisfyStrict);
-            Via.RedirectRepository.InsertRedirect(redirect, options);
+            var recordHandler = new RecordCallHandler();
+
+            return new RecordVia(Build(recordHandler), recordHandler.RecordStream);
         }
     }
 }

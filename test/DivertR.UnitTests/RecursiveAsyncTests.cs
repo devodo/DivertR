@@ -8,7 +8,7 @@ namespace DivertR.UnitTests
 {
     public class RecursiveAsyncTests
     {
-        private readonly IVia<IAsyncNumber> _via = new Via<IAsyncNumber>();
+        private readonly IRedirect<IAsyncNumber> _redirect = new Redirect<IAsyncNumber>();
 
         [Fact]
         public async Task TestRecursiveAsync()
@@ -38,13 +38,13 @@ namespace DivertR.UnitTests
         
         private IAsyncNumber InitTestProxy()
         {
-            var proxy = _via.Proxy(new AsyncNumber());
+            var proxy = _redirect.Proxy(new AsyncNumber());
 
             var fibonacci = new AsyncNumber(async i =>
             {
                 if (i < 2)
                 {
-                    return await _via.Relay.Next.GetNumber(i);
+                    return await _redirect.Relay.Next.GetNumber(i);
                 }
 
                 var num1Task = proxy.GetNumber(i - 1);
@@ -52,12 +52,12 @@ namespace DivertR.UnitTests
                 return await num1Task + await num2Task;
             });
 
-            _via
+            _redirect
                 .To(x => x.GetNumber(Is<int>.Any))
-                .Redirect<(int i, __)>(async call => await call.Root.GetNumber(call.Args.i) + await _via.Relay.Next.GetNumber(call.Args.i))
+                .Via<(int i, __)>(async call => await call.Root.GetNumber(call.Args.i) + await _redirect.Relay.Next.GetNumber(call.Args.i))
                 .Retarget(fibonacci);
             
-            return _via.Proxy(new AsyncNumber());
+            return _redirect.Proxy(new AsyncNumber());
         }
         
         private static int Fibonacci(int n)

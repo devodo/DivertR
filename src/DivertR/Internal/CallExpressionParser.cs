@@ -39,7 +39,7 @@ namespace DivertR.Internal
             }
             
             var methodInfo = property.GetSetMethod(true);
-            ValidateCanRedirect(methodInfo, typeof(TTarget));
+            ValidateTargetType(methodInfo, typeof(TTarget));
             var parameterInfos = methodInfo.GetParameters();
             var methodConstraint = CreateMethodConstraint(methodInfo);
             var argumentConstraints = CreateArgumentConstraints(parameterInfos, new[] { valueExpression });
@@ -53,10 +53,10 @@ namespace DivertR.Internal
 
             if (methodInfo.DeclaringType == null || !methodInfo.DeclaringType.IsAssignableFrom(targetType))
             {
-                throw new ArgumentException($"The method declaring type {methodInfo.DeclaringType} is not assignable from the Via target type: {targetType}", nameof(expression));
+                throw new ArgumentException($"The method declaring type {methodInfo.DeclaringType} is not assignable from the Redirect target type: {targetType}", nameof(expression));
             }
 
-            ValidateCanRedirect(methodInfo, targetType);
+            ValidateTargetType(methodInfo, targetType);
             
             var parameterInfos = methodInfo.GetParameters();
             var argumentConstraints = CreateArgumentConstraints(parameterInfos, expression.Arguments);
@@ -92,17 +92,17 @@ namespace DivertR.Internal
             
             if (property.DeclaringType == null || !property.DeclaringType.IsAssignableFrom(targetType))
             {
-                throw new ArgumentException($"The property declaring type {property.DeclaringType} is not assignable from the Via target type: {targetType}", nameof(expression));
+                throw new ArgumentException($"The property declaring type {property.DeclaringType} is not assignable from the Redirect target type: {targetType}", nameof(expression));
             }
 
             var methodInfo = property.GetGetMethod(true);
-            ValidateCanRedirect(methodInfo, targetType);
+            ValidateTargetType(methodInfo, targetType);
             var methodConstraint = CreateMethodConstraint(methodInfo);
             
             return new ExpressionCallValidator(methodInfo, methodConstraint, Array.Empty<IArgumentConstraint>());
         }
 
-        private static void ValidateCanRedirect(MethodInfo methodInfo, Type targetType)
+        private static void ValidateTargetType(MethodInfo methodInfo, Type targetType)
         {
             if (targetType.IsInterface)
             {

@@ -8,7 +8,7 @@ namespace DivertR.UnitTests
 {
     public class ValueTupleValidationTests
     {
-        private readonly IVia<IFoo> _via = new Via<IFoo>();
+        private readonly IRedirect<IFoo> _redirect = new Redirect<IFoo>();
         private readonly ITestOutputHelper _output;
 
         public ValueTupleValidationTests(ITestOutputHelper output)
@@ -20,10 +20,10 @@ namespace DivertR.UnitTests
         public void GivenInvalidArgumentType_ShouldThrowException()
         {
             // ARRANGE
-            var builder = _via.To(x => x.Echo(Is<string>.Any));
+            var builder = _redirect.To(x => x.Echo(Is<string>.Any));
 
             // ACT
-            Action testAction = () => builder.Redirect<(int input, __)>(call => call.Args.input.ToString());
+            Action testAction = () => builder.Via<(int input, __)>(call => call.Args.input.ToString());
 
             // ASSERT
             _output.WriteLine($"{testAction.ShouldThrow<DiverterValidationException>()}");
@@ -33,10 +33,10 @@ namespace DivertR.UnitTests
         public void GivenInvalidRefArgumentType_ShouldThrowException()
         {
             // ARRANGE
-            var builder = _via.To(x => x.Echo(Is<string>.Any));
+            var builder = _redirect.To(x => x.Echo(Is<string>.Any));
 
             // ACT
-            Action testAction = () => builder.Redirect<(Ref<int> input, __)>(call => call.Args.input.Value.ToString());
+            Action testAction = () => builder.Via<(Ref<int> input, __)>(call => call.Args.input.Value.ToString());
 
             // ASSERT
             _output.WriteLine($"{testAction.ShouldThrow<DiverterValidationException>()}");
@@ -46,10 +46,10 @@ namespace DivertR.UnitTests
         public void GivenTooManyArgumentTypes_ShouldThrowException()
         {
             // ARRANGE
-            var builder = _via.To(x => x.Echo(Is<string>.Any));
+            var builder = _redirect.To(x => x.Echo(Is<string>.Any));
 
             // ACT
-            Action testAction = () => builder.Redirect<(string input, int i)>(call => call.Args.input);
+            Action testAction = () => builder.Via<(string input, int i)>(call => call.Args.input);
 
             // ASSERT
             _output.WriteLine($"{testAction.ShouldThrow<DiverterValidationException>()}");
@@ -59,12 +59,12 @@ namespace DivertR.UnitTests
         public void GivenLessArgumentTypesThanParameters_ShouldNotThrowException()
         {
             // ARRANGE
-            _via
+            _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any))
-                .Redirect<(int input, __)>((_, args) => (args.input, 0));
+                .Via<(int input, __)>((_, args) => (args.input, 0));
 
             // ACT
-            var result = _via.Proxy().EchoGeneric(10, 100);
+            var result = _redirect.Proxy().EchoGeneric(10, 100);
 
             // ASSERT
             result.ShouldBe((10, 0));
@@ -74,10 +74,10 @@ namespace DivertR.UnitTests
         public void GivenNonRefTypeForOutParameter_ShouldThrowException()
         {
             // ARRANGE
-            var builder = new Via<INumber>().To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any));
+            var builder = new Redirect<INumber>().To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any));
 
             // ACT
-            Action testAction = () => builder.Redirect<(int input, int output, __)>(_ => { });
+            Action testAction = () => builder.Via<(int input, int output, __)>(_ => { });
 
             // ASSERT
             _output.WriteLine($"{testAction.ShouldThrow<DiverterValidationException>()}");

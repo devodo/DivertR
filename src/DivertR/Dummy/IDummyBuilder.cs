@@ -6,20 +6,20 @@ namespace DivertR.Dummy
     public interface IDummyBuilder<TReturn>
     {
         IDummyBuilder<TReturn> Filter(ICallConstraint callConstraint);
-        IDummyBuilder<TReturn> Redirect(TReturn instance, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IDummyBuilder<TReturn> Redirect(Func<TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IDummyBuilder<TReturn> Redirect(Func<IFuncRedirectCall<TReturn>, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IDummyBuilder<TReturn> Redirect(Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IFuncCallStream<TReturn> Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
+        IDummyBuilder<TReturn> Via(TReturn instance, Action<IViaOptionsBuilder>? optionsAction = null);
+        IDummyBuilder<TReturn> Via(Func<TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
+        IDummyBuilder<TReturn> Via(Func<IFuncRedirectCall<TReturn>, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
+        IDummyBuilder<TReturn> Via(Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
+        IFuncCallStream<TReturn> Record(Action<IViaOptionsBuilder>? optionsAction = null);
     }
     
     public interface IDummyBuilder
     {
         IDummyBuilder Filter(ICallConstraint callConstraint);
-        IDummyBuilder Redirect(object instance, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IDummyBuilder Redirect(Func<object> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IDummyBuilder Redirect(Func<IRedirectCall, object> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IDummyBuilder Redirect(Func<IRedirectCall, CallArguments, object> redirectDelegate, Action<IRedirectOptionsBuilder>? optionsAction = null);
-        IRecordStream Record(Action<IRedirectOptionsBuilder>? optionsAction = null);
+        IDummyBuilder Via(object instance, Action<IViaOptionsBuilder>? optionsAction = null);
+        IDummyBuilder Via(Func<object> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
+        IDummyBuilder Via(Func<IRedirectCall, object> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
+        IDummyBuilder Via(Func<IRedirectCall, CallArguments, object> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
+        IRecordStream Record(Action<IViaOptionsBuilder>? optionsAction = null);
     }
 }

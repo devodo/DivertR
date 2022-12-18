@@ -7,23 +7,23 @@ namespace DivertR.Internal
 {
     internal class RedirectPlan : IRedirectPlan
     {
-        public static readonly RedirectPlan Empty = new(ImmutableStack<IRedirectContainer>.Empty, false);
+        public static readonly RedirectPlan Empty = new(ImmutableStack<IConfiguredVia>.Empty, false);
         
-        private readonly ImmutableStack<IRedirectContainer> _redirectStack;
+        private readonly ImmutableStack<IConfiguredVia> _viaStack;
 
-        private RedirectPlan(ImmutableStack<IRedirectContainer> redirectStack, bool isStrictMode)
-            : this(redirectStack, isStrictMode, OrderRedirects(redirectStack))
+        private RedirectPlan(ImmutableStack<IConfiguredVia> viaStack, bool isStrictMode)
+            : this(viaStack, isStrictMode, OrderVias(viaStack))
         {
         }
         
-        private RedirectPlan(ImmutableStack<IRedirectContainer> redirectStack, bool isStrictMode, IReadOnlyList<IRedirectContainer> redirects)
+        private RedirectPlan(ImmutableStack<IConfiguredVia> viaStack, bool isStrictMode, IReadOnlyList<IConfiguredVia> vias)
         {
-            _redirectStack = redirectStack;
+            _viaStack = viaStack;
             IsStrictMode = isStrictMode;
-            Stack = redirects;
+            Vias = vias;
         }
 
-        public IReadOnlyList<IRedirectContainer> Stack
+        public IReadOnlyList<IConfiguredVia> Vias
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
@@ -35,34 +35,34 @@ namespace DivertR.Internal
             get;
         }
 
-        private static IReadOnlyList<IRedirectContainer> OrderRedirects(ImmutableStack<IRedirectContainer> redirectStack)
+        private static IReadOnlyList<IConfiguredVia> OrderVias(ImmutableStack<IConfiguredVia> viaStack)
         {
-            return redirectStack
-                .Select((redirect, i) => (redirect, i))
-                .OrderByDescending(x => x, RedirectComparer.Instance)
-                .Select(x => x.redirect)
+            return viaStack
+                .Select((via, i) => (via, i))
+                .OrderByDescending(x => x, ViaComparer.Instance)
+                .Select(x => x.via)
                 .ToArray();
         }
         
-        internal RedirectPlan InsertRedirect(IRedirectContainer redirect)
+        internal RedirectPlan InsertVia(IConfiguredVia configuredVia)
         {
-            var mutatedStack = _redirectStack.Push(redirect);
+            var mutatedStack = _viaStack.Push(configuredVia);
             
             return new RedirectPlan(mutatedStack, IsStrictMode);
         }
         
         internal RedirectPlan SetStrictMode(bool isStrict)
         {
-            return new RedirectPlan(_redirectStack, isStrict, Stack);
+            return new RedirectPlan(_viaStack, isStrict, Vias);
         }
         
-        private class RedirectComparer : IComparer<(IRedirectContainer redirect, int stackOrder)>
+        private class ViaComparer : IComparer<(IConfiguredVia via, int stackOrder)>
         {
-            public static readonly RedirectComparer Instance = new();
+            public static readonly ViaComparer Instance = new();
             
-            public int Compare((IRedirectContainer redirect, int stackOrder) x, (IRedirectContainer redirect, int stackOrder) y)
+            public int Compare((IConfiguredVia via, int stackOrder) x, (IConfiguredVia via, int stackOrder) y)
             {
-                var weightComparison = x.redirect.Options.OrderWeight.CompareTo(y.redirect.Options.OrderWeight);
+                var weightComparison = x.via.Options.OrderWeight.CompareTo(y.via.Options.OrderWeight);
                 
                 if (weightComparison != 0)
                 {

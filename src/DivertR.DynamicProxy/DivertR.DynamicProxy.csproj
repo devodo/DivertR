@@ -8,7 +8,7 @@
     </Description>
     <Copyright>MIT Copyright (c) David Naylor</Copyright>
     <PackageProjectUrl>https://github.com/devodo/DivertR</PackageProjectUrl>
-    <PackageTags>divert diverter divertr castle dynamicproxy proxy factory via class mock mocking</PackageTags>
+    <PackageTags>divert diverter divertr castle dynamicproxy proxy factory redirect class mock mocking</PackageTags>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>

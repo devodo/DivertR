@@ -1,239 +1,73 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using DivertR.Internal;
-using DivertR.Record;
 
 namespace DivertR
 {
-    /// <inheritdoc />
-    public class Via<TTarget> : IVia<TTarget> where TTarget : class?
+    public class Via : IVia
     {
-        private readonly IProxyFactory _proxyFactory;
-        private readonly Relay<TTarget> _relay;
-        private readonly ViaProxyCall<TTarget> _viaProxyCall;
+        private readonly ICallHandler _callHandler;
+        private readonly ICallConstraint _callConstraint;
 
-        public Via(string? name = null, DiverterSettings? diverterSettings = null, IRedirectRepository? redirectRepository = null)
-            : this(ViaId.From<TTarget>(name), new ViaSet(diverterSettings), redirectRepository)
+        public Via(ICallHandler callHandler, ICallConstraint? callConstraint = null)
         {
-            ((ViaSet) ViaSet).AddVia(this);
+            _callHandler = callHandler ?? throw new ArgumentNullException(nameof(callHandler));
+            _callConstraint = callConstraint ?? TrueCallConstraint.Instance;
         }
         
-        public Via(DiverterSettings diverterSettings, IRedirectRepository? redirectRepository = null)
-            : this(name: null, diverterSettings: diverterSettings, redirectRepository: redirectRepository)
+        public Via(ICallHandler callHandler)
+            : this(callHandler, TrueCallConstraint.Instance)
         {
         }
         
-        public Via(IRedirectRepository redirectRepository)
-            : this(name: null, diverterSettings: null, redirectRepository: redirectRepository)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsMatch(ICallInfo callInfo)
         {
-        }
-
-        internal Via(ViaId viaId, IViaSet viaSet, IRedirectRepository? redirectRepository = null)
-        {
-            _proxyFactory = viaSet.Settings.ProxyFactory;
-            _proxyFactory.ValidateProxyTarget<TTarget>();
-            _relay = new Relay<TTarget>(_proxyFactory, viaSet.Settings.CallInvoker);
-            ViaId = viaId;
-            ViaSet = viaSet;
-            RedirectRepository = redirectRepository ?? new RedirectRepository();
-            _viaProxyCall = new ViaProxyCall<TTarget>(_relay, RedirectRepository);
+            return _callConstraint.IsMatch(callInfo);
         }
         
-        public ViaId ViaId { get; }
-        public IViaSet ViaSet { get; }
-
-        IRelay IVia.Relay
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Handle(IRedirectCall call)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Relay;
-        }
-
-        public IRedirectRepository RedirectRepository
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-        }
-
-        public IRelay<TTarget> Relay
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _relay;
-        }
-        
-        object IVia.Proxy(object? root)
-        {
-            return Proxy(root);
-        }
-
-        object IVia.Proxy(bool withDummyRoot)
-        {
-            return Proxy(withDummyRoot);
-        }
-
-        object IVia.Proxy()
-        {
-            return Proxy();
-        }
-
-        [return: NotNull]
-        public TTarget Proxy(object? root)
-        {
-            if (root != null && !(root is TTarget))
-            {
-                throw new ArgumentException($"Not assignable to {typeof(TTarget).Name}", nameof(root));
-            }
-
-            return Proxy(root as TTarget);
-        }
-        
-        [return: NotNull]
-        public TTarget Proxy(TTarget? root)
-        {
-            var proxy = _proxyFactory.CreateProxy(_viaProxyCall, root);
-            
-            return ViaSet.Settings.ViaProxyDecorator.Decorate(this, proxy);
-        }
-        
-        [return: NotNull]
-        public TTarget Proxy(bool withDummyRoot)
-        {
-            var defaultRoot = withDummyRoot ? ViaSet.Settings.DummyFactory.Create<TTarget>(ViaSet.Settings) : null;
-            
-            return Proxy(defaultRoot);
-        }
-        
-        [return: NotNull]
-        public TTarget Proxy()
-        {
-            return Proxy(ViaSet.Settings.DefaultWithDummyRoot);
-        }
-        
-        public IVia<TTarget> Redirect(IRedirect redirect, Action<IRedirectOptionsBuilder>? optionsAction = null)
-        {
-            var options = RedirectOptionsBuilder.Create(optionsAction);
-            RedirectRepository.InsertRedirect(redirect, options);
-
-            return this;
-        }
-        
-        IVia IVia.Redirect(IRedirect redirect, Action<IRedirectOptionsBuilder>? optionsAction)
-        {
-            return Redirect(redirect, optionsAction);
-        }
-
-        IVia IVia.Reset(bool includePersistent)
-        {
-            return Reset(includePersistent);
-        }
-
-        IVia IVia.Strict(bool? isStrict)
-        {
-            return Strict(isStrict);
-        }
-
-        public IVia<TTarget> Reset(bool includePersistent = false)
-        {
-            RedirectRepository.Reset(includePersistent);
-
-            return this;
-        }
-        
-        public IVia<TTarget> Strict(bool? isStrict = true)
-        {
-            RedirectRepository.SetStrictMode(isStrict ?? true);
-
-            return this;
-        }
-        
-        public IVia<TTarget> Retarget(TTarget target, Action<IRedirectOptionsBuilder>? optionsAction = null)
-        {
-            To().Retarget(target, optionsAction);
-
-            return this;
-        }
-        
-        public IRecordStream<TTarget> Record(Action<IRedirectOptionsBuilder>? optionsAction = null)
-        {
-            return To().Record(optionsAction);
-        }
-
-        public IViaBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null)
-        {
-            return new ViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.To(callConstraint));
-        }
-
-        public IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
-        {
-            return new FuncViaBuilder<TTarget, TReturn>(this, RedirectBuilder<TTarget>.To(constraintExpression));
-        }
-
-        public IActionViaBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
-        {
-            return new ActionViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.To(constraintExpression));
-        }
-        
-        public IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
-        {
-            return new ActionViaBuilder<TTarget>(this, RedirectBuilder<TTarget>.ToSet(memberExpression, constraintExpression));
+            return _callHandler.Handle(call);
         }
     }
-
-    public static class Via
+    
+    public class Via<TTarget> : IVia where TTarget : class?
     {
-        internal static readonly ProxyViaMap ProxyViaMap = new();
-        
-        /// <summary>
-        /// Creates a Via proxy instance.
-        /// </summary>
-        /// <param name="root">The root instance the proxy will wrap and relay calls to by default.</param>
-        /// <typeparam name="TTarget">The proxy target type.</typeparam>
-        /// <returns>The proxy instance.</returns>
-        public static TTarget Proxy<TTarget>(TTarget? root) where TTarget : class?
+        private readonly ICallHandler<TTarget> _callHandler;
+        private readonly ICallConstraint<TTarget> _callConstraint;
+
+        public Via(ICallHandler<TTarget> callHandler, ICallConstraint<TTarget>? callConstraint = null)
         {
-            return Proxy<TTarget>(via => via.Proxy(root));
+            _callHandler = callHandler ?? throw new ArgumentNullException(nameof(callHandler));
+            _callConstraint = callConstraint ?? TrueCallConstraint<TTarget>.Instance;
         }
         
-        /// <summary>
-        /// Creates a Via proxy instance with no given root instance.
-        /// </summary>
-        /// <param name="withDummyRoot">Flag to specify if the proxy should be created with either a dummy or a null root.</param>
-        /// <typeparam name="TTarget">The proxy target type.</typeparam>
-        /// <returns>The proxy instance.</returns>
-        public static TTarget Proxy<TTarget>(bool withDummyRoot) where TTarget : class?
+        public Via(ICallHandler<TTarget> callHandler)
+            : this(callHandler, TrueCallConstraint<TTarget>.Instance)
         {
-            return Proxy<TTarget>(via => via.Proxy(withDummyRoot));
         }
-        
-        /// <summary>
-        /// Creates a Via proxy instance with no given root instance.
-        /// By default the proxy is created with a dummy root with members that return default values.
-        /// The default behaviour can be changed to create with null root by setting the <see cref="DiverterSettings.DefaultWithDummyRoot" /> boolean flag.
-        /// </summary>
-        /// <typeparam name="TTarget">The proxy target type.</typeparam>
-        /// <returns>The proxy instance.</returns>
-        public static TTarget Proxy<TTarget>() where TTarget : class?
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsMatch(ICallInfo callInfo)
         {
-            return Proxy<TTarget>(via => via.Proxy());
-        }
-        
-        /// <summary>
-        /// Retrieves the proxy instance's Via that controls its behaviour.
-        /// </summary>
-        /// <param name="proxy">The Via proxy instance.</param>
-        /// <typeparam name="TTarget">The proxy and Via target type.</typeparam>
-        /// <returns>The Via instance.</returns>
-        public static IVia<TTarget> From<TTarget>(TTarget proxy) where TTarget : class
-        {
-            return ProxyViaMap.GetVia(proxy);
-        }
-        
-        private static TTarget Proxy<TTarget>(Func<Via<TTarget>, TTarget> createProxy) where TTarget : class?
-        {
-            var via = new Via<TTarget>();
+            if (callInfo is not ICallInfo<TTarget> callOfTTarget)
+            {
+                throw new ArgumentException($"Via target type {typeof(TTarget)} invalid for ICallInfo type: {callInfo.GetType()}", nameof(callInfo));
+            }
             
-            return createProxy(via);
+            return _callConstraint.IsMatch(callOfTTarget);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object? Handle(IRedirectCall call)
+        {
+            if (call is not IRedirectCall<TTarget> callOfTTarget)
+            {
+                throw new ArgumentException($"Via target type {typeof(TTarget)} invalid for IRedirectCall type: {call.GetType()}", nameof(call));
+            }
+            
+            return _callHandler.Handle(callOfTTarget);
         }
     }
 }

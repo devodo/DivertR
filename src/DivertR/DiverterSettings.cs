@@ -13,11 +13,11 @@ namespace DivertR
         
         public IProxyFactory ProxyFactory { get; }
         
-        public IProxyViaMap ProxyViaMap { get; }
+        public IProxyRedirectMap ProxyRedirectMap { get; }
 
         public IDiverterProxyDecorator DiverterProxyDecorator { get; }
         
-        public IViaProxyDecorator ViaProxyDecorator { get; }
+        public IRedirectProxyDecorator RedirectProxyDecorator { get; }
         
         public bool DefaultWithDummyRoot { get; }
 
@@ -47,17 +47,17 @@ namespace DivertR
 
         public DiverterSettings(
             IProxyFactory? proxyFactory = null,
-            IProxyViaMap? proxyViaMap = null,
+            IProxyRedirectMap? proxyRedirectMap = null,
             IDiverterProxyDecorator? diverterProxyDecorator = null,
-            IViaProxyDecorator? viaProxyDecorator = null,
+            IRedirectProxyDecorator? redirectProxyDecorator = null,
             bool defaultWithDummyRoot = true,
             IDummyFactory? dummyFactory = null,
             ICallInvoker? callInvoker = null)
         {
             ProxyFactory = proxyFactory ?? new DispatchProxyFactory();
-            ProxyViaMap = proxyViaMap ?? Via.ProxyViaMap;
+            ProxyRedirectMap = proxyRedirectMap ?? Redirect.ProxyRedirectMap;
             DiverterProxyDecorator = diverterProxyDecorator ?? new DiverterProxyDecorator();
-            ViaProxyDecorator = viaProxyDecorator ?? new ViaProxyDecorator(ProxyViaMap);
+            RedirectProxyDecorator = redirectProxyDecorator ?? new RedirectProxyDecorator(ProxyRedirectMap);
             DefaultWithDummyRoot = defaultWithDummyRoot;
             DummyFactory = dummyFactory ?? new DummyFactory();
             CallInvoker = callInvoker ?? DefaultCallInvoker;

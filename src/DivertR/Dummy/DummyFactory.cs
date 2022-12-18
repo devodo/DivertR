@@ -9,9 +9,9 @@ namespace DivertR.Dummy
     {
         public DummyFactory()
         {
-            var redirect = new Redirect(new DummyCallHandler());
+            var via = new Via(new DummyCallHandler());
             RedirectRepository = new RedirectRepository();
-            RedirectRepository.InsertRedirect(redirect);
+            RedirectRepository.InsertVia(via);
         }
         
         public DummyFactory(IRedirectRepository redirectRepository)
@@ -21,25 +21,25 @@ namespace DivertR.Dummy
 
         public TTarget Create<TTarget>(DiverterSettings diverterSettings) where TTarget : class?
         {
-            var via = new Via<TTarget>(diverterSettings, RedirectRepository);
+            var redirect = new Redirect<TTarget>(diverterSettings, RedirectRepository);
 
-            return via.Proxy(false);
+            return redirect.Proxy(false);
         }
         
         public IRedirectRepository RedirectRepository { get; }
         
         public IDummyBuilder<TReturn> To<TReturn>(Expression<Func<TReturn>> constraintExpression)
         {
-            var redirectBuilder = RedirectBuilder.To(constraintExpression);
+            var viaBuilder = ViaBuilder.To(constraintExpression);
 
-            return new DummyBuilder<TReturn>(RedirectRepository, redirectBuilder);
+            return new DummyBuilder<TReturn>(RedirectRepository, viaBuilder);
         }
 
         public IDummyBuilder To(ICallConstraint? callConstraint = null)
         {
-            var redirectBuilder = RedirectBuilder.To(callConstraint);
+            var viaBuilder = ViaBuilder.To(callConstraint);
 
-            return new DummyBuilder(RedirectRepository, redirectBuilder);
+            return new DummyBuilder(RedirectRepository, viaBuilder);
         }
     }
 }

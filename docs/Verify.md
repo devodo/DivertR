@@ -4,13 +4,13 @@ DivertR can record the details of calls to its proxies and this can be used for 
 
 ## Record
 
-The Via fluent interface is used to start a recording of proxy calls that match a `To` expression:
+The Redirect fluent interface is used to start a recording of proxy calls that match a `To` expression:
 
 ```csharp
-var fooVia = new Via<IFoo>();
-var fooProxy = fooVia.Proxy(new Foo());
+var fooRedirect = new Redirect<IFoo>();
+var fooProxy = fooRedirect.Proxy(new Foo());
 
-var echoCalls = fooVia
+var echoCalls = fooRedirect
     .To(x => x.Echo(Is<string>.Any)) // Call match expression
     .Record(); // Returns an ICallStream collection of all recorded calls
 
@@ -34,10 +34,10 @@ The `Record` method returns an `ICallStream` that recorded called are appended t
 The `ICallStream` interface provides `Verify` helper methods to facilitate iteration and verification over the recorded calls collection.
 
 ```csharp
-var fooVia = new Via<IFoo>();
-var fooProxy = fooVia.Proxy(new Foo());
+var fooRedirect = new Redirect<IFoo>();
+var fooProxy = fooRedirect.Proxy(new Foo());
 
-var nameCalls = fooVia
+var nameCalls = fooRedirect
     .To(x => x.Echo(Is<string>.Any)) 
     .Record();
 
@@ -59,7 +59,7 @@ Therefore the `Verify` method iterates over and returns an immutable snapshot of
 This allows performing multiple, consistent operations on a stable set of data. E.g. in the example above iterating over the collection and then verifying the call count.
 
 ```csharp
-var echoCalls = fooVia
+var echoCalls = fooRedirect
     .To(x => x.Echo(Is<string>.Any))
     .Record();
 
@@ -82,12 +82,12 @@ Console.WriteLine(verifyCalls[0].Args[0]); // one
 
 ## Record chaining
 
-The Via fluent interface allows chaining the `Record` method after a `Redirect` call:
+The Redirect fluent interface allows chaining the `Record` method after a `Via` call:
 
 ```csharp
-var nameCalls = fooVia
+var nameCalls = fooRedirect
     .To(x => x.Echo(Is<string>.Any))
-    .Redirect(call => call.CallNext() + " redirected")
+    .Via(call => call.CallNext() + " viaed")
     .Record();
 
 var result = fooProxy.Echo("record");
@@ -95,16 +95,16 @@ var result = fooProxy.Echo("record");
 nameCalls.Verify(call =>
 {
     call.Args[0].ShouldBe("record");
-    call.Returned.Value.ShouldBe("record redirected");
+    call.Returned.Value.ShouldBe("record viaed");
 }).Count.ShouldBe(1);
 ```
 
 ## Verify named arguments
 
-The `Verify` methods allows specifying call argument types and names using the same Redirect [`ValueTuple` syntax](#named-arguments):
+The `Verify` methods allows specifying call argument types and names using the same Via [`ValueTuple` syntax](#named-arguments):
 
 ```csharp
-var nameCalls = fooVia
+var nameCalls = fooRedirect
     .To(x => x.Echo(Is<string>.Any))
     .Record();
 
@@ -120,7 +120,7 @@ nameCalls.Verify<(string input, __)>(call =>
 The argument `ValueTuple` can also be defined on the `Record` method and gets passed through to `Verify` calls:
 
 ```csharp
-var nameCalls = fooVia
+var nameCalls = fooRedirect
     .To(x => x.Echo(Is<string>.Any))
     .Record<(string input, __)>();
 
@@ -133,12 +133,12 @@ nameCalls.Verify(call =>
 }).Count.ShouldBe(1);
 ```
 
-Finally if the argument `ValueTuple` is defined on a chained `Redirect` the strongly typed argument information is passed through to the `Record` and can be used in the `Verify` calls:
+Finally if the argument `ValueTuple` is defined on a chained `Via` the strongly typed argument information is passed through to the `Record` and can be used in the `Verify` calls:
 
 ```csharp
-var nameCalls = fooVia
+var nameCalls = fooRedirect
     .To(x => x.Echo(Is<string>.Any))
-    .Redirect<(string input, __)>(call => $"{call.Args.input} redirected")
+    .Via<(string input, __)>(call => $"{call.Args.input} viaed")
     .Record();
 
 var result = fooProxy.Echo("record example");
@@ -146,16 +146,16 @@ var result = fooProxy.Echo("record example");
 nameCalls.Verify(call =>
 {
     call.Args.input.ShouldBe("record example");
-    call.Returned.Value.ShouldBe("record example redirected");
+    call.Returned.Value.ShouldBe("record example viaed");
 }).Count.ShouldBe(1);
 ```
 
 ## Recording exceptions
 
 ```csharp
-var nameCalls = fooVia
+var nameCalls = fooRedirect
     .To(x => x.Echo(Is<string>.Any))
-    .Redirect<(string input, __)>(() => throw new Exception())
+    .Via<(string input, __)>(() => throw new Exception())
     .Record();
 
 Exception caughtException = null;
@@ -176,19 +176,19 @@ nameCalls.Verify(call =>
 }).Count.ShouldBe(1);
 ```
 
-## Via Record
+## Redirect Record
 
 ```csharp
-var fooVia = new Via<IFoo>();
-var fooProxy = fooVia.Proxy(new Foo());
+var fooRedirect = new Redirect<IFoo>();
+var fooProxy = fooRedirect.Proxy(new Foo());
 
-// Record all Via proxy calls
-var fooCalls = fooVia.Record();
+// Record all Redirect proxy calls
+var fooCalls = fooRedirect.Record();
 
 fooProxy.Echo("record");
 
 fooCalls
-    .To(x => x.Echo(Is<string>.Any)) // Use the 'To' expression to filter Via recorded calls 
+    .To(x => x.Echo(Is<string>.Any)) // Use the 'To' expression to filter Redirect recorded calls 
     .Verify<(string input, __)>(call =>
     {
         call.Args.input.ShouldBe("record");
@@ -199,14 +199,14 @@ fooCalls
 ## Record ordering
 
 ```csharp
-var fooVia = new Via<IFoo>();
-var fooProxy = fooVia.Proxy(new Foo());
+var fooRedirect = new Redirect<IFoo>();
+var fooProxy = fooRedirect.Proxy(new Foo());
 
-var fooCalls = fooVia.Record(opt => opt.OrderFirst());
+var fooCalls = fooRedirect.Record(opt => opt.OrderFirst());
 
-fooVia
+fooRedirect
     .To(x => x.Echo(Is<string>.Any))
-    .Redirect<(string input, __)>(call => call.CallNext() + " redirected")
+    .Via<(string input, __)>(call => call.CallNext() + " viaed")
 
 fooProxy.Echo("record");
 
@@ -215,6 +215,6 @@ fooCalls
     .Verify<(string input, __)>(call =>
     {
         call.Args.input.ShouldBe("record");
-        call.Returned.Value.ShouldBe("record redirected");
+        call.Returned.Value.ShouldBe("record viaed");
     }).Count.ShouldBe(1);
 ```

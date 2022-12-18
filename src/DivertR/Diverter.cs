@@ -8,8 +8,8 @@ namespace DivertR
     /// <inheritdoc />
     public class Diverter : IDiverter
     {
-        private readonly ConcurrentDictionary<ViaId, IVia> _registeredVias = new ConcurrentDictionary<ViaId, IVia>();
-        public IViaSet ViaSet { get; }
+        private readonly ConcurrentDictionary<RedirectId, IRedirect> _registeredRedirects = new ConcurrentDictionary<RedirectId, IRedirect>();
+        public IRedirectSet RedirectSet { get; }
 
         /// <summary>
         /// Create a <see cref="Diverter"/> instance.
@@ -17,42 +17,45 @@ namespace DivertR
         /// <param name="settings">Optionally override default DivertR settings.</param>
         public Diverter(DiverterSettings? settings = null)
         {
-            ViaSet = new ViaSet(settings);
+            RedirectSet = new RedirectSet(settings);
         }
         
         /// <summary>
-        /// Create a <see cref="Diverter"/> instance using an external <see cref="IViaSet"/>.
+        /// Create a <see cref="Diverter"/> instance using an external <see cref="IRedirectSet"/>.
         /// </summary>
-        /// <param name="viaSet">The <see cref="IViaSet"/> instance.</param>
-        public Diverter(IViaSet viaSet)
+        /// <param name="redirectSet">The <see cref="IRedirectSet"/> instance.</param>
+        public Diverter(IRedirectSet redirectSet)
         {
-            ViaSet = viaSet;
+            RedirectSet = redirectSet;
         }
-
+        
+        /// <inheritdoc />
         public IDiverter Register<TTarget>(string? name = null) where TTarget : class?
         {
-            var via = ViaSet.Via<TTarget>(name);
+            var redirect = RedirectSet.Redirect<TTarget>(name);
 
-            if (!_registeredVias.TryAdd(via.ViaId, via))
+            if (!_registeredRedirects.TryAdd(redirect.RedirectId, redirect))
             {
-                throw new DiverterException($"Via already registered for {via.ViaId}");
+                throw new DiverterException($"Redirect already registered for {redirect.RedirectId}");
             }
 
             return this;
         }
         
+        /// <inheritdoc />
         public IDiverter Register(Type targetType, string? name = null)
         {
-            var via = ViaSet.Via(targetType, name);
+            var redirect = RedirectSet.Redirect(targetType, name);
             
-            if (!_registeredVias.TryAdd(via.ViaId, via))
+            if (!_registeredRedirects.TryAdd(redirect.RedirectId, redirect))
             {
-                throw new DiverterException($"Via already registered for {via.ViaId}");
+                throw new DiverterException($"Redirect already registered for {redirect.RedirectId}");
             }
 
             return this;
         }
-
+        
+        /// <inheritdoc />
         public IDiverter Register(IEnumerable<Type> types, string? name = null)
         {
             foreach (var type in types)
@@ -63,60 +66,67 @@ namespace DivertR
             return this;
         }
         
-        public IEnumerable<IVia> RegisteredVias(string? name = null)
+        /// <inheritdoc />
+        public IEnumerable<IRedirect> RegisteredRedirects(string? name = null)
         {
             name ??= string.Empty;
             
-            return _registeredVias
+            return _registeredRedirects
                 .Where(x => x.Key.Name == name)
                 .Select(x => x.Value);
         }
         
-        public IVia<TTarget> Via<TTarget>(string? name = null) where TTarget : class?
+        /// <inheritdoc />
+        public IRedirect<TTarget> Redirect<TTarget>(string? name = null) where TTarget : class?
         {
-            return (IVia<TTarget>) Via(ViaId.From<TTarget>(name));
-        }
-
-        public IVia Via(Type targetType, string? name = null)
-        {
-            return Via(ViaId.From(targetType, name));
+            return (IRedirect<TTarget>) Redirect(RedirectId.From<TTarget>(name));
         }
         
-        public IVia Via(ViaId id)
+        /// <inheritdoc />
+        public IRedirect Redirect(Type targetType, string? name = null)
         {
-            if (!_registeredVias.TryGetValue(id, out var via))
+            return Redirect(RedirectId.From(targetType, name));
+        }
+        
+        /// <inheritdoc />
+        public IRedirect Redirect(RedirectId id)
+        {
+            if (!_registeredRedirects.TryGetValue(id, out var redirect))
             {
-                throw new DiverterException($"Via not registered for {id}");
+                throw new DiverterException($"Redirect not registered for {id}");
             }
             
-            return via;
+            return redirect;
         }
         
+        /// <inheritdoc />
         public IDiverter StrictAll()
         {
-            ViaSet.StrictAll();
+            RedirectSet.StrictAll();
             
             return this;
         }
 
-
+        /// <inheritdoc />
         public IDiverter Strict(string? name = null)
         {
-            ViaSet.Strict(name);
+            RedirectSet.Strict(name);
 
             return this;
         }
         
+        /// <inheritdoc />
         public IDiverter ResetAll(bool includePersistent = false)
         {
-            ViaSet.ResetAll(includePersistent);
+            RedirectSet.ResetAll(includePersistent);
             
             return this;
         }
-
+        
+        /// <inheritdoc />
         public IDiverter Reset(string? name = null, bool includePersistent = false)
         {
-            ViaSet.Reset(name, includePersistent);
+            RedirectSet.Reset(name, includePersistent);
 
             return this;
         }

@@ -5,33 +5,33 @@ namespace DivertR
 {
     public class CallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class?
     {
-        private readonly Func<IRedirectCall<TTarget>, object?> _redirectDelegate;
+        private readonly Func<IRedirectCall<TTarget>, object?> _handlerDelegate;
 
-        public CallHandler(Func<IRedirectCall<TTarget>, object?> redirectDelegate)
+        public CallHandler(Func<IRedirectCall<TTarget>, object?> handlerDelegate)
         {
-            _redirectDelegate = redirectDelegate ?? throw new ArgumentNullException(nameof(redirectDelegate));
+            _handlerDelegate = handlerDelegate ?? throw new ArgumentNullException(nameof(handlerDelegate));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Handle(IRedirectCall<TTarget> call)
         {
-            return _redirectDelegate.Invoke(call);
+            return _handlerDelegate.Invoke(call);
         }
     }
     
     public class CallHandler : ICallHandler
     {
-        private readonly Func<IRedirectCall, object?> _redirectDelegate;
+        private readonly Func<IRedirectCall, object?> _handlerDelegate;
 
-        public CallHandler(Func<IRedirectCall, object?> redirectDelegate)
+        public CallHandler(Func<IRedirectCall, object?> handlerDelegate)
         {
-            _redirectDelegate = redirectDelegate ?? throw new ArgumentNullException(nameof(redirectDelegate));
+            _handlerDelegate = handlerDelegate ?? throw new ArgumentNullException(nameof(handlerDelegate));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Handle(IRedirectCall call)
         {
-            return _redirectDelegate.Invoke(call);
+            return _handlerDelegate.Invoke(call);
         }
     }
 }

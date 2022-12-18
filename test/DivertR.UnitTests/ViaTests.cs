@@ -1,229 +1,101 @@
-using System;
+﻿using System.Linq;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
 
-namespace DivertR.UnitTests
+namespace DivertR.UnitTests;
+
+public class ViaTests
 {
-    public class ViaTests
+    [Fact]
+    public void GivenVia_WhenViaAddedToRedirect_ThenViaProxyCalls()
     {
-        private readonly IVia<IFoo> _via = new Via<IFoo>();
-
-        [Fact]
-        public void GivenNoRedirects_ShouldDefaultToRoot()
-        {
-            // ARRANGE
-            var original = new Foo("hello foo");
-            var proxy = _via.Proxy(original);
-
-            // ACT
-            var name = proxy.Name;
-
-            // ASSERT
-            name.ShouldBe(original.Name);
-        }
+        // ARRANGE
+        var via = ViaBuilder<IFoo>
+            .To(x => x.Name)
+            .Build(call => call.CallNext() + " diverted");
         
-        [Fact]
-        public void GivenValidRootObjectType_WhenCreateProxyObject_ShouldCreateProxy()
-        {
-            // ARRANGE
-            var original = new Foo();
-
-            // ACT
-            var proxy = (IFoo) ((IVia) _via).Proxy(original);
-
-            // ASSERT
-            proxy.Name.ShouldBe(original.Name);
-        }
+        // ACT
+        var foo = Redirect.Proxy<IFoo>(new Foo("MrFoo"));
+        Redirect.From(foo).Via(via);
         
-        [Fact]
-        public void GivenProxyWithNullRoot_WhenProxyMemberCalled_ShouldThrowException()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(null);
-
-            // ACT
-            Func<object> testAction = () => proxy.Name;
-
-            // ASSERT
-            testAction.ShouldThrow<DiverterNullRootException>();
-        }
+        // ASSERT
+        foo.Name.ShouldBe("MrFoo diverted");
+    }
+    
+    [Fact]
+    public void GivenVia_WhenViaWithOptionsAddedToRedirect_ThenViaProxyCalls()
+    {
+        // ARRANGE
+        var via = ViaBuilder<IFoo>
+            .To(x => x.Name)
+            .Build(call => call.CallNext() + " diverted");
         
-        [Fact]
-        public void GivenInvalidRootObjectType_WhenCreateProxyObject_ShouldThrowArgumentException()
-        {
-            // ARRANGE
-            var invalidOriginal = new object();
-
-            // ACT
-            Func<object> testAction = () => _via.Proxy(invalidOriginal);
-
-            // ASSERT
-            testAction.ShouldThrow<ArgumentException>();
-        }
-
-        [Fact]
-        public void GivenStrictModeWithNoRedirect_ShouldThrowException()
-        {
-            // ARRANGE
-            _via.Strict();
-            var proxy = _via.Proxy(new Foo("hello foo"));
-
-            // ACT
-            Func<string> testAction = () => proxy.Name;
-
-            // ASSERT
-            testAction.ShouldThrow<StrictNotSatisfiedException>();
-        }
+        // ACT
+        var foo = Redirect.Proxy<IFoo>(new Foo("MrFoo"));
+        Redirect.From(foo).Via(via, opt => opt.Repeat(1));
         
-        [Fact]
-        public void GivenStrictModeWithRedirect_ShouldNotThrowException()
-        {
-            // ARRANGE
-            _via.Strict();
-            _via.To(x => x.Name).Redirect("divert");
-            var proxy = _via.Proxy(new Foo("hello foo"));
+        // ASSERT
+        foo.Name.ShouldBe("MrFoo diverted");
+        foo.Name.ShouldBe("MrFoo");
+    }
 
-            // ACT
-            var result = proxy.Name;
-
-            // ASSERT
-            result.ShouldBe("divert");
-        }
+    [Fact]
+    public void GivenVia_WhenViaAddedToNonTypedRedirect_ThenViaProxyCalls()
+    {
+        // ARRANGE
+        var via = ViaBuilder<IFoo>
+            .To(x => x.Name)
+            .Build(call => call.CallNext() + " diverted");
         
-        [Fact]
-        public void GivenPersistentRedirect_ShouldRedirect()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("foo"));
-            
-            _via
-                .To(x => x.Name)
-                .Redirect(call => call.CallNext() + " changed", opt => opt.Persist());
-            
-            // ACT
-            var name = proxy.Name;
-
-            // ASSERT
-            name.ShouldBe("foo changed");
-        }
+        // ACT
+        var foo = Redirect.Proxy<IFoo>(new Foo("MrFoo"));
+        IRedirect redirect = Redirect.From(foo);
+        redirect.Via(via);
         
-        [Fact]
-        public void GivenPersistentRedirect_WhenReset_ShouldNotRemoveRedirect()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("foo"));
-            
-            _via
-                .To(x => x.Name)
-                .Redirect(call => call.CallNext() + " changed", opt => opt.Persist());
-            
-            // ACT
-            _via.Reset();
-
-            // ASSERT
-            proxy.Name.ShouldBe("foo changed");
-        }
+        // ASSERT
+        foo.Name.ShouldBe("MrFoo diverted");
+    }
+    
+    [Fact]
+    public void GivenVia_WhenViaWithOptionsAddedToNonTypedRedirect_ThenViaProxyCalls()
+    {
+        // ARRANGE
+        var via = ViaBuilder<IFoo>
+            .To(x => x.Name)
+            .Build(call => call.CallNext() + " diverted");
         
-        [Fact]
-        public void GivenPersistentRedirect_WhenResetIncludingPersistent_ShouldRemoveRedirect()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("foo"));
-            
-            _via
-                .To(x => x.Name)
-                .Redirect(call => call.CallNext() + " changed", opt => opt.Persist());
-            
-            // ACT
-            _via.Reset(includePersistent: true);
-
-            // ASSERT
-            proxy.Name.ShouldBe("foo");
-        }
+        // ACT
+        var foo = Redirect.Proxy<IFoo>(new Foo("MrFoo"));
+        IRedirect redirect = Redirect.From(foo);
+        redirect.Via(via, opt => opt.Repeat(1));
         
-        [Fact]
-        public void GivenPersistentRedirectFollowedByNormalRedirect_ShouldRedirectChain()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("foo"));
-            
-            _via
-                .To(x => x.Name)
-                .Redirect(call => call.CallNext() + " changed", opt => opt.Persist());
-            
-            _via
-                .To(x => x.Name)
-                .Redirect(call => call.CallNext() + " again");
-            
-            // ACT
-            var name = proxy.Name;
-
-            // ASSERT
-            name.ShouldBe("foo changed again");
-        }
+        // ASSERT
+        foo.Name.ShouldBe("MrFoo diverted");
+        foo.Name.ShouldBe("MrFoo");
+    }
+    
+    [Fact]
+    public void GivenViaWithChainedRecord_WhenProxyCalled_ThenRecordsCalls()
+    {
+        // ARRANGE
+        var via = ViaBuilder<IFoo>
+            .To(x => x.Name)
+            .Build(call => call.CallNext() + " diverted");
         
-        [Fact]
-        public void GivenPersistentRedirectFollowedByNormalRedirect_WhenViaReset_ShouldKeepPersistentRedirect()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("foo"));
-            
-            _via
-                .To(x => x.Name)
-                .Redirect(call => call.CallNext() + " changed", opt => opt.Persist());
-            
-            _via
-                .To(x => x.Name)
-                .Redirect(call => call.CallNext() + " again");
-            
-            // ACT
-            _via.Reset();
-
-            // ASSERT
-            proxy.Name.ShouldBe("foo changed");
-        }
+        var foo = Redirect.Proxy<IFoo>(new Foo("MrFoo"));
+        var fooCalls = Redirect.From(foo)
+            .Via(via, opt => opt.Repeat(1))
+            .Record();
         
-        [Fact]
-        public void GivenPersistentRedirectFollowedByNormalRedirect_WhenViaResetIncludingPersistent_ShouldResetAll()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("foo"));
-            
-            _via
-                .To(x => x.Name)
-                .Redirect(call => call.CallNext() + " changed", opt => opt.Persist());
-            
-            _via
-                .To(x => x.Name)
-                .Redirect(call => call.CallNext() + " again");
-            
-            // ACT
-            _via.Reset(includePersistent: true);
-
-            // ASSERT
-            proxy.Name.ShouldBe("foo");
-        }
+        // ACT
+        var names = Enumerable.Range(0, 2).Select(_ => foo.Name).ToArray();
         
-        [Fact]
-        public void GivenNormalRedirectFollowedByPersistentRedirect_WhenViaReset_ShouldKeepPersistentRedirect()
-        {
-            // ARRANGE
-            var proxy = _via.Proxy(new Foo("foo"));
-            
-            _via
-                .To(x => x.Name)
-                .Redirect(call => call.CallNext() + " changed");
-            
-            _via
-                .To(x => x.Name)
-                .Redirect(call => call.CallNext() + " persistent", opt => opt.Persist());
-            
-            // ACT
-            _via.Reset();
-
-            // ASSERT
-            proxy.Name.ShouldBe("foo persistent");
-        }
+        // ASSERT
+        fooCalls
+            .To(x => x.Name)
+            .Verify()
+            .Select(x => x.Returned!.Value)
+            .ShouldBe(names);
     }
 }

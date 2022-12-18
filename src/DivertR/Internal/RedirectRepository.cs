@@ -33,23 +33,23 @@ namespace DivertR.Internal
             } 
         }
 
-        public IRedirectRepository InsertRedirect(IRedirect redirect, IRedirectOptions? redirectOptions = null)
+        public IRedirectRepository InsertVia(IVia via, IViaOptions? viaOptions = null)
         {
-            var container = new RedirectContainer(redirect, redirectOptions ?? RedirectOptions.Default);
+            var configuredVia = new ConfiguredVia(via, viaOptions ?? ViaOptions.Default);
             
-            return InsertRedirect(container);
+            return InsertVia(configuredVia);
         }
 
-        public IRedirectRepository InsertRedirect(IRedirectContainer redirect)
+        public IRedirectRepository InsertVia(IConfiguredVia configuredVia)
         {
             lock (_lockObject)
             {
-                if (redirect.Options.IsPersistent)
+                if (configuredVia.Options.IsPersistent)
                 {
-                    _persistentPlan = _persistentPlan.InsertRedirect(redirect);
+                    _persistentPlan = _persistentPlan.InsertVia(configuredVia);
                 }
 
-                MutateRedirectPlan(original => original.InsertRedirect(redirect));
+                MutatePlan(original => original.InsertVia(configuredVia));
             }
 
             return this;
@@ -59,7 +59,7 @@ namespace DivertR.Internal
         {
             lock (_lockObject)
             {
-                MutateRedirectPlan(original => original.SetStrictMode(isStrict));
+                MutatePlan(original => original.SetStrictMode(isStrict));
             }
 
             return this;
@@ -81,7 +81,7 @@ namespace DivertR.Internal
             return this;
         }
 
-        private void MutateRedirectPlan(Func<RedirectPlan, RedirectPlan> mutateAction)
+        private void MutatePlan(Func<RedirectPlan, RedirectPlan> mutateAction)
         {
             _planStack.TryPeek(out var redirectPlan);
             var mutated = mutateAction(redirectPlan);

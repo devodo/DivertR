@@ -1,7 +1,7 @@
 ﻿# About
 
-DivertR is similar to well known mocking frameworks like Moq or FakeItEasy but provides additional features for dynamically manipulating the dependency injection (DI) layer at runtime.
-You can redirect dependency calls to test doubles, such as substitute instances, mocks or delegates, and then optionally relay them back to the original services.
+DivertR is similar to well known mocking frameworks like Moq or FakeItEasy but provides additional features for use with integration testing such as dynamically manipulating the dependency injection (DI) layer at runtime.
+You can redirect calls to test doubles, such as substitute instances, mocks or delegates, and then optionally relay them back to the original services.
 
 Many developers are already enjoying the benefits of in-process component/integration testing using Microsoft's [WebApplicationFactory (TestServer)](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests)
 which also lets you customise the DI configuration, e.g. to substitute test doubles, but this can only be done once (per TestServer instantiation).

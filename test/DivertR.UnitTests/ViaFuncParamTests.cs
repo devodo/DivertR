@@ -10,7 +10,7 @@ namespace DivertR.UnitTests
 {
     public class ViaFuncParamTests
     {
-        private readonly IVia<IFoo> _via = new Via<IFoo>();
+        private readonly IRedirect<IFoo> _redirect = new Redirect<IFoo>();
         private readonly IFoo _original = new Foo();
         private readonly IFoo _proxy;
         private readonly IRecordStream<IFoo> _recordStream;
@@ -19,8 +19,8 @@ namespace DivertR.UnitTests
 
         public ViaFuncParamTests()
         {
-            _proxy = _via.Proxy(_original);
-            _recordStream = _via.Record(options => options.OrderWeight(int.MaxValue));
+            _proxy = _redirect.Proxy(_original);
+            _recordStream = _redirect.Record(options => options.OrderWeight(int.MaxValue));
             InitInputs();
         }
 
@@ -34,78 +34,78 @@ namespace DivertR.UnitTests
                 _inputs.Add(Enumerable.Range(0, i).Select(_ =>
                 {
                     var arg = random.Next();
-                    var redirectArg = random.Next();
-                    var result = arg + redirectArg;
+                    var viaArg = random.Next();
+                    var result = arg + viaArg;
                     
-                    return (arg, redirectArg, result);
+                    return (arg, viaArg, result);
                 }).ToArray());
             }
         }
 
-        private void SetupRedirects()
+        private void SetupVias()
         {
-            _via
+            _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any))
-                .Redirect<(int i1, __)>(call =>
+                .Via<(int i1, __)>(call =>
                 {
                     var item1 = call.Relay.Next.EchoGeneric(call.Args.i1);
                     return item1 + _inputs[0][0].Incr;
                 });
             
-            _via
+            _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any))
-                .Redirect<(int i1, int i2)>(call =>
+                .Via<(int i1, int i2)>(call =>
                 {
                     var (item1, item2) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2);
                     return (item1 + _inputs[1][0].Incr, item2 + _inputs[1][1].Incr);
                 });
             
-            _via
+            _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any, Is<int>.Any))
-                .Redirect<(int i1, int i2, int i3)>(call =>
+                .Via<(int i1, int i2, int i3)>(call =>
                 {
                     var (item1, item2, item3) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2, call.Args.i3);
                     return (item1 + _inputs[2][0].Incr, item2 + _inputs[2][1].Incr, item3 + _inputs[2][2].Incr);
                 });
             
-            _via
+            _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any))
-                .Redirect<(int i1, int i2, int i3, int i4)>(call =>
+                .Via<(int i1, int i2, int i3, int i4)>(call =>
                 {
                     var (item1, item2, item3, item4) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2, call.Args.i3, call.Args.i4);
                     return (item1 + _inputs[3][0].Incr, item2 + _inputs[3][1].Incr, item3 + _inputs[3][2].Incr, item4 + _inputs[3][3].Incr);
                 });
             
-            _via
+            _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any))
-                .Redirect<(int i1, int i2, int i3, int i4, int i5)>(call =>
+                .Via<(int i1, int i2, int i3, int i4, int i5)>(call =>
                 {
                     var (item1, item2, item3, item4, item5) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2, call.Args.i3, call.Args.i4, call.Args.i5);
                     return (item1 + _inputs[4][0].Incr, item2 + _inputs[4][1].Incr, item3 + _inputs[4][2].Incr, item4 + _inputs[4][3].Incr,
                         item5 + _inputs[4][4].Incr);
                 });
             
-            _via
+            _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any))
-                .Redirect<(int i1, int i2, int i3, int i4, int i5, int i6)>(call =>
+                .Via<(int i1, int i2, int i3, int i4, int i5, int i6)>(call =>
                 {
                     var (item1, item2, item3, item4, item5, item6) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2, call.Args.i3, call.Args.i4, call.Args.i5, call.Args.i6);
                     return (item1 + _inputs[5][0].Incr, item2 + _inputs[5][1].Incr, item3 + _inputs[5][2].Incr, item4 + _inputs[5][3].Incr,
                         item5 + _inputs[5][4].Incr, item6 + _inputs[5][5].Incr);
                 });
             
-            _via
+            _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any))
-                .Redirect<(int i1, int i2, int i3, int i4, int i5, int i6, int i7)>(call =>
+                .Via<(int i1, int i2, int i3, int i4, int i5, int i6, int i7)>(call =>
                 {
                     var (item1, item2, item3, item4, item5, item6, item7) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2, call.Args.i3, call.Args.i4, call.Args.i5, call.Args.i6, call.Args.i7);
                     return (item1 + _inputs[6][0].Incr, item2 + _inputs[6][1].Incr, item3 + _inputs[6][2].Incr, item4 + _inputs[6][3].Incr,
                         item5 + _inputs[6][4].Incr, item6 + _inputs[6][5].Incr, item7 + _inputs[6][6].Incr);
                 });
             
-            _via
+            _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any, Is<int>.Any))
-                .Redirect<(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8)>(call =>
+                .Via<(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8)>(call =>
                 {
                     var (item1, item2, item3, item4, item5, item6, item7, item8) = call.Relay.Next.EchoGeneric(call.Args.i1, call.Args.i2, call.Args.i3, call.Args.i4, call.Args.i5, call.Args.i6, call.Args.i7, call.Args.i8);
                     return (item1 + _inputs[7][0].Incr, item2 + _inputs[7][1].Incr, item3 + _inputs[7][2].Incr, item4 + _inputs[7][3].Incr,
@@ -117,7 +117,7 @@ namespace DivertR.UnitTests
         public void Given1Param_ShouldRedirect()
         {
             // ARRANGE
-            SetupRedirects();
+            SetupVias();
 
             // ACT
             var result = _proxy.EchoGeneric(_inputs[0][0].Arg);
@@ -138,7 +138,7 @@ namespace DivertR.UnitTests
         public void Given2Params_ShouldRedirect()
         {
             // ARRANGE
-            SetupRedirects();
+            SetupVias();
 
             // ACT
             var result = _proxy.EchoGeneric(_inputs[1][0].Arg, _inputs[1][1].Arg);
@@ -160,7 +160,7 @@ namespace DivertR.UnitTests
         public void Given3Params_ShouldRedirect()
         {
             // ARRANGE
-            SetupRedirects();
+            SetupVias();
 
             // ACT
             var result = _proxy.EchoGeneric(_inputs[2][0].Arg, _inputs[2][1].Arg, _inputs[2][2].Arg);
@@ -183,7 +183,7 @@ namespace DivertR.UnitTests
         public void Given4Params_ShouldRedirect()
         {
             // ARRANGE
-            SetupRedirects();
+            SetupVias();
 
             // ACT
             var result = _proxy.EchoGeneric(_inputs[3][0].Arg, _inputs[3][1].Arg, _inputs[3][2].Arg, _inputs[3][3].Arg);
@@ -207,7 +207,7 @@ namespace DivertR.UnitTests
         public void Given5Params_ShouldRedirect()
         {
             // ARRANGE
-            SetupRedirects();
+            SetupVias();
 
             // ACT
             var result = _proxy.EchoGeneric(_inputs[4][0].Arg, _inputs[4][1].Arg, _inputs[4][2].Arg, _inputs[4][3].Arg,
@@ -235,7 +235,7 @@ namespace DivertR.UnitTests
         public void Given6Params_ShouldRedirect()
         {
             // ARRANGE
-            SetupRedirects();
+            SetupVias();
 
             // ACT
             var result = _proxy.EchoGeneric(_inputs[5][0].Arg, _inputs[5][1].Arg, _inputs[5][2].Arg, _inputs[5][3].Arg,
@@ -264,7 +264,7 @@ namespace DivertR.UnitTests
         public void Given7Params_ShouldRedirect()
         {
             // ARRANGE
-            SetupRedirects();
+            SetupVias();
 
             // ACT
             var result = _proxy.EchoGeneric(_inputs[6][0].Arg, _inputs[6][1].Arg, _inputs[6][2].Arg, _inputs[6][3].Arg,
@@ -294,7 +294,7 @@ namespace DivertR.UnitTests
         public void Given8Params_ShouldRedirect()
         {
             // ARRANGE
-            SetupRedirects();
+            SetupVias();
 
             // ACT
             var result = _proxy.EchoGeneric(_inputs[7][0].Arg, _inputs[7][1].Arg, _inputs[7][2].Arg, _inputs[7][3].Arg,
