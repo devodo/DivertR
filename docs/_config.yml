@@ -1,7 +1,7 @@
 title: DivertR
 description: .NET mocking framework for integration testing
-url: https://devodo.github.io/DivertR
-#baseurl: "/DivertR"
+url: https://devodo.github.io
+#baseurl: "/DivertR/"
 
 theme: just-the-docs
 
