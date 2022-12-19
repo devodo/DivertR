@@ -4,7 +4,7 @@ using DivertR.SampleWebApp.Model;
 using DivertR.SampleWebApp.Rest;
 using Refit;
 
-namespace DivertR.WebAppTests
+namespace DivertR.WebAppTests.TestHarness
 {
     public interface IFooClient
     {

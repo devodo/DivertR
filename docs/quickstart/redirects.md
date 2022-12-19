@@ -1,13 +1,20 @@
-﻿# Redirect
+---
+layout: default
+title: Redirects
+nav_order: 1
+parent: Quickstart
+---
 
-Redirects are the main DivertR entities used to create and configure proxies.
+# Redirects
+
+The `Redirect` is the main DivertR entity used to create and configure proxies.
 `Redirect` instances are instantiated from the generic `Redirect<TTarget>` class:
 
 ```csharp
 IRedirect<IFoo> fooRedirect = new Redirect<IFoo>();
 ```
 
-# Proxy
+# Creating Proxies
 
 A `Redirect` creates proxy objects of its generic `TTarget` type.
 E.g. an `IRedirect<IFoo>` like the one instantiated above creates `IFoo` proxies:
@@ -19,7 +26,8 @@ IFoo fooProxy = fooRedirect.Proxy(); // Create a proxy
 IFoo fooTwo = fooRedirect.Proxy(); // Create another proxy
 ```
 
-> A single Redirect can create any number of proxies. 
+> A single Redirect can create any number of proxies.
+{: .note }
 
 ## Proxy Root
 
@@ -50,9 +58,11 @@ Console.WriteLine(fooMock.Name); // null
 
 In general dummy roots return the .NET `default` of the call's return type, e.g. `null` for reference types and `0` for `int`.
 There are some special cases such as `Task` types are returned as `null` valued completed Tasks.
-> Proxies with dummy roots can be used as mock objects.
 
-# Via
+> Proxies with dummy roots can be used as mock objects.
+{: .note }
+
+# Via Intercepts
 
 `Via` instances are added to a `Redirect` to control the way its proxies behave.
 Proxy calls are diverted and passed to the Vias for handling.
@@ -97,11 +107,11 @@ By adding Vias and resetting, proxy behaviour can be modified at runtime allowin
 After a Redirect is reset its proxies are in their default, transparent state of forwarding all calls to their root instances.
 This enables a pattern of testing where proxy behaviour is modified with Vias and then the system is reset to its original state between tests.
 
-# Method parameters
+# Method Parameters
 
 Via intercept match rules can be configured on method parameters using call argument values and these can also be passed to Via delegates.
 
-## Parameter matching
+## Parameter Matching
 
 If the Via `To` expression specifies a method with parameters, these are matched to call arguments as follows:
 
@@ -126,29 +136,30 @@ Console.WriteLine(fooProxy.Echo("two")); // "match"
 Console.WriteLine(fooProxy.Echo("three")); // "equal"
 ```
 
-## Call arguments
+## Call Arguments
 
 Proxy call arguments can be passed to the Via delegate as follows:
 
 ```csharp
 fooRedirect
     .To(x => x.Echo(Is<string>.Any))
-    .Via(call => $"{call.Args[0]} viaed");
+    .Via(call => $"{call.Args[0]} redirected");
   
-Console.WriteLine(fooProxy.Echo("me")); // "me viaed"
+Console.WriteLine(fooProxy.Echo("me")); // "me redirected"
 ```
-> The `Args` property is an `IReadOnlyList<object>` collection. 
+> The `Args` property is an `IReadOnlyList<object>` collection.
+{: .note }
 
-## Named arguments
+## Named Arguments
 
 Strongly typed and named arguments can be specified by defining a `ValueTuple` generic type on the `Via` method as follows:
 
 ```csharp
 fooRedirect
     .To(x => x.Echo(Is<string>.Any))
-    .Via<(string input, __)>(call => $"{call.Args.input} viaed");
+    .Via<(string input, __)>(call => $"{call.Args.input} redirected");
 
-Console.WriteLine(fooProxy.Echo("me")); // "me viaed"
+Console.WriteLine(fooProxy.Echo("me")); // "me redirected"
 ```
 
 Call arguments are mapped in parameter order onto the `ValueTuple` items and it replaces the `Args` property from the previous example.
@@ -160,9 +171,9 @@ then the discard type `__` must be used to provide a second dummy parameter.
 
 # Relay
 
-A special feature of Redirects is their ability to control how calls are forwarded or *relayed* back to proxy root instances. 
+A special feature of Redirects is their ability to control how calls are forwarded or *relayed* back to proxy root instances.
 
-## Relay root
+## Relay Root
 
 The Via delegate can *relay* calls back to the proxy root by calling the `Relay.Root` property:
 
@@ -180,12 +191,13 @@ Console.WriteLine(fooProxy.Name); // "MrFoo relayed"
 ```
 
 > The `Relay.Root` property is a proxy that relays calls to the root instance.
+{: .note }
 
-## Relay next
+## Relay Next
 
 Any number of Vias can be added to a Redirect. When Vias are added they are pushed onto a stack (with the last added at the top).
 
-![Via Stack](./assets/images/Via_Stack.svg)
+![Via Stack]({{ site.url }}/assets/images/Via_Stack.svg)
 
 Proxy calls are traversed through the stack from top to bottom. If a call matches the `To` constraint it is passed to the Via delegate for handling.
 If no Vias match, the call falls through the stack to the root instance.
@@ -207,8 +219,9 @@ Console.WriteLine(fooProxy.Name); // "MrFoo 1 2 3"
 > The `Relay.Next` property is a proxy that relays calls to the next Via that matches.
 > If no Vias match it will relay to the root.
 > The Root and Next properties can also be accessed directly from the call argument for convenience.
+{: .note }
 
-## Call forwarding
+## Call Forwarding
 
 A Via can call `CallRoot()` to forward the call to the target method of the root instance:
 
@@ -253,9 +266,9 @@ fooRedirect
 Console.WriteLine(fooProxy.Echo("me")); // "you"
 ```
 
-# Method variations
+# Additional Usages
 
-## Async methods
+## Async Methods
 
 Async is fully supported by DivertR and Via delegates can be added to `Task` or `ValueTask` methods using the standard C# `async` syntax:
 
@@ -297,7 +310,7 @@ fooProxy.Name = "Me";
 Console.WriteLine(fooProxy.Name); // "Me changed"
 ```
 
-## Void methods
+## Void Methods
 
 For methods that return `void`, the same `Redirect` fluent interface syntax is used, only the `Via` delegate provided is an `Action` rather than a `Func`:
 
@@ -310,7 +323,7 @@ fooRedirect
     });
 ```
 
-## Generic methods
+## Generic Methods
 
 Generic method Vias are declared using the same fluent syntax ands are matched on the specified generic type arguments.
 
@@ -320,7 +333,7 @@ fooRedirect
     .Via(call => call.CallNext() * 2);
 ```
 
-## Throwing exceptions
+## Throwing Exceptions
 
 Via delegates can throw exceptions using standard C# syntax and any exceptions thrown will bubble up to callers as usual:
 

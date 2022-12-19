@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using DivertR.SampleWebApp.Model;
 using DivertR.SampleWebApp.Rest;
 using DivertR.SampleWebApp.Services;
+using DivertR.WebAppTests.TestHarness;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace DivertR.WebAppTests
+namespace DivertR.WebAppTests.Tests
 {
     public class MockSampleTests : IClassFixture<WebAppFixture>
     {
@@ -104,7 +105,7 @@ namespace DivertR.WebAppTests
         }
         
         [Fact]
-        public async Task GivenFooRepositoryInsertFails_WhenCreateFooRequest_ThenReturns500InternalServerError()
+        public async Task GivenFooRepositoryInsertFails_WhenCreateFooRequest_Then500InternalServerErrorResponse()
         {
             // ARRANGE
             var createFooRequest = new CreateFooRequest
