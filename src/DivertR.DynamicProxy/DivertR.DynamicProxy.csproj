@@ -19,6 +19,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -35,6 +36,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DivertR\DivertR.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/src/DivertR.DynamicProxy"/>
   </ItemGroup>
 
 </Project>
