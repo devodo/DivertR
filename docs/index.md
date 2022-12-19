@@ -1,30 +1,95 @@
 ---
 title: Home
 layout: home
+nav_order: 1
 ---
 
-This is a *bare-minimum* template to create a Jekyll site that uses the [Just the Docs] theme. You can easily set the created site to be published on [GitHub Pages] – the [README] file explains how to do that, along with other details.
+# DivertR
 
-If [Jekyll] is installed on your computer, you can also build and preview the created site *locally*. This lets you test changes before committing them, and avoids waiting for GitHub Pages.[^1] And you will be able to deploy your local build to a different platform than GitHub Pages.
+[![nuget](https://img.shields.io/nuget/v/DivertR.svg)](https://www.nuget.org/packages/DivertR)
+[![build](https://github.com/devodo/DivertR/actions/workflows/build.yml/badge.svg)](https://github.com/devodo/DivertR/actions/workflows/build.yml)
 
-More specifically, the created site:
+DivertR is a .NET library for creating proxy test doubles such as mocks, fakes and spies.
+It is similar to mocking frameworks like the well known [Moq](https://github.com/moq/moq4) but provides, in addition, features for ***integration*** and ***component*** testing of wired-up systems.
 
-- uses a gem-based approach, i.e. uses a `Gemfile` and loads the `just-the-docs` gem
-- uses the [GitHub Pages / Actions workflow] to build and publish the site on GitHub Pages
+# Installing
 
-Other than that, you're free to customize sites that you create with this template, however you like. You can easily change the versions of `just-the-docs` and Jekyll it uses, as well as adding further plugins.
+Install DivertR as a [NuGet package](https://www.nuget.org/packages/DivertR):
 
-[Browse our documentation][Just the Docs] to learn more about how to use this theme.
+```sh
+Install-Package DivertR
+```
 
-To get started with creating a site, just click "[use this template]"!
+Or via the .NET command line interface:
 
-----
+```sh
+dotnet add package DivertR
+```
 
-[^1]: [It can take up to 10 minutes for changes to your site to publish after you push the changes to GitHub](https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/creating-a-github-pages-site-with-jekyll#creating-your-site).
+# Feature Summary
 
-[Just the Docs]: https://just-the-docs.github.io/just-the-docs/
-[GitHub Pages]: https://docs.github.com/en/pages
-[README]: https://github.com/just-the-docs/just-the-docs-template/blob/main/README.md
-[Jekyll]: https://jekyllrb.com
-[GitHub Pages / Actions workflow]: https://github.blog/changelog/2022-07-27-github-pages-custom-github-actions-workflows-beta/
-[use this template]: https://github.com/just-the-docs/just-the-docs-template/generate
+1. Test double proxy framework for mocking, faking, stubbing, spying, etc. [[more]](./docs/Redirect.md)
+2. Proxies that wrap and forward to root (original) instances so tests run against the integrated system whilst modifying and spying on specific parts as needed. [[more]](./docs/Redirect.md#proxy)
+3. A lightweight, fluent interface for configuring proxies to redirect calls to delegates or substitute instances. [[more]](./docs/Redirect.md#via)
+4. Dynamic update and reset of proxies in a running application enabling changes between tests without requiring restart and initialisation overhead. [[more]](./docs/Redirect.md#reset)
+5. Leveraging .NET ValueTuple types for specifying named and strongly typed call arguments that can be passed and reused e.g. in call verifications. [[more]](./docs/Redirect.md#named-arguments)
+6. Method call interception and diversion with optional relay back to the original target. [[more]](./docs/Redirect.md#relay)
+7. Simple plugging of proxy factories into the dependency injection container by decorating and wrapping existing registrations. [[more]](./docs/DI.md#redirect-registration)
+8. Recording and verifying proxy calls. [[more]](./docs/Verify.md)
+
+# Example Usage
+
+DivertR can facilitate a style of testing where you start with a fully DI wired-up system and mock out specific parts per test.
+For example, it can be used to write tests on a WebApp like this:
+
+```csharp
+[Fact]
+public async Task GivenFooExistsInRepo_WhenGetFoo_ThenReturnsFoo_WithOk200()
+{
+    // ARRANGE
+    var foo = new Foo
+    {
+        Id = Guid.NewGuid(),
+        Name = "Foo123"
+    };
+
+    _diverter
+        .Redirect<IFooRepository>() // Redirect IFooRepository calls 
+        .To(x => x.GetFooAsync(foo.Id)) // matching this method and argument
+        .Via(() => Task.FromResult(foo)); // via this delegate
+
+    // ACT
+    var response = await _fooClient.GetFooAsync(foo.Id);
+    
+    // ASSERT
+    response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    response.Content.Id.ShouldBe(foo.Id);
+    response.Content.Name.ShouldBe(foo.Name);
+}
+
+[Fact]
+public async Task GivenFooRepoException_WhenGetFoo_ThenReturns500InternalServerError()
+{
+    // ARRANGE
+    _diverter
+        .Redirect<IFooRepository>()
+        .To(x => x.GetFooAsync(Is<Guid>.Any))
+        .Via(() => throw new Exception());
+
+    // ACT
+    var response = await _fooClient.GetFooAsync(Guid.NewGuid());
+
+    // ASSERT
+    response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+}
+```
+
+# Quickstart
+
+For more examples and a demonstration of setting up a test harness for a WebApp see this [WebApp Testing Sample](./test/DivertR.WebAppTests/WebAppTests.cs)
+or follow below for a quickstart:
+
+* [Redirects](./docs/Redirect.md) for creating and configuring proxies.
+* [Dependency Injection](./docs/DI.md) integration.
+* [Recording and Verifying](./docs/Verify.md) calls.
+* [About](./docs/About.md) DivertR.
