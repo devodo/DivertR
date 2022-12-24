@@ -2,7 +2,7 @@
 layout: default
 title: Retarget
 nav_order: 7
-parent: Redirect
+parent: Redirects
 ---
 
 # Retarget
