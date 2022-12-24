@@ -2,7 +2,7 @@
 layout: default
 title: Reset
 nav_order: 3
-parent: Redirect
+parent: Redirects
 ---
 
 # Reset
