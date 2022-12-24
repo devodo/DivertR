@@ -18,7 +18,7 @@ IFoo fooProxy = fooRedirect.Proxy();
 // Create another proxy
 IFoo fooTwo = fooRedirect.Proxy();
 ```
-
+{: .note }
 > A single Redirect can create any number of proxies of its target type. 
 
 ## Proxy Root
