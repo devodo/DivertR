@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Relay Calls
+title: Relay
 nav_order: 5
 parent: Redirects
 ---
 
-# Relay Calls
+# Relay
 
 A special feature of Redirects is their ability to control how calls are forwarded or *relayed* back to proxy root instances.
 
