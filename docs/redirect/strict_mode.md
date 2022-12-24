@@ -2,7 +2,7 @@
 layout: default
 title: Strict Mode
 nav_order: 7
-parent: Redirect
+parent: Redirects
 ---
 
 # Strict mode
