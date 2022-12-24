@@ -2,7 +2,7 @@
 layout: default
 title: Method Parameters
 nav_order: 4
-parent: Redirect
+parent: Redirects
 ---
 
 # Method parameters
