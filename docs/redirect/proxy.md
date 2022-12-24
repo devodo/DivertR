@@ -2,7 +2,7 @@
 layout: default
 title: Creating Proxies
 nav_order: 1
-parent: Redirect
+parent: Redirects
 ---
 
 # Creating Proxies
