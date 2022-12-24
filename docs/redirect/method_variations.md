@@ -2,7 +2,7 @@
 layout: default
 title: Method Variations
 nav_order: 6
-parent: Redirect
+parent: Redirects
 ---
 
 # Method variations
