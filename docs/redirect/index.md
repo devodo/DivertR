@@ -1,13 +1,13 @@
 ---
 layout: default
-title: Redirect
+title: Redirects
 nav_order: 2
 has_children: true
 ---
 
-# Redirect
+# Redirects
 
-Redirects are the main DivertR entities used to create and configure proxies.
+The `Redirect` is the main DivertR type used to create and configure test proxies.
 `Redirect` instances are instantiated from the generic `Redirect<TTarget>` class:
 
 ```csharp
