@@ -1,23 +1,25 @@
 ---
 layout: default
-title: Proxy
+title: Creating Proxies
 nav_order: 1
 parent: Redirect
 ---
 
-# Proxy
+# Creating Proxies
 
-A `Redirect` creates proxy objects of its generic `TTarget` type.
-E.g. an `IRedirect<IFoo>` like the one instantiated above creates `IFoo` proxies:
+`Redirec` instances are used to create and manage proxy objects. A `Redirect` creates proxies of its generic `TTarget` type.
+E.g. an `IRedirect<IFoo>` like the one instantiated in previously creates `IFoo` proxies:
 
 ```csharp
 var fooRedirect = new Redirect<IFoo>();
 
-IFoo fooProxy = fooRedirect.Proxy(); // Create a proxy
-IFoo fooTwo = fooRedirect.Proxy(); // Create another proxy
+// Create a proxy
+IFoo fooProxy = fooRedirect.Proxy();
+// Create another proxy
+IFoo fooTwo = fooRedirect.Proxy();
 ```
 
-> A single Redirect can create any number of proxies. 
+> A single Redirect can create any number of proxies of its target type. 
 
 ## Proxy Root
 
