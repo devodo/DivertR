@@ -2,7 +2,7 @@
 layout: default
 title: Via
 nav_order: 2
-parent: Redirect
+parent: Redirects
 ---
 
 # Via
