@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <LangVersion>10</LangVersion>
+    <LangVersion>11</LangVersion>
     <AssemblyName>DivertR.UnitTests</AssemblyName>
     <RootNamespace>DivertR.UnitTests</RootNamespace>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net472;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;net7.0</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

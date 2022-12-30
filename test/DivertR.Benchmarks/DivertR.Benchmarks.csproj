@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <TargetFrameworks>net472;net6.0</TargetFrameworks>
-    <LangVersion>10</LangVersion>
+    <TargetFrameworks>net472;net7.0</TargetFrameworks>
+    <LangVersion>11</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
