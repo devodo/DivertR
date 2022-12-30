@@ -4,9 +4,9 @@ using DivertR.SampleWebApp.Model;
 
 namespace DivertR.SampleWebApp.Services
 {
-    public interface IFooRepository
+    public interface IFooService
     {
         Task<Foo?> GetFooAsync(Guid id);
-        Task InsertFooAsync(Foo foo);
+        Task<Foo> CreateFooAsync(Guid id, string name);
     }
 }

@@ -24,12 +24,18 @@ namespace DivertR.SampleWebApp.Services
                 : Task.FromResult<Foo?>(null);
         }
 
-        public Task<bool> TryInsertFooAsync(Foo foo)
+        public Task InsertFooAsync(Foo foo)
         {
             _logger.LogInformation("Inserting foo {FooId}", foo.Id);
-            var inserted = FooStore.TryAdd(foo.Id, foo);
-            
-            return Task.FromResult(inserted);
+
+            if (!FooStore.TryAdd(foo.Id, foo))
+            {
+                _logger.LogWarning("Foo {FooId} already exists in repository", foo.Id);
+                
+                throw new DuplicateFooException(foo, "Foo already exists in repository");
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

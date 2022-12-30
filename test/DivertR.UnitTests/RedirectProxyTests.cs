@@ -94,13 +94,13 @@ namespace DivertR.UnitTests
             Redirect
                 .From(proxy)
                 .To(x => x.Echo(Is<string>.Any))
-                .Via(call => call.CallNext() + " viaed");
+                .Via(call => call.CallNext() + " redirected");
 
             // ACT
             var result = proxy.Echo("hello");
 
             // ASSERT
-            result.ShouldBe("original: hello viaed");
+            result.ShouldBe("original: hello redirected");
         }
         
         [Fact]

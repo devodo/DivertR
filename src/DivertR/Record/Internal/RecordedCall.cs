@@ -4,10 +4,10 @@ namespace DivertR.Record.Internal
 {
     internal class RecordedCall : IRecordedCall
     {
-        private readonly object _returnedLock = new object();
-        
-        private ICallReturn? _callReturn;
-        
+        private readonly object _returnedLock = new();
+
+        private CallReturn _callReturn = CallReturn.None;
+
         public RecordedCall(ICallInfo callInfo)
         {
             CallInfo = callInfo;
@@ -15,11 +15,44 @@ namespace DivertR.Record.Internal
         
         public ICallInfo CallInfo { get; }
 
-        ICallInfo IRecordedCall.CallInfo => CallInfo;
-
         public CallArguments Args => CallInfo.Arguments;
+
+        public object? Return
+        {
+            get
+            {
+                var callReturn = CallReturn;
+
+                if (!callReturn.IsReturned)
+                {
+                    throw new DiverterException($"The call does not have a return value. It probably did not return due to an exception being thrown.");
+                }
+                
+                return CallReturn.Value;
+            }
+        }
+
+        public object? ReturnOrDefault => CallReturn.Value;
         
-        public ICallReturn? Returned
+        public Exception? Exception => CallReturn.Exception;
+        
+        public Exception? RawException => CallReturn.RawException;
+
+        public bool IsCompleted => CallReturn.IsCompleted;
+        
+        public bool IsReturned => CallReturn.IsReturned;
+
+        public void SetReturned(object? returnedObject)
+        {
+            CallReturn = new CallReturn(returnedObject);
+        }
+
+        public void SetException(Exception exception)
+        {
+            CallReturn = new CallReturn(exception);
+        }
+        
+        private CallReturn CallReturn
         {
             get
             {
@@ -29,23 +62,13 @@ namespace DivertR.Record.Internal
                 }
             }
 
-            private set
+            set
             {
                 lock (_returnedLock)
                 {
                     _callReturn = value;
                 }
             }
-        }
-        
-        public void SetReturned(object? returnedObject)
-        {
-            Returned = new CallReturn(returnedObject, null);
-        }
-
-        public void SetException(Exception exception)
-        {
-            Returned = new CallReturn(null, exception);
         }
     }
     
@@ -59,23 +82,7 @@ namespace DivertR.Record.Internal
         public new ICallInfo<TTarget> CallInfo { get; }
     }
 
-    internal class RecordedCallInternal<TTarget> : IRecordedCall<TTarget> where TTarget : class?
-    {
-        private readonly IRecordedCall<TTarget> _recordedCall;
-
-        protected RecordedCallInternal(IRecordedCall<TTarget> recordedCall)
-        {
-            _recordedCall = recordedCall;
-        }
-
-        public ICallInfo<TTarget> CallInfo => _recordedCall.CallInfo;
-        public ICallReturn? Returned => _recordedCall.Returned;
-        ICallInfo IRecordedCall.CallInfo => CallInfo;
-
-        public CallArguments Args => _recordedCall.Args;
-    }
-    
-    internal class RecordedCall<TTarget, TArgs> : RecordedCallInternal<TTarget>, IRecordedCall<TTarget, TArgs>
+    internal class RecordedCall<TTarget, TArgs> : RecordedCallWrapped<TTarget>, IRecordedCall<TTarget, TArgs>
         where TTarget : class?
     {
         public RecordedCall(IRecordedCall<TTarget> recordedCall, TArgs args) : base(recordedCall)

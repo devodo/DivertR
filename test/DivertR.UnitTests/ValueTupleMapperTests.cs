@@ -27,7 +27,7 @@ namespace DivertR.UnitTests
                 .Via<(__, string input, __)>(call =>
                 {
                     var args = call.CallInfo.Arguments.ToArray();
-                    args[1] = $"{call.Args.input} viaed";
+                    args[1] = $"{call.Args.input} redirected";
 
                     return call.CallNext(args);
                 });
@@ -36,7 +36,7 @@ namespace DivertR.UnitTests
             var result = _proxy.EchoGeneric(1, "hello", true);
             
             // ASSERT
-            result.ShouldBe((1, "hello viaed", true));
+            result.ShouldBe((1, "hello redirected", true));
         }
         
         [Fact]
@@ -48,7 +48,7 @@ namespace DivertR.UnitTests
                 .Via<(__, string input)>(call =>
                 {
                     var args = call.CallInfo.Arguments.ToArray();
-                    args[1] = $"{args[1]} viaed";
+                    args[1] = $"{args[1]} redirected";
 
                     return call.CallNext(args);
                 });
@@ -57,7 +57,7 @@ namespace DivertR.UnitTests
             var result = _proxy.EchoGeneric(1, "hello", true);
             
             // ASSERT
-            result.ShouldBe((1, "hello viaed", true));
+            result.ShouldBe((1, "hello redirected", true));
         }
         
         [Fact]
@@ -69,7 +69,7 @@ namespace DivertR.UnitTests
                 .Via<(__, string input, bool input2, __)>(call =>
                 {
                     var args = call.CallInfo.Arguments.ToArray();
-                    args[1] = $"{args[1]} viaed";
+                    args[1] = $"{args[1]} redirected";
 
                     return call.CallNext(args);
                 });
@@ -78,7 +78,7 @@ namespace DivertR.UnitTests
             var result = _proxy.EchoGeneric(1, "hello", true);
             
             // ASSERT
-            result.ShouldBe((1, "hello viaed", true));
+            result.ShouldBe((1, "hello redirected", true));
         }
         
         [Fact]

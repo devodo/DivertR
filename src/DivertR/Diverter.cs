@@ -8,7 +8,7 @@ namespace DivertR
     /// <inheritdoc />
     public class Diverter : IDiverter
     {
-        private readonly ConcurrentDictionary<RedirectId, IRedirect> _registeredRedirects = new ConcurrentDictionary<RedirectId, IRedirect>();
+        private readonly ConcurrentDictionary<RedirectId, IRedirect> _registeredRedirects = new();
         public IRedirectSet RedirectSet { get; }
 
         /// <summary>

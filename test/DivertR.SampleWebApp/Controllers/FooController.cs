@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DivertR.SampleWebApp.Model;
+using DivertR.SampleWebApp.Rest;
 using DivertR.SampleWebApp.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,45 +11,48 @@ namespace DivertR.SampleWebApp.Controllers
     [Route("[controller]")]
     public class FooController : ControllerBase
     {
-        private readonly IFooRepository _fooRepository;
-        private readonly IFooIdGenerator _fooIdGenerator;
+        private readonly IFooService _fooService;
 
-        public FooController(IFooRepository fooRepository, IFooIdGenerator fooIdGenerator)
+        public FooController(IFooService fooService)
         {
-            _fooRepository = fooRepository ?? throw new ArgumentNullException(nameof(fooRepository));
-            _fooIdGenerator = fooIdGenerator ?? throw new ArgumentNullException(nameof(fooIdGenerator));
+            _fooService = fooService ?? throw new ArgumentNullException(nameof(fooService));
         }
-        
+
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<Foo>> GetById(Guid id)
+        public async Task<ActionResult<FooResponse>> GetById(Guid id)
         {
-            var foo = await _fooRepository.GetFooAsync(id);
+            var foo = await _fooService.GetFooAsync(id);
 
             if (foo == null)
             {
                 return NotFound();
             }
 
-            return foo;
+            return MapFooResponse(foo);
         }
         
         [HttpPost]
-        public async Task<ActionResult<Foo>> Create([FromBody] CreateFooRequest request)
+        public async Task<ActionResult<FooResponse>> Create([FromBody] CreateFooRequest request)
         {
-            var foo = new Foo
+            try
             {
-                Id = _fooIdGenerator.Create(),
-                Name = request.Name
-            };
-            
-            var inserted = await _fooRepository.TryInsertFooAsync(foo);
-
-            if (!inserted)
-            {
-                return UnprocessableEntity();
+                var createdFoo = await _fooService.CreateFooAsync(request.Id!.Value, request.Name!);
+                
+                return CreatedAtAction(nameof(GetById), new { id = createdFoo.Id }, MapFooResponse(createdFoo));
             }
+            catch (DuplicateFooException duplicateException)
+            {
+                return new ConflictObjectResult(MapFooResponse(duplicateException.Foo));
+            }
+        }
 
-            return CreatedAtAction(nameof(GetById), new { id = foo.Id }, foo);
+        private static FooResponse MapFooResponse(Foo foo)
+        {
+            return new FooResponse
+            {
+                Id = foo.Id,
+                Name = foo.Name
+            };
         }
     }
 }

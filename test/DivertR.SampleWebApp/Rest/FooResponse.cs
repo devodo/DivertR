@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace DivertR.SampleWebApp.Model
+namespace DivertR.SampleWebApp.Rest
 {
-    public class Foo
+    public class FooResponse
     {
         public required Guid Id { get; init; }
 
