@@ -31,7 +31,13 @@ namespace DivertR
         public IRedirect Redirect(Type targetType, string? name = null)
         {
             var redirectId = RedirectId.From(targetType, name);
-            
+
+            return Redirect(redirectId);
+        }
+        
+        /// <inheritdoc />
+        public IRedirect Redirect(RedirectId redirectId)
+        {
             IRedirect CreateRedirect(Type type)
             {
                 const BindingFlags ActivatorFlags = BindingFlags.NonPublic | BindingFlags.Instance;
@@ -47,7 +53,33 @@ namespace DivertR
             
             return redirectGroup.GetOrAdd(redirectId.Type, CreateRedirect);
         }
+
+        /// <inheritdoc />
+        public IRedirect<TTarget>? GetRedirect<TTarget>(string? name = null) where TTarget : class?
+        {
+            var redirectId = RedirectId.From<TTarget>(name);
+            var redirect = GetRedirect(redirectId);
+
+            return (IRedirect<TTarget>?) redirect;
+        }
         
+        /// <inheritdoc />
+        public IRedirect? GetRedirect(Type targetType, string? name = null)
+        {
+            var redirectId = RedirectId.From(targetType, name);
+
+            return GetRedirect(redirectId);
+        }
+        
+        /// <inheritdoc />
+        public IRedirect? GetRedirect(RedirectId redirectId)
+        {
+            var redirectGroup = GetRedirectGroup(redirectId.Name);
+            redirectGroup.TryGetValue(redirectId.Type, out var redirect);
+           
+            return redirect;
+        }
+
         /// <inheritdoc />
         public IRedirectSet Reset(string? name = null, bool includePersistent = false)
         {

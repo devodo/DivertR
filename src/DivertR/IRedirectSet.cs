@@ -23,6 +23,36 @@ namespace DivertR
         IRedirect Redirect(Type targetType, string? name = null);
 
         /// <summary>
+        /// Get or create a Redirect in this set by id.
+        /// </summary>
+        /// <param name="redirectId">The Redirect id.</param>
+        /// <returns>The existing or created Redirect.</returns>
+        IRedirect Redirect(RedirectId redirectId);
+        
+        /// <summary>
+        /// Get the Redirect in this set for a given target type.
+        /// </summary>
+        /// <param name="name">Optional Redirect group name.</param>
+        /// <typeparam name="TTarget">The Redirect target type.</typeparam>
+        /// <returns>The Redirect instance or null if it does not exist in the set.</returns>
+        IRedirect<TTarget>? GetRedirect<TTarget>(string? name = null) where TTarget : class?;
+        
+        /// <summary>
+        /// Get a Redirect in this set for a given target type.
+        /// </summary>
+        /// <param name="targetType">The Redirect target type.</param>
+        /// <param name="name">Optional Redirect group name.</param>
+        /// <returns>The Redirect instance or null if it does not exist in the set.</returns>
+        IRedirect? GetRedirect(Type targetType, string? name = null);
+
+        /// <summary>
+        /// Get a Redirect in this set by id.
+        /// </summary>
+        /// <param name="redirectId">The Redirect id.</param>
+        /// <returns>The Redirect instance or null if it does not exist in the set.</returns>
+        IRedirect? GetRedirect(RedirectId redirectId);
+
+        /// <summary>
         /// Reset the specified group of <see cref="IRedirect" />s in this set.
         /// </summary>
         /// <param name="name">The Redirect group name.</param>
