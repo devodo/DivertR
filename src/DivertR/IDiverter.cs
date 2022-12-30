@@ -56,10 +56,10 @@ namespace DivertR
         /// <summary>
         /// Retrieve a registered <see cref="IRedirect" /> instance.
         /// </summary>
-        /// <param name="id">The <see cref="IRedirect" /> id.</param>
+        /// <param name="redirectId">The <see cref="IRedirect" /> id.</param>
         /// <returns>The registered <see cref="IRedirect" /> instance.</returns>
         /// <exception cref="DiverterException">If the <see cref="IRedirect" /> has not been registered.</exception>
-        IRedirect Redirect(RedirectId id);
+        IRedirect Redirect(RedirectId redirectId);
         
         /// <summary>
         /// Retrieve a registered <see cref="IRedirect" /> instance.

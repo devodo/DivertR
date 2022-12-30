@@ -213,5 +213,33 @@ namespace DivertR.UnitTests
             foo.ShouldNotBeNull();
             list.ShouldNotBeNull();
         }
+        
+        [Fact]
+        public void GivenDiverter_WhenGetUnregisteredRedirect_ThrowsDiverterException()
+        {
+            // ARRANGE
+
+            // ACT
+            var testAction = () => _diverter.Redirect<INumber>();
+            
+            // ASSERT
+            testAction.ShouldThrow<DiverterException>();
+        }
+        
+        [Fact]
+        public void GivenDiverterWithNonRegisteredViaRedirect_WhenGetUnregisteredRedirect_ThenReturnsRedirect()
+        {
+            // ARRANGE
+            _diverter
+                .Redirect<IFoo>()
+                .To(x => x.EchoGeneric(Is<INumber>.Any))
+                .ViaRedirect();
+
+            // ACT
+            var numberRedirect = _diverter.Redirect<INumber>();
+            
+            // ASSERT
+            numberRedirect.ShouldNotBeNull();
+        }
     }
 }

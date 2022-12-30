@@ -89,11 +89,13 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public IRedirect Redirect(RedirectId id)
+        public IRedirect Redirect(RedirectId redirectId)
         {
-            if (!_registeredRedirects.TryGetValue(id, out var redirect))
+            var redirect = RedirectSet.GetRedirect(redirectId);
+            
+            if (redirect == null)
             {
-                throw new DiverterException($"Redirect not registered for {id}");
+                throw new DiverterException($"Redirect not registered for {redirectId}");
             }
             
             return redirect;

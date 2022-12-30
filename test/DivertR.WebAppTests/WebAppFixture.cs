@@ -61,7 +61,7 @@ namespace DivertR.WebAppTests
         {
             var logger = output.BuildLogger(LogLevel.Information);
             
-            _diverter.RedirectSet
+            _diverter
                 .Redirect<ILogger>()
                 .Retarget(logger);
         }
