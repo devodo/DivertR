@@ -2,7 +2,6 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using DivertR.DependencyInjection;
-using DivertR.SampleWebApp;
 using DivertR.SampleWebApp.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -14,19 +13,26 @@ namespace DivertR.WebAppTests
 {
     public class WebAppFixture
     {
+        // Create a DivertR instance and register the DI services we want to be able to redirect
         private readonly IDiverter _diverter = new Diverter()
             .Register<ILoggerFactory>()
-            .Register<IFooRepository>()
-            .Register<IFooIdGenerator>();
+            .Register<IFooRepository>();
 
-        private readonly WebApplicationFactory<Startup> _webApplicationFactory;
+        private readonly WebApplicationFactory<Program> _webApplicationFactory;
         
         public WebAppFixture()
         {
-            _webApplicationFactory = new WebApplicationFactory<Startup>().WithWebHostBuilder(builder =>
+            // Configure a persistent ViaRedirect on the ILoggerFactory to be able to redirect ILogger calls to Xunit output
+            _diverter
+                .Redirect<ILoggerFactory>()
+                .To(x => x.CreateLogger(Is<string>.Any))
+                .ViaRedirect(opt => opt.Persist()); // Persist option here means the Via is not removed when DivertR is reset
+            
+            _webApplicationFactory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
                 builder.ConfigureTestServices(services =>
                 {
+                    // Install DivertR into the IServiceCollection
                     services.Divert(_diverter);
                 });
             });
@@ -36,6 +42,7 @@ namespace DivertR.WebAppTests
 
         public IDiverter InitDiverter(ITestOutputHelper? output = null)
         {
+            // Reset all non-persistent Redirect Vias
             _diverter.ResetAll();
 
             if (output != null)
@@ -45,20 +52,18 @@ namespace DivertR.WebAppTests
 
             return _diverter;
         }
-
+        
+        /// <summary>
+        /// Retarget ILogger calls to the Xunit test output helper
+        /// </summary>
+        /// <param name="output">Xunit test output helper</param>
         private void InitLogging(ITestOutputHelper output)
         {
-            _diverter.Redirect<ILoggerFactory>()
-                .To(x => x.CreateLogger(Is<string>.Any))
-                .Via<(string name, __)>(call =>
-                {
-                    if (call.Args.name.StartsWith("Microsoft"))
-                    {
-                        return output.BuildLogger(LogLevel.Warning, call.Args.name);
-                    }
-                    
-                    return output.BuildLogger(call.Args.name);
-                });
+            var logger = output.BuildLogger(LogLevel.Information);
+            
+            _diverter.RedirectSet
+                .Redirect<ILogger>()
+                .Retarget(logger);
         }
 
         private HttpClient CreateHttpClient()

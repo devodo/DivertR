@@ -1083,7 +1083,7 @@ namespace DivertR.UnitTests
             _redirect
                 .To(x => x.Echo(Is<string>.Any))
                 .Filter(new CallConstraint<IFoo>(call => (string) call.Arguments[0] != "ignore"))
-                .Via<(string input, __)>(call => call.CallNext(new[] { $"{call.Args.input} viaed" }));
+                .Via<(string input, __)>(call => call.CallNext(new[] { $"{call.Args.input} redirected" }));
 
             var proxy = _redirect.Proxy(new Foo());
 
@@ -1092,7 +1092,7 @@ namespace DivertR.UnitTests
             var result2 = proxy.Echo("ignore");
 
             // ASSERT
-            result1.ShouldBe("original: test viaed");
+            result1.ShouldBe("original: test redirected");
             result2.ShouldBe("original: ignore");
         }
         
@@ -1126,7 +1126,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _redirect
                 .To(new CallConstraint<IFoo>(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
-                .Via(() => "viaed")
+                .Via(() => "redirected")
                 .Via(call => $"{call.CallNext()} call {call.Args.LastOrDefault()}".Trim())
                 .Via((call, args) => $"{call.CallNext()} args {args.LastOrDefault()}".Trim());
             
@@ -1139,9 +1139,9 @@ namespace DivertR.UnitTests
             var intReturn = proxy.EchoGeneric(1);
 
             // ASSERT
-            result.ShouldBe("viaed call hello args hello");
-            name.ShouldBe("viaed call args");
-            objectReturn.ShouldBe("viaed call hello args hello");
+            result.ShouldBe("redirected call hello args hello");
+            name.ShouldBe("redirected call args");
+            objectReturn.ShouldBe("redirected call hello args hello");
             intReturn.ShouldBe(0);
         }
         
@@ -1151,7 +1151,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _redirect
                 .To(new CallConstraint<IFoo>(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
-                .Via("viaed");
+                .Via("redirected");
 
             var proxy = _redirect.Proxy();
 
@@ -1162,9 +1162,9 @@ namespace DivertR.UnitTests
             var intReturn = proxy.EchoGeneric(1);
 
             // ASSERT
-            result.ShouldBe("viaed");
-            name.ShouldBe("viaed");
-            objectReturn.ShouldBe("viaed");
+            result.ShouldBe("redirected");
+            name.ShouldBe("redirected");
+            objectReturn.ShouldBe("redirected");
             intReturn.ShouldBe(0);
         }
     }

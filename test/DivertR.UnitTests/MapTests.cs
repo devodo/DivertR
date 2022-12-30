@@ -30,7 +30,7 @@ namespace DivertR.UnitTests
                 .To(x => x.EchoGeneric(Is<Guid>.Any))
                 .Via<(Guid input, __)>(_ => Guid.NewGuid())
                 .Record()
-                .Map(call => new { Input = call.Args.input, Returned = call.Returned?.Value ?? Guid.Empty });
+                .Map(call => new { Input = call.Args.input, Returned = call.Return });
 
             // ACT
             var outputs = inputs.Select(x => _proxy.EchoGeneric(x)).ToList();
@@ -52,7 +52,7 @@ namespace DivertR.UnitTests
             var echoes = _redirect
                 .To(x => x.EchoGeneric(Is<Guid>.Any))
                 .Record<(Guid input, __)>()
-                .Map(call => new { Input = call.Args.input, Returned = call.Returned?.Value ?? Guid.Empty });
+                .Map(call => new { Input = call.Args.input, Returned = call.Return });
 
             // ACT
             var outputs = inputs.Select(x => _proxy.EchoGeneric(x)).ToList();
@@ -81,7 +81,7 @@ namespace DivertR.UnitTests
             var echoes = _redirect
                 .To(x => x.EchoGeneric(Is<Guid>.Any))
                 .Record()
-                .Map(call => new { Input = (Guid) call.Args[0], Returned = call.Returned?.Value ?? Guid.Empty });
+                .Map(call => new { Input = (Guid) call.Args[0], Returned = call.Return });
 
             // ACT
             var outputs = inputs.Select(x => _proxy.EchoGeneric(x)).ToList();
@@ -107,8 +107,10 @@ namespace DivertR.UnitTests
                 .Map(call => new
                 {
                     Input = call.Args.input,
-                    call.Returned,
-                    call.Returned?.Exception
+                    Return = call.ReturnOrDefault,
+                    call.IsReturned,
+                    call.IsCompleted,
+                    call.Exception
                 });
 
             // ACT
@@ -131,7 +133,9 @@ namespace DivertR.UnitTests
             echoes.Select(x => x.Exception).ShouldBe(outputs);
             echoes.Verify(call =>
             {
-                Should.Throw<DiverterException>(() => call.Returned!.Value);
+                call.Return.ShouldBe(Guid.Empty);
+                call.IsReturned.ShouldBe(false);
+                call.IsCompleted.ShouldBe(true);
             });
         }
         
@@ -180,7 +184,7 @@ namespace DivertR.UnitTests
                 .Map(async (call, args) => new
                 {
                     Input = args.input,
-                    Result = await call.Returned!.Value!
+                    Result = await call.Return!
                 });
 
             // ACT
@@ -224,8 +228,8 @@ namespace DivertR.UnitTests
                 .Map(async call => new
                 {
                     Input = call.Args.input,
-                    Result = await call.Returned!.Value!,
-                    AsyncResult = call.Returned!.Value
+                    Result = await call.Return!,
+                    AsyncResult = call.Return
                 });
 
             // ACT
@@ -271,7 +275,7 @@ namespace DivertR.UnitTests
                 .Map((call, args) => new
                 {
                     Input = (string) args[0],
-                    Result = call.Returned!.Value
+                    Result = call.Return
                 });
 
             // ACT
@@ -317,7 +321,7 @@ namespace DivertR.UnitTests
             calls.Map(call => new
             {
                 Input = call.Args.input,
-                Result = call.Returned!.Value
+                Result = call.Return
             }).Verify(map =>
             {
                 map.Input.ShouldBe($"test {input}");
@@ -327,7 +331,7 @@ namespace DivertR.UnitTests
             calls.Map((call, args) => new
             {
                 Input = args.input,
-                Result = call.Returned!.Value
+                Result = call.Return
             }).Verify(map =>
             {
                 map.Input.ShouldBe($"test {input}");
@@ -359,19 +363,19 @@ namespace DivertR.UnitTests
             calls.Verify(call =>
             {
                 call.Args[0].ShouldBe($"test {input}");
-                call.Returned!.Value.ShouldBeNull();
+                call.Return.ShouldBeNull();
             });
             
             calls.Verify((call, args) =>
             {
                 args[0].ShouldBe($"test {input}");
-                call.Returned!.Value.ShouldBeNull();
+                call.Return.ShouldBeNull();
             }).Count.ShouldBe(1);
             
             calls.Map(call => new
             {
                 Input = (string) call.Args[0],
-                Result = call.Returned!.Value
+                Result = call.Return
             }).Verify(map =>
             {
                 map.Input.ShouldBe($"test {input}");
@@ -381,7 +385,7 @@ namespace DivertR.UnitTests
             calls.Map((call, args) => new
             {
                 Input = (string) args[0],
-                Result = call.Returned!.Value
+                Result = call.Return
             }).Verify(map =>
             {
                 map.Input.ShouldBe($"test {input}");
@@ -428,7 +432,7 @@ namespace DivertR.UnitTests
                 .Map(async call => new
                 {
                     Input = (string) call.Args[0],
-                    Result = await call.Returned!.Value!
+                    Result = await call.Return!
                 });
 
             // ACT

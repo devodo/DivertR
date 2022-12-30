@@ -2,11 +2,15 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <LangVersion>10</LangVersion>
+    <LangVersion>11</LangVersion>
     <AssemblyName>DivertR.SampleWebApp</AssemblyName>
     <RootNamespace>DivertR.SampleWebApp</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DivertR.WebAppTests" />
+  </ItemGroup>
   
 </Project>

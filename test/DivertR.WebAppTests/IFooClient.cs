@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DivertR.SampleWebApp.Model;
+using DivertR.SampleWebApp.Rest;
 using Refit;
 
 namespace DivertR.WebAppTests

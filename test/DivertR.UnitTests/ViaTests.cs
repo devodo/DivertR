@@ -95,7 +95,7 @@ public class ViaTests
         fooCalls
             .To(x => x.Name)
             .Verify()
-            .Select(x => x.Returned!.Value)
+            .Select(x => x.Return)
             .ShouldBe(names);
     }
 }

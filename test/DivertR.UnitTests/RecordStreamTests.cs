@@ -38,14 +38,14 @@ namespace DivertR.UnitTests
 
             // ASSERT
             _recordStream.Select(x => x.CallInfo.Arguments[0]).ShouldBe(inputs);
-            _recordStream.Select(x => x.Returned?.Value).ShouldBe(outputs);
+            _recordStream.Select(x => x.Return).ShouldBe(outputs);
 
             var echoCalls = _recordStream
                 .To(x => x.Echo(Is<string>.Any))
                 .Args<(string input, __)>();
             
             echoCalls.Select(call => call.Args.input).ShouldBe(inputs);
-            echoCalls.Select(call => call.Returned!.Value).ShouldBe(outputs);
+            echoCalls.Select(call => call.Return).ShouldBe(outputs);
 
             var i = 0;
             echoCalls.Verify((_, args) =>
@@ -82,7 +82,7 @@ namespace DivertR.UnitTests
             calls.Verify(call =>
             {
                 call.Args.input.ShouldBe(inputs[0]);
-                call.Returned!.Value.ShouldBe(outputs[0]);
+                call.Return.ShouldBe(outputs[0]);
             }).Count.ShouldBe(1);
         }
         
@@ -112,7 +112,7 @@ namespace DivertR.UnitTests
                 .Verify<(string input, __)>((call, args) =>
                 {
                     args.input.ShouldBe("test");
-                    call.Returned?.Exception.ShouldBeSameAs(caughtException);
+                    call.Exception.ShouldBeSameAs(caughtException);
                 }).Count.ShouldBe(1);
         }
         
@@ -142,12 +142,55 @@ namespace DivertR.UnitTests
             // ASSERT
             var call = _recordStream.To(x => x.EchoAsync("test")).Single();
             caughtException.ShouldNotBeNull();
-            call.Returned!.Exception.ShouldBeSameAs(caughtException);
+            call.Exception.ShouldBeSameAs(caughtException);
+            call.RawException.ShouldBeNull();
             
             Exception? returnedException = null;
             try
             {
-                await call.Returned.Value!;
+                await call.Return!;
+            }
+            catch (Exception ex)
+            {
+                returnedException = ex;
+            }
+            
+            returnedException.ShouldBeSameAs(caughtException);
+        }
+        
+        [Fact]
+        public async Task GivenRecordCalls_WhenNonAwaitedAsyncException_ShouldRecordReturnTask()
+        {
+            // ARRANGE
+            _redirect
+                .To(x => x.EchoAsync(Is<string>.Any))
+                .Via(async () =>
+                {
+                    await Task.Yield();
+                    throw new Exception("test");
+                });
+
+            // ACT
+            Exception? caughtException = null;
+            try
+            {
+                var _ = _redirect.Proxy().EchoAsync("test").Result;
+            }
+            catch (AggregateException ex)
+            {
+                caughtException = ex.InnerExceptions.First();
+            }
+
+            // ASSERT
+            var call = _recordStream.To(x => x.EchoAsync("test")).Single();
+            caughtException.ShouldNotBeNull();
+            call.Exception.ShouldBeSameAs(caughtException);
+            call.RawException.ShouldBeNull();
+            
+            Exception? returnedException = null;
+            try
+            {
+                await call.Return!;
             }
             catch (Exception ex)
             {
@@ -176,7 +219,7 @@ namespace DivertR.UnitTests
                 .Verify(call =>
                 {
                     call.CallInfo.Arguments[0].ShouldBe("test");
-                    call.Returned!.Exception.ShouldBeOfType<StrictNotSatisfiedException>();
+                    call.Exception.ShouldBeOfType<StrictNotSatisfiedException>();
                 }).Count.ShouldBe(1);
         }
         
@@ -200,7 +243,7 @@ namespace DivertR.UnitTests
                 .Verify<(string input, __)>(call =>
                 {
                     call.Args.input.ShouldBe("test");
-                    call.Returned!.Value!.Result.ShouldBe(result);
+                    call.Return!.Result.ShouldBe(result);
                 }).Count.ShouldBe(1);
         }
         
@@ -227,7 +270,7 @@ namespace DivertR.UnitTests
                 .Args<(string name, __)>()
                 .Select((call, i) =>
                 {
-                    call.Returned!.Value.ShouldBeNull();
+                    call.Return.ShouldBeNull();
                     call.Args.name.ShouldBe(inputs[i]);
 
                     return call.Args.name;
@@ -253,12 +296,12 @@ namespace DivertR.UnitTests
             // ASSERT
             var recordedCalls = _recordStream.To(x => x.Name);
             recordedCalls
-                .Select(call => call.Returned!.Value)
+                .Select(call => call.Return)
                 .ShouldBe(outputs);
 
             recordedCalls.Verify(call =>
             {
-                outputs.ShouldContain(call.Returned!.Value);
+                outputs.ShouldContain(call.Return);
             }).Count.ShouldBe(outputs.Count);
         }
         
@@ -292,7 +335,7 @@ namespace DivertR.UnitTests
             recordedCalls.Verify((call, args) =>
             {
                 args.name.ShouldBe(inputs[i++]);
-                call.Returned!.Value.ShouldBeNull();
+                call.Return.ShouldBeNull();
             }).Count.ShouldBe(inputs.Count);
         }
         
@@ -313,7 +356,7 @@ namespace DivertR.UnitTests
             var recordedCalls = _recordStream
                 .To(x => x.Echo(Is<string>.Any));
             
-            var recordedOutputs = recordedCalls.Select(call => call.Returned!.Value);
+            var recordedOutputs = recordedCalls.Select(call => call.Return);
 
             // ACT
             // ReSharper disable once PossibleMultipleEnumeration (Testing deferred enumeration)
@@ -348,7 +391,7 @@ namespace DivertR.UnitTests
             var mappedCalls = _recordStream
                 .To(x => x.Echo(Is<string>.Any))
                 .Args<(string input, __)>()
-                .Map((call, args) => new { Input = args.input, Result = call.Returned });
+                .Map((call, args) => new { Input = args.input, Result = call.Return });
 
             var fooProxy = _redirect.Proxy();
 
@@ -359,7 +402,7 @@ namespace DivertR.UnitTests
             mappedCalls.Verify().Select((call, i) =>
             {
                 call.Input.ShouldBe(inputs[i]);
-                call.Result?.Value.ShouldBe(outputs[i]);
+                call.Result.ShouldBe(outputs[i]);
                 return call;
             }).Count().ShouldBe(inputs.Count);
         }
@@ -379,7 +422,7 @@ namespace DivertR.UnitTests
             var mappedCalls = _recordStream
                 .To(x => x.EchoAsync(Is<string>.Any))
                 .Args<(string input, __)>()
-                .Map((call, args) => new { Input = args.input, Result = call.Returned });
+                .Map((call, args) => new { Input = args.input, Result = call.Return });
 
             var fooProxy = _redirect.Proxy();
 
@@ -390,7 +433,7 @@ namespace DivertR.UnitTests
             var calls = mappedCalls.Select(async (call, i) =>
             {
                 call.Input.ShouldBe(inputs[i]);
-                (await call.Result!.Value!).ShouldBe((await outputs[i]));
+                (await call.Result!).ShouldBe((await outputs[i]));
                 return call;
             }).ToList();
             
@@ -419,14 +462,14 @@ namespace DivertR.UnitTests
             var index = 0;
             _recordStream.Verify(call =>
             {
-                call.Returned!.Value.ShouldBe(outputs[index]);
+                call.Return.ShouldBe(outputs[index]);
                 call.Args[0].ShouldBe(inputs[index++]);
             }).Count.ShouldBe(inputs.Count);
 
             var index2 = 0;
             _recordStream.Verify((call, args) =>
             {
-                call.Returned!.Value.ShouldBe(outputs[index2]);
+                call.Return.ShouldBe(outputs[index2]);
                 call.Args[0].ShouldBe(inputs[index2]);
                 args[0].ShouldBe(inputs[index2++]);
             }).Count.ShouldBe(inputs.Count);

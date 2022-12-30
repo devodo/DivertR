@@ -129,7 +129,7 @@ namespace DivertR.UnitTests
                 .Args<(int i1, __)>()
                 .Verify(call =>
                 {
-                    call.Returned!.Value.ShouldBe(result);
+                    call.Return.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[0][0].Arg);
                 }).Count.ShouldBe(1);
         }
@@ -150,7 +150,7 @@ namespace DivertR.UnitTests
                 .Args<(int i1, int i2)>()
                 .Verify(call =>
                 {
-                    call.Returned!.Value.ShouldBe(result);
+                    call.Return.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[1][0].Arg);
                     call.Args.i2.ShouldBe(_inputs[1][1].Arg);
                 }).Count.ShouldBe(1);
@@ -172,7 +172,7 @@ namespace DivertR.UnitTests
                 .Args<(int i1, int i2, int i3)>()
                 .Verify(call =>
                 {
-                    call.Returned!.Value.ShouldBe(result);
+                    call.Return.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[2][0].Arg);
                     call.Args.i2.ShouldBe(_inputs[2][1].Arg);
                     call.Args.i3.ShouldBe(_inputs[2][2].Arg);
@@ -195,7 +195,7 @@ namespace DivertR.UnitTests
                 .Args<(int i1, int i2, int i3, int i4)>()
                 .Verify(call =>
                 {
-                    call.Returned!.Value.ShouldBe(result);
+                    call.Return.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[3][0].Arg);
                     call.Args.i2.ShouldBe(_inputs[3][1].Arg);
                     call.Args.i3.ShouldBe(_inputs[3][2].Arg);
@@ -222,7 +222,7 @@ namespace DivertR.UnitTests
                 .Args<(int i1, int i2, int i3, int i4, int i5)>()
                 .Verify(call =>
                 {
-                    call.Returned!.Value.ShouldBe(result);
+                    call.Return.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[4][0].Arg);
                     call.Args.i2.ShouldBe(_inputs[4][1].Arg);
                     call.Args.i3.ShouldBe(_inputs[4][2].Arg);
@@ -250,7 +250,7 @@ namespace DivertR.UnitTests
                 .Args<(int i1, int i2, int i3, int i4, int i5, int i6)>()
                 .Verify(call =>
                 {
-                    call.Returned!.Value.ShouldBe(result);
+                    call.Return.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[5][0].Arg);
                     call.Args.i2.ShouldBe(_inputs[5][1].Arg);
                     call.Args.i3.ShouldBe(_inputs[5][2].Arg);
@@ -279,7 +279,7 @@ namespace DivertR.UnitTests
                 .Args<(int i1, int i2, int i3, int i4, int i5, int i6, int i7)>()
                 .Verify(call =>
                 {
-                    call.Returned!.Value.ShouldBe(result);
+                    call.Return.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[6][0].Arg);
                     call.Args.i2.ShouldBe(_inputs[6][1].Arg);
                     call.Args.i3.ShouldBe(_inputs[6][2].Arg);
@@ -309,7 +309,7 @@ namespace DivertR.UnitTests
                 .Args<(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8)>()
                 .Verify(call =>
                 {
-                    call.Returned!.Value.ShouldBe(result);
+                    call.Return.ShouldBe(result);
                     call.Args.i1.ShouldBe(_inputs[7][0].Arg);
                     call.Args.i2.ShouldBe(_inputs[7][1].Arg);
                     call.Args.i3.ShouldBe(_inputs[7][2].Arg);

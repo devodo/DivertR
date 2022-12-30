@@ -96,11 +96,11 @@ namespace DivertR.DemoApp
                     // run test code after
                     // ...
     
-                    return $"{message} - Viaed";
+                    return $"{message} - Redirected";
                 });
   
-            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Viaed"
-            Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Viaed"
+            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Redirected"
+            Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Redirected"
             
             var mock = new Mock<IFoo>();
             mock
@@ -111,8 +111,8 @@ namespace DivertR.DemoApp
                 .To() // Default matches all calls
                 .Retarget(mock.Object);
     
-            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Viaed - Mocked"
-            Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Viaed - Mocked"
+            Console.WriteLine(foo.Echo("Hello")); // "Foo1: Hello - Redirected - Mocked"
+            Console.WriteLine(foo2.Echo("Hello")); // "Foo2: Hello - Redirected - Mocked"
             
             fooRedirect
                 .Reset()
