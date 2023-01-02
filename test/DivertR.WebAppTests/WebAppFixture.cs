@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Divergic.Logging.Xunit;
 using DivertR.DependencyInjection;
 using DivertR.SampleWebApp.Services;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
@@ -15,21 +17,24 @@ namespace DivertR.WebAppTests
     {
         // Create a DivertR instance and register the DI services we want to be able to redirect
         private readonly IDiverter _diverter = new Diverter()
-            .Register<ILoggerFactory>()
-            .Register<IFooRepository>();
+            .Register<IFooRepository>()
+            .Register<IFooService>();
 
         private readonly WebApplicationFactory<Program> _webApplicationFactory;
         
         public WebAppFixture()
         {
-            // Configure a persistent ViaRedirect on the ILoggerFactory to be able to redirect ILogger calls to Xunit output
-            _diverter
-                .Redirect<ILoggerFactory>()
-                .To(x => x.CreateLogger(Is<string>.Any))
-                .ViaRedirect(opt => opt.Persist()); // Persist option here means the Via is not removed when DivertR is reset
+            // Create an xUnit ITestOutputHelper proxy mock
+            var outputHelperMock = _diverter.RedirectSet.Redirect<ITestOutputHelper>().Proxy();
             
             _webApplicationFactory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
+                builder.ConfigureLogging(logging =>
+                {
+                    // Add an xUnit logging provider that writes to the mock ITestOutputHelper
+                    logging.AddXunit(outputHelperMock);
+                });
+                
                 builder.ConfigureTestServices(services =>
                 {
                     // Install DivertR into the IServiceCollection
@@ -47,36 +52,24 @@ namespace DivertR.WebAppTests
 
             if (output != null)
             {
-                InitLogging(output);
+                // Retarget the ITestOutputHelper proxy mock to the current test output
+                _diverter.Redirect<ITestOutputHelper>().Retarget(output);
             }
 
             return _diverter;
         }
-        
-        /// <summary>
-        /// Retarget ILogger calls to the Xunit test output helper
-        /// </summary>
-        /// <param name="output">Xunit test output helper</param>
-        private void InitLogging(ITestOutputHelper output)
-        {
-            var logger = output.BuildLogger(LogLevel.Information);
-            
-            _diverter
-                .Redirect<ILogger>()
-                .Retarget(logger);
-        }
 
+        public IFooClient CreateFooClient()
+        {
+            return RestService.For<IFooClient>(CreateHttpClient());
+        }
+        
         private HttpClient CreateHttpClient()
         {
             var client = _webApplicationFactory.CreateClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             return client;
-        }
-        
-        public IFooClient CreateFooClient()
-        {
-            return RestService.For<IFooClient>(CreateHttpClient());
         }
     }
 }

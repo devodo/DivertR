@@ -104,7 +104,7 @@ namespace DivertR.WebAppTests
         }
         
         [Fact]
-        public async Task GivenFooRepositoryInsertFails_WhenCreateFooRequest_ThenReturns500InternalServerError()
+        public async Task GivenFooRepositoryInsertFails_WhenCreateFooRequest_Then500InternalServerErrorResponse()
         {
             // ARRANGE
             var createFooRequest = new CreateFooRequest

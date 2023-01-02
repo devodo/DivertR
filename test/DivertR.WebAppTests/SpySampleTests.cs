@@ -91,6 +91,28 @@ namespace DivertR.WebAppTests
         }
         
         [Fact]
+        public async Task GiveBadCreateFooRequest_WhenCreateFoo_ThenDoesNotCallFooService()
+        {
+            // ARRANGE
+            var createFooRequest = new CreateFooRequest
+            {
+                Id = Guid.NewGuid(),
+                Name = null
+            };
+
+            var fooServiceCalls = _diverter
+                .Redirect<IFooService>()
+                .Record();
+
+            // ACT
+            var response = await _fooClient.CreateFooAsync(createFooRequest);
+
+            // ASSERT
+            response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+            fooServiceCalls.Count.ShouldBe(0);
+        }
+        
+        [Fact]
         public async Task GivenFooInserted_WhenGetFoo_ThenReadsFromFooRepository()
         {
             // ARRANGE
