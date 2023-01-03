@@ -37,25 +37,12 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IActionRedirectUpdater<TTarget> Via(Action<IActionRedirectCall<TTarget>, CallArguments> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
-        {
-            var via = ViaBuilder.Build(viaDelegate);
-            InsertVia(via, optionsAction);
-            
-            return this;
-        }
-
         public IActionRedirectUpdater<TTarget, TArgs> Via<TArgs>(Action viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return Args<TArgs>().Via(viaDelegate, optionsAction);
         }
 
         public IActionRedirectUpdater<TTarget, TArgs> Via<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
-        {
-            return Args<TArgs>().Via(viaDelegate, optionsAction);
-        }
-
-        public IActionRedirectUpdater<TTarget, TArgs> Via<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return Args<TArgs>().Via(viaDelegate, optionsAction);
         }
@@ -113,14 +100,6 @@ namespace DivertR.Internal
         }
 
         public IActionRedirectUpdater<TTarget, TArgs> Via(Action<IActionRedirectCall<TTarget, TArgs>> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
-        {
-            var via = ViaBuilder.Build(viaDelegate);
-            InsertVia(via, optionsAction);
-            
-            return this;
-        }
-
-        public IActionRedirectUpdater<TTarget, TArgs> Via(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
             var via = ViaBuilder.Build(viaDelegate);
             InsertVia(via, optionsAction);

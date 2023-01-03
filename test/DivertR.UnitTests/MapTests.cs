@@ -154,7 +154,7 @@ namespace DivertR.UnitTests
                 .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
                 .Via<(int input, Ref<int> output)>(call => call.Relay.Next.OutNumber(call.Args.input, out call.Args.output.Value))
                 .Record()
-                .Map((_, args) => new { args.input, output = args.output.Value });
+                .Map(call => new { call.Args.input, output = call.Args.output.Value });
 
             // ACT
             var outputs = inputs.Select(i =>
@@ -181,9 +181,9 @@ namespace DivertR.UnitTests
                 .To(x => x.EchoAsync(Is<string>.Any))
                 .Via<(string input, __)>(call => Task.FromResult(call.Args.input + " diverted"))
                 .Record()
-                .Map(async (call, args) => new
+                .Map(async call => new
                 {
-                    Input = args.input,
+                    Input = call.Args.input,
                     Result = await call.Return!
                 });
 
@@ -272,9 +272,9 @@ namespace DivertR.UnitTests
                 .To(x => x.EchoAsync(Is<string>.Any))
                 .Via(call => Task.FromResult($"{call.Args[0]} diverted"))
                 .Record()
-                .Map((call, args) => new
+                .Map(call => new
                 {
-                    Input = (string) args[0],
+                    Input = (string) call.Args[0],
                     Result = call.Return
                 });
 
@@ -305,9 +305,9 @@ namespace DivertR.UnitTests
             
             var calls = _redirect
                 .To(x => x.SetName(Is<string>.Any))
-                .Via<(string input, __)>((call, args) =>
+                .Via<(string input, __)>(call =>
                 {
-                    call.Next.SetName($"{args.input} diverted");
+                    call.Next.SetName($"{call.Args.input} diverted");
                 })
                 .Record();
 
@@ -328,9 +328,9 @@ namespace DivertR.UnitTests
                 map.Result.ShouldBeNull();
             });
             
-            calls.Map((call, args) => new
+            calls.Map(call => new
             {
-                Input = args.input,
+                Input = call.Args.input,
                 Result = call.Return
             }).Verify(map =>
             {
@@ -347,9 +347,9 @@ namespace DivertR.UnitTests
             
             var calls = _redirect
                 .To(x => x.SetName(Is<string>.Any))
-                .Via((call, args) =>
+                .Via(call =>
                 {
-                    call.Next.SetName($"{args[0]} diverted");
+                    call.Next.SetName($"{call.Args[0]} diverted");
                 })
                 .Record();
 
@@ -366,9 +366,9 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBeNull();
             });
             
-            calls.Verify((call, args) =>
+            calls.Verify(call =>
             {
-                args[0].ShouldBe($"test {input}");
+                call.Args[0].ShouldBe($"test {input}");
                 call.Return.ShouldBeNull();
             }).Count.ShouldBe(1);
             
@@ -382,9 +382,9 @@ namespace DivertR.UnitTests
                 map.Result.ShouldBeNull();
             }).Count.ShouldBe(1);
             
-            calls.Map((call, args) => new
+            calls.Map(call => new
             {
-                Input = (string) args[0],
+                Input = (string) call.Args[0],
                 Result = call.Return
             }).Verify(map =>
             {

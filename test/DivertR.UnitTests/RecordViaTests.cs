@@ -98,9 +98,9 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBe(result);
             }).Count.ShouldBe(1);
             
-            calls.Verify<(string input, __)>((call, args) =>
+            calls.Verify<(string input, __)>(call =>
             {
-                args.input.ShouldBe(input);
+                call.Args.input.ShouldBe(input);
                 call.Return.ShouldBe(result);
             }).Count.ShouldBe(1);
             
@@ -139,9 +139,9 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBe(result);
             }).Count.ShouldBe(1);
             
-            calls.Verify<(string input, __)>((call, args) =>
+            calls.Verify<(string input, __)>(call =>
             {
-                args.input.ShouldBe(input);
+                call.Args.input.ShouldBe(input);
                 call.Return.ShouldBe(result);
             }).Count.ShouldBe(1);
             
@@ -151,9 +151,9 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBe(result);
             }).Count.ShouldBe(1);
             
-            calls.Verify<(object input, __)>((call, args) =>
+            calls.Verify<(object input, __)>(call =>
             {
-                args.input.ShouldBe(input);
+                call.Args.input.ShouldBe(input);
                 call.Return.ShouldBe(result);
             }).Count.ShouldBe(1);
             
@@ -199,9 +199,9 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBe(result);
             })).Count.ShouldBe(1);
             
-            (await calls.Verify(async (call, args) =>
+            (await calls.Verify(async call =>
             {
-                (await (Task<string>) args[0]).ShouldBe(input);
+                (await (Task<string>) call.Args[0]).ShouldBe(input);
                 call.Return.ShouldBe(result);
             })).Count.ShouldBe(1);
             
@@ -211,9 +211,9 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBe(result);
             })).Count.ShouldBe(1);
             
-            (await calls.Verify<(Task<string> input, __)>(async (call, args) =>
+            (await calls.Verify<(Task<string> input, __)>(async call =>
             {
-                (await args.input).ShouldBe(input);
+                (await call.Args.input).ShouldBe(input);
                 call.Return.ShouldBe(result);
             })).Count.ShouldBe(1);
         }
@@ -243,10 +243,10 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBe(result);
             })).Count.ShouldBe(1);
             
-            (await calls.Verify(async (call, args) =>
+            (await calls.Verify(async call =>
             {
-                (await args.input1).ShouldBe(input1);
-                (await args.input2).ShouldBe(input2);
+                (await call.Args.input1).ShouldBe(input1);
+                (await call.Args.input2).ShouldBe(input2);
                 call.Return.ShouldBe(result);
             })).Count.ShouldBe(1);
             
@@ -257,10 +257,10 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBe(result);
             })).Count.ShouldBe(1);
             
-            (await calls.Verify<(Task<string> i1, Task<int> i2)>(async (call, args) =>
+            (await calls.Verify<(Task<string> i1, Task<int> i2)>(async call =>
             {
-                (await args.i1).ShouldBe(input1);
-                (await args.i2).ShouldBe(input2);
+                (await call.Args.i1).ShouldBe(input1);
+                (await call.Args.i2).ShouldBe(input2);
                 call.Return.ShouldBe(result);
             })).Count.ShouldBe(1);
             
@@ -270,9 +270,9 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBe(result);
             })).Count.ShouldBe(1);
             
-            (await calls.Verify<(Task<string> i1, __)>(async (call, args) =>
+            (await calls.Verify<(Task<string> i1, __)>(async call =>
             {
-                (await args.i1).ShouldBe(input1);
+                (await call.Args.i1).ShouldBe(input1);
                 call.Return.ShouldBe(result);
             })).Count.ShouldBe(1);
         }
@@ -299,9 +299,9 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBeNull();
             })).Count.ShouldBe(1);
             
-            (await calls.Verify(async (call, args) =>
+            (await calls.Verify(async call =>
             {
-                (await (Task<string>) args[0]).ShouldBe(input);
+                (await (Task<string>) call.Args[0]).ShouldBe(input);
                 call.Return.ShouldBeNull();
             })).Count.ShouldBe(1);
             
@@ -311,9 +311,9 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBeNull();
             })).Count.ShouldBe(1);
             
-            (await calls.Verify<(Task<string> input, __)>(async (call, args) =>
+            (await calls.Verify<(Task<string> input, __)>(async call =>
             {
-                (await args.input).ShouldBe(input);
+                (await call.Args.input).ShouldBe(input);
                 call.Return.ShouldBeNull();
             })).Count.ShouldBe(1);
         }
@@ -333,14 +333,9 @@ namespace DivertR.UnitTests
             {
             });
 
-            Action verifyCallsWithArgs = () => calls.Verify<(int input, __)>((_, _) =>
-            {
-            });
-            
             // ASSERT
             verify.ShouldThrow<DiverterValidationException>();
             verifyCalls.ShouldThrow<DiverterValidationException>();
-            verifyCallsWithArgs.ShouldThrow<DiverterValidationException>();
         }
         
         [Fact]
@@ -358,14 +353,9 @@ namespace DivertR.UnitTests
             {
             });
 
-            Action verifyCallsWithArgs = () => calls.Verify<(int input, __)>((_, _) =>
-            {
-            });
-            
             // ASSERT
             verify.ShouldThrow<DiverterValidationException>();
             verifyCalls.ShouldThrow<DiverterValidationException>();
-            verifyCallsWithArgs.ShouldThrow<DiverterValidationException>();
         }
         
         [Fact]
@@ -396,15 +386,15 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBeNull();
             }).Count.ShouldBe(1);
             
-            calls.Verify<(string input, __)>((call, args) =>
+            calls.Verify<(string input, __)>(call =>
             {
-                args.input.ShouldBe(input);
+                call.Args.input.ShouldBe(input);
                 call.Return.ShouldBeNull();
             }).Count.ShouldBe(1);
             
-            calls.Args<(string input, __)>().Verify<(string input, __)>((call, args) =>
+            calls.Args<(string input, __)>().Verify<(string input, __)>(call =>
             {
-                args.input.ShouldBe(input);
+                call.Args.input.ShouldBe(input);
                 call.Return.ShouldBeNull();
             }).Count.ShouldBe(1);
         }
@@ -437,9 +427,9 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBeNull();
             }).Count.ShouldBe(1);
             
-            calls.Verify<(string input, __)>((call, args) =>
+            calls.Verify<(string input, __)>(call =>
             {
-                args.input.ShouldBe(input);
+                call.Args.input.ShouldBe(input);
                 call.Return.ShouldBeNull();
             }).Count.ShouldBe(1);
             
@@ -449,9 +439,9 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBeNull();
             }).Count.ShouldBe(1);
             
-            calls.Verify<(object input, __)>((call, args) =>
+            calls.Verify<(object input, __)>(call =>
             {
-                args.input.ShouldBe(input);
+                call.Args.input.ShouldBe(input);
                 call.Return.ShouldBeNull();
             }).Count.ShouldBe(1);
             
@@ -500,10 +490,10 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBe(_foo.Echo((string) call.Args[0]));
             }).Count.ShouldBe(inputs.Length);
             
-            calls.Verify((call, args) =>
+            calls.Verify(call =>
             {
-                args.Count.ShouldBe(1);
-                call.Return.ShouldBe(_foo.Echo((string) args[0]));
+                call.Args.Count.ShouldBe(1);
+                call.Return.ShouldBe(_foo.Echo((string) call.Args[0]));
             }).Count.ShouldBe(inputs.Length);
             
             calls.Args<(string input, __)>().Select((call, i) =>
@@ -524,7 +514,7 @@ namespace DivertR.UnitTests
             
             var calls = _fooRedirect
                 .To(x => x.Echo(Is<string>.Any))
-                .Via<(string input, __)>((call, args) => $"{call.Root.Echo(args.input)} redirected")
+                .Via<(string input, __)>(call => $"{call.Root.Echo(call.Args.input)} redirected")
                 .Record();
 
             // ACT
@@ -541,9 +531,9 @@ namespace DivertR.UnitTests
             }).Count.ShouldBe(inputs.Length);
             
             var count2 = 0;
-            calls.Verify((call, args) =>
+            calls.Verify(call =>
             {
-                args.input.ShouldBe(inputs[count2]);
+                call.Args.input.ShouldBe(inputs[count2]);
                 call.Return.ShouldBe(results[count2++]);
             }).Count.ShouldBe(inputs.Length);
 
@@ -565,7 +555,7 @@ namespace DivertR.UnitTests
             
             var calls = _fooRedirect
                 .To(x => x.Echo(Is<string>.Any))
-                .Via<(string input, __)>((call, args) => $"{call.Next.Echo(args.input)} redirected")
+                .Via<(string input, __)>(call => $"{call.Next.Echo(call.Args.input)} redirected")
                 .Record();
 
             // ACT
@@ -582,9 +572,9 @@ namespace DivertR.UnitTests
             }).Count.ShouldBe(inputs.Length);
             
             var count2 = 0;
-            calls.Verify((call, args) =>
+            calls.Verify(call =>
             {
-                args.input.ShouldBe(inputs[count2]);
+                call.Args.input.ShouldBe(inputs[count2]);
                 call.Return.ShouldBe(results[count2++]);
             }).Count.ShouldBe(inputs.Length);
         }
@@ -599,7 +589,7 @@ namespace DivertR.UnitTests
             
             var calls = _fooRedirect
                 .To(x => x.SetName(Is<string>.Any))
-                .Via<(string input, __)>((call, args) => call.Root.SetName($"{args.input} redirected"))
+                .Via<(string input, __)>(call => call.Root.SetName($"{call.Args.input} redirected"))
                 .Record();
 
             // ACT
@@ -620,9 +610,9 @@ namespace DivertR.UnitTests
             }).Count.ShouldBe(inputs.Length);
             
             var count2 = 0;
-            calls.Verify((call, args) =>
+            calls.Verify(call =>
             {
-                args.input.ShouldBe(inputs[count2++]);
+                call.Args.input.ShouldBe(inputs[count2++]);
                 call.Return.ShouldBeNull();
             }).Count.ShouldBe(inputs.Length);
         }
@@ -637,7 +627,7 @@ namespace DivertR.UnitTests
             
             var calls = _fooRedirect
                 .To(x => x.SetName(Is<string>.Any))
-                .Via<(string input, __)>((call, args) => call.Next.SetName($"{args.input} redirected"))
+                .Via<(string input, __)>(call => call.Next.SetName($"{call.Args.input} redirected"))
                 .Record();
 
             // ACT
@@ -661,9 +651,9 @@ namespace DivertR.UnitTests
             }).Count.ShouldBe(inputs.Length);
             
             var count2 = 0;
-            calls.Verify((call, args) =>
+            calls.Verify(call =>
             {
-                args.input.ShouldBe(inputs[count2++]);
+                call.Args.input.ShouldBe(inputs[count2++]);
                 call.Return.ShouldBeNull();
             }).Count.ShouldBe(inputs.Length);
         }
@@ -679,7 +669,7 @@ namespace DivertR.UnitTests
             var viaBuilder = _fooRedirect.To(x => x.Echo(Is<string>.Any));
             var calls = viaBuilder.Record();
             viaBuilder
-                .Via<(string input, __)>((call, args) => $"{call.Root.Echo(args.input)} redirected");
+                .Via<(string input, __)>(call => $"{call.Root.Echo(call.Args.input)} redirected");
 
             // ACT
             var results = inputs.Select(input => _proxy.Echo(input)).ToArray();
@@ -700,9 +690,9 @@ namespace DivertR.UnitTests
             var viaBuilder = _fooRedirect.To(x => x.Echo(Is<string>.Any));
             var calls = viaBuilder.Record<(string input, __)>();
             viaBuilder
-                .Via<(string input, __)>((call, args) =>
+                .Via<(string input, __)>(call =>
                 {
-                    var modifiedInput = $"{args.input} modified";
+                    var modifiedInput = $"{call.Args.input} modified";
                     return $"{call.Next.Echo(modifiedInput)} redirected";
                 });
 
@@ -730,9 +720,9 @@ namespace DivertR.UnitTests
             var viaBuilder = _fooRedirect.To(x => x.Echo(Is<string>.Any));
             var recordedCalls = viaBuilder.Record<(string input, __)>(opt => opt.OrderFirst());
             viaBuilder
-                .Via<(string input, __)>((call, args) =>
+                .Via<(string input, __)>(call =>
                 {
-                    var modifiedInput = $"{args.input} modified";
+                    var modifiedInput = $"{call.Args.input} modified";
                     return $"{call.Next.Echo(modifiedInput)} redirected";
                 });
 
@@ -760,9 +750,9 @@ namespace DivertR.UnitTests
             var viaBuilder = _fooRedirect.To(x => x.Echo(Is<string>.Any));
             var recordedCalls = viaBuilder.Record<(string input, __)>();
             viaBuilder
-                .Via<(string input, __)>((call, args) =>
+                .Via<(string input, __)>(call =>
                 {
-                    var modifiedInput = $"{args.input} modified";
+                    var modifiedInput = $"{call.Args.input} modified";
                     return $"{call.Next.Echo(modifiedInput)} redirected";
                 }, opt => opt.OrderLast());
 

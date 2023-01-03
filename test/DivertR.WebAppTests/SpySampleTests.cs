@@ -203,9 +203,9 @@ namespace DivertR.WebAppTests
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
-            recordedCalls.Verify((call, args) =>
+            recordedCalls.Verify(call =>
             {
-                args.foo.Name.ShouldBe(createFooRequest.Name);
+                call.Args.foo.Name.ShouldBe(createFooRequest.Name);
                 call.Exception.ShouldBeSameAs(testException);
             }).Count.ShouldBe(1);
         }

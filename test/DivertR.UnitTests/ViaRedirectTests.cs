@@ -109,12 +109,12 @@ namespace DivertR.UnitTests
             // ARRANGE
             var viaRedirect = _redirect
                 .To(x => x.EchoGeneric(Is<IList<string>>.Any))
-                .Via<(IList<string> input, __)>((_, args) => args.input.Select(x => $"via: {x}").ToList())
+                .Via<(IList<string> input, __)>(call => call.Args.input.Select(x => $"via: {x}").ToList())
                 .ViaRedirect();
             
             viaRedirect
                 .To(x => x[Is<int>.Any])
-                .Via<(int index, __)>((call, args) => call.Next[args.index] + " diverted");
+                .Via<(int index, __)>(call => call.Next[call.Args.index] + " diverted");
 
             IList<string> input = Enumerable.Range(0, 10).Select(x => $"test{x}").ToList();
             var divertedList = _proxy.EchoGeneric(input);
