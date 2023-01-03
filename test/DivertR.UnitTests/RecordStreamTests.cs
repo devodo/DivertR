@@ -48,9 +48,9 @@ namespace DivertR.UnitTests
             echoCalls.Select(call => call.Return).ShouldBe(outputs);
 
             var i = 0;
-            echoCalls.Verify((_, args) =>
+            echoCalls.Verify(call =>
             {
-                args.input.ShouldBe(inputs[i++]);
+                call.Args.input.ShouldBe(inputs[i++]);
             }).Count().ShouldBe(inputs.Count);
         }
         
@@ -109,9 +109,9 @@ namespace DivertR.UnitTests
             caughtException.ShouldNotBeNull();
             _recordStream
                 .To(x => x.Echo("test"))
-                .Verify<(string input, __)>((call, args) =>
+                .Verify<(string input, __)>(call =>
                 {
-                    args.input.ShouldBe("test");
+                    call.Args.input.ShouldBe("test");
                     call.Exception.ShouldBeSameAs(caughtException);
                 }).Count.ShouldBe(1);
         }
@@ -332,9 +332,9 @@ namespace DivertR.UnitTests
                 .ShouldBe(inputs);
 
             var i = 0;
-            recordedCalls.Verify((call, args) =>
+            recordedCalls.Verify(call =>
             {
-                args.name.ShouldBe(inputs[i++]);
+                call.Args.name.ShouldBe(inputs[i++]);
                 call.Return.ShouldBeNull();
             }).Count.ShouldBe(inputs.Count);
         }
@@ -391,7 +391,7 @@ namespace DivertR.UnitTests
             var mappedCalls = _recordStream
                 .To(x => x.Echo(Is<string>.Any))
                 .Args<(string input, __)>()
-                .Map((call, args) => new { Input = args.input, Result = call.Return });
+                .Map(call => new { Input = call.Args.input, Result = call.Return });
 
             var fooProxy = _redirect.Proxy();
 
@@ -422,7 +422,7 @@ namespace DivertR.UnitTests
             var mappedCalls = _recordStream
                 .To(x => x.EchoAsync(Is<string>.Any))
                 .Args<(string input, __)>()
-                .Map((call, args) => new { Input = args.input, Result = call.Return });
+                .Map(call => new { Input = call.Args.input, Result = call.Return });
 
             var fooProxy = _redirect.Proxy();
 

@@ -61,7 +61,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _redirect
                 .To(x => x.EchoGeneric(Is<int>.Any, Is<int>.Any))
-                .Via<(int input, __)>((_, args) => (args.input, 0));
+                .Via<(int input, __)>(call => (call.Args.input, 0));
 
             // ACT
             var result = _redirect.Proxy().EchoGeneric(10, 100);

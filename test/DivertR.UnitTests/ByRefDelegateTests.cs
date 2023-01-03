@@ -35,10 +35,10 @@ namespace DivertR.UnitTests
             // ARRANGE
             _redirect
                 .To(x => x.RefNumber(ref IsRef<int>.Match(m => m == 3).Value))
-                .Via<(Ref<int> i, __)>((call, args) =>
+                .Via<(Ref<int> i, __)>(call =>
                 {
-                    var refIn = call.Next.RefNumber(ref args.i.Value);
-                    args.i.Value += 10;
+                    var refIn = call.Next.RefNumber(ref call.Args.i.Value);
+                    call.Args.i.Value += 10;
 
                     return refIn;
                 });
@@ -76,10 +76,10 @@ namespace DivertR.UnitTests
             // ARRANGE
             _redirect
                 .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
-                .Via<(int i, Ref<int> o)>((call, args) =>
+                .Via<(int i, Ref<int> o)>(call =>
                 {
-                    call.Next.OutNumber(args.i, out args.o.Value);
-                    args.o.Value += 10;
+                    call.Next.OutNumber(call.Args.i, out call.Args.o.Value);
+                    call.Args.o.Value += 10;
                 });
             
             var redirectProxy = _redirect.Proxy(new Number());
@@ -113,10 +113,10 @@ namespace DivertR.UnitTests
             // ARRANGE
             var recordStream = _redirect
                 .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
-                .Via<(int i, Ref<int> o)>((call, args) =>
+                .Via<(int i, Ref<int> o)>(call =>
                 {
-                    call.Next.OutNumber(args.i, out args.o.Value);
-                    args.o.Value += 10;
+                    call.Next.OutNumber(call.Args.i, out call.Args.o.Value);
+                    call.Args.o.Value += 10;
                 })
                 .Record();
             

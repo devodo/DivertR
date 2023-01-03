@@ -843,7 +843,7 @@ namespace DivertR.UnitTests
             
             _redirect
                 .To(x => x.Echo(Is<string>.Any))
-                .Via<(string input, __)>((call, args) => $"{call.Next.Echo(args.input)} diverted");
+                .Via<(string input, __)>(call => $"{call.Next.Echo(call.Args.input)} diverted");
             
             // ACT
             var result = proxy.Echo("test");
@@ -1047,7 +1047,7 @@ namespace DivertR.UnitTests
             var redirect = new Redirect<INumber>();
             redirect
                 .To(x => x.GetNumber(Is<int>.Any))
-                .Via<(int input, __)>((call, args) => call.Next.GetNumber(args.input) + 5);
+                .Via<(int input, __)>(call => call.Next.GetNumber(call.Args.input) + 5);
 
             // ACT
             var proxy = redirect.Proxy(new Number(x => x * 2));
@@ -1128,7 +1128,7 @@ namespace DivertR.UnitTests
                 .To(new CallConstraint<IFoo>(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
                 .Via(() => "redirected")
                 .Via(call => $"{call.CallNext()} call {call.Args.LastOrDefault()}".Trim())
-                .Via((call, args) => $"{call.CallNext()} args {args.LastOrDefault()}".Trim());
+                .Via(call => $"{call.CallNext()} args {call.Args.LastOrDefault()}".Trim());
             
             var proxy = _redirect.Proxy();
 

@@ -45,14 +45,6 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IRedirectUpdater<TTarget> Via(Func<IRedirectCall<TTarget>, CallArguments, object?> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
-        {
-            var via = ViaBuilder.Build(viaDelegate);
-            InsertVia(via, optionsAction);
-
-            return this;
-        }
-
         public IRedirectUpdater<TTarget> Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null)
         {
             ICallHandler<TTarget> callHandler = new TargetCallHandler<TTarget>(target, Redirect.RedirectSet.Settings.CallInvoker);

@@ -13,7 +13,6 @@ namespace DivertR
         IFuncRedirectUpdater<TTarget, TReturn> Via(TReturn instance, Action<IViaOptionsBuilder>? optionsAction = null);
         IFuncRedirectUpdater<TTarget, TReturn> Via(Func<TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
         IFuncRedirectUpdater<TTarget, TReturn> Via(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
-        IFuncRedirectUpdater<TTarget, TReturn> Via(Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
 
         IFuncRedirectUpdater<TTarget, TReturn, TArgs> Via<TArgs>(TReturn instance, Action<IViaOptionsBuilder>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
@@ -22,9 +21,6 @@ namespace DivertR
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
         IFuncRedirectUpdater<TTarget, TReturn, TArgs> Via<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
-            where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        
-        IFuncRedirectUpdater<TTarget, TReturn, TArgs> Via<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
 
         IFuncRedirectUpdater<TTarget, TReturn> Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null);
@@ -51,8 +47,7 @@ namespace DivertR
         new IFuncRedirectUpdater<TTarget, TReturn, TArgs> Via(Func<TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
 
         IFuncRedirectUpdater<TTarget, TReturn, TArgs> Via(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
-        IFuncRedirectUpdater<TTarget, TReturn, TArgs> Via(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
-        
+
         new IFuncRedirectUpdater<TTarget, TReturn, TArgs> Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null);
        
         new IFuncCallStream<TTarget, TReturn, TArgs> Record(Action<IViaOptionsBuilder>? optionsAction = null);

@@ -42,14 +42,6 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IFuncRedirectUpdater<TTarget, TReturn> Via(Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
-        {
-            var via = ViaBuilder.Build(viaDelegate);
-            InsertVia(via, optionsAction);
-
-            return this;
-        }
-
         public IFuncRedirectUpdater<TTarget, TReturn, TArgs> Via<TArgs>(TReturn instance, Action<IViaOptionsBuilder>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return Args<TArgs>().Via(instance, optionsAction);
@@ -62,11 +54,6 @@ namespace DivertR.Internal
 
         public IFuncRedirectUpdater<TTarget, TReturn, TArgs> Via<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
-        {
-            return Args<TArgs>().Via(viaDelegate, optionsAction);
-        }
-
-        public IFuncRedirectUpdater<TTarget, TReturn, TArgs> Via<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return Args<TArgs>().Via(viaDelegate, optionsAction);
         }
@@ -130,22 +117,7 @@ namespace DivertR.Internal
             return this;
         }
 
-        public new IFuncRedirectUpdater<TTarget, TReturn, TArgs> Via(Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
-        {
-            base.Via(viaDelegate, optionsAction);
-
-            return this;
-        }
-
         public IFuncRedirectUpdater<TTarget, TReturn, TArgs> Via(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
-        {
-            var via = ViaBuilder.Build(viaDelegate);
-            InsertVia(via, optionsAction);
-
-            return this;
-        }
-
-        public IFuncRedirectUpdater<TTarget, TReturn, TArgs> Via(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
             var via = ViaBuilder.Build(viaDelegate);
             InsertVia(via, optionsAction);
