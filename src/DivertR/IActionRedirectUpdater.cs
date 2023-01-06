@@ -6,8 +6,6 @@ namespace DivertR
 {
     public interface IActionRedirectUpdater<TTarget> where TTarget : class?
     {
-        IRedirect<TTarget> Redirect { get; }
-        IActionViaBuilder<TTarget> ViaBuilder { get; }
         IActionRedirectUpdater<TTarget> Filter(ICallConstraint<TTarget> callConstraint);
         
         IActionRedirectUpdater<TTarget> Via(Action viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
@@ -37,8 +35,6 @@ namespace DivertR
         where TTarget : class?
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        new IActionViaBuilder<TTarget, TArgs> ViaBuilder { get; }
-        
         new IActionRedirectUpdater<TTarget, TArgs> Via(Action viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
         IActionRedirectUpdater<TTarget, TArgs> Via(Action<IActionRedirectCall<TTarget, TArgs>> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
 
