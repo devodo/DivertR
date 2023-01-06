@@ -153,7 +153,7 @@ namespace DivertR
         /// <inheritdoc />
         public IRedirect<TTarget> Reset(bool includePersistent = false)
         {
-            RedirectRepository.Reset(includePersistent);
+            ResetInternal(includePersistent);
 
             return this;
         }
@@ -202,6 +202,11 @@ namespace DivertR
         public IActionRedirectUpdater<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
         {
             return new ActionRedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.ToSetInternal(memberExpression, constraintExpression));
+        }
+        
+        protected virtual void ResetInternal(bool includePersistent)
+        {
+            RedirectRepository.Reset(includePersistent);
         }
     }
 
