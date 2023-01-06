@@ -2,7 +2,7 @@
 
 namespace DivertR.Internal
 {
-    internal class ProxyRedirectMap : IProxyRedirectMap
+    internal class ProxyRedirectMap
     {
         private readonly ConditionalWeakTable<object, IRedirect> _redirectMap = new();
 

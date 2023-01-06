@@ -17,8 +17,13 @@ namespace DivertR
             where TTarget : class?
             where TReturn : class?
         {
+            if (redirectUpdater is not FuncRedirectUpdater<TTarget, TReturn> concreteRedirectUpdater)
+            {
+                throw new DiverterException("This extension only supports an internal concrete FuncRedirectUpdater implementation");
+            }
+            
             var proxyCache = new ConditionalWeakTable<TReturn, TReturn>();
-            var redirect = redirectUpdater.Redirect.RedirectSet.Redirect<TReturn>(name);
+            var redirect = concreteRedirectUpdater.Redirect.RedirectSet.Redirect<TReturn>(name);
             
             TReturn ViaDelegate(IFuncRedirectCall<TTarget, TReturn> call)
             {
@@ -37,9 +42,9 @@ namespace DivertR
                 });
             }
 
-            var via = redirectUpdater.ViaBuilder.Build(ViaDelegate);
+            var via = concreteRedirectUpdater.ViaBuilder.Build(ViaDelegate);
             var options = ViaOptionsBuilder.Create(optionsAction);
-            redirectUpdater.Redirect.RedirectRepository.InsertVia(via, options);
+            concreteRedirectUpdater.Redirect.RedirectRepository.InsertVia(via, options);
 
             return redirect;
         }

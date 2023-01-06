@@ -20,12 +20,12 @@ namespace DivertR
             ((RedirectSet) RedirectSet).AddRedirect(this);
         }
         
-        public Redirect(DiverterSettings diverterSettings, IRedirectRepository? redirectRepository = null)
+        public Redirect(DiverterSettings? diverterSettings, IRedirectRepository? redirectRepository = null)
             : this(name: null, diverterSettings: diverterSettings, redirectRepository: redirectRepository)
         {
         }
         
-        public Redirect(IRedirectRepository redirectRepository)
+        public Redirect(IRedirectRepository? redirectRepository)
             : this(name: null, diverterSettings: null, redirectRepository: redirectRepository)
         {
         }
@@ -79,7 +79,7 @@ namespace DivertR
         {
             return Proxy(withDummyRoot);
         }
-        
+
         /// <inheritdoc />
         object IRedirect.Proxy()
         {
@@ -124,18 +124,18 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public IRedirect<TTarget> Via(IVia redirect, Action<IViaOptionsBuilder>? optionsAction = null)
+        public IRedirect<TTarget> Via(IVia via, Action<IViaOptionsBuilder>? optionsAction = null)
         {
             var options = ViaOptionsBuilder.Create(optionsAction);
-            RedirectRepository.InsertVia(redirect, options);
+            RedirectRepository.InsertVia(via, options);
 
             return this;
         }
         
         /// <inheritdoc />
-        IRedirect IRedirect.Via(IVia redirect, Action<IViaOptionsBuilder>? optionsAction)
+        IRedirect IRedirect.Via(IVia via, Action<IViaOptionsBuilder>? optionsAction)
         {
-            return Via(redirect, optionsAction);
+            return Via(via, optionsAction);
         }
         
         /// <inheritdoc />
@@ -242,7 +242,7 @@ namespace DivertR
         {
             return Proxy<TTarget>(redirect => redirect.Proxy());
         }
-        
+
         /// <summary>
         /// Retrieves the proxy instance's Redirect that controls its behaviour.
         /// </summary>

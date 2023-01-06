@@ -9,12 +9,9 @@ namespace DivertR
         private static readonly object GlobalLock = new();
         private static readonly ICallInvoker DefaultCallInvoker = new LambdaExpressionCallInvoker();
         private static DiverterSettings GlobalSettings = new();
-        
-        
+
         public IProxyFactory ProxyFactory { get; }
         
-        public IProxyRedirectMap ProxyRedirectMap { get; }
-
         public IDiverterProxyDecorator DiverterProxyDecorator { get; }
         
         public IRedirectProxyDecorator RedirectProxyDecorator { get; }
@@ -24,7 +21,6 @@ namespace DivertR
         public IDummyFactory DummyFactory { get; }
         
         public ICallInvoker CallInvoker { get; }
-
 
         public static DiverterSettings Global
         {
@@ -47,7 +43,6 @@ namespace DivertR
 
         public DiverterSettings(
             IProxyFactory? proxyFactory = null,
-            IProxyRedirectMap? proxyRedirectMap = null,
             IDiverterProxyDecorator? diverterProxyDecorator = null,
             IRedirectProxyDecorator? redirectProxyDecorator = null,
             bool defaultWithDummyRoot = true,
@@ -55,9 +50,8 @@ namespace DivertR
             ICallInvoker? callInvoker = null)
         {
             ProxyFactory = proxyFactory ?? new DispatchProxyFactory();
-            ProxyRedirectMap = proxyRedirectMap ?? Redirect.ProxyRedirectMap;
             DiverterProxyDecorator = diverterProxyDecorator ?? new DiverterProxyDecorator();
-            RedirectProxyDecorator = redirectProxyDecorator ?? new RedirectProxyDecorator(ProxyRedirectMap);
+            RedirectProxyDecorator = redirectProxyDecorator ?? new RedirectProxyDecorator();
             DefaultWithDummyRoot = defaultWithDummyRoot;
             DummyFactory = dummyFactory ?? new DummyFactory();
             CallInvoker = callInvoker ?? DefaultCallInvoker;

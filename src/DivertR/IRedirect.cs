@@ -119,7 +119,7 @@ namespace DivertR
         /// <returns>The proxy instance.</returns>
         [return: NotNull]
         new TTarget Proxy(bool withDummyRoot);
-        
+
         /// <summary>
         /// Creates a Redirect proxy instance of the Redirect's target type with no provided root instance.
         /// The proxy is created with a dummy root or not as configured by the Redirect's <see cref="DiverterSettings.DefaultWithDummyRoot" />.
@@ -131,10 +131,10 @@ namespace DivertR
         /// <summary>
         /// Insert a <see cref="IVia"/> into this Redirect.
         /// </summary>
-        /// <param name="redirect">The Redirect instance to insert.</param>
+        /// <param name="via">The Via instance to insert.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
         /// <returns>This Redirect instance.</returns>
-        new IRedirect<TTarget> Via(IVia redirect, Action<IViaOptionsBuilder>? optionsAction = null);
+        new IRedirect<TTarget> Via(IVia via, Action<IViaOptionsBuilder>? optionsAction = null);
 
         /// <summary>
         /// Reset the Redirect <see cref="IRedirectRepository" /> to its initial state.
