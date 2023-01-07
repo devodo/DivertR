@@ -208,7 +208,7 @@ Console.WriteLine(fooProxy.Name); // "MrFoo relayed"
 
 Any number of Vias can be added to a Redirect. When Vias are added they are pushed onto a stack (with the last added at the top).
 
-![Via Stack]({{ site.url }}/assets/images/Via_Stack.svg)
+![Via Stack]({{ site.baseurl }}/assets/images/Via_Stack.svg)
 
 Proxy calls are traversed through the stack from top to bottom. If a call matches the `To` constraint it is passed to the Via delegate for handling.
 If no Vias match, the call falls through the stack to the root instance.
