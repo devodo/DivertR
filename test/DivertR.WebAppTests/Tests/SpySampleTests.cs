@@ -4,12 +4,13 @@ using System.Threading.Tasks;
 using DivertR.SampleWebApp.Model;
 using DivertR.SampleWebApp.Rest;
 using DivertR.SampleWebApp.Services;
+using DivertR.WebAppTests.TestHarness;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace DivertR.WebAppTests
+namespace DivertR.WebAppTests.Tests
 {
     public class SpySampleTests : IClassFixture<WebAppFixture>
     {
@@ -88,6 +89,28 @@ namespace DivertR.WebAppTests
                 response.Content.ShouldBeEquivalentTo(call.Args.foo);
                 call.Return.ShouldBe(Task.CompletedTask);
             }).Count.ShouldBe(1);
+        }
+        
+        [Fact]
+        public async Task GiveBadCreateFooRequest_WhenCreateFoo_ThenDoesNotCallFooService()
+        {
+            // ARRANGE
+            var createFooRequest = new CreateFooRequest
+            {
+                Id = Guid.NewGuid(),
+                Name = null
+            };
+
+            var fooServiceCalls = _diverter
+                .Redirect<IFooService>()
+                .Record();
+
+            // ACT
+            var response = await _fooClient.CreateFooAsync(createFooRequest);
+
+            // ASSERT
+            response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+            fooServiceCalls.Count.ShouldBe(0);
         }
         
         [Fact]

@@ -1,8 +1,26 @@
-﻿# Recording and Verifying Calls
+---
+layout: default
+title: Verify
+nav_order: 3
+parent: Quickstart
+---
+
+# Verify
+
+{: .no_toc }
+
+<details open markdown="block">
+  <summary>
+    Table of contents
+  </summary>
+  {: .text-delta }
+- TOC
+{:toc}
+</details>
 
 DivertR can record the details of calls to its proxies and this can be used for test spying and verification.
 
-## Record
+# Record
 
 The Redirect fluent interface is used to start a recording of proxy calls that match a `To` expression:
 
@@ -29,32 +47,12 @@ for(var call in echoCalls)
 
 The `Record` method returns an `ICallStream` that recorded called are appended to. This variable is an `IReadOnlyCollection` and `IEnumerable` that can be enumerated or queried e.g. with standard Linq expressions.
 
-## Verify
+# Verify snapshot
 
 The `ICallStream` interface provides `Verify` helper methods to facilitate iteration and verification over the recorded calls collection.
 
-```csharp
-var fooRedirect = new Redirect<IFoo>();
-var fooProxy = fooRedirect.Proxy(new Foo());
+Recorded calls are appended to the `ICallStream` whenever a matching proxy call is made. This means the `ICallStream` will hold different record data at different points in time as calls are happening.
 
-var nameCalls = fooRedirect
-    .To(x => x.Echo(Is<string>.Any)) 
-    .Record();
-
-var result = fooProxy.Echo("record");
-
-var verifySnapshot = nameCalls.Verify(call =>
-{
-    call.Args[0].ShouldBe("record");
-    call.Returned.Value.ShouldBe("record");
-});
-
-verifySnapshot.Count.ShouldBe(1); // The verify snapshot records calls at a point in time and is immutable
-```
-
-### Verify snapshot
-
-Recorded calls are appended to the `ICallStream` whenever a matching proxy call is made. This means the `ICallStream` may hold different record data at different points in time.
 Therefore the `Verify` method iterates over and returns an immutable snapshot of the collection of recorded calls at the point of time it is called.
 This allows performing multiple, consistent operations on a stable set of data. E.g. in the example above iterating over the collection and then verifying the call count.
 
@@ -80,14 +78,37 @@ Console.WriteLine(verifyCalls.Count); // 1
 Console.WriteLine(verifyCalls[0].Args[0]); // one
 ```
 
-## Record chaining
+# Verify Visitor
+
+The `ICallStream` interface provides `Verify` helper methods to facilitate iteration and verification over the recorded calls collection.
+
+```csharp
+var fooRedirect = new Redirect<IFoo>();
+var fooProxy = fooRedirect.Proxy(new Foo());
+
+var nameCalls = fooRedirect
+    .To(x => x.Echo(Is<string>.Any)) 
+    .Record();
+
+var result = fooProxy.Echo("record");
+
+var verifySnapshot = nameCalls.Verify(call =>
+{
+    call.Args[0].ShouldBe("record");
+    call.Returned.Value.ShouldBe("record");
+});
+
+verifySnapshot.Count.ShouldBe(1); // The verify snapshot records calls at a point in time and is immutable
+```
+
+# Record chaining
 
 The Redirect fluent interface allows chaining the `Record` method after a `Via` call:
 
 ```csharp
 var nameCalls = fooRedirect
     .To(x => x.Echo(Is<string>.Any))
-    .Via(call => call.CallNext() + " viaed")
+    .Via(call => call.CallNext() + " redirected")
     .Record();
 
 var result = fooProxy.Echo("record");
@@ -95,11 +116,11 @@ var result = fooProxy.Echo("record");
 nameCalls.Verify(call =>
 {
     call.Args[0].ShouldBe("record");
-    call.Returned.Value.ShouldBe("record viaed");
+    call.Returned.Value.ShouldBe("record redirected");
 }).Count.ShouldBe(1);
 ```
 
-## Verify named arguments
+# Named Arguments
 
 The `Verify` methods allows specifying call argument types and names using the same Via [`ValueTuple` syntax](#named-arguments):
 
@@ -138,7 +159,7 @@ Finally if the argument `ValueTuple` is defined on a chained `Via` the strongly 
 ```csharp
 var nameCalls = fooRedirect
     .To(x => x.Echo(Is<string>.Any))
-    .Via<(string input, __)>(call => $"{call.Args.input} viaed")
+    .Via<(string input, __)>(call => $"{call.Args.input} redirected")
     .Record();
 
 var result = fooProxy.Echo("record example");
@@ -146,11 +167,11 @@ var result = fooProxy.Echo("record example");
 nameCalls.Verify(call =>
 {
     call.Args.input.ShouldBe("record example");
-    call.Returned.Value.ShouldBe("record example viaed");
+    call.Returned.Value.ShouldBe("record example redirected");
 }).Count.ShouldBe(1);
 ```
 
-## Recording exceptions
+# Recording exceptions
 
 ```csharp
 var nameCalls = fooRedirect
@@ -176,7 +197,7 @@ nameCalls.Verify(call =>
 }).Count.ShouldBe(1);
 ```
 
-## Redirect Record
+# Redirect Record
 
 ```csharp
 var fooRedirect = new Redirect<IFoo>();
@@ -196,7 +217,7 @@ fooCalls
     }).Count.ShouldBe(1);
 ```
 
-## Record ordering
+# Record ordering
 
 ```csharp
 var fooRedirect = new Redirect<IFoo>();
@@ -206,7 +227,7 @@ var fooCalls = fooRedirect.Record(opt => opt.OrderFirst());
 
 fooRedirect
     .To(x => x.Echo(Is<string>.Any))
-    .Via<(string input, __)>(call => call.CallNext() + " viaed")
+    .Via<(string input, __)>(call => call.CallNext() + " redirected")
 
 fooProxy.Echo("record");
 
@@ -215,6 +236,6 @@ fooCalls
     .Verify<(string input, __)>(call =>
     {
         call.Args.input.ShouldBe("record");
-        call.Returned.Value.ShouldBe("record viaed");
+        call.Returned.Value.ShouldBe("record redirected");
     }).Count.ShouldBe(1);
 ```
