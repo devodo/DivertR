@@ -73,7 +73,7 @@ There are some special cases such as `Task` types are returned as `null` valued 
 > Proxies with dummy roots can be used as mock objects.
 {: .note }
 
-# Via Intercepts
+# Vias
 
 `Via` instances are added to a `Redirect` to control the way its proxies behave.
 Proxy calls are diverted and passed to the Vias for handling.
