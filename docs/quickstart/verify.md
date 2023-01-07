@@ -7,6 +7,17 @@ parent: Quickstart
 
 # Verify
 
+{: .no_toc }
+
+<details open markdown="block">
+  <summary>
+    Table of contents
+  </summary>
+  {: .text-delta }
+- TOC
+{:toc}
+</details>
+
 DivertR can record the details of calls to its proxies and this can be used for test spying and verification.
 
 # Record

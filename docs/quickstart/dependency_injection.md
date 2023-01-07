@@ -7,6 +7,17 @@ parent: Quickstart
 
 # Dependency Injection
 
+{: .no_toc }
+
+<details open markdown="block">
+  <summary>
+    Table of contents
+  </summary>
+  {: .text-delta }
+- TOC
+{:toc}
+</details>
+
 DivertR is designed to be embedded easily and transparently into the dependency injection (DI) container to facilitate testing an integrated, wired-up system.
 It does this by decorating existing DI service registrations with [Redirects](./Redirect.md) that replace the originals.
 These Redirects create proxies that wrap the instances resolved from the originals as their default targets or *roots*.

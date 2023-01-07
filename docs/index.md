@@ -6,7 +6,7 @@ nav_order: 1
 
 # DivertR
 
-Welcome to DivertR! The .Net mocking framework for integration testing.
+Welcome to DivertR! The .NET mocking framework for integration testing.
 
 DivertR provides standard mocking capability similar to other well known frameworks like [Moq](https://github.com/moq/moq4) - but why yet another .Net mocking framework?
 

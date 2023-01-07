@@ -7,6 +7,17 @@ parent: Quickstart
 
 # Redirects
 
+{: .no_toc }
+
+<details open markdown="block">
+  <summary>
+    Table of contents
+  </summary>
+  {: .text-delta }
+- TOC
+{:toc}
+</details>
+
 The `Redirect` is the main DivertR entity used to create and configure proxies.
 `Redirect` instances are instantiated from the generic `Redirect<TTarget>` class:
 
