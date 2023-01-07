@@ -212,3 +212,4 @@ public async Task GivenFooRepoException_WhenGetFoo_ThenReturns500InternalServerE
 
 For more examples and a demonstration of setting up a test harness for a WebApp like this see a [WebApp Testing Sample here](https://github.com/devodo/DivertR/tree/main/test/DivertR.WebAppTests).
 
+Continue with [Documentation](../documentation/) for more details.

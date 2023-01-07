@@ -131,8 +131,49 @@ public class QuickstartExample
         Assert.Equal("original", foo.Name);
         Assert.Equal("FooTwo", fooTwo.Name);
     }
-    
-    
+
+    [Fact]
+    public void RedirectIdExamples1()
+    {
+        var fooRedirect = new Redirect<IFoo>();
+        
+        Assert.Equal(typeof(IFoo), fooRedirect.RedirectId.Type);
+        Assert.Equal(string.Empty, fooRedirect.RedirectId.Name);
+        Assert.Equal(fooRedirect.RedirectId, new RedirectId(typeof(IFoo)));
+        
+        var fooRedirect2 = new Redirect<IFoo>("GroupX");
+        
+        Assert.Equal(typeof(IFoo), fooRedirect2.RedirectId.Type);
+        Assert.Equal("GroupX", fooRedirect2.RedirectId.Name);
+        Assert.Equal(fooRedirect2.RedirectId, new RedirectId(typeof(IFoo), "GroupX"));
+    }
+
+    [Fact]
+    public void RedirectSetExamples2()
+    {
+        // Instantiate a new RedirectSet
+        IRedirectSet redirectSet = new RedirectSet();
+        // Create and store a Redirect instance
+        IRedirect<IFoo> fooRedirect = redirectSet.GetOrCreate<IFoo>();
+        // The Redirect has already been created so the existing instance is returned
+        IRedirect<IFoo> fooRedirect2 = redirectSet.GetOrCreate<IFoo>();
+
+        Assert.Same(fooRedirect, fooRedirect2);
+
+        // Create and store sets of Redirects for different target types
+        var barRedirect = redirectSet.GetOrCreate<IBar>();
+        // Or multiple with the same type using names
+        var fooRedirect3 = redirectSet.GetOrCreate<IFoo>("GroupX");
+
+        Assert.NotNull(barRedirect);
+        Assert.NotEqual(fooRedirect, fooRedirect3);
+        
+        // Perform a Redirect action across all Redirects in the set
+        redirectSet.ResetAll();
+        // Or across a subset by name
+        redirectSet.Reset("GroupX");
+    }
+
     private interface IEtc
     {
     }

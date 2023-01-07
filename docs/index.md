@@ -8,15 +8,18 @@ nav_order: 1
 
 Welcome to DivertR! The .NET mocking framework for integration testing.
 
-DivertR provides standard mocking capability similar to other well known frameworks like [Moq](https://github.com/moq/moq4) - but why yet another .Net mocking framework?
+DivertR provides standard mocking capability similar to other well known frameworks like [Moq](https://github.com/moq/moq4) - but why yet another mocking framework?
 
-It is specifically designed for testing wired-up systems and enables a style of testing where each test starts with the system in its original, fully integrated state and then mocks out specific parts as required.
+DivertR is specifically designed to enable a new way of testing wired-up, integrated systems by wrapping existing dependencies with proxy test doubles that forward calls to the originals.
 
-This is achieved by replacing dependencies with proxies that wrap and transparently forward calls to the originals.
-The proxies are then manipulated and reset between tests and are able to e.g. mock behaviour and spy on interactions.
+The proxies can be manipulated and reset dynamically within a running process e.g. to mock behaviour and spy on interactions.
+In their initial and reset state the proxies transparently forward calls, leaving the original system behaviour unchanged.
+This enables a style of testing where each test starts by resetting the running system to its original state and then mocks out specific parts as required.
 
-DivertR proxies can be manipulated dynamically at run-time within a running process.
-Tests are therefore efficient and fast as the system under test can be reconfigured dynamically between tests without requiring restart.
+Tests are efficient and fast as the system under test can have its external dependencies mocked and (assuming it is stateless) be reconfigured dynamically between tests without requiring restart.
+
+As a specific example, this approach to integration testing has proved to be very effective when combined with Microsoft's WebApplicationFactory (TestServer).
+A basic [WebApp Testing Sample](https://github.com/devodo/DivertR/tree/main/test/DivertR.WebAppTests) of this is provided.
 
 # Feature Summary
 
@@ -25,7 +28,7 @@ Tests are therefore efficient and fast as the system under test can be reconfigu
 3. A lightweight, fluent interface for configuring proxies to redirect calls to delegates or substitute instances.
 4. Dynamic update and reset of proxies in a running application enabling changes between tests without requiring restart and initialisation overhead.
 5. Leveraging .NET ValueTuple types for specifying named and strongly typed call arguments that can be passed and reused e.g. in call verifications.
-6. Method call interception and diversion with optional relay back to the original target.
+6. Method call interception and diversion with optional relay back to the original root target.
 7. Simple plugging of proxy factories into the dependency injection container by decorating and wrapping existing registrations.
 8. Recording and verifying proxy calls.
 
