@@ -9,7 +9,7 @@ namespace DivertR
     /// Use this interface to register the set of types intended to be diverted and a corresponding <see cref="IRedirect"/> gets created for each and added to the underlying <see cref="IRedirectSet"/>.
     /// 
     /// The registered <see cref="IRedirect"/> instances are exposed for embedding into a dependency injection container but this responsibility is left to the container specific implementation.
-    /// For example <see cref="DependencyInjection.ServiceCollectionExtensions.Divert"/> is an extension method that does this for the <see href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection" /> IServiceCollection container.
+    /// For example <see cref="DependencyInjection.ServiceCollectionExtensions.Divert"/> is an extension method that does this for the <see href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection">IServiceCollection</see> container.
     ///
     /// This interface also acts as a facade around the underlying <see cref="IRedirectSet"/> for retrieving and managing <see cref="IRedirect"/> instances in the collection.   
     /// </summary>
