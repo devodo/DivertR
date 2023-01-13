@@ -7,6 +7,9 @@ namespace DivertR
     /// </summary>
     public interface IRedirectSet
     {
+        /// <summary>
+        /// The <see cref="DiverterSettings" /> used by this set and all its <see cref="IRedirect"/> instances.
+        /// </summary>
         DiverterSettings Settings { get; }
         
         /// <summary>

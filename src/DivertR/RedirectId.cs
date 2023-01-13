@@ -13,7 +13,7 @@ namespace DivertR
         /// RedirectId constructor
         /// </summary>
         /// <param name="type">The <see cref="IRedirect"/> target type.</param>
-        /// <param name="name">The <see cref="IRedirect"/> target name.</param>
+        /// <param name="name">The <see cref="IRedirect"/> target name. If null defaults to <see cref="String.Empty"/></param>
         public RedirectId(Type type, string? name = null)
         {
             _id = (type, name ?? string.Empty);
@@ -57,7 +57,7 @@ namespace DivertR
         /// <returns>The constructed <see cref="RedirectId"/> instance.</returns>
         public static RedirectId From(Type type, string? name = null)
         {
-            return new RedirectId(type, name ?? string.Empty);
+            return new RedirectId(type, name);
         }
         
         /// <summary>
@@ -68,7 +68,7 @@ namespace DivertR
         /// <returns>The constructed <see cref="RedirectId"/> instance.</returns>
         public static RedirectId From<TTarget>(string? name = null)
         {
-            return new RedirectId(typeof(TTarget), name ?? string.Empty);
+            return new RedirectId(typeof(TTarget), name);
         }
     }
 }
