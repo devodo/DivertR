@@ -13,7 +13,7 @@ namespace DivertR.UnitTests
         // https://github.com/dotnet/runtime/issues/47522
         private static readonly DiverterSettings DiverterSettings = new(proxyFactory: new DynamicProxy.DynamicProxyFactory());
 #endif
-        private readonly IRedirect<INumberIn> _redirect = new RedirectSet(DiverterSettings).Redirect<INumberIn>();
+        private readonly IRedirect<INumberIn> _redirect = new RedirectSet(DiverterSettings).GetOrCreate<INumberIn>();
 
         [Fact]
         public void GivenInParameterVia_ShouldRedirect()

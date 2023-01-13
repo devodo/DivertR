@@ -32,7 +32,7 @@ namespace DivertR
         /// <inheritdoc />
         public IDiverter Register<TTarget>(string? name = null) where TTarget : class?
         {
-            var redirect = RedirectSet.Redirect<TTarget>(name);
+            var redirect = RedirectSet.GetOrCreate<TTarget>(name);
 
             if (!_registeredRedirects.TryAdd(redirect.RedirectId, redirect))
             {
@@ -45,7 +45,7 @@ namespace DivertR
         /// <inheritdoc />
         public IDiverter Register(Type targetType, string? name = null)
         {
-            var redirect = RedirectSet.Redirect(targetType, name);
+            var redirect = RedirectSet.GetOrCreate(targetType, name);
             
             if (!_registeredRedirects.TryAdd(redirect.RedirectId, redirect))
             {
@@ -67,6 +67,18 @@ namespace DivertR
         }
         
         /// <inheritdoc />
+        public IDiverter Register(params Type[] types)
+        {
+            return Register(types, null);
+        }
+        
+        /// <inheritdoc />
+        public IDiverter Register(string name, params Type[] types)
+        {
+            return Register(types, name);
+        }
+
+        /// <inheritdoc />
         public IEnumerable<IRedirect> RegisteredRedirects(string? name = null)
         {
             name ??= string.Empty;
@@ -83,15 +95,15 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public IRedirect Redirect(Type targetType, string? name = null)
+        public IRedirect Redirect(Type type, string? name = null)
         {
-            return Redirect(RedirectId.From(targetType, name));
+            return Redirect(RedirectId.From(type, name));
         }
         
         /// <inheritdoc />
         public IRedirect Redirect(RedirectId redirectId)
         {
-            var redirect = RedirectSet.GetRedirect(redirectId);
+            var redirect = RedirectSet.Get(redirectId);
             
             if (redirect == null)
             {

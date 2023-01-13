@@ -17,10 +17,10 @@ public class RedirectSetTests
     public void GivenRedirectSetWithFooRedirectAdded_WhenGetOrAddRedirect_ThenReturnsExistingFooRedirect()
     {
         // ARRANGE
-        var fooRedirect = _redirectSet.Redirect<IFoo>();
+        var fooRedirect = _redirectSet.GetOrCreate<IFoo>();
         
         // ACT
-        var testRedirect = _redirectSet.Redirect<IFoo>();
+        var testRedirect = _redirectSet.GetOrCreate<IFoo>();
         
         // ASSERT
         testRedirect.ShouldNotBeNull();
@@ -31,10 +31,10 @@ public class RedirectSetTests
     public void GivenRedirectSetWithNamedFooRedirectAdded_WhenGetOrAddSameNamedRedirect_ThenReturnsExistingFooRedirect()
     {
         // ARRANGE
-        var fooRedirect = _redirectSet.Redirect<IFoo>("test");
+        var fooRedirect = _redirectSet.GetOrCreate<IFoo>("test");
         
         // ACT
-        var testRedirect = _redirectSet.Redirect<IFoo>("test");
+        var testRedirect = _redirectSet.GetOrCreate<IFoo>("test");
         
         // ASSERT
         testRedirect.ShouldNotBeNull();
@@ -45,10 +45,10 @@ public class RedirectSetTests
     public void GivenRedirectSetWithFooRedirectAdded_WhenGetOrAddNamedRedirect_ThenCreatesNewFooRedirect()
     {
         // ARRANGE
-        var fooRedirect = _redirectSet.Redirect<IFoo>();
+        var fooRedirect = _redirectSet.GetOrCreate<IFoo>();
         
         // ACT
-        var testRedirect = _redirectSet.Redirect<IFoo>("test");
+        var testRedirect = _redirectSet.GetOrCreate<IFoo>("test");
         
         // ASSERT
         testRedirect.ShouldNotBeNull();
@@ -59,10 +59,10 @@ public class RedirectSetTests
     public void GivenRedirectSetWithFooRedirectAdded_WhenGetOrAddRedirectByType_ThenReturnsExistingFooRedirect()
     {
         // ARRANGE
-        var fooRedirect = _redirectSet.Redirect<IFoo>();
+        var fooRedirect = _redirectSet.GetOrCreate<IFoo>();
         
         // ACT
-        var testRedirect = _redirectSet.Redirect(typeof(IFoo));
+        var testRedirect = _redirectSet.GetOrCreate(typeof(IFoo));
         
         // ASSERT
         testRedirect.ShouldNotBeNull();
@@ -75,7 +75,7 @@ public class RedirectSetTests
         // ARRANGE
 
         // ACT
-        var result = _redirectSet.GetRedirect<IFoo>();
+        var result = _redirectSet.Get<IFoo>();
         
         // ASSERT
         result.ShouldBeNull();
@@ -87,7 +87,7 @@ public class RedirectSetTests
         // ARRANGE
 
         // ACT
-        var result = _redirectSet.GetRedirect(typeof(IFoo));
+        var result = _redirectSet.Get(typeof(IFoo));
         
         // ASSERT
         result.ShouldBeNull();
@@ -99,7 +99,7 @@ public class RedirectSetTests
         // ARRANGE
 
         // ACT
-        var result = _redirectSet.GetRedirect(RedirectId.From<IFoo>());
+        var result = _redirectSet.Get(RedirectId.From<IFoo>());
         
         // ASSERT
         result.ShouldBeNull();
@@ -109,10 +109,10 @@ public class RedirectSetTests
     public void GivenRedirectSetWithNamedFooRedirectAdded_WhenGetRedirect_ThenReturnsNull()
     {
         // ARRANGE
-        _redirectSet.Redirect<IFoo>("test");
+        _redirectSet.GetOrCreate<IFoo>("test");
 
         // ACT
-        var result = _redirectSet.GetRedirect<IFoo>();
+        var result = _redirectSet.Get<IFoo>();
         
         // ASSERT
         result.ShouldBeNull();
@@ -122,10 +122,10 @@ public class RedirectSetTests
     public void GivenRedirectSetWithFooRedirectAdded_WhenGetRedirect_ThenReturnsRedirect()
     {
         // ARRANGE
-        var fooRedirect = _redirectSet.Redirect<IFoo>();
+        var fooRedirect = _redirectSet.GetOrCreate<IFoo>();
 
         // ACT
-        var result = _redirectSet.GetRedirect<IFoo>();
+        var result = _redirectSet.Get<IFoo>();
         
         // ASSERT
         result.ShouldNotBeNull();
@@ -136,10 +136,10 @@ public class RedirectSetTests
     public void GivenRedirectSetWithNamedFooRedirectAdded_WhenGetNamedRedirect_ThenReturnsRedirect()
     {
         // ARRANGE
-        var fooRedirect = _redirectSet.Redirect<IFoo>("test");
+        var fooRedirect = _redirectSet.GetOrCreate<IFoo>("test");
 
         // ACT
-        var result = _redirectSet.GetRedirect<IFoo>("test");
+        var result = _redirectSet.Get<IFoo>("test");
         
         // ASSERT
         result.ShouldNotBeNull();
@@ -150,10 +150,10 @@ public class RedirectSetTests
     public void GivenRedirectSetWithFooRedirectAdded_WhenGetRedirectByType_ThenReturnsRedirect()
     {
         // ARRANGE
-        var fooRedirect = _redirectSet.Redirect<IFoo>();
+        var fooRedirect = _redirectSet.GetOrCreate<IFoo>();
 
         // ACT
-        var result = _redirectSet.GetRedirect(typeof(IFoo));
+        var result = _redirectSet.Get(typeof(IFoo));
         
         // ASSERT
         result.ShouldNotBeNull();
@@ -164,10 +164,10 @@ public class RedirectSetTests
     public void GivenRedirectSetWithFooRedirectAdded_WhenGetRedirectById_ThenReturnsRedirect()
     {
         // ARRANGE
-        var fooRedirect = _redirectSet.Redirect<IFoo>();
+        var fooRedirect = _redirectSet.GetOrCreate<IFoo>();
 
         // ACT
-        var result = _redirectSet.GetRedirect(RedirectId.From<IFoo>());
+        var result = _redirectSet.Get(RedirectId.From<IFoo>());
         
         // ASSERT
         result.ShouldNotBeNull();
@@ -178,10 +178,10 @@ public class RedirectSetTests
     public void GivenRedirectSetWithNamedFooRedirectAdded_WhenGetNamedRedirectByType_ThenReturnsRedirect()
     {
         // ARRANGE
-        var fooRedirect = _redirectSet.Redirect<IFoo>("test");
+        var fooRedirect = _redirectSet.GetOrCreate<IFoo>("test");
 
         // ACT
-        var result = _redirectSet.GetRedirect(typeof(IFoo), "test");
+        var result = _redirectSet.Get(typeof(IFoo), "test");
         
         // ASSERT
         result.ShouldNotBeNull();
