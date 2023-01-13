@@ -24,7 +24,7 @@ namespace DivertR.WebAppTests.TestHarness
         public WebAppFixture()
         {
             // Create an xUnit ITestOutputHelper proxy mock
-            var outputHelperMock = _diverter.RedirectSet.Redirect<ITestOutputHelper>().Proxy();
+            var outputHelperMock = _diverter.RedirectSet.GetOrCreate<ITestOutputHelper>().Proxy();
             
             _webApplicationFactory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {

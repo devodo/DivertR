@@ -15,6 +15,71 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenRegisteredType_WhenSameGenericTypeRegisteredWithDifferentName_ShouldRegister()
+        {
+            // ARRANGE
+
+            // ACT
+            _diverter.Register<IFoo>("test");
+            
+            // ASSERT
+            _diverter.Redirect<IFoo>("test").ShouldNotBeNull();
+        }
+        
+        [Fact]
+        public void GivenRegisteredType_WhenSameTypeRegisteredWithDifferentName_ShouldRegister()
+        {
+            // ARRANGE
+
+            // ACT
+            _diverter.Register(typeof(IFoo), "test");
+            
+            // ASSERT
+            _diverter.Redirect<IFoo>("test").ShouldNotBeNull();
+        }
+        
+        [Fact]
+        public void GivenRegisteredType_WhenSameTypeRegistered_ShouldThrowDiverterException()
+        {
+            // ARRANGE
+            _diverter.Register<IFoo>("test");
+
+            // ACT
+            var testAction = () => _diverter.Register<IFoo>("test");
+            
+            // ASSERT
+            testAction.ShouldThrow<DiverterException>();
+        }
+        
+        [Fact]
+        public void GivenDiverter_WhenParamsOfTypesRegistered_ShouldRegister()
+        {
+            // ARRANGE
+
+            // ACT
+            _diverter.Register(typeof(IList<int>), typeof(IList<string>), typeof(IList<object>));
+            
+            // ASSERT
+            _diverter.Redirect<IList<int>>().ShouldNotBeNull();
+            _diverter.Redirect<IList<string>>().ShouldNotBeNull();
+            _diverter.Redirect<IList<object>>().ShouldNotBeNull();
+        }
+        
+        [Fact]
+        public void GivenDiverter_WhenNamedParamsOfTypesRegistered_ShouldRegister()
+        {
+            // ARRANGE
+
+            // ACT
+            _diverter.Register("test", typeof(IList<int>), typeof(IList<string>), typeof(IList<object>));
+            
+            // ASSERT
+            _diverter.Redirect<IList<int>>("test").ShouldNotBeNull();
+            _diverter.Redirect<IList<string>>("test").ShouldNotBeNull();
+            _diverter.Redirect<IList<object>>("test").ShouldNotBeNull();
+        }
+        
+        [Fact]
         public void GivenRetargetWithRelay_ShouldRedirect()
         {
             // ARRANGE

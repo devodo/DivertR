@@ -23,7 +23,7 @@ namespace DivertR
             }
             
             var proxyCache = new ConditionalWeakTable<TReturn, TReturn>();
-            var redirect = concreteRedirectUpdater.Redirect.RedirectSet.Redirect<TReturn>(name);
+            var redirect = concreteRedirectUpdater.Redirect.RedirectSet.GetOrCreate<TReturn>(name);
             
             TReturn ViaDelegate(IFuncRedirectCall<TTarget, TReturn> call)
             {

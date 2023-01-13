@@ -18,7 +18,7 @@ namespace DivertR
         public DiverterSettings Settings { get; }
         
         /// <inheritdoc />
-        public IRedirect<TTarget> Redirect<TTarget>(string? name = null) where TTarget : class?
+        public IRedirect<TTarget> GetOrCreate<TTarget>(string? name = null) where TTarget : class?
         {
             var redirectId = RedirectId.From<TTarget>(name);
             var redirectGroup = GetRedirectGroup(redirectId.Name);
@@ -28,15 +28,15 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public IRedirect Redirect(Type targetType, string? name = null)
+        public IRedirect GetOrCreate(Type type, string? name = null)
         {
-            var redirectId = RedirectId.From(targetType, name);
+            var redirectId = RedirectId.From(type, name);
 
-            return Redirect(redirectId);
+            return GetOrCreate(redirectId);
         }
         
         /// <inheritdoc />
-        public IRedirect Redirect(RedirectId redirectId)
+        public IRedirect GetOrCreate(RedirectId redirectId)
         {
             IRedirect CreateRedirect(Type type)
             {
@@ -55,24 +55,24 @@ namespace DivertR
         }
 
         /// <inheritdoc />
-        public IRedirect<TTarget>? GetRedirect<TTarget>(string? name = null) where TTarget : class?
+        public IRedirect<TTarget>? Get<TTarget>(string? name = null) where TTarget : class?
         {
             var redirectId = RedirectId.From<TTarget>(name);
-            var redirect = GetRedirect(redirectId);
+            var redirect = Get(redirectId);
 
             return (IRedirect<TTarget>?) redirect;
         }
         
         /// <inheritdoc />
-        public IRedirect? GetRedirect(Type targetType, string? name = null)
+        public IRedirect? Get(Type type, string? name = null)
         {
-            var redirectId = RedirectId.From(targetType, name);
+            var redirectId = RedirectId.From(type, name);
 
-            return GetRedirect(redirectId);
+            return Get(redirectId);
         }
         
         /// <inheritdoc />
-        public IRedirect? GetRedirect(RedirectId redirectId)
+        public IRedirect? Get(RedirectId redirectId)
         {
             var redirectGroup = GetRedirectGroup(redirectId.Name);
             redirectGroup.TryGetValue(redirectId.Type, out var redirect);

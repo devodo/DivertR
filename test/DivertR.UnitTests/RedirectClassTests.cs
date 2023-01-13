@@ -13,7 +13,7 @@ namespace DivertR.UnitTests
 
         public RedirectClassTests()
         {
-            _redirect = new RedirectSet(DiverterSettings).Redirect<Foo>();
+            _redirect = new RedirectSet(DiverterSettings).GetOrCreate<Foo>();
         }
         
         [Fact]

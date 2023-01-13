@@ -20,7 +20,7 @@ namespace DivertR.UnitTests
         public void GivenOutParameterVia_WhenException_ShouldWriteBackRefs()
         {
             // ARRANGE
-            var redirect = RedirectSet.Redirect<INumber>();
+            var redirect = RedirectSet.GetOrCreate<INumber>();
             redirect
                 .To(x => x.OutNumber(Is<int>.Any, out IsRef<int>.Any))
                 .Via<(int input, Ref<int> output)>(call =>
@@ -55,7 +55,7 @@ namespace DivertR.UnitTests
         protected ByRefTests(IRedirectSet redirectSet)
         {
             RedirectSet = redirectSet;
-            _redirect = redirectSet.Redirect<INumber>();
+            _redirect = redirectSet.GetOrCreate<INumber>();
             _proxy = _redirect.Proxy(new Number(i => i + 100));
         }
 
