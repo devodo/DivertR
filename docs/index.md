@@ -8,18 +8,20 @@ nav_order: 1
 
 Welcome to DivertR! The .NET mocking framework for integration testing.
 
-DivertR provides standard mocking capability similar to other well known frameworks like [Moq](https://github.com/moq/moq4) - but why yet another mocking framework?
+Why yet another mocking framework?
 
-DivertR is specifically designed to enable a new way of testing wired-up, integrated systems by wrapping existing dependencies with proxy test doubles that forward calls to the originals.
+DivertR provides standard mocking capability similar to other well known frameworks like [Moq](https://github.com/moq/moq4)
+but it goes further, building on the shoulders of giants and amazing tools like WebApplicationFactory to enable a new way of testing wired-up, integrated systems.
 
-The proxies can be manipulated and reset dynamically within a running process e.g. to mock behaviour and spy on interactions.
-In their initial and reset state the proxies transparently forward calls, leaving the original system behaviour unchanged.
+This is achieved by replacing existing dependencies with proxy test doubles that forward calls to the originals.
+These proxies can be manipulated and reset dynamically within a running process e.g. to mock behaviour and spy on interactions.
+In their initial and reset state the proxies transparently relay calls, leaving the original system behaviour unchanged.
 This enables a style of testing where each test starts by resetting the running system to its original state and then mocks out specific parts as required.
 
 Tests are efficient and fast as the system under test can have its external dependencies mocked and (assuming it is stateless) be reconfigured dynamically between tests without requiring restart.
 
-As a specific example, this approach to integration testing has proved to be very effective when combined with Microsoft's WebApplicationFactory (TestServer).
-A basic [WebApp Testing Sample](https://github.com/devodo/DivertR/tree/main/test/DivertR.WebAppTests) of this is provided.
+As a specific example, DivertR has been used effectively when combined with Microsoft's WebApplicationFactory (TestServer) for testing web applications.
+A [code sample](https://github.com/devodo/DivertR/tree/main/test/DivertR.WebAppTests) of this usage is provided.
 
 # Feature Summary
 
