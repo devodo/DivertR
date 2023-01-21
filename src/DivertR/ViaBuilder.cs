@@ -8,10 +8,30 @@ namespace DivertR
     {
         public static IViaBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null)
         {
-            return new Internal.ViaBuilder<TTarget>(callConstraint);
+            return ToInternal(callConstraint);
         }
 
         public static IFuncViaBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
+        {
+            return ToInternal(constraintExpression);
+        }
+
+        public static IActionViaBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
+        {
+            return ToInternal(constraintExpression);
+        }
+
+        public static IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
+        {
+            return ToSetInternal(memberExpression, constraintExpression);
+        }
+        
+        internal static Internal.ViaBuilder<TTarget> ToInternal(ICallConstraint<TTarget>? callConstraint = null)
+        {
+            return new Internal.ViaBuilder<TTarget>(callConstraint);
+        }
+        
+        internal static FuncViaBuilder<TTarget, TReturn> ToInternal<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
@@ -20,8 +40,8 @@ namespace DivertR
             
             return new FuncViaBuilder<TTarget, TReturn>(callValidator, callConstraint);
         }
-
-        public static IActionViaBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
+        
+        internal static ActionViaBuilder<TTarget> ToInternal(Expression<Action<TTarget>> constraintExpression)
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
@@ -30,8 +50,8 @@ namespace DivertR
             
             return new ActionViaBuilder<TTarget>(callValidator, callConstraint);
         }
-
-        public static IActionViaBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
+        
+        internal static ActionViaBuilder<TTarget> ToSetInternal<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
         {
             if (memberExpression.Body == null) throw new ArgumentNullException(nameof(memberExpression));
 
@@ -54,10 +74,20 @@ namespace DivertR
     {
         public static IViaBuilder To(ICallConstraint? callConstraint = null)
         {
-            return new Internal.ViaBuilder(callConstraint);
+            return ToInternal(callConstraint);
         }
         
         public static IFuncViaBuilder<TReturn> To<TReturn>(Expression<Func<TReturn>> constraintExpression)
+        {
+            return ToInternal(constraintExpression);
+        }
+        
+        internal static Internal.ViaBuilder ToInternal(ICallConstraint? callConstraint = null)
+        {
+            return new Internal.ViaBuilder(callConstraint);
+        }
+        
+        internal static FuncViaBuilder<TReturn> ToInternal<TReturn>(Expression<Func<TReturn>> constraintExpression)
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 

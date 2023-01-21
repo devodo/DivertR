@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections;
 using DivertR.Record;
+using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
     internal class ActionRedirectUpdater<TTarget> : RedirectUpdater<TTarget>, IActionRedirectUpdater<TTarget> where TTarget : class?
     {
-        public ActionRedirectUpdater(IRedirect<TTarget> redirect, IActionViaBuilder<TTarget> redirectBuilder)
+        private readonly ActionViaBuilder<TTarget> _viaBuilder;
+        
+        public ActionRedirectUpdater(IRedirect<TTarget> redirect, ActionViaBuilder<TTarget> redirectBuilder)
             : base(redirect, redirectBuilder)
         {
-            ViaBuilder = redirectBuilder;
+            _viaBuilder = redirectBuilder;
         }
-
-        public new IActionViaBuilder<TTarget> ViaBuilder { get; }
-
+        
         public new IActionRedirectUpdater<TTarget> Filter(ICallConstraint<TTarget> callConstraint)
         {
             base.Filter(callConstraint);
@@ -23,7 +24,7 @@ namespace DivertR.Internal
 
         public IActionRedirectUpdater<TTarget> Via(Action viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var via = ViaBuilder.Build(viaDelegate);
+            var via = _viaBuilder.Build(viaDelegate);
             InsertVia(via, optionsAction);
 
             return this;
@@ -31,7 +32,7 @@ namespace DivertR.Internal
 
         public IActionRedirectUpdater<TTarget> Via(Action<IActionRedirectCall<TTarget>> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var via = ViaBuilder.Build(viaDelegate);
+            var via = _viaBuilder.Build(viaDelegate);
             InsertVia(via, optionsAction);
             
             return this;
@@ -61,17 +62,17 @@ namespace DivertR.Internal
 
         public IActionRedirectUpdater<TTarget, TArgs> Args<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            var builder = ViaBuilder.Args<TArgs>();
+            var builder = _viaBuilder.Args<TArgs>();
             
             return new ActionRedirectUpdater<TTarget, TArgs>(Redirect, builder);
         }
 
         public new IActionCallStream<TTarget> Record(Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var recordVia = ViaBuilder.Record();
-            InsertVia(recordVia.Via, optionsAction, disableSatisfyStrict: true);
-
-            return recordVia.CallStream;
+            var recordStream = base.Record(optionsAction);
+            var callStream = new ActionCallStream<TTarget>(recordStream, _viaBuilder.CallValidator);
+            
+            return callStream;
         }
 
         public IActionCallStream<TTarget, TArgs> Record<TArgs>(Action<IViaOptionsBuilder>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -84,13 +85,13 @@ namespace DivertR.Internal
         where TTarget : class?
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
-        public ActionRedirectUpdater(IRedirect<TTarget> redirect, IActionViaBuilder<TTarget, TArgs> redirectBuilder)
+        private readonly ActionViaBuilder<TTarget, TArgs> _viaBuilder;
+        
+        public ActionRedirectUpdater(IRedirect<TTarget> redirect, ActionViaBuilder<TTarget, TArgs> redirectBuilder)
             : base(redirect, redirectBuilder)
         {
-            ViaBuilder = redirectBuilder;
+            _viaBuilder = redirectBuilder;
         }
-
-        public new IActionViaBuilder<TTarget, TArgs> ViaBuilder { get; }
 
         public new IActionRedirectUpdater<TTarget, TArgs> Via(Action viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
@@ -101,7 +102,7 @@ namespace DivertR.Internal
 
         public IActionRedirectUpdater<TTarget, TArgs> Via(Action<IActionRedirectCall<TTarget, TArgs>> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var via = ViaBuilder.Build(viaDelegate);
+            var via = _viaBuilder.Build(viaDelegate);
             InsertVia(via, optionsAction);
             
             return this;
@@ -116,10 +117,7 @@ namespace DivertR.Internal
 
         public new IActionCallStream<TTarget, TArgs> Record(Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var recordVia = ViaBuilder.Record();
-            InsertVia(recordVia.Via, optionsAction, disableSatisfyStrict: true);
-
-            return recordVia.CallStream;
+            return base.Record().Args<TArgs>();
         }
     }
 }

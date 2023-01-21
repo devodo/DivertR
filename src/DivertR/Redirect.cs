@@ -183,25 +183,25 @@ namespace DivertR
         /// <inheritdoc />
         public IRedirectUpdater<TTarget> To(ICallConstraint<TTarget>? callConstraint = null)
         {
-            return new RedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.To(callConstraint));
+            return new RedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.ToInternal(callConstraint));
         }
         
         /// <inheritdoc />
         public IFuncRedirectUpdater<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
         {
-            return new FuncRedirectUpdater<TTarget, TReturn>(this, ViaBuilder<TTarget>.To(constraintExpression));
+            return new FuncRedirectUpdater<TTarget, TReturn>(this, ViaBuilder<TTarget>.ToInternal(constraintExpression));
         }
         
         /// <inheritdoc />
         public IActionRedirectUpdater<TTarget> To(Expression<Action<TTarget>> constraintExpression)
         {
-            return new ActionRedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.To(constraintExpression));
+            return new ActionRedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.ToInternal(constraintExpression));
         }
         
         /// <inheritdoc />
         public IActionRedirectUpdater<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
         {
-            return new ActionRedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.ToSet(memberExpression, constraintExpression));
+            return new ActionRedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.ToSetInternal(memberExpression, constraintExpression));
         }
     }
 

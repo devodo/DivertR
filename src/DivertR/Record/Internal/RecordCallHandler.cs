@@ -6,9 +6,9 @@ namespace DivertR.Record.Internal
 {
     internal class RecordCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class?
     {
-        private readonly ConcurrentQueue<RecordedCall<TTarget>> _recordedCalls = new ConcurrentQueue<RecordedCall<TTarget>>();
+        private readonly ConcurrentQueue<RecordedCall<TTarget>> _recordedCalls = new();
 
-        public IRecordStream<TTarget> RecordStream { get; }
+        public RecordStream<TTarget> RecordStream { get; }
 
         public RecordCallHandler()
         {
@@ -39,9 +39,9 @@ namespace DivertR.Record.Internal
     
     internal class RecordCallHandler : ICallHandler
     {
-        private readonly ConcurrentQueue<RecordedCall> _recordedCalls = new ConcurrentQueue<RecordedCall>();
+        private readonly ConcurrentQueue<RecordedCall> _recordedCalls = new();
 
-        public IRecordStream RecordStream { get; }
+        public RecordStream RecordStream { get; }
 
         public RecordCallHandler()
         {

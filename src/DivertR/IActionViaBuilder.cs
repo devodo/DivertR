@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using DivertR.Record;
 
 namespace DivertR
 {
@@ -17,20 +16,16 @@ namespace DivertR
         
         IVia Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> viaDelegate)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        
-        new IActionRecordVia<TTarget> Record();
 
         IActionViaBuilder<TTarget, TArgs> Args<TArgs>()
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
     
-    public interface IActionViaBuilder<TTarget, TArgs> : IActionViaBuilder<TTarget>
+    public interface IActionViaBuilder<TTarget, out TArgs> : IActionViaBuilder<TTarget>
         where TTarget : class?
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         IVia Build(Action<IActionRedirectCall<TTarget, TArgs>> viaDelegate);
         IVia Build(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> viaDelegate);
-        
-        new IActionRecordVia<TTarget, TArgs> Record();
     }
 }

@@ -7,7 +7,7 @@ using DivertR.Internal;
 
 namespace DivertR.Record.Internal
 {
-    internal class RecordStream<TTarget> : CallStream<IRecordedCall<TTarget>>, IRecordStream<TTarget> where TTarget : class?
+    internal class RecordStream<TTarget> : CallStream<IRecordedCall<TTarget>>, IRecordStream, IRecordStream<TTarget> where TTarget : class?
     {
         public RecordStream(IEnumerable<IRecordedCall<TTarget>> recordedCalls) : base(recordedCalls)
         {
@@ -64,19 +64,58 @@ namespace DivertR.Record.Internal
             return new ActionCallStream<TTarget>(calls, parsedCall);
         }
 
-        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall<TTarget>, CallArguments, TMap> mapper)
+        IEnumerator<IRecordedCall> IEnumerable<IRecordedCall>.GetEnumerator()
         {
-            return new CallStream<TMap>(this.Select(call => mapper.Invoke(call, call.Args)));
+            return base.GetEnumerator();
         }
 
-        public IVerifySnapshot<IRecordedCall<TTarget>> Verify(Action<IRecordedCall<TTarget>, CallArguments> visitor)
+        public ICallStream<IRecordedCall> Filter(Func<IRecordedCall, bool> predicate)
         {
-            return base.Verify(call => visitor.Invoke(call, call.Args));
+            return (ICallStream<IRecordedCall>) base.Filter(predicate);
         }
 
-        public Task<IVerifySnapshot<IRecordedCall<TTarget>>> Verify(Func<IRecordedCall<TTarget>, CallArguments, Task> visitor)
+        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall, TMap> mapper)
         {
-            return base.Verify(call => visitor.Invoke(call, call.Args));
+            return base.Map(mapper);
+        }
+
+        IVerifySnapshot<IRecordedCall> ICallStream<IRecordedCall>.Verify()
+        {
+            return base.Verify();
+        }
+
+        public IVerifySnapshot<IRecordedCall> Verify(Action<IRecordedCall> visitor)
+        {
+            return base.Verify();
+        }
+
+        public async Task<IVerifySnapshot<IRecordedCall>> Verify(Func<IRecordedCall, Task> visitor)
+        {
+            return await base.Verify(visitor);
+        }
+
+        public IRecordStream To(ICallConstraint? callConstraint = null)
+        {
+            if (callConstraint == null)
+            {
+                return this;
+            }
+
+            return new RecordStream(Calls.Where(x => callConstraint.IsMatch(x.CallInfo)));
+        }
+
+        public IFuncCallStream<TReturn> To<TReturn>(Expression<Func<TReturn>> constraintExpression)
+        {
+            if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
+
+            var callValidator = CallExpressionParser.FromProperty(constraintExpression.Body);
+            var callConstraint = callValidator.CreateCallConstraint();
+            
+            var calls = Calls
+                .Where(x => callConstraint.IsMatch(x.CallInfo))
+                .Select(call => new FuncRecordedCall<TReturn>(call));
+
+            return new FuncCallStream<TReturn>(calls);
         }
     }
     
@@ -108,21 +147,6 @@ namespace DivertR.Record.Internal
                 .Select(call => new FuncRecordedCall<TReturn>(call));
 
             return new FuncCallStream<TReturn>(calls);
-        }
-        
-        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall, CallArguments, TMap> mapper)
-        {
-            return new CallStream<TMap>(this.Select(call => mapper.Invoke(call, call.Args)));
-        }
-
-        public IVerifySnapshot<IRecordedCall> Verify(Action<IRecordedCall, CallArguments> visitor)
-        {
-            return base.Verify(call => visitor.Invoke(call, call.Args));
-        }
-
-        public Task<IVerifySnapshot<IRecordedCall>> Verify(Func<IRecordedCall, CallArguments, Task> visitor)
-        {
-            return base.Verify(call => visitor.Invoke(call, call.Args));
         }
     }
 }

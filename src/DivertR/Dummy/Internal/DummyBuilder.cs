@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using DivertR.Internal;
 using DivertR.Record;
+using DivertR.Record.Internal;
 
 namespace DivertR.Dummy.Internal
 {
@@ -60,11 +62,15 @@ namespace DivertR.Dummy.Internal
         
         public IFuncCallStream<TReturn> Record(Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var recordVia = _viaBuilder.Record();
-            var options = ViaOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertVia(recordVia.Via, options);
-
-            return recordVia.CallStream;
+            var recordHandler = new RecordCallHandler();
+            var recordVia = _viaBuilder.Build(recordHandler);
+            var options = ViaOptionsBuilder.Create(optionsAction, disableSatisfyStrict: true);
+            _redirectRepository.InsertVia(recordVia, options);
+            
+            var calls = recordHandler.RecordStream.Select(call => new FuncRecordedCall<TReturn>(call));
+            var callStream = new FuncCallStream<TReturn>(calls);
+            
+            return callStream;
         }
     }
     
@@ -124,11 +130,12 @@ namespace DivertR.Dummy.Internal
         
         public IRecordStream Record(Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var recordVia = _viaBuilder.Record();
-            var options = ViaOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertVia(recordVia.Via, options);
+            var recordHandler = new RecordCallHandler();
+            var recordVia = _viaBuilder.Build(recordHandler);
+            var options = ViaOptionsBuilder.Create(optionsAction, disableSatisfyStrict: true);
+            _redirectRepository.InsertVia(recordVia, options);
 
-            return recordVia.RecordStream;
+            return recordHandler.RecordStream;
         }
     }
 }

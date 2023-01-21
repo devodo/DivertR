@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using DivertR.Internal;
 
 namespace DivertR
 {
@@ -17,17 +16,12 @@ namespace DivertR
             where TTarget : class?
             where TReturn : class?
         {
-            if (redirectUpdater is not FuncRedirectUpdater<TTarget, TReturn> concreteRedirectUpdater)
-            {
-                throw new DiverterException("This extension only supports an internal concrete FuncRedirectUpdater implementation");
-            }
-            
             var proxyCache = new ConditionalWeakTable<TReturn, TReturn>();
-            var redirect = concreteRedirectUpdater.Redirect.RedirectSet.GetOrCreate<TReturn>(name);
+            var redirect = redirectUpdater.Redirect.RedirectSet.GetOrCreate<TReturn>(name);
             
             TReturn ViaDelegate(IFuncRedirectCall<TTarget, TReturn> call)
             {
-                var callReturn = call.CallNext();
+                var callReturn = call.CallNext()!;
 
                 if (callReturn == null!)
                 {
@@ -42,10 +36,8 @@ namespace DivertR
                 });
             }
 
-            var via = concreteRedirectUpdater.ViaBuilder.Build(ViaDelegate);
-            var options = ViaOptionsBuilder.Create(optionsAction);
-            concreteRedirectUpdater.Redirect.RedirectRepository.InsertVia(via, options);
-
+            redirectUpdater.Via(ViaDelegate, optionsAction);
+            
             return redirect;
         }
     }

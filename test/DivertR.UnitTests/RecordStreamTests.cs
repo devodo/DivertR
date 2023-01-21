@@ -465,14 +465,6 @@ namespace DivertR.UnitTests
                 call.Return.ShouldBe(outputs[index]);
                 call.Args[0].ShouldBe(inputs[index++]);
             }).Count.ShouldBe(inputs.Count);
-
-            var index2 = 0;
-            _recordStream.Verify((call, args) =>
-            {
-                call.Return.ShouldBe(outputs[index2]);
-                call.Args[0].ShouldBe(inputs[index2]);
-                args[0].ShouldBe(inputs[index2++]);
-            }).Count.ShouldBe(inputs.Count);
         }
     }
 }

@@ -404,7 +404,7 @@ namespace DivertR.UnitTests
             var echoes = _redirect
                 .To(new MatchCallConstraint<IFoo>(call => call.Method.Name == nameof(IFoo.Echo)))
                 .Record()
-                .Map((_, args) => new { Input = args[0] });
+                .Map(call => new { Input = call.Args[0] });
 
             // ACT
             var outputs = inputs.Select(x => _proxy.Echo(x)).ToList();
