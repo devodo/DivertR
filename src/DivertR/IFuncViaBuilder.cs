@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using DivertR.Record;
 
 namespace DivertR
 {
@@ -19,19 +18,16 @@ namespace DivertR
         IVia Build<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> viaDelegate)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
 
-        new IFuncRecordVia<TTarget, TReturn> Record();
-
         IFuncViaBuilder<TTarget, TReturn, TArgs> Args<TArgs>()
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
     }
 
-    public interface IFuncViaBuilder<TTarget, TReturn, TArgs> : IFuncViaBuilder<TTarget, TReturn>
+    public interface IFuncViaBuilder<TTarget, TReturn, out TArgs> : IFuncViaBuilder<TTarget, TReturn>
         where TTarget : class?
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         IVia Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate);
         IVia Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> viaDelegate);
-        new IFuncRecordVia<TTarget, TReturn, TArgs> Record();
     }
 
     public interface IFuncViaBuilder<TReturn> : IViaBuilder
@@ -42,6 +38,5 @@ namespace DivertR
         IVia Build(Func<TReturn> viaDelegate);
         IVia Build(Func<IFuncRedirectCall<TReturn>, TReturn> viaDelegate);
         IVia Build(Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> viaDelegate);
-        new IFuncRecordVia<TReturn> Record();
     }
 }

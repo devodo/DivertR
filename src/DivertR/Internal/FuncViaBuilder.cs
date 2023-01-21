@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using DivertR.Record;
-using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
     internal class FuncViaBuilder<TTarget, TReturn> : ViaBuilder<TTarget>, IFuncViaBuilder<TTarget, TReturn> where TTarget : class?
     {
-        protected readonly ICallValidator CallValidator;
+        public ICallValidator CallValidator { get; }
 
         public FuncViaBuilder(ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
             : base(callConstraint)
@@ -63,17 +60,10 @@ namespace DivertR.Internal
         {
             return Args<TArgs>().Build(viaDelegate);
         }
+        
+        IFuncViaBuilder<TTarget, TReturn, TArgs> IFuncViaBuilder<TTarget, TReturn>.Args<TArgs>() => Args<TArgs>();
 
-        public new IFuncRecordVia<TTarget, TReturn> Record()
-        {
-            var recordVia = base.Record();
-            var calls = recordVia.RecordStream.Select(call => new FuncRecordedCall<TTarget, TReturn>(call));
-            var callStream = new FuncCallStream<TTarget, TReturn>(calls, CallValidator);
-                
-            return new FuncRecordVia<TTarget, TReturn>(recordVia.Via, callStream);
-        }
-
-        public IFuncViaBuilder<TTarget, TReturn, TArgs> Args<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
+        public FuncViaBuilder<TTarget, TReturn, TArgs> Args<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return new FuncViaBuilder<TTarget, TReturn, TArgs>(CallValidator, CallConstraints);
         }
@@ -104,14 +94,6 @@ namespace DivertR.Internal
             ICallHandler<TTarget> callHandler = new FuncCallHandlerArgs<TTarget, TReturn, TArgs>(_valueTupleMapper, viaDelegate);
             
             return base.Build(callHandler);
-        }
-
-        public new IFuncRecordVia<TTarget, TReturn, TArgs> Record()
-        {
-            var recordVia = base.Record();
-            var callStream = recordVia.CallStream.Args<TArgs>();
-                
-            return new FuncRecordVia<TTarget, TReturn, TArgs>(recordVia.Via, callStream);
         }
     }
 
@@ -150,15 +132,6 @@ namespace DivertR.Internal
             var callHandler = new FuncCallHandlerArgs<TReturn>(viaDelegate);
             
             return base.Build(callHandler);
-        }
-
-        public new IFuncRecordVia<TReturn> Record()
-        {
-            var recordVia = base.Record();
-            var calls = recordVia.RecordStream.Select(call => new FuncRecordedCall<TReturn>(call));
-            var callStream = new FuncCallStream<TReturn>(calls);
-                
-            return new FuncRecordVia<TReturn>(recordVia.Via, callStream);
         }
     }
 }

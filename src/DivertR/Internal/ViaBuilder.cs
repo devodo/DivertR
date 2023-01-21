@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using DivertR.Record;
-using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
@@ -59,13 +57,6 @@ namespace DivertR.Internal
         {
             return new Via<TTarget>(callHandler, new CompositeCallConstraint<TTarget>(CallConstraints));
         }
-        
-        public IRecordVia<TTarget> Record()
-        {
-            var recordHandler = new RecordCallHandler<TTarget>();
-
-            return new RecordVia<TTarget>(Build(recordHandler), recordHandler.RecordStream);
-        }
     }
     
     internal class ViaBuilder : IViaBuilder
@@ -80,11 +71,6 @@ namespace DivertR.Internal
             {
                 _callConstraints.Add(callConstraint);
             }
-        }
-
-        protected ViaBuilder(List<ICallConstraint> callConstraints)
-        {
-            _callConstraints = callConstraints;
         }
 
         public IViaBuilder Filter(ICallConstraint callConstraint)
@@ -121,13 +107,6 @@ namespace DivertR.Internal
         public IVia Build(ICallHandler callHandler)
         {
             return new Via(callHandler, new CompositeCallConstraint(_callConstraints));
-        }
-
-        public IRecordVia Record()
-        {
-            var recordHandler = new RecordCallHandler();
-
-            return new RecordVia(Build(recordHandler), recordHandler.RecordStream);
         }
     }
 }
