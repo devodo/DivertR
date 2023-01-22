@@ -7,8 +7,6 @@ namespace DivertR.Internal
         [return: NotNull]
         public TTarget Decorate<TTarget>(IRedirect redirect, [DisallowNull] TTarget proxy) where TTarget : class?
         {
-            Redirect.ProxyRedirectMap.AddRedirect(redirect, proxy);
-            
             return proxy;
         }
     }
