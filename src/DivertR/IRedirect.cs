@@ -69,7 +69,7 @@ namespace DivertR
         IRedirect Via(IVia via, Action<IViaOptionsBuilder>? optionsAction = null);
 
         /// <summary>
-        /// Reset the Redirect <see cref="IRedirectRepository" /> to its initial state.
+        /// Reset the Redirect's <see cref="IRedirectRepository" /> to its initial state.
         /// </summary>
         /// <param name="includePersistent">Optionally also reset persistent <see cref="IVia"/>s.</param>
         /// <returns>This Redirect instance.</returns>
@@ -77,7 +77,7 @@ namespace DivertR
 
         /// <summary>
         /// Set strict mode on the Redirect.
-        /// If strict is enabled on the Redirect and a call to its proxies does not match a configured <see cref="IVia"/> then a <see cref="StrictNotSatisfiedException"/> is thrown.
+        /// If strict is enabled and a call to its proxies does not match a configured <see cref="IVia"/> then a <see cref="StrictNotSatisfiedException"/> is thrown.
         /// </summary>
         /// <param name="isStrict">Optional bool to specify enable/disable of strict mode.</param>
         /// <returns>This Redirect instance.</returns>
@@ -85,7 +85,7 @@ namespace DivertR
     }
     
     /// <summary>
-    /// Redirect interface with generic type defining the proxy target type.
+    /// Strongly typed generic extension of the <see cref="IRedirect"/> interface with target type defined.
     /// </summary>
     /// <typeparam name="TTarget">The proxy target type.</typeparam>
     public interface IRedirect<TTarget> : IRedirect where TTarget : class?
@@ -137,7 +137,7 @@ namespace DivertR
         new IRedirect<TTarget> Via(IVia via, Action<IViaOptionsBuilder>? optionsAction = null);
 
         /// <summary>
-        /// Reset the Redirect <see cref="IRedirectRepository" /> to its initial state.
+        /// Reset the Redirect's <see cref="IRedirectRepository" /> to its initial state.
         /// </summary>
         /// <param name="includePersistent">Optionally also reset persistent <see cref="IVia"/>s.</param>
         /// <returns>This Redirect instance.</returns>
@@ -145,14 +145,14 @@ namespace DivertR
         
         /// <summary>
         /// Set strict mode on the Redirect.
-        /// If strict is enabled on the Redirect and a call to its proxies does not hit a configured <see cref="IVia"/> then a <see cref="StrictNotSatisfiedException"/> is thrown.
+        /// If strict is enabled and a call to its proxies does not hit a configured <see cref="IVia"/> then a <see cref="StrictNotSatisfiedException"/> is thrown.
         /// </summary>
         /// <param name="isStrict">Optional bool to specify enable/disable of strict mode.</param>
         /// <returns>This Redirect instance.</returns>
         new IRedirect<TTarget> Strict(bool? isStrict = true);
 
         /// <summary>
-        /// Inserts a retarget Via with no call constraints (therefore all calls will be matched and retargeted).
+        /// Inserts a retarget <see cref="IVia"/> with no call constraints (therefore all calls will be matched and retargeted).
         /// </summary>
         /// <param name="target">The target instance to retarget calls to.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>

@@ -29,11 +29,6 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IVia Build(object? instance)
-        {
-            return Build(_ => instance);
-        }
-
         public IVia Build(Func<object?> viaDelegate)
         {
             return Build(_ => viaDelegate.Invoke());
@@ -78,11 +73,6 @@ namespace DivertR.Internal
             _callConstraints.Add(callConstraint);
 
             return this;
-        }
-
-        public IVia Build(object? instance)
-        {
-            return Build(_ => instance);
         }
 
         public IVia Build(Func<object?> viaDelegate)

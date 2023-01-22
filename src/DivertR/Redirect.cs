@@ -153,7 +153,7 @@ namespace DivertR
         /// <inheritdoc />
         public IRedirect<TTarget> Reset(bool includePersistent = false)
         {
-            RedirectRepository.Reset(includePersistent);
+            ResetInternal(includePersistent);
 
             return this;
         }
@@ -203,62 +203,10 @@ namespace DivertR
         {
             return new ActionRedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.ToSetInternal(memberExpression, constraintExpression));
         }
-    }
-
-    public static class Redirect
-    {
-        internal static readonly ProxyRedirectMap ProxyRedirectMap = new();
         
-        /// <summary>
-        /// Creates a Redirect proxy instance.
-        /// </summary>
-        /// <param name="root">The root instance the proxy will wrap and relay calls to by default.</param>
-        /// <typeparam name="TTarget">The proxy target type.</typeparam>
-        /// <returns>The proxy instance.</returns>
-        public static TTarget Proxy<TTarget>(TTarget? root) where TTarget : class?
+        protected virtual void ResetInternal(bool includePersistent)
         {
-            return Proxy<TTarget>(redirect => redirect.Proxy(root));
-        }
-        
-        /// <summary>
-        /// Creates a Redirect proxy instance with no given root instance.
-        /// </summary>
-        /// <param name="withDummyRoot">Flag to specify if the proxy should be created with either a dummy or a null root.</param>
-        /// <typeparam name="TTarget">The proxy target type.</typeparam>
-        /// <returns>The proxy instance.</returns>
-        public static TTarget Proxy<TTarget>(bool withDummyRoot) where TTarget : class?
-        {
-            return Proxy<TTarget>(redirect => redirect.Proxy(withDummyRoot));
-        }
-        
-        /// <summary>
-        /// Creates a Redirect proxy instance with no given root instance.
-        /// By default the proxy is created with a dummy root with members that return default values.
-        /// The default behaviour can be changed to create with null root by setting the <see cref="DiverterSettings.DefaultWithDummyRoot" /> boolean flag.
-        /// </summary>
-        /// <typeparam name="TTarget">The proxy target type.</typeparam>
-        /// <returns>The proxy instance.</returns>
-        public static TTarget Proxy<TTarget>() where TTarget : class?
-        {
-            return Proxy<TTarget>(redirect => redirect.Proxy());
-        }
-
-        /// <summary>
-        /// Retrieves the proxy instance's Redirect that controls its behaviour.
-        /// </summary>
-        /// <param name="proxy">The Redirect proxy instance.</param>
-        /// <typeparam name="TTarget">The proxy and Redirect target type.</typeparam>
-        /// <returns>The Redirect instance.</returns>
-        public static IRedirect<TTarget> From<TTarget>(TTarget proxy) where TTarget : class
-        {
-            return ProxyRedirectMap.GetRedirect(proxy);
-        }
-        
-        private static TTarget Proxy<TTarget>(Func<Redirect<TTarget>, TTarget> createProxy) where TTarget : class?
-        {
-            var redirect = new Redirect<TTarget>();
-            
-            return createProxy(redirect);
+            RedirectRepository.Reset(includePersistent);
         }
     }
 }

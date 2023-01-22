@@ -69,12 +69,12 @@ namespace DivertR.Record.Internal
             return base.GetEnumerator();
         }
 
-        public ICallStream<IRecordedCall> Filter(Func<IRecordedCall, bool> predicate)
+        ICallStream<IRecordedCall> ICallStream<IRecordedCall>.Filter(Func<IRecordedCall, bool> predicate)
         {
             return (ICallStream<IRecordedCall>) base.Filter(predicate);
         }
 
-        public ICallStream<TMap> Map<TMap>(Func<IRecordedCall, TMap> mapper)
+        ICallStream<TMap> ICallStream<IRecordedCall>.Map<TMap>(Func<IRecordedCall, TMap> mapper)
         {
             return base.Map(mapper);
         }
@@ -84,17 +84,17 @@ namespace DivertR.Record.Internal
             return base.Verify();
         }
 
-        public IVerifySnapshot<IRecordedCall> Verify(Action<IRecordedCall> visitor)
+        IVerifySnapshot<IRecordedCall> ICallStream<IRecordedCall>.Verify(Action<IRecordedCall> visitor)
         {
             return base.Verify();
         }
 
-        public async Task<IVerifySnapshot<IRecordedCall>> Verify(Func<IRecordedCall, Task> visitor)
+        async Task<IVerifySnapshot<IRecordedCall>> ICallStream<IRecordedCall>.Verify(Func<IRecordedCall, Task> visitor)
         {
             return await base.Verify(visitor);
         }
 
-        public IRecordStream To(ICallConstraint? callConstraint = null)
+        IRecordStream IRecordStream.To(ICallConstraint? callConstraint)
         {
             if (callConstraint == null)
             {
@@ -104,7 +104,7 @@ namespace DivertR.Record.Internal
             return new RecordStream(Calls.Where(x => callConstraint.IsMatch(x.CallInfo)));
         }
 
-        public IFuncCallStream<TReturn> To<TReturn>(Expression<Func<TReturn>> constraintExpression)
+        IFuncCallStream<TReturn> IRecordStream.To<TReturn>(Expression<Func<TReturn>> constraintExpression)
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
