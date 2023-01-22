@@ -6,6 +6,7 @@ using DivertR.Record.Internal;
 
 namespace DivertR
 {
+    /// <inheritdoc cref="ISpy{TTarget}" />
     public class Spy<TTarget> : Redirect<TTarget>, ISpy<TTarget> where TTarget : class?
     {
         private RecordStream<TTarget> _calls = null!;
@@ -28,15 +29,18 @@ namespace DivertR
             ResetAndConfigureRecord(false);
         }
         
+        /// <inheritdoc />
         [NotNull]
         public TTarget Mock { get; }
-
+        
         IRecordStream ISpy.Calls => CallsLocked;
-
+        
         object ISpy.Mock => Mock;
-
+        
+        /// <inheritdoc />
         public IRecordStream<TTarget> Calls => CallsLocked;
-
+        
+        /// <inheritdoc />
         public new ISpy<TTarget> Via(IVia via, Action<IViaOptionsBuilder>? optionsAction = null)
         {
             base.Via(via, optionsAction);
@@ -64,21 +68,24 @@ namespace DivertR
 
             return this;
         }
-
+        
+        /// <inheritdoc />
         public new ISpy<TTarget> Reset(bool includePersistent = false)
         {
             base.Reset(includePersistent);
 
             return this;
         }
-
+        
+        /// <inheritdoc />
         public new ISpy<TTarget> Strict(bool? isStrict)
         {
             base.Strict(isStrict);
 
             return this;
         }
-
+        
+        /// <inheritdoc />
         public new ISpy<TTarget> Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null)
         {
             base.Retarget(target, optionsAction);
@@ -121,7 +128,10 @@ namespace DivertR
             }
         }
     }
-
+    
+    /// <summary>
+    /// Static Spy helpers for creating spy mock objects and referencing spy instances from those mock objects.
+    /// </summary>
     public static class Spy
     {
         private static readonly SpyTracker SpyTracker = new();
@@ -154,6 +164,7 @@ namespace DivertR
         /// </summary>
         /// <param name="mock">The spy's mock object.</param>
         /// <returns>The spy instance.</returns>
+        /// <exception cref="DiverterException">Thrown if if the given <paramref name="mock"/> object does not have an associated <see cref="ISpy{TTarget}"/> </exception>
         public static ISpy<TTarget> Of<TTarget>([DisallowNull] TTarget mock) where TTarget : class?
         {
             return SpyTracker.GetSpy<TTarget>(mock);

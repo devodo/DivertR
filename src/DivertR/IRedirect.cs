@@ -85,7 +85,7 @@ namespace DivertR
     }
     
     /// <summary>
-    /// Redirect interface with generic type defining the proxy target type.
+    /// Strongly typed generic extension of the <see cref="IRedirect"/> interface with target type defined.
     /// </summary>
     /// <typeparam name="TTarget">The proxy target type.</typeparam>
     public interface IRedirect<TTarget> : IRedirect where TTarget : class?

@@ -9,9 +9,9 @@ namespace DivertR
     ///     1. A <see cref="ISpy.Mock"/> object property that is an <see cref="IRedirect"/> proxy instance.
     ///     2. A <see cref="ISpy.Calls"/> property that is a <see cref="IRecordStream"/> of all calls to the Mock object.
     ///
-    /// Spy inherits from Redirect and can therefore the Mock object behaviour can be configured using the same Redirect fluent interface e.g. to add one or more <see cref="IVia"/> instances or reset.
-    /// The Spy is preconfigured with a permanent Via to record the mock object calls on the <see cref="ISpy.Calls"/> property.
-    /// On reset a new <see cref="ISpy.Calls"/> property is created.
+    /// Spy inherits from Redirect and therefore its Mock behaviour can be configured using the same Redirect fluent interface e.g. to add one or more <see cref="IVia"/> instances or reset.
+    /// The Spy is preconfigured with a Via that records the mock object calls readable from the <see cref="ISpy.Calls"/> property.
+    /// As with a normal Redirect, Spy reset removes all Vias, however it also adds a new Mock call record Via and the <see cref="ISpy.Calls"/> property is replaced.
     /// </summary>
     public interface ISpy : IRedirect
     {
@@ -50,7 +50,7 @@ namespace DivertR
     }
     
     /// <summary>
-    /// Redirect interface with generic type defining the mock target type.
+    /// Strongly typed generic extension of the <see cref="ISpy"/> interface mock target type defined.
     /// </summary>
     /// <typeparam name="TTarget">The mock target type.</typeparam>
     public interface ISpy<TTarget> : IRedirect<TTarget>, ISpy where TTarget : class?
