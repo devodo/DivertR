@@ -9,12 +9,8 @@ namespace DivertR
 
         IVia Build(Action viaDelegate);
         IVia Build(Action<IActionRedirectCall<TTarget>> viaDelegate);
-        IVia Build(Action<IActionRedirectCall<TTarget>, CallArguments> viaDelegate);
-        
+
         IVia Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> viaDelegate)
-            where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        
-        IVia Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> viaDelegate)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
 
         IActionViaBuilder<TTarget, TArgs> Args<TArgs>()
@@ -26,6 +22,5 @@ namespace DivertR
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         IVia Build(Action<IActionRedirectCall<TTarget, TArgs>> viaDelegate);
-        IVia Build(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> viaDelegate);
     }
 }

@@ -22,14 +22,6 @@ namespace DivertR.Internal
             return this;
         }
 
-        public IRedirectUpdater<TTarget> Via(object? instance, Action<IViaOptionsBuilder>? optionsAction = null)
-        {
-            var via = _viaBuilder.Build(() => instance);
-            InsertVia(via, optionsAction);
-
-            return this;
-        }
-
         public IRedirectUpdater<TTarget> Via(Func<object?> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
             var via = _viaBuilder.Build(viaDelegate);

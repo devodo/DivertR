@@ -51,15 +51,6 @@ namespace DivertR.Dummy.Internal
             return this;
         }
 
-        public IDummyBuilder<TReturn> Via(Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
-        {
-            var via = _viaBuilder.Build(viaDelegate);
-            var options = ViaOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertVia(via, options);
-
-            return this;
-        }
-        
         public IFuncCallStream<TReturn> Record(Action<IViaOptionsBuilder>? optionsAction = null)
         {
             var recordHandler = new RecordCallHandler();
@@ -91,16 +82,7 @@ namespace DivertR.Dummy.Internal
 
             return this;
         }
-
-        public IDummyBuilder Via(object instance, Action<IViaOptionsBuilder>? optionsAction = null)
-        {
-            var via = _viaBuilder.Build(() => instance);
-            var options = ViaOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertVia(via, options);
-
-            return this;
-        }
-
+        
         public IDummyBuilder Via(Func<object> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
             var via = _viaBuilder.Build(viaDelegate);
@@ -119,15 +101,6 @@ namespace DivertR.Dummy.Internal
             return this;
         }
 
-        public IDummyBuilder Via(Func<IRedirectCall, CallArguments, object> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
-        {
-            var via = _viaBuilder.Build(viaDelegate);
-            var options = ViaOptionsBuilder.Create(optionsAction);
-            _redirectRepository.InsertVia(via, options);
-
-            return this;
-        }
-        
         public IRecordStream Record(Action<IViaOptionsBuilder>? optionsAction = null)
         {
             var recordHandler = new RecordCallHandler();

@@ -44,23 +44,11 @@ namespace DivertR.Internal
             return base.Build(callHandler);
         }
 
-        public IVia Build(Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> viaDelegate)
-        {
-            var callHandler = new FuncCallHandlerArgs<TTarget, TReturn>(viaDelegate);
-            
-            return base.Build(callHandler);
-        }
-
         public IVia Build<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return Args<TArgs>().Build(viaDelegate);
         }
 
-        public IVia Build<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> viaDelegate) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
-        {
-            return Args<TArgs>().Build(viaDelegate);
-        }
-        
         IFuncViaBuilder<TTarget, TReturn, TArgs> IFuncViaBuilder<TTarget, TReturn>.Args<TArgs>() => Args<TArgs>();
 
         public FuncViaBuilder<TTarget, TReturn, TArgs> Args<TArgs>() where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
@@ -85,13 +73,6 @@ namespace DivertR.Internal
         public IVia Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate)
         {
             ICallHandler<TTarget> callHandler = new FuncCallHandler<TTarget, TReturn, TArgs>(_valueTupleMapper, viaDelegate);
-            
-            return base.Build(callHandler);
-        }
-        
-        public IVia Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> viaDelegate)
-        {
-            ICallHandler<TTarget> callHandler = new FuncCallHandlerArgs<TTarget, TReturn, TArgs>(_valueTupleMapper, viaDelegate);
             
             return base.Build(callHandler);
         }
@@ -123,13 +104,6 @@ namespace DivertR.Internal
         public IVia Build(Func<IFuncRedirectCall<TReturn>, TReturn> viaDelegate)
         {
             var callHandler = new FuncCallHandler<TReturn>(viaDelegate);
-            
-            return base.Build(callHandler);
-        }
-
-        public IVia Build(Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> viaDelegate)
-        {
-            var callHandler = new FuncCallHandlerArgs<TReturn>(viaDelegate);
             
             return base.Build(callHandler);
         }

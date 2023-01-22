@@ -38,14 +38,7 @@ namespace DivertR.Internal
 
             return base.Build(callHandler);
         }
-
-        public IVia Build(Action<IActionRedirectCall<TTarget>, CallArguments> viaDelegate)
-        {
-            var callHandler = new ActionCallHandlerArgs<TTarget>(viaDelegate);
-
-            return base.Build(callHandler);
-        }
-
+        
         public IVia Build<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> viaDelegate) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
             return Args<TArgs>().Build(viaDelegate);
@@ -80,13 +73,6 @@ namespace DivertR.Internal
         public IVia Build(Action<IActionRedirectCall<TTarget, TArgs>> viaDelegate)
         {
             var callHandler = new ActionCallHandler<TTarget, TArgs>(_valueTupleMapper, viaDelegate);
-            
-            return base.Build(callHandler);
-        }
-
-        public IVia Build(Action<IActionRedirectCall<TTarget, TArgs>, TArgs> viaDelegate)
-        {
-            var callHandler = new ActionCallHandlerArgs<TTarget, TArgs>(_valueTupleMapper, viaDelegate);
             
             return base.Build(callHandler);
         }
