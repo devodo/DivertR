@@ -24,7 +24,7 @@ namespace DivertR.Internal
 
         public IRedirectUpdater<TTarget> Via(object? instance, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var via = _viaBuilder.Build(instance);
+            var via = _viaBuilder.Build(() => instance);
             InsertVia(via, optionsAction);
 
             return this;

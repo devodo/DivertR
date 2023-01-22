@@ -94,7 +94,7 @@ namespace DivertR.Dummy.Internal
 
         public IDummyBuilder Via(object instance, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var via = _viaBuilder.Build(instance);
+            var via = _viaBuilder.Build(() => instance);
             var options = ViaOptionsBuilder.Create(optionsAction);
             _redirectRepository.InsertVia(via, options);
 

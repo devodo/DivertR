@@ -6,7 +6,7 @@ using DivertR.Record.Internal;
 
 namespace DivertR
 {
-    public class Spy<TTarget> : Redirect<TTarget>, ISpy, ISpy<TTarget> where TTarget : class?
+    public class Spy<TTarget> : Redirect<TTarget>, ISpy<TTarget> where TTarget : class?
     {
         private RecordStream<TTarget> _calls = null!;
         private readonly object _callsLock = new();
@@ -24,8 +24,8 @@ namespace DivertR
             : base(diverterSettings)
         {
             Mock = hasRoot ? Proxy() : Proxy(root);
-            ConfigureRecord();
             Spy.AddSpy(this, Mock);
+            ResetAndConfigureRecord(false);
         }
         
         [NotNull]
@@ -88,17 +88,18 @@ namespace DivertR
         
         protected override void ResetInternal(bool includePersistent)
         {
-            base.ResetInternal(includePersistent);
-            ConfigureRecord();
+            ResetAndConfigureRecord(includePersistent);
         }
-
-        private void ConfigureRecord()
+        
+        private void ResetAndConfigureRecord(bool includePersistent)
         {
             var recordHandler = new RecordCallHandler<TTarget>();
-            var via = new Via<TTarget>(recordHandler);
+            // Only record calls going to the Mock proxy
+            var callConstraint = new CallConstraint<TTarget>(call => ReferenceEquals(call.Proxy, Mock));
+            var via = ViaBuilder<TTarget>.To(callConstraint).Build(recordHandler);
             var options = ViaOptionsBuilder.Create(opt => opt.OrderFirst(), disableSatisfyStrict: true);
+            RedirectRepository.Reset(via, options, includePersistent);
             CallsLocked = recordHandler.RecordStream;
-            RedirectRepository.InsertVia(via, options);
         }
 
         private RecordStream<TTarget> CallsLocked

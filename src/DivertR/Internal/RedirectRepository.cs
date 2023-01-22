@@ -25,7 +25,11 @@ namespace DivertR.Internal
                 {
                     lock (_lockObject)
                     {
-                        redirectPlan = _persistentPlan;
+                        if (!_planStack.TryPeek(out redirectPlan))
+                        {
+                            // This state should never be possible
+                            throw new InvalidOperationException("Unexpected empty redirect plan stack encountered.");
+                        }
                     }
                 }
 
@@ -64,8 +68,30 @@ namespace DivertR.Internal
 
             return this;
         }
-
+        
         public IRedirectRepository Reset(bool includePersistent = false)
+        {
+            return ResetInternal(null, includePersistent);
+        }
+
+        public IRedirectRepository Reset(IVia via, bool includePersistent = false)
+        {
+            return Reset(via, ViaOptions.Default, includePersistent);
+        }
+        
+        public IRedirectRepository Reset(IVia via, IViaOptions viaOptions, bool includePersistent = false)
+        {
+            var configuredVia = new ConfiguredVia(via, viaOptions);
+            
+            return ResetInternal(configuredVia, includePersistent);
+        }
+        
+        public IRedirectRepository Reset(IConfiguredVia configuredVia, bool includePersistent = false)
+        {
+            return ResetInternal(configuredVia, includePersistent);
+        }
+
+        private IRedirectRepository ResetInternal(IConfiguredVia? configuredVia, bool includePersistent = false)
         {
             lock (_lockObject)
             {
@@ -73,9 +99,11 @@ namespace DivertR.Internal
                 {
                     _persistentPlan = Internal.RedirectPlan.Empty;
                 }
+
+                var resetPlan = configuredVia == null ? _persistentPlan : _persistentPlan.InsertVia(configuredVia);
                 
                 _planStack.Clear();
-                _planStack.Push(_persistentPlan);
+                _planStack.Push(resetPlan);
             }
 
             return this;
