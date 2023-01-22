@@ -33,7 +33,7 @@ namespace DivertR
 
         IRecordStream ISpy.Calls => CallsLocked;
 
-        object ISpy.Object => Mock;
+        object ISpy.Mock => Mock;
 
         public IRecordStream<TTarget> Calls => CallsLocked;
 

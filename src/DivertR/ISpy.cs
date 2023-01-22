@@ -5,7 +5,7 @@ namespace DivertR
 {
     public interface ISpy : IRedirect
     {
-        object Object { get; }
+        object Mock { get; }
         IRecordStream Calls { get; }
         
         new ISpy Via(IVia via, Action<IViaOptionsBuilder>? optionsAction = null);

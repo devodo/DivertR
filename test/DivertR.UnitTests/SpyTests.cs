@@ -34,6 +34,22 @@ public class SpyTests
     }
     
     [Fact]
+    public void GivenNonGenericSpy_WhenMockCalled_ThenRecordCall()
+    {
+        // ARRANGE
+        ISpy spy = new Spy<IFoo>(new Foo("test"));
+        var fooMock = (IFoo) spy.Mock;
+        
+        // ACT
+        _ = fooMock.Name;
+        
+        // ASSERT
+        spy.Calls
+            .To(() => Is<string>.Return)
+            .Verify(call => call.Return.ShouldBe("test")).Count.ShouldBe(1);
+    }
+    
+    [Fact]
     public void GivenSpyWithNoRoot_WhenMockCalled_ShouldReturnDefault()
     {
         // ARRANGE
@@ -47,10 +63,45 @@ public class SpyTests
     }
     
     [Fact]
+    public void GivenSpy_WhenReset_RemovesVia()
+    {
+        // ARRANGE
+        ISpy<IFoo> fooSpy = new Spy<IFoo>(new Foo("MrFoo"));
+        fooSpy.To(x => x.Name).Via("rename");
+        
+        // ACT
+        var before = fooSpy.Mock.Name;
+        fooSpy.Reset();
+        var result = fooSpy.Mock.Name;
+        
+        // ASSERT
+        before.ShouldBe("rename");
+        result.ShouldBe("MrFoo");
+        fooSpy.Calls.Verify().Count.ShouldBe(1);
+    }
+    
+    [Fact]
+    public void GivenGenericSpy_WhenReset_ResetsCalls()
+    {
+        // ARRANGE
+        ISpy fooSpy = new Spy<IFoo>();
+        var fooMock = (IFoo) fooSpy.Mock;
+        _ = fooMock.Name;
+        var callsBefore = fooSpy.Calls;
+        
+        // ACT
+        fooSpy.Reset();
+
+        // ASSERT
+        callsBefore.Count.ShouldBe(1);
+        fooSpy.Calls.Count.ShouldBe(0);
+    }
+    
+    [Fact]
     public void GivenSpyReset_WhenMockCalled_RecordsCalls()
     {
         // ARRANGE
-        var fooSpy = new Spy<IFoo>(new Foo());
+        ISpy<IFoo> fooSpy = new Spy<IFoo>(new Foo());
         var callsBeforeReset = fooSpy.Calls;
         fooSpy.Reset();
         var callsAfterReset = fooSpy.Calls;
@@ -71,7 +122,7 @@ public class SpyTests
     public void GivenSpyWithVia_WhenMockCalled_ThenRedirects()
     {
         // ARRANGE
-        var fooSpy = new Spy<IFoo>();
+        ISpy<IFoo> fooSpy = new Spy<IFoo>();
         
         fooSpy
             .To(x => x.Echo(Is<string>.Any))
@@ -82,6 +133,88 @@ public class SpyTests
         
         // ASSERT
         result.ShouldBe("test redirected");
+    }
+    
+    [Fact]
+    public void GivenSpyWithGlobalVia_WhenMockCalled_ThenRedirects()
+    {
+        // ARRANGE
+        ISpy<IFoo> fooSpy = new Spy<IFoo>();
+
+        var via = ViaBuilder<IFoo>
+            .To(x => x.Echo(Is<string>.Any))
+            .Build<(string input, __)>(call => $"{call.Args.input} redirected");
+
+        fooSpy.Via(via);
+        
+        // ACT
+        var result = fooSpy.Mock.Echo("test");
+        
+        // ASSERT
+        result.ShouldBe("test redirected");
+    }
+    
+    [Fact]
+    public void GivenNonGenericSpyWithGlobalVia_WhenMockCalled_ThenRedirects()
+    {
+        // ARRANGE
+        ISpy fooSpy = new Spy<IFoo>();
+        var fooMock = (IFoo) fooSpy.Mock;
+
+        var via = ViaBuilder<IFoo>
+            .To(x => x.Echo(Is<string>.Any))
+            .Build<(string input, __)>(call => $"{call.Args.input} redirected");
+
+        fooSpy.Via(via);
+        
+        // ACT
+        var result = fooMock.Echo("test");
+        
+        // ASSERT
+        result.ShouldBe("test redirected");
+    }
+    
+    [Fact]
+    public void GivenSpyWithRetarget_WhenMockCalled_ThenRedirects()
+    {
+        // ARRANGE
+        ISpy<IFoo> fooSpy = new Spy<IFoo>();
+        fooSpy.Retarget(new Foo("MrFoo"));
+        
+        // ACT
+        var result = fooSpy.Mock.Name;
+        
+        // ASSERT
+        result.ShouldBe("MrFoo");
+    }
+    
+    [Fact]
+    public void GivenSpyWithStrict_WhenMockCalled_ThenThrowsException()
+    {
+        // ARRANGE
+        ISpy<IFoo> fooSpy = new Spy<IFoo>();
+        fooSpy.Strict();
+        
+        // ACT
+        var testAction = () => fooSpy.Mock.Name;
+        
+        // ASSERT
+        testAction.ShouldThrow<StrictNotSatisfiedException>();
+    }
+    
+    [Fact]
+    public void GivenNonGenericSpyWithStrict_WhenMockCalled_ThenThrowsException()
+    {
+        // ARRANGE
+        ISpy fooSpy = new Spy<IFoo>();
+        fooSpy.Strict();
+        var fooMock = (IFoo) fooSpy.Mock;
+        
+        // ACT
+        var testAction = () => fooMock.Name;
+        
+        // ASSERT
+        testAction.ShouldThrow<StrictNotSatisfiedException>();
     }
     
     [Fact]

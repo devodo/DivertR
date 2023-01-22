@@ -74,20 +74,10 @@ namespace DivertR
     {
         public static IViaBuilder To(ICallConstraint? callConstraint = null)
         {
-            return ToInternal(callConstraint);
-        }
-        
-        public static IFuncViaBuilder<TReturn> To<TReturn>(Expression<Func<TReturn>> constraintExpression)
-        {
-            return ToInternal(constraintExpression);
-        }
-        
-        internal static Internal.ViaBuilder ToInternal(ICallConstraint? callConstraint = null)
-        {
             return new Internal.ViaBuilder(callConstraint);
         }
         
-        internal static FuncViaBuilder<TReturn> ToInternal<TReturn>(Expression<Func<TReturn>> constraintExpression)
+        public static IFuncViaBuilder<TReturn> To<TReturn>(Expression<Func<TReturn>> constraintExpression)
         {
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
