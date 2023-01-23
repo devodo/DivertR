@@ -1151,7 +1151,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _redirect
                 .To(new CallConstraint<IFoo>(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
-                .Via("redirected");
+                .Via(() => "redirected");
 
             var proxy = _redirect.Proxy();
 

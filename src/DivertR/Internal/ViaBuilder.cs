@@ -37,14 +37,7 @@ namespace DivertR.Internal
         public IVia Build(Func<IRedirectCall<TTarget>, object?> viaDelegate)
         {
             var callHandler = new CallHandler<TTarget>(viaDelegate);
-            
-            return Build(callHandler);
-        }
 
-        public IVia Build(Func<IRedirectCall<TTarget>, CallArguments, object?> viaDelegate)
-        {
-            var callHandler = new CallHandlerArgs<TTarget>(viaDelegate);
-            
             return Build(callHandler);
         }
 
@@ -83,14 +76,7 @@ namespace DivertR.Internal
         public IVia Build(Func<IRedirectCall, object?> viaDelegate)
         {
             var callHandler = new CallHandler(viaDelegate);
-            
-            return Build(callHandler);
-        }
 
-        public IVia Build(Func<IRedirectCall, CallArguments, object?> viaDelegate)
-        {
-            var callHandler = new CallHandlerArgs(viaDelegate);
-            
             return Build(callHandler);
         }
 

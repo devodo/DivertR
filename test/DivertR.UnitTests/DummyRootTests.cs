@@ -529,9 +529,8 @@ namespace DivertR.UnitTests
             _dummyFactory
                 .To(() => Is<string>.Return)
                 .Via(() => "redirected")
-                .Via(call => $"{call.CallNext()} call {call.Args.LastOrDefault()}".Trim())
-                .Via((call, args) => $"{call.CallNext()} args {args.LastOrDefault()}".Trim());
-            
+                .Via(call => $"{call.CallNext()} call {call.Args.LastOrDefault()}".Trim());
+
             var proxy = _redirect.Proxy();
 
             // ACT
@@ -540,8 +539,8 @@ namespace DivertR.UnitTests
             var objectReturn = proxy.EchoGeneric<object>("hello");
 
             // ASSERT
-            result.ShouldBe("redirected call hello args hello");
-            name.ShouldBe("redirected call args");
+            result.ShouldBe("redirected call hello");
+            name.ShouldBe("redirected call");
             objectReturn.ShouldBeNull();
         }
         
@@ -573,9 +572,8 @@ namespace DivertR.UnitTests
             _dummyFactory
                 .To(new CallConstraint(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
                 .Via(() => "redirected")
-                .Via(call => $"{call.CallNext()} call {call.Args.LastOrDefault()}".Trim())
-                .Via((call, args) => $"{call.CallNext()} args {args.LastOrDefault()}".Trim());
-            
+                .Via(call => $"{call.CallNext()} call {call.Args.LastOrDefault()}".Trim());
+
             var proxy = _redirect.Proxy();
 
             // ACT
@@ -585,9 +583,9 @@ namespace DivertR.UnitTests
             var intReturn = proxy.EchoGeneric(1);
 
             // ASSERT
-            result.ShouldBe("redirected call hello args hello");
-            name.ShouldBe("redirected call args");
-            objectReturn.ShouldBe("redirected call hello args hello");
+            result.ShouldBe("redirected call hello");
+            name.ShouldBe("redirected call");
+            objectReturn.ShouldBe("redirected call hello");
             intReturn.ShouldBe(0);
         }
         
@@ -597,7 +595,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _dummyFactory
                 .To(new CallConstraint(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
-                .Via("redirected");
+                .Via(() => "redirected");
 
             var proxy = _redirect.Proxy();
 

@@ -10,12 +10,8 @@ namespace DivertR
         IVia Build(TReturn instance);
         IVia Build(Func<TReturn> viaDelegate);
         IVia Build(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> viaDelegate);
-        IVia Build(Func<IFuncRedirectCall<TTarget, TReturn>, CallArguments, TReturn> viaDelegate);
-        
+
         IVia Build<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate)
-            where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
-        
-        IVia Build<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> viaDelegate)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
 
         IFuncViaBuilder<TTarget, TReturn, TArgs> Args<TArgs>()
@@ -27,7 +23,6 @@ namespace DivertR
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
         IVia Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate);
-        IVia Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TArgs, TReturn> viaDelegate);
     }
 
     public interface IFuncViaBuilder<TReturn> : IViaBuilder
@@ -37,6 +32,5 @@ namespace DivertR
         IVia Build(TReturn instance);
         IVia Build(Func<TReturn> viaDelegate);
         IVia Build(Func<IFuncRedirectCall<TReturn>, TReturn> viaDelegate);
-        IVia Build(Func<IFuncRedirectCall<TReturn>, CallArguments, TReturn> viaDelegate);
     }
 }
