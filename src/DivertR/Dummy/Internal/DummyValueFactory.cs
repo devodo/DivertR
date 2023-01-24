@@ -32,7 +32,7 @@ namespace DivertR.Dummy.Internal
                 [typeof(Tuple<,,,,>)] = CreateTupleOf,
                 [typeof(Tuple<,,,,,>)] = CreateTupleOf,
                 [typeof(Tuple<,,,,,,>)] = CreateTupleOf,
-                [typeof(Tuple<,,,,,,,>)] = CreateTupleOf,
+                [typeof(Tuple<,,,,,,,>)] = CreateTupleOf
             };
         }
 

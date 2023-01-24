@@ -46,7 +46,7 @@ namespace DivertR
 
         public override string ToString()
         {
-            return $"Type:{Type.Name}" + (string.IsNullOrEmpty(Name) ? $" Name:<empty>" : $" Name: {Name}");
+            return $"Type:{Type.Name}" + (string.IsNullOrEmpty(Name) ? " Name:<empty>" : $" Name: {Name}");
         }
         
         /// <summary>

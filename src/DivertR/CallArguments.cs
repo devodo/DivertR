@@ -41,6 +41,6 @@ namespace DivertR
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator CallArguments(object[] args) => new CallArguments(args);
+        public static implicit operator CallArguments(object[] args) => new(args);
     }
 }

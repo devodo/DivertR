@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Verify
+title: Recording and Verifying
 nav_order: 3
-parent: Quickstart
+parent: Documentation
 ---
 
-# Verify
+# Recording and Verifying
 
 {: .no_toc }
 

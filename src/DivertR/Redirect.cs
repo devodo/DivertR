@@ -90,7 +90,7 @@ namespace DivertR
         [return: NotNull]
         public TTarget Proxy(object? root)
         {
-            if (root != null && !(root is TTarget))
+            if (root != null && root is not TTarget)
             {
                 throw new ArgumentException($"Not assignable to {typeof(TTarget).Name}", nameof(root));
             }

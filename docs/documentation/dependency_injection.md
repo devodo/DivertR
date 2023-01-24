@@ -2,7 +2,7 @@
 layout: default
 title: Dependency Injection
 nav_order: 2
-parent: Quickstart
+parent: Documentation
 ---
 
 # Dependency Injection
@@ -19,7 +19,7 @@ parent: Quickstart
 </details>
 
 DivertR is designed to be embedded easily and transparently into the dependency injection (DI) container to facilitate testing an integrated, wired-up system.
-It does this by decorating existing DI service registrations with [Redirects](./Redirect.md) that replace the originals.
+It does this by decorating existing DI service registrations with [Redirects](../redirects/) that replace the originals.
 These Redirects create proxies that wrap the instances resolved from the originals as their default targets or *roots*.
 
 By default Redirect proxies transparently forward calls to their roots and therefore, in this initial state, the behaviour of the DI system is unchanged.
@@ -103,6 +103,9 @@ Console.WriteLine(foo.Name);  // "Foo"
 Console.WriteLine(foo2.Name);  // "Foo2"
 ```
 
+# Redirect Set
+
+
 # Via Redirect
 
 Sometimes a test needs to manipulate instances that are not directly created by the DI container.
@@ -133,22 +136,24 @@ diverter.ResetAll();
 Console.WriteLine(bar.Name); // "MrBar"
 ```
 
-`RedirectVia` intercepts the method return values and wraps them as proxies created from a Via.
-It returns this Via that can then be used to control the behaviour of the proxy wrappers.
+`ViaRedirect` intercepts the method return values and wraps them as proxies created from a Redirect.
+It returns this Redirect that can then be used to control the behaviour of the proxy wrappers.
 
 # Proxy Lifetime
 
-DivertR aims to leave the original system behaviour unchanged and therefore
-when existing DI registrations are replaced by Redirect decorators the lifetime of the registration is preserved.
+To maintain the original system behaviour when DivertR replaces existing DI registrations with Redirect decorators the lifetime is preserved.
 
-For multiple instance registrations such as transients, a separate proxy instance is created for each but all from the same Redirect instance.
-In other words all proxies resolved from a Redirect decorated registration are managed from this single Redirect.
+When instances are resolved from a Redirect decoratored registration a new proxy is created each time but all from the same Redirect instance.
+Therefore if the Redirect configuration is changed, e.g. by adding a Via, it is applied across all of the Redirect's proxy instances. 
+This is important for managing proxies with lifetimes like transient where multiple instances could be resolved.
 
 # Dispose
 
-If a DI created root instance implements the `IDisposable` interface then the DI container manages its disposal, as usual, according to its registration lifetime.
+DivertR takes care to ensure DI resolved instances such as Redirect proxies and the root instances they wrap are correctly disposed. 
 
-If a DI Redirect proxy is an `IDisposable` then **only** the proxy instance is disposed by the DI container and not the root.
+If a root instance implements the `IDisposable` interface then the DI container manages its disposal, as usual, according to its registration lifetime.
+
+If the Redirect target type inherits `IDisposable` then **only** the proxy instances are disposed by the DI container and not the root.
 In this case the responsibilty is left to the proxy for forwarding the dispose call to its root (and it does this by default).
 
-The above also applies to `IAsyncDisposable`.
+The above dispose pattern also applies to `IAsyncDisposable` types.

@@ -20,16 +20,17 @@ namespace DivertR.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                // ReSharper disable once InconsistentlySynchronizedField: lock free read optimisation
-                if (!_planStack.TryPeek(out var redirectPlan))
+                if (_planStack.TryPeek(out var redirectPlan))
                 {
-                    lock (_lockObject)
+                    return redirectPlan;
+                }
+
+                lock (_lockObject)
+                {
+                    if (!_planStack.TryPeek(out redirectPlan))
                     {
-                        if (!_planStack.TryPeek(out redirectPlan))
-                        {
-                            // This state should never be possible
-                            throw new InvalidOperationException("Unexpected empty redirect plan stack encountered.");
-                        }
+                        // This state should never be possible
+                        throw new InvalidOperationException("Unexpected empty redirect plan stack encountered.");
                     }
                 }
 
