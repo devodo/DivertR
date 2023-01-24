@@ -12,7 +12,7 @@ namespace DivertR
 
         public IProxyFactory ProxyFactory { get; }
         
-        public IDiverterProxyDecorator DiverterProxyDecorator { get; }
+        public IDiverterProxyFactory DiverterProxyFactory { get; }
         
         public IRedirectProxyDecorator RedirectProxyDecorator { get; }
         
@@ -43,14 +43,14 @@ namespace DivertR
 
         public DiverterSettings(
             IProxyFactory? proxyFactory = null,
-            IDiverterProxyDecorator? diverterProxyDecorator = null,
+            IDiverterProxyFactory? diverterProxyFactory = null,
             IRedirectProxyDecorator? redirectProxyDecorator = null,
             bool defaultWithDummyRoot = true,
             IDummyFactory? dummyFactory = null,
             ICallInvoker? callInvoker = null)
         {
             ProxyFactory = proxyFactory ?? new DispatchProxyFactory();
-            DiverterProxyDecorator = diverterProxyDecorator ?? new DiverterProxyDecorator();
+            DiverterProxyFactory = diverterProxyFactory ?? new DiverterProxyFactory();
             RedirectProxyDecorator = redirectProxyDecorator ?? new RedirectProxyDecorator();
             DefaultWithDummyRoot = defaultWithDummyRoot;
             DummyFactory = dummyFactory ?? new DummyFactory();

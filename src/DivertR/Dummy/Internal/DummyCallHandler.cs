@@ -4,7 +4,7 @@ namespace DivertR.Dummy.Internal
 {
     public class DummyCallHandler : ICallHandler
     {
-        private readonly DummyValueFactory _dummyValueFactory = new DummyValueFactory();
+        private readonly DummyValueFactory _dummyValueFactory = new();
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Handle(IRedirectCall redirectCall)

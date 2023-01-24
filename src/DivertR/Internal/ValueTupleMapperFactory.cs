@@ -17,7 +17,7 @@ namespace DivertR.Internal
             typeof(ValueTupleMapper), typeof(ValueTupleMapper<>), typeof(ValueTupleMapper<,>), typeof(ValueTupleMapper<,,>), typeof(ValueTupleMapper<,,,>), typeof(ValueTupleMapper<,,,,>), typeof(ValueTupleMapper<,,,,,>), typeof(ValueTupleMapper<,,,,,,>), typeof(ValueTupleMapper<,,,,,,,>)
         };
         
-        private static readonly ConcurrentDictionary<Type, IValueTupleMapper> MapperCache = new ConcurrentDictionary<Type, IValueTupleMapper>();
+        private static readonly ConcurrentDictionary<Type, IValueTupleMapper> MapperCache = new();
 
         public static IValueTupleMapper Create<TArgs>()
         {

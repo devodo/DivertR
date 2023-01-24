@@ -55,10 +55,10 @@ namespace DivertR
         {
             if (memberExpression.Body == null) throw new ArgumentNullException(nameof(memberExpression));
 
-            constraintExpression ??= (() => Is<TProperty>.Any);
+            constraintExpression ??= () => Is<TProperty>.Any;
             if (constraintExpression is { Body: null }) throw new ArgumentNullException(nameof(constraintExpression));
 
-            if (!(memberExpression.Body is MemberExpression propertyExpression))
+            if (memberExpression.Body is not MemberExpression propertyExpression)
             {
                 throw new ArgumentException("Must be a property member expression", nameof(memberExpression));
             }

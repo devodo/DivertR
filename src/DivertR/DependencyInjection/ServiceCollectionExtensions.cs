@@ -86,7 +86,7 @@ namespace DivertR.DependencyInjection
             {
                 var root = rootFactory.Invoke(provider);
                 
-                return redirect.RedirectSet.Settings.DiverterProxyDecorator.Decorate(redirect, root);
+                return redirect.RedirectSet.Settings.DiverterProxyFactory.CreateProxy(redirect, root);
             };
         }
         

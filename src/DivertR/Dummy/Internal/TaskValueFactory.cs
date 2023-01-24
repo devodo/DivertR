@@ -6,8 +6,8 @@ namespace DivertR.Dummy.Internal
 {
     internal class TaskValueFactory
     {
-        private readonly ConcurrentDictionary<Type, IInternalTaskFactory> _taskFactories = new ConcurrentDictionary<Type, IInternalTaskFactory>();
-        private readonly ConcurrentDictionary<Type, IInternalValueTaskFactory> _valueTaskFactories = new ConcurrentDictionary<Type, IInternalValueTaskFactory>();
+        private readonly ConcurrentDictionary<Type, IInternalTaskFactory> _taskFactories = new();
+        private readonly ConcurrentDictionary<Type, IInternalValueTaskFactory> _valueTaskFactories = new();
 
         public Task CreateTaskOf(Type taskType, DummyValueFactory dummyValueFactory)
         {
