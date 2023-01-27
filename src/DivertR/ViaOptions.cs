@@ -2,7 +2,7 @@
 
 namespace DivertR
 {
-    public class ViaOptions : IViaOptions
+    public class ViaOptions
     {
         public static readonly ViaOptions Default = new();
 

@@ -38,7 +38,7 @@ namespace DivertR.Internal
             } 
         }
 
-        public IRedirectRepository InsertVia(IVia via, IViaOptions? viaOptions = null)
+        public IRedirectRepository InsertVia(IVia via, ViaOptions? viaOptions = null)
         {
             var configuredVia = new ConfiguredVia(via, viaOptions ?? ViaOptions.Default);
             
@@ -72,27 +72,33 @@ namespace DivertR.Internal
         
         public IRedirectRepository Reset(bool includePersistent = false)
         {
-            return ResetInternal(null, includePersistent);
+            lock (_lockObject)
+            {
+                if (includePersistent)
+                {
+                    _persistentPlan = Internal.RedirectPlan.Empty;
+                }
+
+                _planStack.Clear();
+                _planStack.Push(_persistentPlan);
+            }
+
+            return this;
         }
 
-        public IRedirectRepository Reset(IVia via, bool includePersistent = false)
+        public IRedirectRepository ResetAndInsert(IVia via, bool includePersistent = false)
         {
-            return Reset(via, ViaOptions.Default, includePersistent);
+            return ResetAndInsert(via, ViaOptions.Default, includePersistent);
         }
         
-        public IRedirectRepository Reset(IVia via, IViaOptions viaOptions, bool includePersistent = false)
+        public IRedirectRepository ResetAndInsert(IVia via, ViaOptions viaOptions, bool includePersistent = false)
         {
             var configuredVia = new ConfiguredVia(via, viaOptions);
             
-            return ResetInternal(configuredVia, includePersistent);
+            return ResetAndInsert(configuredVia, includePersistent);
         }
         
-        public IRedirectRepository Reset(IConfiguredVia configuredVia, bool includePersistent = false)
-        {
-            return ResetInternal(configuredVia, includePersistent);
-        }
-
-        private IRedirectRepository ResetInternal(IConfiguredVia? configuredVia, bool includePersistent = false)
+        public IRedirectRepository ResetAndInsert(IConfiguredVia configuredVia, bool includePersistent = false)
         {
             lock (_lockObject)
             {
@@ -101,7 +107,12 @@ namespace DivertR.Internal
                     _persistentPlan = Internal.RedirectPlan.Empty;
                 }
 
-                var resetPlan = configuredVia == null ? _persistentPlan : _persistentPlan.InsertVia(configuredVia);
+                var resetPlan = _persistentPlan.InsertVia(configuredVia);
+                
+                if (configuredVia.Options.IsPersistent)
+                {
+                    _persistentPlan = resetPlan;
+                }
                 
                 _planStack.Clear();
                 _planStack.Push(resetPlan);

@@ -105,7 +105,7 @@ namespace DivertR
             var callConstraint = new CallConstraint<TTarget>(call => ReferenceEquals(call.Proxy, Mock));
             var via = ViaBuilder<TTarget>.To(callConstraint).Build(recordHandler);
             var options = ViaOptionsBuilder.Create(opt => opt.OrderFirst(), disableSatisfyStrict: true);
-            RedirectRepository.Reset(via, options, includePersistent);
+            RedirectRepository.ResetAndInsert(via, options, includePersistent);
             CallsLocked = recordHandler.RecordStream;
         }
 
