@@ -4,7 +4,7 @@ namespace DivertR.Internal
 {
     internal class ConfiguredVia : IConfiguredVia
     {
-        public ConfiguredVia(IVia via, IViaOptions viaOptions)
+        public ConfiguredVia(IVia via, ViaOptions viaOptions)
         {
             Via = viaOptions.ViaDecorator?.Invoke(via) ?? via;
             Options = viaOptions;
@@ -16,7 +16,7 @@ namespace DivertR.Internal
             get;
         }
 
-        public IViaOptions Options
+        public ViaOptions Options
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;

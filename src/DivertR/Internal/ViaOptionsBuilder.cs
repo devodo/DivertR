@@ -66,7 +66,7 @@ namespace DivertR.Internal
             return Decorate(via => new SkipViaDecorator(via, skipCount));
         }
         
-        public static IViaOptions Create(Action<IViaOptionsBuilder>? optionsAction, int orderWeight = 0, bool disableSatisfyStrict = false)
+        public static ViaOptions Create(Action<IViaOptionsBuilder>? optionsAction, int orderWeight = 0, bool disableSatisfyStrict = false)
         {
             var builder = new ViaOptionsBuilder(orderWeight, disableSatisfyStrict);
             optionsAction?.Invoke(builder);
@@ -74,7 +74,7 @@ namespace DivertR.Internal
             return builder.BuildOptions();
         }
         
-        private IViaOptions BuildOptions()
+        private ViaOptions BuildOptions()
         {
             return new ViaOptions(_orderWeight, _disableSatisfyStrict, _isPersistent, BuildViaDecorator());
         }

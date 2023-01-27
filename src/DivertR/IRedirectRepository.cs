@@ -20,9 +20,9 @@ namespace DivertR
         /// Inserts the given <paramref name="via"/>.
         /// </summary>
         /// <param name="via">The Via to insert.</param>
-        /// <param name="viaOptions">Optional Via options.</param>
+        /// <param name="viaOptions">The Via options.</param>
         /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
-        IRedirectRepository InsertVia(IVia via, IViaOptions? viaOptions = null);
+        IRedirectRepository InsertVia(IVia via, ViaOptions? viaOptions = null);
         
         /// <summary>
         /// Inserts the given <paramref name="configuredVia"/>.
@@ -46,28 +46,28 @@ namespace DivertR
         IRedirectRepository Reset(bool includePersistent = false);
 
         /// <summary>
-        /// Reset the <see cref="RedirectPlan" /> to its initial state and then atomically insert the given <paramref name="via"/>.
+        /// Reset the <see cref="RedirectPlan" /> and atomically insert the given <paramref name="via"/>.
         /// </summary>
         /// <param name="via">The Via instance to insert after reset.</param>
         /// <param name="includePersistent">Optionally also reset persistent <see cref="IVia"/>s.</param>
         /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
-        IRedirectRepository Reset(IVia via, bool includePersistent = false);
+        IRedirectRepository ResetAndInsert(IVia via, bool includePersistent = false);
 
         /// <summary>
-        /// Reset the <see cref="RedirectPlan" /> to its initial state and then atomically insert the given <paramref name="via"/>.
+        /// Resets the <see cref="RedirectPlan" /> and atomically insert the given <paramref name="via"/>.
         /// </summary>
         /// <param name="via">The Via instance to insert after reset.</param>
         /// <param name="viaOptions">The Via options.</param>
         /// <param name="includePersistent">Optionally also reset persistent <see cref="IVia"/>s.</param>
         /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
-        IRedirectRepository Reset(IVia via, IViaOptions viaOptions, bool includePersistent = false);
+        IRedirectRepository ResetAndInsert(IVia via, ViaOptions viaOptions, bool includePersistent = false);
 
         /// <summary>
-        /// Reset the <see cref="RedirectPlan" /> to its initial state and then atomically insert the given <paramref name="configuredVia"/>.
+        /// Reset the <see cref="RedirectPlan" /> and atomically insert the given <paramref name="configuredVia"/>.
         /// </summary>
         /// <param name="configuredVia">The configured Via instance to insert after reset.</param>
         /// <param name="includePersistent">Optionally also reset persistent <see cref="IVia"/>s.</param>
         /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
-        IRedirectRepository Reset(IConfiguredVia configuredVia, bool includePersistent = false);
+        IRedirectRepository ResetAndInsert(IConfiguredVia configuredVia, bool includePersistent = false);
     }
 }

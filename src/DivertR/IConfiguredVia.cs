@@ -10,7 +10,7 @@ namespace DivertR
             get;
         }
         
-        IViaOptions Options
+        ViaOptions Options
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
