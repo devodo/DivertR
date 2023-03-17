@@ -29,23 +29,7 @@ public class RedirectRepositoryTests
         beforeName.ShouldBe("Redirect");
         _fooProxy.Name.ShouldBe("Replaced");
     }
-    
-    [Fact]
-    public void GivenExistingPersistentVia_WhenResetAndInsertViaIncludingPersistent_ThenResetsAndInsertsVia()
-    {
-        // ARRANGE
-        _fooRedirect.To(x => x.Name).Via("Redirect", opt => opt.Persist());
-        var beforeName = _fooProxy.Name;
 
-        // ACT
-        var replaceVia = ViaBuilder<IFoo>.To(x => x.Name).Build("Replaced");
-        _fooRedirect.RedirectRepository.ResetAndInsert(replaceVia, true);
-        
-        // ASSERT
-        beforeName.ShouldBe("Redirect");
-        _fooProxy.Name.ShouldBe("Replaced");
-    }
-    
     [Fact]
     public void GivenExistingPersistentVia_WhenResetAndInsertVia_ThenAddsVia()
     {

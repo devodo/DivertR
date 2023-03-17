@@ -81,25 +81,25 @@ namespace DivertR
         }
 
         /// <inheritdoc />
-        public IRedirectSet Reset(string? name = null, bool includePersistent = false)
+        public IRedirectSet Reset(string? name = null)
         {
             var redirectGroup = GetRedirectGroup(name);
             foreach (var redirect in redirectGroup.Values)
             {
-                redirect.Reset(includePersistent);
+                redirect.Reset();
             }
 
             return this;
         }
         
         /// <inheritdoc />
-        public IRedirectSet ResetAll(bool includePersistent = false)
+        public IRedirectSet ResetAll()
         {
             foreach (var redirectGroup in _redirectGroups.Values)
             {
                 foreach (var redirect in redirectGroup.Values)
                 {
-                    redirect.Reset(includePersistent);
+                    redirect.Reset();
                 }
             }
 

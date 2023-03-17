@@ -124,24 +124,7 @@ namespace DivertR.UnitTests
             // ASSERT
             proxy.Name.ShouldBe("foo changed");
         }
-        
-        [Fact]
-        public void GivenPersistentVia_WhenResetIncludingPersistent_ShouldRemoveVia()
-        {
-            // ARRANGE
-            var proxy = _redirect.Proxy(new Foo("foo"));
-            
-            _redirect
-                .To(x => x.Name)
-                .Via(call => call.CallNext() + " changed", opt => opt.Persist());
-            
-            // ACT
-            _redirect.Reset(includePersistent: true);
 
-            // ASSERT
-            proxy.Name.ShouldBe("foo");
-        }
-        
         [Fact]
         public void GivenPersistentViaFollowedByNormalVia_ShouldViaChain()
         {
@@ -183,28 +166,7 @@ namespace DivertR.UnitTests
             // ASSERT
             proxy.Name.ShouldBe("foo changed");
         }
-        
-        [Fact]
-        public void GivenPersistentViaFollowedByNormalVia_WhenRedirectResetIncludingPersistent_ShouldResetAll()
-        {
-            // ARRANGE
-            var proxy = _redirect.Proxy(new Foo("foo"));
-            
-            _redirect
-                .To(x => x.Name)
-                .Via(call => call.CallNext() + " changed", opt => opt.Persist());
-            
-            _redirect
-                .To(x => x.Name)
-                .Via(call => call.CallNext() + " again");
-            
-            // ACT
-            _redirect.Reset(includePersistent: true);
 
-            // ASSERT
-            proxy.Name.ShouldBe("foo");
-        }
-        
         [Fact]
         public void GivenNormalViaFollowedByPersistentVia_WhenRedirectReset_ShouldKeepPersistentVia()
         {

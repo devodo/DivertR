@@ -26,7 +26,7 @@ namespace DivertR
         {
             Mock = hasRoot ? Proxy() : Proxy(root);
             Spy.AddSpy(this, Mock);
-            ResetAndConfigureRecord(false);
+            ResetAndConfigureRecord();
         }
         
         /// <inheritdoc />
@@ -48,9 +48,9 @@ namespace DivertR
             return this;
         }
 
-        ISpy ISpy.Reset(bool includePersistent)
+        ISpy ISpy.Reset()
         {
-            base.Reset(includePersistent);
+            base.Reset();
 
             return this;
         }
@@ -70,9 +70,9 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public new ISpy<TTarget> Reset(bool includePersistent = false)
+        public new ISpy<TTarget> Reset()
         {
-            base.Reset(includePersistent);
+            base.Reset();
 
             return this;
         }
@@ -93,19 +93,19 @@ namespace DivertR
             return this;
         }
         
-        protected override void ResetInternal(bool includePersistent)
+        protected override void ResetInternal()
         {
-            ResetAndConfigureRecord(includePersistent);
+            ResetAndConfigureRecord();
         }
         
-        private void ResetAndConfigureRecord(bool includePersistent)
+        private void ResetAndConfigureRecord()
         {
             var recordHandler = new RecordCallHandler<TTarget>();
             // Only record calls going to the Mock proxy
             var callConstraint = new CallConstraint<TTarget>(call => ReferenceEquals(call.Proxy, Mock));
             var via = ViaBuilder<TTarget>.To(callConstraint).Build(recordHandler);
             var options = ViaOptionsBuilder.Create(opt => opt.OrderFirst(), disableSatisfyStrict: true);
-            RedirectRepository.ResetAndInsert(via, options, includePersistent);
+            RedirectRepository.ResetAndInsert(via, options);
             CallsLocked = recordHandler.RecordStream;
         }
 

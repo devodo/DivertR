@@ -71,9 +71,8 @@ namespace DivertR
         /// <summary>
         /// Reset the Redirect's <see cref="IRedirectRepository" /> to its initial state.
         /// </summary>
-        /// <param name="includePersistent">Optionally also reset persistent <see cref="IVia"/>s.</param>
         /// <returns>This Redirect instance.</returns>
-        IRedirect Reset(bool includePersistent = false);
+        IRedirect Reset();
 
         /// <summary>
         /// Set strict mode on the Redirect.
@@ -139,9 +138,8 @@ namespace DivertR
         /// <summary>
         /// Reset the Redirect's <see cref="IRedirectRepository" /> to its initial state.
         /// </summary>
-        /// <param name="includePersistent">Optionally also reset persistent <see cref="IVia"/>s.</param>
         /// <returns>This Redirect instance.</returns>
-        new IRedirect<TTarget> Reset(bool includePersistent = false);
+        new IRedirect<TTarget> Reset();
         
         /// <summary>
         /// Set strict mode on the Redirect.
