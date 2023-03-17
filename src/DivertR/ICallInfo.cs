@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -6,6 +7,12 @@ namespace DivertR
 {
     public interface ICallInfo
     {
+        public Type TargetType
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+        
         object Proxy
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -29,9 +36,6 @@ namespace DivertR
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
-
-        public ICallInfo Clone(CallArguments args);
-        public ICallInfo Clone(MethodInfo method, CallArguments args);
     }
     
     public interface ICallInfo<out TTarget> : ICallInfo where TTarget : class?
@@ -48,8 +52,5 @@ namespace DivertR
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
-        
-        new ICallInfo<TTarget> Clone(MethodInfo method, CallArguments args);
-        new ICallInfo<TTarget> Clone(CallArguments args);
     }
 }

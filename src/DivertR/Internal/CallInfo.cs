@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -13,6 +14,12 @@ namespace DivertR.Internal
             Root = root;
             Method = method;
             Arguments = arguments;
+        }
+        
+        public Type TargetType
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => typeof(TTarget);
         }
         
         [NotNull]
@@ -51,25 +58,15 @@ namespace DivertR.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
-        
-        public ICallInfo<TTarget> Clone(MethodInfo method, CallArguments args)
+
+        public CallInfo<TTarget> From(MethodInfo method, CallArguments args)
         {
             return new CallInfo<TTarget>(Proxy, Root, method, args);
         }
 
-        public ICallInfo<TTarget> Clone(CallArguments args)
+        public CallInfo<TTarget> From(CallArguments args)
         {
             return new CallInfo<TTarget>(Proxy, Root, Method, args);
-        }
-
-        ICallInfo ICallInfo.Clone(MethodInfo method, CallArguments args)
-        {
-            return Clone(method, args);
-        }
-
-        ICallInfo ICallInfo.Clone(CallArguments args)
-        {
-            return Clone(args);
         }
     }
 }
