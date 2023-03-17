@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class RedirectCall : IRedirectCall
+    internal abstract class RedirectCall : IRedirectCall
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected RedirectCall(IRelay relay, ICallInfo callInfo)

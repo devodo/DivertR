@@ -47,7 +47,7 @@ namespace DivertR.Internal
         {
             var relayIndex = GetRelayIndexStack().Peek();
             ValidateStrict(relayIndex);
-            var callInfo = relayIndex.CallInfo.Clone(method, args);
+            var callInfo = relayIndex.CallInfo.From(method, args);
             
             return CallRoot(callInfo);
         }
@@ -57,7 +57,7 @@ namespace DivertR.Internal
         {
             var relayIndex = GetRelayIndexStack().Peek();
             ValidateStrict(relayIndex);
-            var callInfo = relayIndex.CallInfo.Clone(args);
+            var callInfo = relayIndex.CallInfo.From(args);
             
             return CallRoot(callInfo);
         }
@@ -108,7 +108,7 @@ namespace DivertR.Internal
         {
             var relayIndexStack = GetRelayIndexStack();
             var relayIndex = relayIndexStack.Peek();
-            var callInfo = relayIndex.CallInfo.Clone(method, args);
+            var callInfo = relayIndex.CallInfo.From(method, args);
             var relayNext = relayIndex.MoveNext(callInfo);
 
             if (relayNext == null)
@@ -136,7 +136,7 @@ namespace DivertR.Internal
         {
             var relayIndexStack = GetRelayIndexStack();
             var relayIndex = relayIndexStack.Peek();
-            var callInfo = relayIndex.CallInfo.Clone(args);
+            var callInfo = relayIndex.CallInfo.From(args);
             var relayNext = relayIndex.MoveNext(callInfo);
 
             if (relayNext == null)
@@ -160,7 +160,7 @@ namespace DivertR.Internal
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal object? CallBegin(IRedirectPlan redirectPlan, ICallInfo<TTarget> callInfo)
+        internal object? CallBegin(IRedirectPlan redirectPlan, CallInfo<TTarget> callInfo)
         {
             var relayIndex = RelayIndex<TTarget>.Create(redirectPlan, callInfo);
 
