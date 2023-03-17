@@ -130,17 +130,17 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public IDiverter ResetAll(bool includePersistent = false)
+        public IDiverter ResetAll()
         {
-            RedirectSet.ResetAll(includePersistent);
+            RedirectSet.ResetAll();
             
             return this;
         }
         
         /// <inheritdoc />
-        public IDiverter Reset(string? name = null, bool includePersistent = false)
+        public IDiverter Reset(string? name = null)
         {
-            RedirectSet.Reset(name, includePersistent);
+            RedirectSet.Reset(name);
 
             return this;
         }

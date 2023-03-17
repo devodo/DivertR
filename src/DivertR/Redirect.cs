@@ -139,9 +139,9 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        IRedirect IRedirect.Reset(bool includePersistent)
+        IRedirect IRedirect.Reset()
         {
-            return Reset(includePersistent);
+            return Reset();
         }
         
         /// <inheritdoc />
@@ -151,9 +151,9 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public IRedirect<TTarget> Reset(bool includePersistent = false)
+        public IRedirect<TTarget> Reset()
         {
-            ResetInternal(includePersistent);
+            ResetInternal();
 
             return this;
         }
@@ -204,9 +204,9 @@ namespace DivertR
             return new ActionRedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.ToSetInternal(memberExpression, constraintExpression));
         }
         
-        protected virtual void ResetInternal(bool includePersistent)
+        protected virtual void ResetInternal()
         {
-            RedirectRepository.Reset(includePersistent);
+            RedirectRepository.Reset();
         }
     }
 }

@@ -113,16 +113,14 @@ namespace DivertR
         /// <summary>
         /// Reset all <see cref="IRedirect"/> instances in the underlying <see cref="IRedirectSet"/>.
         /// </summary>
-        /// <param name="includePersistent">Optionally also reset persistent <see cref="IVia"/> registrations.</param>
         /// <returns>This <see cref="IDiverter"/> instance.</returns>
-        IDiverter ResetAll(bool includePersistent = false);
+        IDiverter ResetAll();
         
         /// <summary>
         /// Reset an <see cref="IRedirect"/> group in the underlying <see cref="IRedirectSet"/> set with name equal to <paramref name="name"/>.
         /// </summary>
         /// <param name="name">The <see cref="RedirectId.Name" /> of the <see cref="IRedirect"/> group.</param>
-        /// <param name="includePersistent">Optionally also reset persistent <see cref="IVia"/> registrations.</param>
         /// <returns>This <see cref="IDiverter"/> instance.</returns>
-        IDiverter Reset(string? name = null, bool includePersistent = false);
+        IDiverter Reset(string? name = null);
     }
 }

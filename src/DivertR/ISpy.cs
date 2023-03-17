@@ -36,9 +36,8 @@ namespace DivertR
         /// <summary>
         /// Reset the Spy's <see cref="IRedirectRepository" /> to its initial state.
         /// </summary>
-        /// <param name="includePersistent">Optionally also reset persistent <see cref="IVia"/>s.</param>
         /// <returns>This Spy instance.</returns>
-        new ISpy Reset(bool includePersistent = false);
+        new ISpy Reset();
         
         /// <summary>
         /// Set strict mode on the Spy.
@@ -76,9 +75,8 @@ namespace DivertR
         /// <summary>
         /// Reset the Spy's <see cref="IRedirectRepository" /> to its initial state.
         /// </summary>
-        /// <param name="includePersistent">Optionally also reset persistent <see cref="IVia"/>s.</param>
         /// <returns>This Spy instance.</returns>
-        new ISpy<TTarget> Reset(bool includePersistent = false);
+        new ISpy<TTarget> Reset();
         
         /// <summary>
         /// Set strict mode on the Spy.

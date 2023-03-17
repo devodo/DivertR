@@ -65,16 +65,14 @@ namespace DivertR
         /// Reset an <see cref="IRedirect"/> group in this set with name equal to <paramref name="name"/>.
         /// </summary>
         /// <param name="name">The <see cref="RedirectId.Name" /> of the <see cref="IRedirect"/> group.</param>
-        /// <param name="includePersistent">Optionally also reset persistent <see cref="IVia"/> registrations.</param>
         /// <returns>This <see cref="IRedirectSet"/> instance.</returns>
-        IRedirectSet Reset(string? name = null, bool includePersistent = false);
+        IRedirectSet Reset(string? name = null);
         
         /// <summary>
         /// Reset all <see cref="IRedirect"/> instances in this set.
         /// </summary>
-        /// <param name="includePersistent">Optionally also reset persistent <see cref="IVia"/> registrations.</param>
         /// <returns>This <see cref="IRedirectSet"/> instance.</returns>
-        IRedirectSet ResetAll(bool includePersistent = false);
+        IRedirectSet ResetAll();
         
         /// <summary>
         /// Enable strict mode on an <see cref="IRedirect"/> group in this set with name equal to <paramref name="name"/>.
