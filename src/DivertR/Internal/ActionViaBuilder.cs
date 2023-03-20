@@ -4,23 +4,23 @@ using System.Collections.Generic;
 
 namespace DivertR.Internal
 {
-    internal class ActionViaBuilder<TTarget> : ViaBuilder<TTarget>, IActionViaBuilder<TTarget> where TTarget : class?
+    internal class ActionViaBuilder<TTarget> : ViaBuilder, IActionViaBuilder<TTarget> where TTarget : class?
     {
         public ICallValidator CallValidator { get; }
 
-        public ActionViaBuilder(ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
+        public ActionViaBuilder(ICallValidator callValidator, ICallConstraint callConstraint)
             : base(callConstraint)
         {
             CallValidator = callValidator;
         }
         
-        protected ActionViaBuilder(ICallValidator callValidator, List<ICallConstraint<TTarget>> callConstraints)
+        protected ActionViaBuilder(ICallValidator callValidator, List<ICallConstraint> callConstraints)
             : base(callConstraints)
         {
             CallValidator = callValidator;
         }
         
-        public new IActionViaBuilder<TTarget> Filter(ICallConstraint<TTarget> callConstraint)
+        public new IActionViaBuilder<TTarget> Filter(ICallConstraint callConstraint)
         {
             base.Filter(callConstraint);
 
@@ -63,7 +63,7 @@ namespace DivertR.Internal
     {
         private readonly IValueTupleMapper _valueTupleMapper;
         
-        public ActionViaBuilder(ICallValidator callValidator, List<ICallConstraint<TTarget>> callConstraints)
+        public ActionViaBuilder(ICallValidator callValidator, List<ICallConstraint> callConstraints)
             : base(callValidator, callConstraints)
         {
             _valueTupleMapper = ValueTupleMapperFactory.Create<TArgs>();

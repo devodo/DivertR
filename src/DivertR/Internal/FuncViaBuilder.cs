@@ -4,23 +4,23 @@ using System.Collections.Generic;
 
 namespace DivertR.Internal
 {
-    internal class FuncViaBuilder<TTarget, TReturn> : ViaBuilder<TTarget>, IFuncViaBuilder<TTarget, TReturn> where TTarget : class?
+    internal class FuncViaBuilder<TTarget, TReturn> : ViaBuilder, IFuncViaBuilder<TTarget, TReturn> where TTarget : class?
     {
         public ICallValidator CallValidator { get; }
 
-        public FuncViaBuilder(ICallValidator callValidator, ICallConstraint<TTarget> callConstraint)
+        public FuncViaBuilder(ICallValidator callValidator, ICallConstraint callConstraint)
             : base(callConstraint)
         {
             CallValidator = callValidator;
         }
         
-        protected FuncViaBuilder(ICallValidator callValidator, List<ICallConstraint<TTarget>> callConstraints)
+        protected FuncViaBuilder(ICallValidator callValidator, List<ICallConstraint> callConstraints)
             : base(callConstraints)
         {
             CallValidator = callValidator;
         } 
         
-        public new IFuncViaBuilder<TTarget, TReturn> Filter(ICallConstraint<TTarget> callConstraint)
+        public new IFuncViaBuilder<TTarget, TReturn> Filter(ICallConstraint callConstraint)
         {
             base.Filter(callConstraint);
 
@@ -63,7 +63,7 @@ namespace DivertR.Internal
     {
         private readonly IValueTupleMapper _valueTupleMapper;
         
-        public FuncViaBuilder(ICallValidator callValidator, List<ICallConstraint<TTarget>> callConstraints)
+        public FuncViaBuilder(ICallValidator callValidator, List<ICallConstraint> callConstraints)
             : base(callValidator, callConstraints)
         {
             _valueTupleMapper = ValueTupleMapperFactory.Create<TArgs>();
@@ -72,7 +72,7 @@ namespace DivertR.Internal
 
         public IVia Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate)
         {
-            ICallHandler<TTarget> callHandler = new FuncCallHandler<TTarget, TReturn, TArgs>(_valueTupleMapper, viaDelegate);
+            var callHandler = new FuncCallHandler<TTarget, TReturn, TArgs>(_valueTupleMapper, viaDelegate);
             
             return base.Build(callHandler);
         }

@@ -2,7 +2,7 @@
 
 namespace DivertR.Internal
 {
-    internal class TargetCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class?
+    internal class TargetCallHandler<TTarget> : CallHandler<TTarget> where TTarget : class?
     {
         private readonly TTarget _target;
         private readonly ICallInvoker _callInvoker;
@@ -14,7 +14,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Handle(IRedirectCall<TTarget> call)
+        protected override object? Handle(IRedirectCall<TTarget> call)
         {
             return _callInvoker.Invoke(_target, call.CallInfo.Method, call.CallInfo.Arguments);
         }

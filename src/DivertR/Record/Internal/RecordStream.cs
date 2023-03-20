@@ -13,7 +13,7 @@ namespace DivertR.Record.Internal
         {
         }
         
-        public IRecordStream<TTarget> To(ICallConstraint<TTarget>? callConstraint = null)
+        public IRecordStream<TTarget> To(ICallConstraint? callConstraint = null)
         {
             if (callConstraint == null)
             {

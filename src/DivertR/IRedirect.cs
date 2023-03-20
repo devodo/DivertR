@@ -168,9 +168,9 @@ namespace DivertR
         /// <summary>
         /// Creates an <see cref="IRedirectUpdater{TTarget}"/> instance for updating this Redirect. />
         /// </summary>
-        /// <param name="callConstraint">Optional call constraint <see cref="ICallConstraint{TTarget}"/>.</param>
+        /// <param name="callConstraint">Optional call constraint <see cref="ICallConstraint"/>.</param>
         /// <returns>The updater instance.</returns>
-        IRedirectUpdater<TTarget> To(ICallConstraint<TTarget>? callConstraint = null);
+        IRedirectUpdater<TTarget> To(ICallConstraint? callConstraint = null);
 
         /// <summary>
         /// Creates an <see cref="IFuncRedirectUpdater{TTarget,TReturn}"/> instance for updating this Redirect for calls matching the <paramref name="constraintExpression"/> expression.

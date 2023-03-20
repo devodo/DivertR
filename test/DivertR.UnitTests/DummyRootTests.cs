@@ -570,7 +570,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _dummyFactory
-                .To(new CallConstraint(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
+                .To(new DelegateCallConstraint(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
                 .Via(() => "redirected")
                 .Via(call => $"{call.CallNext()} call {call.Args.LastOrDefault()}".Trim());
 
@@ -594,7 +594,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _dummyFactory
-                .To(new CallConstraint(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
+                .To(new DelegateCallConstraint(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
                 .Via(() => "redirected");
 
             var proxy = _redirect.Proxy();

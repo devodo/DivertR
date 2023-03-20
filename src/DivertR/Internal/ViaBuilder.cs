@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace DivertR.Internal
 {
-    internal class ViaBuilder<TTarget> : IViaBuilder<TTarget> where TTarget : class?
+    internal class ViaBuilder : IViaBuilder
     {
-        protected readonly List<ICallConstraint<TTarget>> CallConstraints;
+        protected readonly List<ICallConstraint> CallConstraints;
 
-        public ViaBuilder(ICallConstraint<TTarget>? callConstraint = null)
+        public ViaBuilder(ICallConstraint? callConstraint = null)
         {
-            CallConstraints = new List<ICallConstraint<TTarget>>();
+            CallConstraints = new List<ICallConstraint>();
             
             if (callConstraint != null)
             {
@@ -17,12 +17,12 @@ namespace DivertR.Internal
             }
         }
 
-        protected ViaBuilder(List<ICallConstraint<TTarget>> callConstraints)
+        protected ViaBuilder(List<ICallConstraint> callConstraints)
         {
             CallConstraints = callConstraints;
         }
 
-        public IViaBuilder<TTarget> Filter(ICallConstraint<TTarget> callConstraint)
+        public IViaBuilder Filter(ICallConstraint callConstraint)
         {
             CallConstraints.Add(callConstraint);
 
@@ -33,56 +33,24 @@ namespace DivertR.Internal
         {
             return Build(_ => viaDelegate.Invoke());
         }
-
-        public IVia Build(Func<IRedirectCall<TTarget>, object?> viaDelegate)
+        
+        public IVia Build(Func<IRedirectCall, object?> viaDelegate)
         {
-            var callHandler = new CallHandler<TTarget>(viaDelegate);
+            var callHandler = new DelegateCallHandler(viaDelegate);
 
             return Build(callHandler);
         }
 
-        public IVia Build(ICallHandler<TTarget> callHandler)
+        public IVia Build<TTarget>(Func<IRedirectCall<TTarget>, object?> viaDelegate) where TTarget : class?
         {
-            return new Via<TTarget>(callHandler, new CompositeCallConstraint<TTarget>(CallConstraints));
-        }
-    }
-    
-    internal class ViaBuilder : IViaBuilder
-    {
-        private readonly List<ICallConstraint> _callConstraints;
-
-        public ViaBuilder(ICallConstraint? callConstraint = null)
-        {
-            _callConstraints = new List<ICallConstraint>();
-            
-            if (callConstraint != null)
-            {
-                _callConstraints.Add(callConstraint);
-            }
-        }
-
-        public IViaBuilder Filter(ICallConstraint callConstraint)
-        {
-            _callConstraints.Add(callConstraint);
-
-            return this;
-        }
-
-        public IVia Build(Func<object?> viaDelegate)
-        {
-            return Build(_ => viaDelegate.Invoke());
-        }
-
-        public IVia Build(Func<IRedirectCall, object?> viaDelegate)
-        {
-            var callHandler = new CallHandler(viaDelegate);
+            var callHandler = new DelegateCallHandler<TTarget>(viaDelegate);
 
             return Build(callHandler);
         }
 
         public IVia Build(ICallHandler callHandler)
         {
-            return new Via(callHandler, new CompositeCallConstraint(_callConstraints));
+            return new Via(callHandler, new CompositeCallConstraint(CallConstraints));
         }
     }
 }

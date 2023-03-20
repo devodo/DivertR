@@ -15,7 +15,7 @@ namespace DivertR.Internal
             _viaBuilder = redirectBuilder;
         }
         
-        public new IActionRedirectUpdater<TTarget> Filter(ICallConstraint<TTarget> callConstraint)
+        public new IActionRedirectUpdater<TTarget> Filter(ICallConstraint callConstraint)
         {
             base.Filter(callConstraint);
 

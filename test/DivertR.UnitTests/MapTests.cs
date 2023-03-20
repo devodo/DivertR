@@ -402,7 +402,7 @@ namespace DivertR.UnitTests
                 .ToList();
 
             var echoes = _redirect
-                .To(new CallConstraint<IFoo>(call => call.Method.Name == nameof(IFoo.Echo)))
+                .To(new DelegateCallConstraint<IFoo>(call => call.Method.Name == nameof(IFoo.Echo)))
                 .Record()
                 .Map(call => new { Input = call.Args[0] });
 

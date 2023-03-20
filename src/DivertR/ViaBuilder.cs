@@ -6,7 +6,7 @@ namespace DivertR
 {
     public static class ViaBuilder<TTarget> where TTarget : class?
     {
-        public static IViaBuilder<TTarget> To(ICallConstraint<TTarget>? callConstraint = null)
+        public static IViaBuilder To(ICallConstraint? callConstraint = null)
         {
             return ToInternal(callConstraint);
         }
@@ -26,9 +26,9 @@ namespace DivertR
             return ToSetInternal(memberExpression, constraintExpression);
         }
         
-        internal static Internal.ViaBuilder<TTarget> ToInternal(ICallConstraint<TTarget>? callConstraint = null)
+        internal static Internal.ViaBuilder ToInternal(ICallConstraint? callConstraint = null)
         {
-            return new Internal.ViaBuilder<TTarget>(callConstraint);
+            return new Internal.ViaBuilder(callConstraint);
         }
         
         internal static FuncViaBuilder<TTarget, TReturn> ToInternal<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
@@ -36,7 +36,7 @@ namespace DivertR
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
             var callValidator = CallExpressionParser.FromExpression<TTarget>(constraintExpression.Body);
-            var callConstraint = new CallConstraintWrapper<TTarget>(callValidator.CreateCallConstraint());
+            var callConstraint = callValidator.CreateCallConstraint();
             
             return new FuncViaBuilder<TTarget, TReturn>(callValidator, callConstraint);
         }
@@ -46,7 +46,7 @@ namespace DivertR
             if (constraintExpression.Body == null) throw new ArgumentNullException(nameof(constraintExpression));
 
             var callValidator = CallExpressionParser.FromExpression<TTarget>(constraintExpression.Body);
-            var callConstraint = new CallConstraintWrapper<TTarget>(callValidator.CreateCallConstraint());
+            var callConstraint = callValidator.CreateCallConstraint();
             
             return new ActionViaBuilder<TTarget>(callValidator, callConstraint);
         }
@@ -64,7 +64,7 @@ namespace DivertR
             }
 
             var parsedCall = CallExpressionParser.FromPropertySetter<TTarget>(propertyExpression, constraintExpression.Body);
-            var callConstraint = new CallConstraintWrapper<TTarget>(parsedCall.CreateCallConstraint());
+            var callConstraint = parsedCall.CreateCallConstraint();
 
             return new ActionViaBuilder<TTarget>(parsedCall, callConstraint);
         }
