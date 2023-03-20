@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Record.Internal
 {
-    internal class RecordCallHandler<TTarget> : ICallHandler<TTarget> where TTarget : class?
+    internal class RecordCallHandler<TTarget> : CallHandler<TTarget> where TTarget : class?
     {
         private readonly ConcurrentQueue<RecordedCall<TTarget>> _recordedCalls = new();
 
@@ -16,7 +16,7 @@ namespace DivertR.Record.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Handle(IRedirectCall<TTarget> call)
+        protected override object? Handle(IRedirectCall<TTarget> call)
         {
             var recordedCall = new RecordedCall<TTarget>(call.CallInfo);
             _recordedCalls.Enqueue(recordedCall);

@@ -6,16 +6,16 @@ namespace DivertR.Internal
 {
     internal class RedirectUpdater<TTarget> : IRedirectUpdater<TTarget> where TTarget : class?
     {
-        private readonly ViaBuilder<TTarget> _viaBuilder;
+        private readonly ViaBuilder _viaBuilder;
         public IRedirect<TTarget> Redirect { get; }
         
-        public RedirectUpdater(IRedirect<TTarget> redirect, ViaBuilder<TTarget> viaBuilder)
+        public RedirectUpdater(IRedirect<TTarget> redirect, ViaBuilder viaBuilder)
         {
             Redirect = redirect;
             _viaBuilder = viaBuilder;
         }
         
-        public IRedirectUpdater<TTarget> Filter(ICallConstraint<TTarget> callConstraint)
+        public IRedirectUpdater<TTarget> Filter(ICallConstraint callConstraint)
         {
             _viaBuilder.Filter(callConstraint);
 
@@ -40,7 +40,7 @@ namespace DivertR.Internal
 
         public IRedirectUpdater<TTarget> Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            ICallHandler<TTarget> callHandler = new TargetCallHandler<TTarget>(target, Redirect.RedirectSet.Settings.CallInvoker);
+            var callHandler = new TargetCallHandler<TTarget>(target, Redirect.RedirectSet.Settings.CallInvoker);
             var via = _viaBuilder.Build(callHandler);
             InsertVia(via, optionsAction);
 

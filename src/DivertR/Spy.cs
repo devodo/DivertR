@@ -102,7 +102,7 @@ namespace DivertR
         {
             var recordHandler = new RecordCallHandler<TTarget>();
             // Only record calls going to the Mock proxy
-            var callConstraint = new CallConstraint<TTarget>(call => ReferenceEquals(call.Proxy, Mock));
+            var callConstraint = new DelegateCallConstraint<TTarget>(call => ReferenceEquals(call.Proxy, Mock));
             var via = ViaBuilder<TTarget>.To(callConstraint).Build(recordHandler);
             var options = ViaOptionsBuilder.Create(opt => opt.OrderFirst(), disableSatisfyStrict: true);
             RedirectRepository.ResetAndInsert(via, options);

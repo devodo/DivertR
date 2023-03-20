@@ -181,7 +181,7 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public IRedirectUpdater<TTarget> To(ICallConstraint<TTarget>? callConstraint = null)
+        public IRedirectUpdater<TTarget> To(ICallConstraint? callConstraint = null)
         {
             return new RedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.ToInternal(callConstraint));
         }

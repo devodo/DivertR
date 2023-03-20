@@ -3,9 +3,9 @@ using System.Collections;
 
 namespace DivertR
 {
-    public interface IActionViaBuilder<TTarget> : IViaBuilder<TTarget> where TTarget : class?
+    public interface IActionViaBuilder<TTarget> : IViaBuilder where TTarget : class?
     {
-        new IActionViaBuilder<TTarget> Filter(ICallConstraint<TTarget> callConstraint);
+        new IActionViaBuilder<TTarget> Filter(ICallConstraint callConstraint);
 
         IVia Build(Action viaDelegate);
         IVia Build(Action<IActionRedirectCall<TTarget>> viaDelegate);

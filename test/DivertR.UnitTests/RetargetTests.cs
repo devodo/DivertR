@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading;
 using DivertR.UnitTests.Model;
+using Moq;
 using Shouldly;
 using Xunit;
 
@@ -169,7 +170,7 @@ namespace DivertR.UnitTests
             var original = new Foo("hello");
             var proxy = _redirect.Proxy(original);
             
-            var mock = new Moq.Mock<IFoo>();
+            var mock = new Mock<IFoo>();
             mock
                 .Setup(x => x.Name)
                 .Returns(() => $"{_redirect.Relay.Root.Name} world");

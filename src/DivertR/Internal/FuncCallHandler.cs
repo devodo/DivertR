@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class FuncCallHandler<TTarget, TReturn> : ICallHandler<TTarget> where TTarget : class?
+    internal class FuncCallHandler<TTarget, TReturn> : CallHandler<TTarget> where TTarget : class?
     {
         private readonly Func<IFuncRedirectCall<TTarget, TReturn>, TReturn?> _handlerDelegate;
 
@@ -15,7 +15,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Handle(IRedirectCall<TTarget> call)
+        protected override object? Handle(IRedirectCall<TTarget> call)
         {
             var redirectCall = new FuncRedirectCall<TTarget, TReturn>(call);
 
@@ -23,7 +23,7 @@ namespace DivertR.Internal
         }
     }
 
-    internal class FuncCallHandler<TTarget, TReturn, TArgs> : ICallHandler<TTarget>
+    internal class FuncCallHandler<TTarget, TReturn, TArgs> : CallHandler<TTarget>
         where TTarget : class?
         where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
     {
@@ -39,7 +39,7 @@ namespace DivertR.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object? Handle(IRedirectCall<TTarget> call)
+        protected override object? Handle(IRedirectCall<TTarget> call)
         {
             var valueTupleArgs = (TArgs) _valueTupleMapper.ToTuple(call.Args.InternalArgs);
             var redirectCall = new FuncRedirectCall<TTarget, TReturn, TArgs>(call, valueTupleArgs);

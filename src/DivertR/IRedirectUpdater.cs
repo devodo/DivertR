@@ -7,7 +7,7 @@ namespace DivertR
     {
         public IRedirect<TTarget> Redirect { get; }
         
-        IRedirectUpdater<TTarget> Filter(ICallConstraint<TTarget> callConstraint);
+        IRedirectUpdater<TTarget> Filter(ICallConstraint callConstraint);
         IRedirectUpdater<TTarget> Via(Func<object?> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
         IRedirectUpdater<TTarget> Via(Func<IRedirectCall<TTarget>, object?> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
         IRedirectUpdater<TTarget> Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null);

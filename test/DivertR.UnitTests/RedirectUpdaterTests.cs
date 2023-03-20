@@ -1082,7 +1082,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             _redirect
                 .To(x => x.Echo(Is<string>.Any))
-                .Filter(new CallConstraint<IFoo>(call => (string) call.Arguments[0] != "ignore"))
+                .Filter(new DelegateCallConstraint<IFoo>(call => (string) call.Arguments[0] != "ignore"))
                 .Via<(string input, __)>(call => call.CallNext(new[] { $"{call.Args.input} redirected" }));
 
             var proxy = _redirect.Proxy(new Foo());
@@ -1125,7 +1125,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _redirect
-                .To(new CallConstraint<IFoo>(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
+                .To(new DelegateCallConstraint<IFoo>(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
                 .Via(() => "redirected")
                 .Via(call => $"{call.CallNext()} call {call.Args.LastOrDefault()}".Trim())
                 .Via(call => $"{call.CallNext()} args {call.Args.LastOrDefault()}".Trim());
@@ -1150,7 +1150,7 @@ namespace DivertR.UnitTests
         {
             // ARRANGE
             _redirect
-                .To(new CallConstraint<IFoo>(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
+                .To(new DelegateCallConstraint<IFoo>(call => call.Method.ReturnType.IsAssignableFrom(typeof(string))))
                 .Via(() => "redirected");
 
             var proxy = _redirect.Proxy();
