@@ -61,6 +61,35 @@ namespace DivertR.UnitTests
             // ASSERT
             testAction.ShouldThrow<ArgumentException>();
         }
+        
+        [Fact]
+        public void GivenDefaultDiverterSettings_WhenCreateProxiesWithSameRootInstance_ShouldCache()
+        {
+            // ARRANGE
+            var foo = new Foo();
+            var proxy = _redirect.Proxy(foo);
+
+            // ACT
+            var testProxy = _redirect.Proxy(foo);
+
+            // ASSERT
+            testProxy.ShouldBeSameAs(proxy);
+        }
+
+        [Fact]
+        public void GivenCacheRedirectProxiesDisabled_WhenCreateProxiesWithSameRootInstance_ShouldNotCache()
+        {
+            // ARRANGE
+            var redirect = new Redirect<IFoo>(new DiverterSettings(cacheRedirectProxies: false));
+            var foo = new Foo();
+            var proxy = redirect.Proxy(foo);
+
+            // ACT
+            var testProxy = redirect.Proxy(foo);
+
+            // ASSERT
+            testProxy.ShouldNotBeSameAs(proxy);
+        }
 
         [Fact]
         public void GivenStrictModeWithNoVia_ShouldThrowException()

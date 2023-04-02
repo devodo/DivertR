@@ -18,6 +18,8 @@ namespace DivertR
         
         public bool DefaultWithDummyRoot { get; }
 
+        public bool CacheRedirectProxies { get; }
+
         public IDummyFactory DummyFactory { get; }
         
         public ICallInvoker CallInvoker { get; }
@@ -41,11 +43,11 @@ namespace DivertR
             }
         }
 
-        public DiverterSettings(
-            IProxyFactory? proxyFactory = null,
+        public DiverterSettings(IProxyFactory? proxyFactory = null,
             IDiverterProxyFactory? diverterProxyFactory = null,
             IRedirectProxyDecorator? redirectProxyDecorator = null,
             bool defaultWithDummyRoot = true,
+            bool cacheRedirectProxies = true,
             IDummyFactory? dummyFactory = null,
             ICallInvoker? callInvoker = null)
         {
@@ -53,6 +55,7 @@ namespace DivertR
             DiverterProxyFactory = diverterProxyFactory ?? new DiverterProxyFactory();
             RedirectProxyDecorator = redirectProxyDecorator ?? new RedirectProxyDecorator();
             DefaultWithDummyRoot = defaultWithDummyRoot;
+            CacheRedirectProxies = cacheRedirectProxies;
             DummyFactory = dummyFactory ?? new DummyFactory();
             CallInvoker = callInvoker ?? DefaultCallInvoker;
         }
