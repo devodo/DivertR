@@ -13,6 +13,7 @@ namespace DivertR
         private readonly IProxyFactory _proxyFactory;
         private readonly Relay<TTarget> _relay;
         private readonly RedirectProxyCall<TTarget> _redirectProxyCall;
+        private readonly ConditionalWeakTable<TTarget, TTarget> _proxyCache = new();
 
         public Redirect(string? name = null, DiverterSettings? diverterSettings = null, IRedirectRepository? redirectRepository = null)
             : this(RedirectId.From<TTarget>(name), new RedirectSet(diverterSettings), redirectRepository)
@@ -102,9 +103,25 @@ namespace DivertR
         [return: NotNull]
         public TTarget Proxy(TTarget? root)
         {
-            var proxy = _proxyFactory.CreateProxy(_redirectProxyCall, root);
+            TTarget proxy;
             
-            return RedirectSet.Settings.RedirectProxyDecorator.Decorate(this, proxy);
+            if (root is null || !RedirectSet.Settings.CacheRedirectProxies)
+            {
+                proxy = _proxyFactory.CreateProxy(_redirectProxyCall, root);
+                RedirectSet.Settings.RedirectProxyDecorator.Decorate(this, proxy);
+            }
+            else
+            {
+                proxy = _proxyCache.GetValue(root, x =>
+                {
+                    var createdProxy = _proxyFactory.CreateProxy(_redirectProxyCall, x);
+                    RedirectSet.Settings.RedirectProxyDecorator.Decorate(this, createdProxy);
+
+                    return createdProxy;
+                });
+            }
+
+            return proxy!;
         }
         
         /// <inheritdoc />
