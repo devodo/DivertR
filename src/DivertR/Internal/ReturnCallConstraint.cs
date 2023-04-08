@@ -8,7 +8,7 @@ namespace DivertR.Internal
         private readonly Type _returnType;
         private readonly bool _matchSubType;
 
-        public ReturnCallConstraint(Type returnType, bool matchSubType)
+        public ReturnCallConstraint(Type returnType, bool matchSubType = false)
         {
             _returnType = returnType;
             _matchSubType = matchSubType;

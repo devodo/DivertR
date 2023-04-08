@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace DivertR
 {
@@ -23,13 +24,28 @@ namespace DivertR
         /// <param name="viaOptions">The Via options.</param>
         /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
         IRedirectRepository InsertVia(IVia via, ViaOptions? viaOptions = null);
-        
+
         /// <summary>
         /// Inserts the given <paramref name="configuredVia"/>.
         /// </summary>
         /// <param name="configuredVia">The configured Via.</param>
         /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
         IRedirectRepository InsertVia(IConfiguredVia configuredVia);
+        
+        /// <summary>
+        /// Inserts the given <paramref name="vias"/> collection.
+        /// </summary>
+        /// <param name="vias">The Vias to insert.</param>
+        /// <param name="viaOptions">The Via options that will be applied to all inserted Vias.</param>
+        /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
+        IRedirectRepository InsertVias(IEnumerable<IVia> vias, ViaOptions? viaOptions = null);
+        
+        /// <summary>
+        /// Inserts the given <paramref name="configuredVias"/> collection.
+        /// </summary>
+        /// <param name="configuredVias">The configured Vias.</param>
+        /// <returns>This <see cref="IRedirectRepository"/> instance.</returns>
+        IRedirectRepository InsertVias(IEnumerable<IConfiguredVia> configuredVias);
         
         /// <summary>
         /// Set strict mode.

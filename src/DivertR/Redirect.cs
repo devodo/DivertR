@@ -198,6 +198,32 @@ namespace DivertR
         }
         
         /// <inheritdoc />
+        public IRedirect<TReturn> ViaRedirect<TReturn>(Action<IViaOptionsBuilder>? optionsAction = null) where TReturn : class?
+        {
+            return ViaRedirect<TReturn>(null, optionsAction);
+        }
+        
+        /// <inheritdoc />
+        public IRedirect<TReturn> ViaRedirect<TReturn>(string? name, Action<IViaOptionsBuilder>? optionsAction = null) where TReturn : class?
+        {
+            var redirect = RedirectSet.GetOrCreate<TReturn>(name);
+            var callConstraint = new RegisterCallConstraint(typeof(TReturn));
+            var callHandler = new RegisterCallHandler<TReturn>(redirect);
+            To(callConstraint).Via(callHandler, optionsAction);
+            
+            return redirect;
+        }
+
+        public IRedirect<TTarget> ViaDecorator<TReturn>(Func<TReturn, TReturn> divertFunc, Action<IViaOptionsBuilder>? optionsAction = null) where TReturn : class?
+        {
+            var callConstraint = new RegisterCallConstraint(typeof(TReturn));
+            var callHandler = new ViaDecoratorCallHandler<TReturn>(divertFunc);
+            To(callConstraint).Via(callHandler, optionsAction);
+            
+            return this;
+        }
+
+        /// <inheritdoc />
         public IRedirectUpdater<TTarget> To(ICallConstraint? callConstraint = null)
         {
             return new RedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.ToInternal(callConstraint));

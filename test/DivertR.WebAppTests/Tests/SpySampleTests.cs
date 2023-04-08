@@ -54,8 +54,11 @@ namespace DivertR.WebAppTests.Tests
 
             // ASSERT
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
-            insertedFoo?.Name.ShouldBe(createFooRequest.Name);
-            response.Content.ShouldBeEquivalentTo(insertedFoo);
+            insertedFoo.ShouldNotBeNull();
+            insertedFoo.Name.ShouldBe(createFooRequest.Name);
+            response.Content.ShouldNotBeNull();
+            response.Content.Id.ShouldBe(insertedFoo.Id);
+            response.Content.Name.ShouldBe(insertedFoo.Name);
         }
         
         /// <summary>
@@ -86,8 +89,10 @@ namespace DivertR.WebAppTests.Tests
             {
                 call.Args.foo.Id.ShouldBe(createFooRequest.Id.Value);
                 call.Args.foo.Name.ShouldBe(createFooRequest.Name);
-                response.Content.ShouldBeEquivalentTo(call.Args.foo);
                 call.Return.ShouldBe(Task.CompletedTask);
+                response.Content.ShouldNotBeNull();
+                response.Content.Id.ShouldBe(call.Args.foo.Id);
+                response.Content.Name.ShouldBe(call.Args.foo.Name);
             }).Count.ShouldBe(1);
         }
         
@@ -137,7 +142,9 @@ namespace DivertR.WebAppTests.Tests
             var response = await _fooClient.GetFooAsync(foo.Id);
             
             // ASSERT
-            response.Content.ShouldBeEquivalentTo(foo);
+            response.Content.ShouldNotBeNull();
+            response.Content.Id.ShouldBe(foo.Id);
+            response.Content.Name.ShouldBe(foo.Name);
             
             // Verify repo get method called correctly
             (await fooRepoCalls

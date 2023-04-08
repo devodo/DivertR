@@ -6,10 +6,8 @@ namespace DivertR
 {
     public interface IFuncRedirectUpdater<TTarget, TReturn> where TTarget : class?
     {
-        public IRedirect<TTarget> Redirect { get; }
-        
         IFuncRedirectUpdater<TTarget, TReturn> Filter(ICallConstraint callConstraint);
-        
+        IFuncRedirectUpdater<TTarget, TReturn> Via(ICallHandler callHandler, Action<IViaOptionsBuilder>? optionsAction = null);
         IFuncRedirectUpdater<TTarget, TReturn> Via(TReturn instance, Action<IViaOptionsBuilder>? optionsAction = null);
         IFuncRedirectUpdater<TTarget, TReturn> Via(Func<TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
         IFuncRedirectUpdater<TTarget, TReturn> Via(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);

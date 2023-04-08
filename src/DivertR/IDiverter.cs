@@ -6,12 +6,12 @@ namespace DivertR
     /// <summary>
     /// The DivertR interface used for managing a collection of <see cref="IRedirect"/> instances intended to be embedded in a dependency injection container.
     ///
-    /// Use this interface to register the set of types intended to be diverted and a corresponding <see cref="IRedirect"/> gets created for each and added to the underlying <see cref="IRedirectSet"/>.
+    /// Use this interface to register the set of types intended to be diverted and a corresponding <see cref="IRedirect"/> is created for each and added to the underlying <see cref="IRedirectSet"/>.
     /// 
     /// The registered <see cref="IRedirect"/> instances are exposed for embedding into a dependency injection container but this responsibility is left to the container specific implementation.
     /// For example <see cref="DependencyInjection.ServiceCollectionExtensions.Divert"/> is an extension method that does this for the <see href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection">IServiceCollection</see> container.
     ///
-    /// This interface also acts as a facade around the underlying <see cref="IRedirectSet"/> for retrieving and managing <see cref="IRedirect"/> instances in the collection.   
+    /// This interface also acts as a facade around the underlying <see cref="IRedirectSet"/> for retrieving and managing <see cref="IRedirect"/> instances in this redirect collection.   
     /// </summary>
     public interface IDiverter
     {
@@ -19,16 +19,26 @@ namespace DivertR
         /// The underlying <see cref="IRedirectSet"/> containing the <see cref="IRedirect"/> collection of this <see cref="IDiverter"/> instance.
         /// </summary>
         IRedirectSet RedirectSet { get; }
-        
+
         /// <summary>
         /// Register a type to divert and add a corresponding <see cref="IRedirect{TTarget}"/> to the underlying <see cref="IRedirectSet"/>.
         /// </summary>
-        /// <param name="name">The <see cref="RedirectId.Name" /> of the added <see cref="IRedirect"/>.</param>
+        /// <param name="name">The <see cref="RedirectId.Name" /> of the added <see cref="IRedirect"/>. If not provided the default <see cref="RedirectId.Name" /> is used.</param>
+        /// <param name="nestedRegisterAction">Optional nested register action.</param>
         /// <typeparam name="TTarget">The type to register.</typeparam>
         /// <returns>This <see cref="IDiverter"/> instance.</returns>
         /// <exception cref="DiverterException">Thrown if the <typeparamref name="TTarget"/> type with matching <paramref name="name"/> has already been registered.</exception>
-        IDiverter Register<TTarget>(string? name = null) where TTarget : class?;
-        
+        IDiverter Register<TTarget>(string? name = null, Action<INestedRegisterBuilder>? nestedRegisterAction = null) where TTarget : class?;
+
+        /// <summary>
+        /// Register a type to divert and add a corresponding <see cref="IRedirect{TTarget}"/> with default <see cref="RedirectId.Name" /> to the underlying <see cref="IRedirectSet"/>.
+        /// </summary>
+        /// <param name="nestedRegisterAction">A nested register action.</param>
+        /// <typeparam name="TTarget">The type to register.</typeparam>
+        /// <returns>This <see cref="IDiverter"/> instance.</returns>
+        /// <exception cref="DiverterException">Thrown if the <typeparamref name="TTarget"/> type with with default <see cref="RedirectId.Name" /> has already been registered.</exception>
+        IDiverter Register<TTarget>(Action<INestedRegisterBuilder> nestedRegisterAction) where TTarget : class?;
+
         /// <summary>
         /// Register a type to divert and add a corresponding <see cref="IRedirect"/> to the underlying <see cref="IRedirectSet"/>.
         /// </summary>
@@ -48,7 +58,7 @@ namespace DivertR
         IDiverter Register(IEnumerable<Type> types, string? name = null);
         
         /// <summary>
-        /// Register multiple types to divert and add their corresponding <see cref="IRedirect"/> instances to the underlying <see cref="IRedirectSet"/>.
+        /// Register multiple types to divert and add their corresponding <see cref="IRedirect"/> instances with default <see cref="RedirectId.Name" /> to the underlying <see cref="IRedirectSet"/>.
         /// </summary>
         /// <param name="types">The types to register.</param>
         /// <returns>This <see cref="IDiverter"/> instance.</returns>

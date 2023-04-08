@@ -12,10 +12,11 @@ namespace DivertR.Internal
         
         private readonly ConcurrentStack<Func<IVia, IVia>> _viaDecorators = new();
 
-        private ViaOptionsBuilder(int orderWeight = 0, bool disableSatisfyStrict = false)
+        private ViaOptionsBuilder(int orderWeight, bool disableSatisfyStrict, bool isPersistent)
         {
             _orderWeight = orderWeight;
             _disableSatisfyStrict = disableSatisfyStrict;
+            _isPersistent = isPersistent;
         }
 
         public IViaOptionsBuilder OrderWeight(int orderWeight)
@@ -66,9 +67,9 @@ namespace DivertR.Internal
             return Decorate(via => new SkipViaDecorator(via, skipCount));
         }
         
-        public static ViaOptions Create(Action<IViaOptionsBuilder>? optionsAction, int orderWeight = 0, bool disableSatisfyStrict = false)
+        public static ViaOptions Create(Action<IViaOptionsBuilder>? optionsAction, int orderWeight = 0, bool disableSatisfyStrict = false, bool isPersistent = false)
         {
-            var builder = new ViaOptionsBuilder(orderWeight, disableSatisfyStrict);
+            var builder = new ViaOptionsBuilder(orderWeight, disableSatisfyStrict, isPersistent);
             optionsAction?.Invoke(builder);
 
             return builder.BuildOptions();
