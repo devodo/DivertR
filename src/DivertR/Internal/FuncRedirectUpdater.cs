@@ -10,7 +10,7 @@ namespace DivertR.Internal
     {
         private readonly FuncViaBuilder<TTarget, TReturn> _viaBuilder;
         
-        public FuncRedirectUpdater(IRedirect<TTarget> redirect, FuncViaBuilder<TTarget, TReturn> redirectBuilder)
+        public FuncRedirectUpdater(Redirect<TTarget> redirect, FuncViaBuilder<TTarget, TReturn> redirectBuilder)
             : base(redirect, redirectBuilder)
         {
             _viaBuilder = redirectBuilder;
@@ -19,6 +19,13 @@ namespace DivertR.Internal
         public new IFuncRedirectUpdater<TTarget, TReturn> Filter(ICallConstraint callConstraint)
         {
             base.Filter(callConstraint);
+
+            return this;
+        }
+
+        public new IFuncRedirectUpdater<TTarget, TReturn> Via(ICallHandler callHandler, Action<IViaOptionsBuilder>? optionsAction = null)
+        {
+            base.Via(callHandler, optionsAction);
 
             return this;
         }
@@ -101,7 +108,7 @@ namespace DivertR.Internal
     {
         private readonly FuncViaBuilder<TTarget, TReturn, TArgs> _viaBuilder;
         
-        public FuncRedirectUpdater(IRedirect<TTarget> redirect, FuncViaBuilder<TTarget, TReturn, TArgs> redirectBuilder)
+        public FuncRedirectUpdater(Redirect<TTarget> redirect, FuncViaBuilder<TTarget, TReturn, TArgs> redirectBuilder)
             : base(redirect, redirectBuilder)
         {
             _viaBuilder = redirectBuilder;

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -30,7 +31,7 @@ namespace DivertR.UnitTests
         }
 
         [Fact]
-        public void GivenViaRedirect_withVia_ShouldRedirect()
+        public void GivenViaRedirect_WithVia_ShouldRedirect()
         {
             // ARRANGE
             var fooRedirect = _redirect
@@ -44,6 +45,40 @@ namespace DivertR.UnitTests
             
             // ASSERT
             result.ShouldBe("Diverted");
+        }
+        
+        [Fact]
+        public async Task GivenViaRedirect_WithTaskReturn_ShouldRedirect()
+        {
+            // ARRANGE
+            _redirect
+                .To(x => x.EchoGeneric(Is<Task<IBar>>.Any))
+                .ViaRedirect()
+                .To(x => x.Name)
+                .Via(call => call.CallNext() + " redirected");
+            
+            // ACT
+            var result = await _proxy.EchoGeneric(Task.FromResult<IBar>(new Bar("bar")));
+            
+            // ASSERT
+            result.Name.ShouldBe("bar redirected");
+        }
+        
+        [Fact]
+        public async Task GivenViaRedirect_WithValueTaskReturn_ShouldRedirect()
+        {
+            // ARRANGE
+            _redirect
+                .To(x => x.EchoGeneric(Is<ValueTask<IBar>>.Any))
+                .ViaRedirect()
+                .To(x => x.Name)
+                .Via(call => call.CallNext() + " redirected");
+            
+            // ACT
+            var result = await _proxy.EchoGeneric(new ValueTask<IBar>(new Bar("bar")));
+            
+            // ASSERT
+            result.Name.ShouldBe("bar redirected");
         }
         
         [Fact]
@@ -104,7 +139,7 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
-        public void GivenViaRedirect_WithVia_ShouldRedirect()
+        public void GivenViaBeforeViaRedirect_WithVia_ShouldRedirect()
         {
             // ARRANGE
             var viaRedirect = _redirect

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using DivertR.Internal;
 
 namespace DivertR
 {
@@ -9,6 +10,7 @@ namespace DivertR
     public class Diverter : IDiverter
     {
         private readonly ConcurrentDictionary<RedirectId, IRedirect> _registeredRedirects = new();
+        private readonly ConcurrentDictionary<RedirectId, ConcurrentDictionary<RedirectId, IRedirect>> _registeredNested = new();
         public IRedirectSet RedirectSet { get; }
 
         /// <summary>
@@ -30,7 +32,7 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public IDiverter Register<TTarget>(string? name = null) where TTarget : class?
+        public IDiverter Register<TTarget>(string? name = null, Action<INestedRegisterBuilder>? nestedRegisterAction = null) where TTarget : class?
         {
             var redirect = RedirectSet.GetOrCreate<TTarget>(name);
 
@@ -38,10 +40,18 @@ namespace DivertR
             {
                 throw new DiverterException($"Redirect already registered for {redirect.RedirectId}");
             }
+            
+            nestedRegisterAction?.Invoke(new NestedRegisterBuilder<TTarget>(RedirectSet.Get<TTarget>(name)!, _registeredNested));
 
             return this;
         }
         
+        /// <inheritdoc />
+        public IDiverter Register<TTarget>(Action<INestedRegisterBuilder> nestedRegisterAction) where TTarget : class?
+        {
+            return Register<TTarget>(null, nestedRegisterAction);
+        }
+
         /// <inheritdoc />
         public IDiverter Register(Type targetType, string? name = null)
         {

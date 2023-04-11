@@ -1,4 +1,6 @@
 using System;
+using System.Threading.Tasks;
+using DivertR.DispatchProxy;
 using DivertR.UnitTests.Model;
 using Shouldly;
 using Xunit;
@@ -215,6 +217,154 @@ namespace DivertR.UnitTests
 
             // ASSERT
             proxy.Name.ShouldBe("foo persistent");
+        }
+
+        [Fact]
+        public void GivenTypeViaRedirectConfigured_WhenTypeReturned_ShouldProxy()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+
+            var barRedirect = _redirect.ViaRedirect<IBar>();
+            barRedirect
+                .To(x => x.Name)
+                .Via(call => call.CallNext() + " redirected");
+            
+            // ACT
+            var bar = proxy.EchoGeneric<IBar>(new Bar("test"));
+
+            // ASSERT
+            bar.Name.ShouldBe("test redirected");
+        }
+        
+        [Fact]
+        public async Task GivenTypeViaRedirectConfigured_WhenTaskTypeReturned_ShouldProxy()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+
+            var barRedirect = _redirect.ViaRedirect<IBar>();
+            barRedirect
+                .To(x => x.Name)
+                .Via(call => call.CallNext() + " redirected");
+            
+            // ACT
+            var bar = await proxy.EchoGeneric(Task.FromResult<IBar>(new Bar("test")));
+
+            // ASSERT
+            bar.Name.ShouldBe("test redirected");
+        }
+        
+        [Fact]
+        public async Task GivenTypeViaRedirectConfigured_WhenTaskException_ShouldReturnException()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+
+            _redirect.ViaRedirect<IBar>();
+            
+            _redirect
+                .To(x => x.EchoGeneric(Is<Task<IBar>>.Any))
+                .Via(async () =>
+                {
+                    await Task.Yield();
+
+                    throw new Exception("test");
+                });
+            
+            // ACT
+            var barTask = proxy.EchoGeneric(Task.FromResult<IBar>(new Bar("test")));
+
+            // ASSERT
+            (await barTask.ShouldThrowAsync<Exception>()).Message.ShouldBe("test");
+        }
+        
+        [Fact]
+        public async Task GivenTypeViaRedirectConfigured_WhenValueTaskException_ShouldReturnException()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+
+            _redirect.ViaRedirect<IBar>();
+            
+            _redirect
+                .To(x => x.EchoGeneric(Is<ValueTask<IBar>>.Any))
+                .Via(async () =>
+                {
+                    await Task.Yield();
+
+                    throw new Exception("test");
+                });
+            
+            // ACT
+            var barTask = proxy.EchoGeneric(new ValueTask<IBar>(new Bar("test"))).AsTask();
+
+            // ASSERT
+            (await barTask.ShouldThrowAsync<Exception>()).Message.ShouldBe("test");
+        }
+        
+        [Fact]
+        public void GivenTypeViaRedirectConfigured_WhenNotTypeReturned_ShouldNotProxy()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+            _redirect.ViaRedirect<IBar>();
+            var number = new Number();
+            
+            // ACT
+            var result = proxy.EchoGeneric<INumber>(number);
+
+            // ASSERT
+            result.ShouldBeSameAs(number);
+        }
+        
+        [Fact]
+        public void GivenTypeViaRedirectConfigured_WhenReset_ShouldNotPersist()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+            _redirect.ViaRedirect<IBar>();
+            var bar = new Bar("test");
+
+            // ACT
+            _redirect.Reset();
+            var result = proxy.EchoGeneric<IBar>(bar);
+
+            // ASSERT
+            result.ShouldBeSameAs(bar);
+        }
+        
+        [Fact]
+        public void GivenTypeViaRedirectConfigured_WhenSameInstanceReturned_ShouldCacheProxy()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+            _redirect.ViaRedirect<IBar>();
+            var bar = new Bar("test");
+
+            // ACT
+            var result1 = proxy.EchoGeneric<IBar>(bar);
+            var result2 = proxy.EchoGeneric<IBar>(bar);
+
+            // ASSERT
+            result1.GetType().BaseType.ShouldBe(typeof(DiverterDispatchProxy));
+            result1.ShouldBeSameAs(result2);
+        }
+        
+        [Fact]
+        public void GivenTypeViaRedirectConfigured_WhenEquivalentNamedRedirectConfigured_ShouldConfigureBoth()
+        {
+            // ARRANGE
+            _redirect.ViaRedirect<IBar>().To(x => x.Name).Via(call => call.CallRoot() + " inner");
+
+            // ACT
+            var namedRedirect = _redirect.ViaRedirect<IBar>("test");
+            namedRedirect.To(x => x.Name).Via(call => call.CallRoot() + " outer");
+            var bar = _redirect.Proxy(new Foo()).EchoGeneric<IBar>(new Bar("bar"));
+
+            // ASSERT
+            namedRedirect.RedirectId.Name.ShouldBe("test");
+            bar.Name.ShouldBe("bar inner outer");
         }
     }
 }

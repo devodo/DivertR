@@ -81,6 +81,23 @@ namespace DivertR
         /// <param name="isStrict">Optional bool to specify enable/disable of strict mode.</param>
         /// <returns>This Redirect instance.</returns>
         IRedirect Strict(bool? isStrict = true);
+        
+        /// <summary>
+        /// Reroute any calls with return type <typeparamref name="TReturn"/> via an <see cref="IRedirect{TReturn}"/> proxy.
+        /// </summary>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
+        /// <typeparam name="TReturn">The return type.</typeparam>
+        /// <returns>The <see cref="IRedirect{TReturn}"/> that generates the returned proxies.</returns>
+        IRedirect<TReturn> ViaRedirect<TReturn>(Action<IViaOptionsBuilder>? optionsAction = null) where TReturn : class?;
+        
+        /// <summary>
+        /// Reroute any calls with return type <typeparamref name="TReturn"/> via an <see cref="IRedirect{TReturn}"/> proxy.
+        /// </summary>
+        /// <param name="name">Specify the <see cref="DivertR.RedirectId.Name" /> of the returned <see cref="IRedirect{TReturn}"/>.</param>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
+        /// <typeparam name="TReturn">The return type.</typeparam>
+        /// <returns>The <see cref="IRedirect{TReturn}"/> that generates the returned proxies.</returns>
+        IRedirect<TReturn> ViaRedirect<TReturn>(string? name, Action<IViaOptionsBuilder>? optionsAction = null) where TReturn : class?;
     }
     
     /// <summary>
@@ -164,6 +181,8 @@ namespace DivertR
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
         /// <returns>An <see cref="IRecordStream{TTarget}"/> instance for retrieving and iterating the recorded calls.</returns>
         IRecordStream<TTarget> Record(Action<IViaOptionsBuilder>? optionsAction = null);
+        
+        IRedirect<TTarget> ViaDecorator<TReturn>(Func<TReturn, TReturn> divertFunc, Action<IViaOptionsBuilder>? optionsAction = null) where TReturn : class?;
         
         /// <summary>
         /// Creates an <see cref="IRedirectUpdater{TTarget}"/> instance for updating this Redirect. />

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
@@ -60,6 +62,34 @@ namespace DivertR.Internal
                 }
 
                 MutatePlan(original => original.InsertVia(configuredVia));
+            }
+
+            return this;
+        }
+        
+        public IRedirectRepository InsertVias(IEnumerable<IVia> vias, ViaOptions? viaOptions = null)
+        {
+            var configuredVias = vias.Select(via => new ConfiguredVia(via, viaOptions ?? ViaOptions.Default));
+            
+            return InsertVias(configuredVias);
+        }
+
+        public IRedirectRepository InsertVias(IEnumerable<IConfiguredVia> configuredVias)
+        {
+            var viaArray = configuredVias as IConfiguredVia[] ?? configuredVias.ToArray();
+            
+            lock (_lockObject)
+            {
+                foreach (var configuredVia in viaArray)
+                {
+                    if (configuredVia.Options.IsPersistent)
+                    {
+                        _persistentPlan = _persistentPlan.InsertVia(configuredVia);
+                    }
+                }
+                
+
+                MutatePlan(original => original.InsertVias(viaArray));
             }
 
             return this;

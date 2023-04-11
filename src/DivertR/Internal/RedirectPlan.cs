@@ -51,6 +51,18 @@ namespace DivertR.Internal
             return new RedirectPlan(mutatedStack, IsStrictMode);
         }
         
+        internal RedirectPlan InsertVias(IEnumerable<IConfiguredVia> configuredVias)
+        {
+            var mutatedStack = _viaStack;
+            
+            foreach (var configuredVia in configuredVias)
+            {
+                mutatedStack = mutatedStack.Push(configuredVia);
+            }
+
+            return new RedirectPlan(mutatedStack, IsStrictMode);
+        }
+        
         internal RedirectPlan SetStrictMode(bool isStrict)
         {
             return new RedirectPlan(_viaStack, isStrict, Vias);

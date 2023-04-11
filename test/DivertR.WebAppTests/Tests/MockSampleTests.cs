@@ -101,7 +101,9 @@ namespace DivertR.WebAppTests.Tests
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
             response.Headers.Location!.PathAndQuery.ShouldBe($"/Foo/{insertedFoo!.Id}");
             insertedFoo.Name.ShouldBe(createFooRequest.Name);
-            response.Content.ShouldBeEquivalentTo(insertedFoo);
+            response.Content.ShouldNotBeNull();
+            response.Content.Id.ShouldBe(insertedFoo.Id);
+            response.Content.Name.ShouldBe(insertedFoo.Name);
         }
         
         [Fact]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DivertR.Internal
 {
@@ -50,7 +51,22 @@ namespace DivertR.Internal
 
         public IVia Build(ICallHandler callHandler)
         {
-            return new Via(callHandler, new CompositeCallConstraint(CallConstraints));
+            return new Via(callHandler, BuildCallConstraint());
+        }
+
+        private ICallConstraint BuildCallConstraint()
+        {
+            if (CallConstraints.Count == 0)
+            {
+                return TrueCallConstraint.Instance;
+            }
+            
+            if (CallConstraints.Count == 1)
+            {
+                return CallConstraints.First();
+            }
+
+            return new CompositeCallConstraint(CallConstraints);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using DivertR.Internal;
 
 namespace DivertR
 {
@@ -11,33 +12,55 @@ namespace DivertR
         {
             return redirectUpdater.ViaRedirect(null, optionsAction);
         }
-
+        
+        public static IRedirect<TReturn> ViaRedirect<TTarget, TReturn>(this IFuncRedirectUpdater<TTarget, Task<TReturn>> redirectUpdater, Action<IViaOptionsBuilder>? optionsAction = null)
+            where TTarget : class?
+            where TReturn : class?
+        {
+            return redirectUpdater.ViaRedirect(null, optionsAction);
+        }
+        
+        public static IRedirect<TReturn> ViaRedirect<TTarget, TReturn>(this IFuncRedirectUpdater<TTarget, ValueTask<TReturn>> redirectUpdater, Action<IViaOptionsBuilder>? optionsAction = null)
+            where TTarget : class?
+            where TReturn : class?
+        {
+            return redirectUpdater.ViaRedirect(null, optionsAction);
+        }
+        
         public static IRedirect<TReturn> ViaRedirect<TTarget, TReturn>(this IFuncRedirectUpdater<TTarget, TReturn> redirectUpdater, string? name, Action<IViaOptionsBuilder>? optionsAction = null)
             where TTarget : class?
             where TReturn : class?
         {
-            var proxyCache = new ConditionalWeakTable<TReturn, TReturn>();
-            var redirect = redirectUpdater.Redirect.RedirectSet.GetOrCreate<TReturn>(name);
-            
-            TReturn ViaDelegate(IFuncRedirectCall<TTarget, TReturn> call)
+            return ViaRedirectInternal<TTarget, TReturn>(redirectUpdater, name, redirect => new ViaRedirectCallHandler<TReturn>(redirect), optionsAction);
+        }
+        
+        public static IRedirect<TReturn> ViaRedirect<TTarget, TReturn>(this IFuncRedirectUpdater<TTarget, Task<TReturn>> redirectUpdater, string? name, Action<IViaOptionsBuilder>? optionsAction = null)
+            where TTarget : class?
+            where TReturn : class?
+        {
+            return ViaRedirectInternal<TTarget, TReturn>(redirectUpdater, name, redirect => new ViaRedirectTaskCallHandler<TReturn>(redirect), optionsAction);
+        }
+        
+        public static IRedirect<TReturn> ViaRedirect<TTarget, TReturn>(this IFuncRedirectUpdater<TTarget, ValueTask<TReturn>> redirectUpdater, string? name, Action<IViaOptionsBuilder>? optionsAction = null)
+            where TTarget : class?
+            where TReturn : class?
+        {
+            return ViaRedirectInternal<TTarget, TReturn>(redirectUpdater, name, redirect => new ViaRedirectValueTaskCallHandler<TReturn>(redirect), optionsAction);
+        }
+        
+        private static IRedirect<TReturn> ViaRedirectInternal<TTarget, TReturn>(object redirectUpdater, string? name, Func<IRedirect<TReturn>, ICallHandler> callHandlerFactory, Action<IViaOptionsBuilder>? optionsAction = null)
+            where TTarget : class?
+            where TReturn : class?
+        {
+            if (redirectUpdater is not RedirectUpdater<TTarget> concreteUpdater)
             {
-                var callReturn = call.CallNext()!;
-
-                if (callReturn == null!)
-                {
-                    return null!;
-                }
-
-                return proxyCache.GetValue(callReturn, x =>
-                {
-                    var proxy = redirect.Proxy(x);
-
-                    return proxy;
-                });
+                throw new ArgumentException("This extension only support an internal concrete implementation of this interface");
             }
-
-            redirectUpdater.Via(ViaDelegate, optionsAction);
             
+            var redirect = concreteUpdater.Redirect.RedirectSet.GetOrCreate<TReturn>(name);
+            var callHandler = callHandlerFactory.Invoke(redirect);
+            concreteUpdater.Via(callHandler, optionsAction);
+
             return redirect;
         }
     }
