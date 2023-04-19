@@ -39,6 +39,17 @@ namespace DivertR.Internal
             return this;
         }
 
+        public INestedRegisterBuilder ThenDecorate<TReturn>(Func<TReturn, TReturn> decorator)
+        {
+            _redirect.ViaDecorator(decorator, opt =>
+            {
+                opt.DisableSatisfyStrict();
+                opt.Persist();
+            });
+
+            return this;
+        }
+
         private bool TryAddNestedRedirect(IRedirect nestedRedirect)
         {
             var registered = _registeredRedirects.GetOrAdd(_redirect.RedirectId,

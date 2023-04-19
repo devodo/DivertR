@@ -98,6 +98,15 @@ namespace DivertR
         /// <typeparam name="TReturn">The return type.</typeparam>
         /// <returns>The <see cref="IRedirect{TReturn}"/> that generates the returned proxies.</returns>
         IRedirect<TReturn> ViaRedirect<TReturn>(string? name, Action<IViaOptionsBuilder>? optionsAction = null) where TReturn : class?;
+        
+        /// <summary>
+        /// Reroute any calls with return type <typeparamref name="TReturn"/> via a decorator function.
+        /// </summary>
+        /// <param name="decorator">The decorator function.</param>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
+        /// <typeparam name="TReturn">The return type.</typeparam>
+        /// <returns>This Redirect instance.</returns>
+        IRedirect ViaDecorator<TReturn>(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
     }
     
     /// <summary>
@@ -182,7 +191,14 @@ namespace DivertR
         /// <returns>An <see cref="IRecordStream{TTarget}"/> instance for retrieving and iterating the recorded calls.</returns>
         IRecordStream<TTarget> Record(Action<IViaOptionsBuilder>? optionsAction = null);
         
-        IRedirect<TTarget> ViaDecorator<TReturn>(Func<TReturn, TReturn> divertFunc, Action<IViaOptionsBuilder>? optionsAction = null) where TReturn : class?;
+        /// <summary>
+        /// Reroute any calls with return type <typeparamref name="TReturn"/> via a decorator function.
+        /// </summary>
+        /// <param name="decorator">The decorator function.</param>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
+        /// <typeparam name="TReturn">The return type.</typeparam>
+        /// <returns>This Redirect instance.</returns>
+        new IRedirect<TTarget> ViaDecorator<TReturn>(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
         
         /// <summary>
         /// Creates an <see cref="IRedirectUpdater{TTarget}"/> instance for updating this Redirect. />

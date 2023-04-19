@@ -21,10 +21,13 @@ namespace DivertR.DependencyInjection
         /// <exception cref="DiverterException">Throws if either the <paramref name="diverter"/> instances contains registered types not in the <paramref name="services"/> or vice versa.</exception>
         public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, string? name = null)
         {
-            var decorateActions = CreateDecorateActions(services, diverter, name);
+            var decoratorsMap = diverter.GetDecorators(name)
+                .GroupBy(x => x.ServiceType)
+                .ToDictionary(grp => grp.Key, grp => grp.Select(x => x));
 
-            var missingTypes = diverter.RegisteredRedirects(name)
-                .Select(x => x.RedirectId.Type)
+            var decorateActions = CreateDecorateActions(services, decoratorsMap);
+
+            var missingTypes = decoratorsMap.Keys
                 .Where(x => !decorateActions.ContainsKey(x))
                 .Select(x => x.FullName)
                 .ToArray();
@@ -43,10 +46,8 @@ namespace DivertR.DependencyInjection
             return services;
         }
 
-        private static Dictionary<Type, IEnumerable<Action>> CreateDecorateActions(IServiceCollection services, IDiverter diverter, string? name)
+        private static Dictionary<Type, IEnumerable<Action>> CreateDecorateActions(IServiceCollection services, Dictionary<Type, IEnumerable<IDiverterDecorator>> decoratorsMap)
         {
-            var registeredRedirects = diverter.RegisteredRedirects(name).ToDictionary(x => x.RedirectId.Type);
-
             return services
                 .Select((descriptor, index) =>
                 {
@@ -55,15 +56,15 @@ namespace DivertR.DependencyInjection
                         return null;
                     }
                     
-                    if (!registeredRedirects.TryGetValue(descriptor.ServiceType, out var redirect))
+                    if (!decoratorsMap.TryGetValue(descriptor.ServiceType, out var decorators))
                     {
                         return null;
                     }
                     
                     void DecorateAction()
                     {
-                        var proxyFactory = CreateRedirectProxyFactory(services, descriptor, redirect);
-                        services[index] = new ServiceDescriptor(descriptor.ServiceType, proxyFactory, descriptor.Lifetime);
+                        var serviceFactory = CreateServiceFactory(services, descriptor, decorators);
+                        services[index] = new ServiceDescriptor(descriptor.ServiceType, serviceFactory, descriptor.Lifetime);
                     }
 
                     return new
@@ -78,19 +79,24 @@ namespace DivertR.DependencyInjection
                     grp => grp.Select(x => x!.Action));
         }
         
-        private static Func<IServiceProvider, object?> CreateRedirectProxyFactory(IServiceCollection services, ServiceDescriptor descriptor, IRedirect redirect)
+        private static Func<IServiceProvider, object?> CreateServiceFactory(IServiceCollection services, ServiceDescriptor descriptor, IEnumerable<IDiverterDecorator> decorators)
         {
             var rootFactory = CreateRootFactory(services, descriptor);
             
             return provider =>
             {
-                var root = rootFactory.Invoke(provider);
+                var result = rootFactory.Invoke(provider);
+
+                foreach (var decorator in decorators)
+                {
+                    result = decorator.Decorate(result);
+                }
                 
-                return redirect.RedirectSet.Settings.DiverterProxyFactory.CreateProxy(redirect, root);
+                return result;
             };
         }
         
-        private static Func<IServiceProvider, object?> CreateRootFactory(IServiceCollection services, ServiceDescriptor descriptor)
+        private static Func<IServiceProvider, object> CreateRootFactory(IServiceCollection services, ServiceDescriptor descriptor)
         {
             var isDisposable = typeof(IDisposable).IsAssignableFrom(descriptor.ServiceType) ||
                                typeof(IAsyncDisposable).IsAssignableFrom(descriptor.ServiceType);
@@ -100,7 +106,7 @@ namespace DivertR.DependencyInjection
                 : CreateNonDisposingRootFactory(descriptor);
         }
 
-        private static Func<IServiceProvider, object?> CreateDisposingRootFactory(IServiceCollection services, ServiceDescriptor descriptor)
+        private static Func<IServiceProvider, object> CreateDisposingRootFactory(IServiceCollection services, ServiceDescriptor descriptor)
         {
             var typePointer = new TypePointer(descriptor.ServiceType);
             
@@ -117,7 +123,7 @@ namespace DivertR.DependencyInjection
             return provider => provider.GetService(typePointer);
         }
         
-        private static Func<IServiceProvider, object?> CreateNonDisposingRootFactory(ServiceDescriptor descriptor)
+        private static Func<IServiceProvider, object> CreateNonDisposingRootFactory(ServiceDescriptor descriptor)
         {
             return descriptor switch
             {

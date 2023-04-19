@@ -366,5 +366,74 @@ namespace DivertR.UnitTests
             namedRedirect.RedirectId.Name.ShouldBe("test");
             bar.Name.ShouldBe("bar inner outer");
         }
+        
+        [Fact]
+        public void GivenTypeViaDecorator_WhenTypeReturned_ShouldDecorate()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+
+            var barRedirect = _redirect.RedirectSet.GetOrCreate<IBar>();
+            barRedirect
+                .To(x => x.Name)
+                .Via(call => call.CallNext() + " redirected");
+            
+            _redirect.ViaDecorator<IBar>(bar => barRedirect.Proxy(bar));
+            
+            // ACT
+            var bar = proxy.EchoGeneric<IBar>(new Bar("test"));
+
+            // ASSERT
+            bar.Name.ShouldBe("test redirected");
+        }
+        
+        [Fact]
+        public void GivenTypeViaDecorator_WhenSameInstanceReturned_ShouldCacheDecorated()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+            var original = new Bar("test");
+
+            _redirect.ViaDecorator<IBar>(_ => new Bar("decorated"));
+            var first = proxy.EchoGeneric<IBar>(original);
+            
+            // ACT
+            var second = proxy.EchoGeneric<IBar>(original);
+
+            // ASSERT
+            second.ShouldBeSameAs(first);
+        }
+        
+        [Fact]
+        public void GivenTypeViaDecorator_WhenDifferentInstanceReturned_ShouldDecorate()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+
+            _redirect.ViaDecorator<IBar>(bar => new Bar(bar.Name));
+            var first = proxy.EchoGeneric<IBar>(new Bar("first"));
+            
+            // ACT
+            var second = proxy.EchoGeneric<IBar>(new Bar("second"));
+
+            // ASSERT
+            first.Name.ShouldBe("first");
+            second.Name.ShouldBe("second");
+        }
+        
+        [Fact]
+        public void GivenValueTypeViaDecorator_WhenTypeReturned_ShouldDecorate()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+
+            _redirect.ViaDecorator<int>(x => x + 1);
+
+            // ACT
+            var result = proxy.EchoGeneric(10);
+
+            // ASSERT
+            result.ShouldBe(11);
+        }
     }
 }

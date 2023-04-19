@@ -100,6 +100,13 @@ namespace DivertR.Internal
         {
             return Args<TArgs>().Record(optionsAction);
         }
+
+        public IFuncRedirectUpdater<TTarget, TReturn> ViaDecorator(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null)
+        {
+            var callHandler = new ViaDecoratorCallHandler<TReturn>(decorator);
+
+            return Via(callHandler, optionsAction);
+        }
     }
 
     internal class FuncRedirectUpdater<TTarget, TReturn, TArgs> : FuncRedirectUpdater<TTarget, TReturn>, IFuncRedirectUpdater<TTarget, TReturn, TArgs>
@@ -146,6 +153,13 @@ namespace DivertR.Internal
         public new IFuncCallStream<TTarget, TReturn, TArgs> Record(Action<IViaOptionsBuilder>? optionsAction = null)
         {
             return base.Record(optionsAction).Args<TArgs>();
+        }
+
+        public new IFuncRedirectUpdater<TTarget, TReturn, TArgs> ViaDecorator(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null)
+        {
+            base.ViaDecorator(decorator, optionsAction);
+
+            return this;
         }
     }
 }
