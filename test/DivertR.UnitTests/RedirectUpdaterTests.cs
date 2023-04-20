@@ -1167,5 +1167,77 @@ namespace DivertR.UnitTests
             objectReturn.ShouldBe("redirected");
             intReturn.ShouldBe(0);
         }
+
+        [Fact]
+        public void GivenViaDecorator_WhenCallMatchesConstraint_ShouldDecorate()
+        {
+            // ARRANGE
+            _redirect
+                .To(x => x.EchoGeneric(Is<IBar>.Any))
+                .ViaDecorator(bar => new Bar(bar.Name + " decorated"));
+            
+            var proxy = _redirect.Proxy(new Foo());
+            
+            // ACT
+            var result = proxy.EchoGeneric<IBar>(new Bar("bar"));
+            
+            // ASSERT
+            result.Name.ShouldBe("bar decorated");
+        }
+        
+        [Fact]
+        public void GivenStructViaDecorator_WhenCallMatchesConstraint_ShouldDecorate()
+        {
+            // ARRANGE
+            _redirect
+                .To(x => x.EchoGeneric(Is<int>.Any))
+                .ViaDecorator(n => n + 1);
+            
+            var proxy = _redirect.Proxy(new Foo());
+            
+            // ACT
+            var result = proxy.EchoGeneric(10);
+            
+            // ASSERT
+            result.ShouldBe(11);
+        }
+
+        [Fact]
+        public void GivenViaDecorator_WhenCallReturnsSameInstance_ShouldCache()
+        {
+            // ARRANGE
+            _redirect
+                .To(x => x.EchoGeneric(Is<IBar>.Any))
+                .ViaDecorator(bar => new Bar(bar.Name + " decorated"));
+
+            var bar = new Bar("bar");
+
+            // ACT
+            var bar1 = _redirect.Proxy(new Foo()).EchoGeneric<IBar>(bar);
+            var bar2 = _redirect.Proxy(new Foo()).EchoGeneric<IBar>(bar);
+            
+            // ASSERT
+            bar1.Name.ShouldBe("bar decorated");
+            bar1.ShouldBeSameAs(bar2);
+        }
+        
+        [Fact]
+        public void GivenViaDecorator_WhenCallReturnsNull_ShouldNotCache()
+        {
+            // ARRANGE
+            _redirect
+                .To(x => x.EchoGeneric(Is<Bar?>.Any))
+                .ViaDecorator(bar => new Bar(bar?.Name + " decorated"));
+            
+            var bar = new Bar("bar");
+            
+            // ACT
+            var bar1 = _redirect.Proxy().EchoGeneric(bar);
+            var bar2 = _redirect.Proxy().EchoGeneric(bar);
+            
+            // ASSERT
+            bar1.Name.ShouldBe(" decorated");
+            bar1.ShouldNotBeSameAs(bar2);
+        }
     }
 }
