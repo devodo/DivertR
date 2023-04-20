@@ -11,14 +11,13 @@ namespace DivertR.DependencyInjection
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// Installs the <see cref="IRedirect"/> collection of registered types from the <paramref name="diverter"/> instance into the <paramref name="services"/> container.
-        /// The Redirects are embedded by decorating existing container registrations, of matching types, with proxy factories that produce <see cref="IRedirect"/> proxies wrapping the originals as their root instances.
+        /// Installs decorators registered on the <paramref name="diverter"/> instance into the <paramref name="services"/> container.
         /// </summary>
         /// <param name="services">The services container.</param>
         /// <param name="diverter">The Diverter instance.</param>
-        /// <param name="name">The <see cref="RedirectId.Name" /> of the registered <see cref="IRedirect"/> group.</param>
-        /// <returns>The input services container.</returns>
-        /// <exception cref="DiverterException">Throws if either the <paramref name="diverter"/> instances contains registered types not in the <paramref name="services"/> or vice versa.</exception>
+        /// <param name="name">Optional decorator group name. If no name is provided the default group is used.</param>
+        /// <returns>The <paramref name="services"/> instance.</returns>
+        /// <exception cref="DiverterException">Throws if either the <paramref name="diverter"/> instances contains registered decorator types not in the <paramref name="services"/> or vice versa.</exception>
         public static IServiceCollection Divert(this IServiceCollection services, IDiverter diverter, string? name = null)
         {
             var decoratorsMap = diverter.GetDecorators(name)
