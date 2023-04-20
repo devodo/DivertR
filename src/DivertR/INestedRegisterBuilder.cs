@@ -31,5 +31,14 @@ namespace DivertR
         /// <returns>This <see cref="INestedRegisterBuilder"/> instance.</returns>
         /// <exception cref="DiverterException">Thrown if a nested <see cref="IRedirect{TReturn}"/> has already been registered on the parent with matching <typeparamref name="TReturn"/> type and <paramref name="name"/>.</exception>
         INestedRegisterBuilder ThenRegister<TReturn>(string? name, Action<INestedRegisterBuilder>? registerAction = null) where TReturn : class?;
+        
+        /// <summary>
+        /// Register a decorator on call returns of type <typeparamref name="TReturn"/> on the nested redirect.
+        /// The decorator is applied by inserting a <see cref="IVia"/> on the nested redirect that is persistent, i.e. remains after reset.
+        /// </summary>
+        /// <param name="decorator">The decorator function.</param>
+        /// <typeparam name="TReturn">The return type of calls to decorate.</typeparam>
+        /// <returns>This <see cref="INestedRegisterBuilder"/> instance.</returns>
+        INestedRegisterBuilder ThenDecorate<TReturn>(Func<TReturn, TReturn> decorator);
     }
 }

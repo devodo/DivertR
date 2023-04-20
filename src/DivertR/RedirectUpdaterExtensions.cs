@@ -47,7 +47,7 @@ namespace DivertR
         {
             return ViaRedirectInternal<TTarget, TReturn>(redirectUpdater, name, redirect => new ViaRedirectValueTaskCallHandler<TReturn>(redirect), optionsAction);
         }
-        
+
         private static IRedirect<TReturn> ViaRedirectInternal<TTarget, TReturn>(object redirectUpdater, string? name, Func<IRedirect<TReturn>, ICallHandler> callHandlerFactory, Action<IViaOptionsBuilder>? optionsAction = null)
             where TTarget : class?
             where TReturn : class?

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace DivertR.Internal
 {
-    public class RegisterCallHandler<TReturn> : ICallHandler where TReturn : class?
+    internal class ViaRedirectTypeCallHandler<TReturn> : ICallHandler where TReturn : class?
     {
         private readonly ViaRedirectCallHandler<TReturn> _callHandler;
         private readonly ViaRedirectTaskCallHandler<TReturn> _taskCallHandler;
@@ -15,7 +15,7 @@ namespace DivertR.Internal
         private readonly Type _returnValueTaskType;
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public RegisterCallHandler(IRedirect<TReturn> redirect)
+        public ViaRedirectTypeCallHandler(IRedirect<TReturn> redirect)
         {
             _callHandler = new ViaRedirectCallHandler<TReturn>(redirect);
             _taskCallHandler = new ViaRedirectTaskCallHandler<TReturn>(redirect);

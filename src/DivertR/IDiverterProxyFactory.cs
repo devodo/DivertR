@@ -2,6 +2,6 @@
 {
     public interface IDiverterProxyFactory
     {
-        object? CreateProxy(IRedirect redirect, object? root);
+        object CreateProxy(IRedirect redirect, object root);
     }
 }
