@@ -5,12 +5,12 @@ namespace DivertR.Internal
 {
     internal class Diverter : IDiverter
     {
-        private readonly Func<string?, IEnumerable<IDiverterDecorator>> _decoratorFunc;
+        private readonly Func<string?, IEnumerable<IDiverterDecorator>> _getDecorators;
         
-        public Diverter(IRedirectSet redirectSet, Func<string?, IEnumerable<IDiverterDecorator>> decoratorFunc)
+        public Diverter(IRedirectSet redirectSet, Func<string?, IEnumerable<IDiverterDecorator>> getDecorators)
         {
             RedirectSet = redirectSet;
-            _decoratorFunc = decoratorFunc;
+            _getDecorators = getDecorators;
         }
 
         public IRedirectSet RedirectSet { get; }
@@ -67,7 +67,7 @@ namespace DivertR.Internal
         
         public IEnumerable<IDiverterDecorator> GetDecorators(string? name = null)
         {
-            return _decoratorFunc(name);
+            return _getDecorators(name);
         }
     }
 }

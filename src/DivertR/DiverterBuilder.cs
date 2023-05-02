@@ -9,7 +9,6 @@ namespace DivertR
     /// <inheritdoc />
     public class DiverterBuilder : IDiverterBuilder
     {
-        private readonly IRedirectSet _redirectSet;
         private readonly ConcurrentDictionary<string, ConcurrentQueue<IDiverterDecorator>> _decorators = new();
         private readonly ConcurrentDictionary<RedirectId, IRedirect> _registeredRedirects = new();
         private readonly ConcurrentDictionary<RedirectId, ConcurrentDictionary<RedirectId, IRedirect>> _registeredNested = new();
@@ -20,7 +19,7 @@ namespace DivertR
         /// <param name="settings">Optionally override default DivertR settings.</param>
         public DiverterBuilder(DiverterSettings? settings = null)
         {
-            _redirectSet = new RedirectSet(settings);
+            RedirectSet = new RedirectSet(settings);
         }
         
         /// <summary>
@@ -29,9 +28,12 @@ namespace DivertR
         /// <param name="redirectSet">The <see cref="IRedirectSet"/> instance.</param>
         public DiverterBuilder(IRedirectSet redirectSet)
         {
-            _redirectSet = redirectSet;
+            RedirectSet = redirectSet;
         }
         
+        /// <inheritdoc />
+        public IRedirectSet RedirectSet { get; }
+
         /// <inheritdoc />
         public IDiverterBuilder Register<TTarget>(Action<INestedRegisterBuilder>? nestedRegisterAction = null) where TTarget : class?
         {
@@ -41,7 +43,7 @@ namespace DivertR
         /// <inheritdoc />
         public IDiverterBuilder Register<TTarget>(string? name, Action<INestedRegisterBuilder>? nestedRegisterAction = null) where TTarget : class?
         {
-            var redirect = _redirectSet.GetOrCreate<TTarget>(name);
+            var redirect = RedirectSet.GetOrCreate<TTarget>(name);
 
             if (!_registeredRedirects.TryAdd(redirect.RedirectId, redirect))
             {
@@ -50,7 +52,7 @@ namespace DivertR
             
             AddDecorator(name, new RedirectDecorator(redirect));
 
-            nestedRegisterAction?.Invoke(new NestedRegisterBuilder<TTarget>(_redirectSet.Get<TTarget>(name)!, _registeredNested));
+            nestedRegisterAction?.Invoke(new NestedRegisterBuilder<TTarget>(redirect, _registeredNested));
 
             return this;
         }
@@ -58,7 +60,7 @@ namespace DivertR
         /// <inheritdoc />
         public IDiverterBuilder Register(Type targetType, string? name = null)
         {
-            var redirect = _redirectSet.GetOrCreate(targetType, name);
+            var redirect = RedirectSet.GetOrCreate(targetType, name);
             
             if (!_registeredRedirects.TryAdd(redirect.RedirectId, redirect))
             {
@@ -131,7 +133,7 @@ namespace DivertR
                     : Enumerable.Empty<IDiverterDecorator>();
             }
             
-            return new Diverter(_redirectSet, GetDecorators);
+            return new Diverter(RedirectSet, GetDecorators);
         }
 
         private void AddDecorator(string? name, IDiverterDecorator decorator)

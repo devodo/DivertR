@@ -12,6 +12,11 @@ namespace DivertR
     public interface IDiverterBuilder
     {
         /// <summary>
+        /// The underlying <see cref="IRedirectSet"/> containing the set of registered <see cref="IRedirect"/> instances.
+        /// </summary>
+        IRedirectSet RedirectSet { get; }
+        
+        /// <summary>
         /// Register a type to redirect. The redirect is added with default <see cref="RedirectId.Name" />.
         /// </summary>
         /// <param name="nestedRegisterAction">Optional nested register action.</param>

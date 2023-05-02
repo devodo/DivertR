@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -224,6 +225,26 @@ namespace DivertR.UnitTests
             var diverter = new DiverterBuilder().Register<IFoo>().Create();
             Action test = () => _services.Divert(diverter);
             test.ShouldThrow<DiverterException>().Message.ShouldContain($"{typeof(IFoo).FullName}");
+        }
+        
+        [Fact]
+        public void GivenListDecoratorCanRedirectProxyItems()
+        {
+            _services.AddTransient<List<IFoo>>(_ => new List<IFoo> { new Foo("1"), new Foo("2") });
+            var diverterBuilder = new DiverterBuilder();
+            var diverter = diverterBuilder
+                .Decorate<List<IFoo>>(foos => foos
+                    .Select(x => diverterBuilder.RedirectSet.GetOrCreate<IFoo>().Proxy(x))
+                    .ToList()).Create();
+            
+            _services.Divert(diverter);
+            var provider = _services.BuildServiceProvider();
+            var foos = provider.GetRequiredService<List<IFoo>>();
+
+            diverter.Redirect<IFoo>().To(x => x.Name).Via(call => call.CallNext() + " diverted");
+            
+            foos[0].Name.ShouldBe("1 diverted");
+            foos[1].Name.ShouldBe("2 diverted");
         }
         
         [Fact]
