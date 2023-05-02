@@ -36,15 +36,16 @@ services.AddTransient<IFoo, Foo>();
 services.AddSingleton<IBarFactory, BarFactory>();
 services.AddSingleton<IEtc, Etc>();
 ```
-
+~~~~
 # Redirect Registration
 
-First instantiate an instance of the `Diverter` class and *register* one or more DI service types of interest that you would like to be able to *redirect*:
+First create an `IDiverter` instance by instantiating a `DiverterBuilder` class and *registering* one or more DI service types of interest that you would like to be able to *redirect*:
 
 ```csharp
-var diverter = new Diverter()
+var diverter = new DiverterBuilder()
     .Register<IFoo>()
-    .Register<IBarFactory>();
+    .Register<IBarFactory>()
+    .Create();
 ```
 
 Then call `Divert`, a provided `IServiceCollection` extension method, to install the registered types as `Redirect` decorators:

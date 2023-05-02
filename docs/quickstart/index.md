@@ -116,48 +116,46 @@ public void ServiceCollectionDemoTest()
 {
     // Instantiate a Microsoft.Extensions.DependencyInjection.IServiceCollection
     IServiceCollection services = new ServiceCollection();
-    
+
     // Register some services
     services.AddTransient<IFoo, Foo>();
     services.AddSingleton<IBarFactory, BarFactory>();
     services.AddSingleton<IEtc, Etc>();
-    
-    // Instantiate a Diverter instance
-    var diverter = new Diverter();
-    
-    // Register the services you want to be able to redirect
-    diverter    
+
+    // Create a Diverter instance with registered services you want to be able to redirect
+    var diverter = new DiverterBuilder()
         .Register<IFoo>()
-        .Register<IBarFactory>();
-    
+        .Register<IBarFactory>()
+        .Create();
+
     // Install DivertR into the ServiceCollection
     services.Divert(diverter);
-    
+
     // Build an IServiceProvider as usual
     IServiceProvider provider = services.BuildServiceProvider();
 
     // Resolve services from the ServiceProvider as usual
     var foo = provider.GetRequiredService<IFoo>();
     var fooTwo = provider.GetRequiredService<IFoo>();
-    
+
     // In its initial state DivertR is transparent and the behaviour of resolved services is unchanged
     fooTwo.Name = "FooTwo";
     Assert.Equal("original", foo.Name);
     Assert.Equal("FooTwo", fooTwo.Name);
-    
+
     // Get a Redirect from the Diverter instance and configure a Via
     diverter
         .Redirect<IFoo>()
         .To(x => x.Name)
         .Via(call => $"{call.Next.Name} redirected");
-    
+
     // The behaviour of resolved service instances is now changed
     Assert.Equal("original redirected", foo.Name);
     Assert.Equal("FooTwo redirected", fooTwo.Name);
-    
+
     // Reset the Diverter instance
     diverter.ResetAll();
-    
+
     // The original service behaviour is restored
     Assert.Equal("original", foo.Name);
     Assert.Equal("FooTwo", fooTwo.Name);
