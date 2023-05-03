@@ -111,15 +111,16 @@ After reset all resolved redirect proxies will be returned to their initial stat
 *Nested registrations* are used to redirect calls on types that are not directly resolved by the DI container such as instances created by factory services.
 
 E.g. if we have an `IBarFactory` factory service, resolved by the DI, that has factory methods that create `IBar` instances.
-A nested `IBar` registration off a parent `IBarFactory` registration can be declared as follows:
+A nested `IBar` redirect registration from the parent `IBarFactory` registration can be declared as follows:
 
 ```csharp
-var diverter = new Diverter()
+var diverter = new DiverterBuilder()
     .Register<IBarFactory>(x => x
-        .ThenRegister<IBar>());
+        .ThenRedirect<IBar>()) // Proxy redirect any IBar instances returned by IBarFactory
+    .Create();
 ```
 
-> Nested registrations on nested registration is supported.
+> Nested registrations of nested registrations can be chained to any depth.
 {: .note }
 
 This is installed into the existing `IServiceCollection` as usual:

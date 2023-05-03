@@ -35,13 +35,13 @@ namespace DivertR
         public IRedirectSet RedirectSet { get; }
 
         /// <inheritdoc />
-        public IDiverterBuilder Register<TTarget>(Action<INestedRegisterBuilder>? nestedRegisterAction = null) where TTarget : class?
+        public IDiverterBuilder Register<TTarget>(Action<INestedRegisterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?
         {
-            return Register<TTarget>(null, nestedRegisterAction);
+            return Register(null, nestedRegisterAction);
         }
 
         /// <inheritdoc />
-        public IDiverterBuilder Register<TTarget>(string? name, Action<INestedRegisterBuilder>? nestedRegisterAction = null) where TTarget : class?
+        public IDiverterBuilder Register<TTarget>(string? name, Action<INestedRegisterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?
         {
             var redirect = RedirectSet.GetOrCreate<TTarget>(name);
 

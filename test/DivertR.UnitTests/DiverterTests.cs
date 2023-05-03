@@ -334,7 +334,7 @@ namespace DivertR.UnitTests
         public void GivenNestedRegistration_WhenRegisteredTypeReturned_ShouldProxy()
         {
             // ARRANGE
-            var diverter = _diverterBuilder.Register<IFoo>(inner => inner.ThenRegister<IBar>()).Create();
+            var diverter = _diverterBuilder.Register<IFoo>(inner => inner.ThenRedirect<IBar>()).Create();
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
 
             diverter
@@ -350,10 +350,29 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenNamedNestedRegistration_WhenRegisteredTypeReturned_ShouldProxy()
+        {
+            // ARRANGE
+            var diverter = _diverterBuilder.Register<IFoo>(inner => inner.ThenRedirect<IBar>("group")).Create();
+            var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
+
+            diverter
+                .Redirect<IBar>("group")
+                .To(x => x.Name)
+                .Via(call => call.CallNext() + " redirected");
+            
+            // ACT
+            var bar = fooProxy.EchoGeneric<IBar>(new Bar("bar"));
+
+            // ASSERT
+            bar.Name.ShouldBe("bar redirected");
+        }
+        
+        [Fact]
         public async Task GivenNestedRegistration_WhenRegisteredTaskTypeReturned_ShouldProxy()
         {
             // ARRANGE
-            var diverter = _diverterBuilder.Register<IFoo>(inner => inner.ThenRegister<IBar>()).Create();
+            var diverter = _diverterBuilder.Register<IFoo>(inner => inner.ThenRedirect<IBar>()).Create();
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
 
             diverter
@@ -372,7 +391,7 @@ namespace DivertR.UnitTests
         public async Task GivenNestedRegistration_WhenRegisteredValueTaskTypeReturned_ShouldProxy()
         {
             // ARRANGE
-            var diverter = _diverterBuilder.Register<IFoo>(inner => inner.ThenRegister<IBar>()).Create();
+            var diverter = _diverterBuilder.Register<IFoo>(inner => inner.ThenRedirect<IBar>()).Create();
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
 
             diverter
@@ -393,8 +412,8 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>(x1 => x1
-                    .ThenRegister<IFoo>(x2 => x2
-                        .ThenRegister<IBar>()))
+                    .ThenRedirect<IFoo>(x2 => x2
+                        .ThenRedirect<IBar>()))
                 .Create();
             
             var foo = new Foo("inner");
@@ -419,7 +438,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>(x => x
-                    .ThenRegister<IFoo>())
+                    .ThenRedirect<IFoo>())
                 .Create();
 
             var foo = new Foo("inner");
@@ -436,7 +455,7 @@ namespace DivertR.UnitTests
         public void GivenNestedRegistration_WhenRedirectReset_ShouldPersist()
         {
             // ARRANGE
-            var diverter = _diverterBuilder.Register<IFoo>(x => x.ThenRegister<IBar>()).Create();
+            var diverter = _diverterBuilder.Register<IFoo>(x => x.ThenRedirect<IBar>()).Create();
 
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
             diverter.ResetAll();
@@ -462,8 +481,8 @@ namespace DivertR.UnitTests
             var testAction = () =>
             {
                 _diverterBuilder.Register<IFoo>(x => x
-                    .ThenRegister<IBar>()
-                    .ThenRegister<IFoo>(y => y.ThenRegister<IBar>()));
+                    .ThenRedirect<IBar>()
+                    .ThenRedirect<IFoo>(y => y.ThenRedirect<IBar>()));
             };
 
             // ASSERT
@@ -474,7 +493,96 @@ namespace DivertR.UnitTests
         public void GivenNestedRegistration_WhenStrictMode_ShouldDisableSatisfyStrict()
         {
             // ARRANGE
-            var diverter = _diverterBuilder.Register<IFoo>(x => x.ThenRegister<IBar>()).Create();
+            var diverter = _diverterBuilder.Register<IFoo>(x => x.ThenRedirect<IBar>()).Create();
+
+            var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
+            diverter.Redirect<IFoo>().Strict();
+            
+            // ACT
+            var testAction = () => fooProxy.EchoGeneric<IBar>(new Bar("bar"));
+
+            // ASSERT
+            testAction.ShouldThrow<StrictNotSatisfiedException>();
+        }
+        
+        [Fact]
+        public void GivenNestedRedirect_WhenRedirectTypeReturned_ShouldProxy()
+        {
+            // ARRANGE
+            var diverter = _diverterBuilder
+                .Register<IFoo>(x => x
+                    .ThenRedirect(foo => foo.EchoGeneric(Is<IBar>.Any)))
+                .Create();
+            
+            var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
+
+            diverter
+                .Redirect<IBar>()
+                .To(x => x.Name)
+                .Via(call => call.CallNext() + " redirected");
+            
+            // ACT
+            var bar = fooProxy.EchoGeneric<IBar>(new Bar("bar"));
+
+            // ASSERT
+            bar.Name.ShouldBe("bar redirected");
+        }
+        
+        [Fact]
+        public void GivenNamedNestedRedirect_WhenRedirectTypeReturned_ShouldProxy()
+        {
+            // ARRANGE
+            var diverter = _diverterBuilder
+                .Register<IFoo>(foo => foo
+                    .ThenRedirect("group", x => x.EchoGeneric(Is<IBar>.Any)))
+                .Create();
+            
+            var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
+
+            diverter
+                .Redirect<IBar>("group")
+                .To(x => x.Name)
+                .Via(call => call.CallNext() + " redirected");
+            
+            // ACT
+            var bar = fooProxy.EchoGeneric<IBar>(new Bar("bar"));
+
+            // ASSERT
+            bar.Name.ShouldBe("bar redirected");
+        }
+        
+        [Fact]
+        public void GivenNestedRedirect_WhenRedirectReset_ShouldPersist()
+        {
+            // ARRANGE
+            var diverter = _diverterBuilder
+                .Register<IFoo>(x => x
+                    .ThenRedirect(foo => foo.EchoGeneric(Is<IBar>.Any)))
+                .Create();
+
+            var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
+            diverter.ResetAll();
+            
+            diverter
+                .Redirect<IBar>()
+                .To(x => x.Name)
+                .Via(call => call.CallNext() + " redirected");
+
+            // ACT
+            var bar = fooProxy.EchoGeneric<IBar>(new Bar("bar"));
+
+            // ASSERT
+            bar.Name.ShouldBe("bar redirected");
+        }
+        
+        [Fact]
+        public void GivenNestedRedirect_WhenStrictMode_ShouldDisableSatisfyStrict()
+        {
+            // ARRANGE
+            var diverter = _diverterBuilder
+                .Register<IFoo>(x => x
+                    .ThenRedirect(foo => foo.EchoGeneric(Is<IBar>.Any)))
+                .Create();
 
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
             diverter.Redirect<IFoo>().Strict();
