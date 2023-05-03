@@ -103,6 +103,24 @@ namespace DivertR
         /// <param name="decorator">The decorator function.</param>
         /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
         IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, object> decorator);
+
+        /// <summary>
+        /// Add an <see cref="IRedirect{TTarget}"/> to the underlying <see cref="IRedirectSet"/> without registering a decorator.
+        /// This allows attaching standalone redirect types to the created <see cref="IDiverter"/> instance that will not decorate the dependency injection container.
+        /// </summary>
+        /// <param name="name">The <see cref="RedirectId.Name" /> of the added <see cref="IRedirect"/>.</param>
+        /// <typeparam name="TTarget">The <see cref="IRedirect{TTarget}"/> target type.</typeparam>
+        /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
+        IDiverterBuilder AddRedirect<TTarget>(string? name = null) where TTarget : class?;
+        
+        /// <summary>
+        /// Add an <see cref="IRedirect{TTarget}"/> to the underlying <see cref="IRedirectSet"/> without registering a decorator.
+        /// This allows attaching standalone redirect types to the created <see cref="IDiverter"/> instance that will not decorate the dependency injection container.
+        /// </summary>
+        /// <param name="type">The <see cref="IRedirect{TTarget}"/> target type.</param>
+        /// <param name="name">The <see cref="RedirectId.Name" /> of the added <see cref="IRedirect"/>.</param>
+        /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
+        IDiverterBuilder AddRedirect(Type type, string? name = null);
         
         /// <summary>
         /// Create an <see cref="IDiverter"/> instance from the current registrations.

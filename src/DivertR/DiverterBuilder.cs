@@ -39,7 +39,7 @@ namespace DivertR
         {
             return Register<TTarget>(null, nestedRegisterAction);
         }
-        
+
         /// <inheritdoc />
         public IDiverterBuilder Register<TTarget>(string? name, Action<INestedRegisterBuilder>? nestedRegisterAction = null) where TTarget : class?
         {
@@ -123,6 +123,22 @@ namespace DivertR
             return this;
         }
         
+        /// <inheritdoc />
+        public IDiverterBuilder AddRedirect<TTarget>(string? name = null) where TTarget : class?
+        {
+            RedirectSet.GetOrCreate<TTarget>(name);
+
+            return this;
+        }
+        
+        /// <inheritdoc />
+        public IDiverterBuilder AddRedirect(Type type, string? name = null)
+        {
+            RedirectSet.GetOrCreate(type, name);
+
+            return this;
+        }
+
         /// <inheritdoc />
         public IDiverter Create()
         {

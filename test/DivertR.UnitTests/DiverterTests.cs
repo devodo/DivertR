@@ -279,6 +279,58 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void AddRedirect_ShouldAdd()
+        {
+            // ARRANGE
+            var diverter = _diverterBuilder.AddRedirect<IFoo>().Create();
+
+            // ACT
+            var foo = diverter.Redirect<IFoo>().Proxy();
+            
+            // ASSERT
+            foo.ShouldNotBeNull();
+        }
+        
+        [Fact]
+        public void AddNamedRedirect_ShouldAdd()
+        {
+            // ARRANGE
+            var diverter = _diverterBuilder.AddRedirect<IFoo>("test").Create();
+
+            // ACT
+            var foo = diverter.Redirect<IFoo>("test").Proxy();
+            
+            // ASSERT
+            foo.ShouldNotBeNull();
+        }
+        
+        [Fact]
+        public void AddRedirectByType_ShouldAdd()
+        {
+            // ARRANGE
+            var diverter = _diverterBuilder.AddRedirect(typeof(IFoo)).Create();
+
+            // ACT
+            var foo = diverter.Redirect<IFoo>().Proxy();
+            
+            // ASSERT
+            foo.ShouldNotBeNull();
+        }
+        
+        [Fact]
+        public void AddNamedRedirectByType_ShouldAdd()
+        {
+            // ARRANGE
+            var diverter = _diverterBuilder.AddRedirect(typeof(IFoo), "test").Create();
+
+            // ACT
+            var foo = diverter.Redirect<IFoo>("test").Proxy();
+            
+            // ASSERT
+            foo.ShouldNotBeNull();
+        }
+        
+        [Fact]
         public void GivenNestedRegistration_WhenRegisteredTypeReturned_ShouldProxy()
         {
             // ARRANGE

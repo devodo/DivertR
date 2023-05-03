@@ -14,15 +14,13 @@ namespace DivertR.WebAppTests.TestHarness
 {
     public class WebAppFixture
     {
-        private const string LoggingGroup = "logging";
-        
         // Build a DivertR instance by registering the DI services we want to be able to redirect
         private readonly IDiverter _diverter = new DiverterBuilder()
             .Register<IFooRepository>()
             .Register<IBarServiceFactory>(x => x
                 .ThenRegister<IBarService>()) // Nested registrations allow redirecting inner services created outside DI e.g. by factories
             .Register<IFooService>()
-            .Register<ITestOutputHelper>(LoggingGroup)
+            .AddRedirect<ITestOutputHelper>() // Adds standalone redirect type that will not be installed into IServiceCollection
             .Create();
 
         private readonly WebApplicationFactory<Program> _webApplicationFactory;
@@ -34,7 +32,7 @@ namespace DivertR.WebAppTests.TestHarness
                 builder.ConfigureLogging(logging =>
                 {
                     // Create an xUnit ITestOutputHelper proxy mock
-                    var outputHelperMock = _diverter.Redirect<ITestOutputHelper>(LoggingGroup).Proxy();
+                    var outputHelperMock = _diverter.Redirect<ITestOutputHelper>().Proxy();
                     // Add an xUnit logging provider that writes to the mock ITestOutputHelper
                     logging.AddXunit(outputHelperMock);
                 });
@@ -57,7 +55,7 @@ namespace DivertR.WebAppTests.TestHarness
             if (output != null)
             {
                 // Retarget the ITestOutputHelper proxy mock to the current test output
-                _diverter.Redirect<ITestOutputHelper>(LoggingGroup).Retarget(output);
+                _diverter.Redirect<ITestOutputHelper>().Retarget(output);
             }
 
             return _diverter;
