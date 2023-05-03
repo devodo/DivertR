@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq.Expressions;
 
 namespace DivertR.Internal
 {
-    internal class NestedRegisterBuilder<TTarget> : INestedRegisterBuilder where TTarget : class?
+    internal class NestedRegisterBuilder<TTarget> : INestedRegisterBuilder<TTarget> where TTarget : class?
     {
         private readonly IRedirect<TTarget> _redirect;
         private readonly ConcurrentDictionary<RedirectId, ConcurrentDictionary<RedirectId, IRedirect>> _registeredRedirects;
@@ -14,12 +15,12 @@ namespace DivertR.Internal
             _registeredRedirects = registeredRedirects;
         }
 
-        public INestedRegisterBuilder ThenRegister<TReturn>(Action<INestedRegisterBuilder>? registerAction = null) where TReturn : class?
+        public INestedRegisterBuilder<TTarget> ThenRedirect<TReturn>(Action<INestedRegisterBuilder<TReturn>>? registerAction = null) where TReturn : class?
         {
-            return ThenRegister<TReturn>(null, registerAction);
+            return ThenRedirect((string?) null, registerAction);
         }
 
-        public INestedRegisterBuilder ThenRegister<TReturn>(string? name, Action<INestedRegisterBuilder>? registerAction = null) where TReturn : class?
+        public INestedRegisterBuilder<TTarget> ThenRedirect<TReturn>(string? name, Action<INestedRegisterBuilder<TReturn>>? registerAction = null) where TReturn : class?
         {
             var nestedRedirect = _redirect.RedirectSet.GetOrCreate<TReturn>(name);
             
@@ -39,7 +40,27 @@ namespace DivertR.Internal
             return this;
         }
 
-        public INestedRegisterBuilder ThenDecorate<TReturn>(Func<TReturn, TReturn> decorator)
+        public INestedRegisterBuilder<TTarget> ThenRedirect<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression, Action<INestedRegisterBuilder<TReturn>>? registerAction = null) where TReturn : class?
+        {
+            return ThenRedirect(null, constraintExpression, registerAction);
+        }
+
+        public INestedRegisterBuilder<TTarget> ThenRedirect<TReturn>(string? name, Expression<Func<TTarget, TReturn>> constraintExpression, Action<INestedRegisterBuilder<TReturn>>? registerAction = null) where TReturn : class?
+        {
+            var nestedRedirect = _redirect
+                .To(constraintExpression)
+                .ViaRedirect(name, opt =>
+                {
+                    opt.DisableSatisfyStrict();
+                    opt.Persist();
+                });
+            
+            registerAction?.Invoke(new NestedRegisterBuilder<TReturn>(nestedRedirect, _registeredRedirects));
+
+            return this;
+        }
+
+        public INestedRegisterBuilder<TTarget> ThenDecorate<TReturn>(Func<TReturn, TReturn> decorator)
         {
             _redirect.ViaDecorator(decorator, opt =>
             {

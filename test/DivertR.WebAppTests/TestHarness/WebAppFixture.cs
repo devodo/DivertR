@@ -18,9 +18,9 @@ namespace DivertR.WebAppTests.TestHarness
         private readonly IDiverter _diverter = new DiverterBuilder()
             .Register<IFooRepository>()
             .Register<IBarServiceFactory>(x => x
-                .ThenRegister<IBarService>()) // Nested registrations allow redirecting inner services created outside DI e.g. by factories
+                .ThenRedirect<IBarService>()) // Nested registrations allow redirecting inner services not resolved by DI e.g. by factories
             .Register<IFooService>()
-            .AddRedirect<ITestOutputHelper>() // Adds standalone redirect type that will not be installed into IServiceCollection
+            .AddRedirect<ITestOutputHelper>() // Attach a standalone (non DI service) redirect for proxying the xUnit ITestOutputHelper logger.
             .Create();
 
         private readonly WebApplicationFactory<Program> _webApplicationFactory;

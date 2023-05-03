@@ -23,7 +23,7 @@ namespace DivertR
         /// <typeparam name="TTarget">The type to register.</typeparam>
         /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
         /// <exception cref="DiverterException">Thrown if the <typeparamref name="TTarget"/> type with with default <see cref="RedirectId.Name" /> has already been registered.</exception>
-        IDiverterBuilder Register<TTarget>(Action<INestedRegisterBuilder>? nestedRegisterAction = null) where TTarget : class?;
+        IDiverterBuilder Register<TTarget>(Action<INestedRegisterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?;
 
         /// <summary>
         /// Register a type to redirect.
@@ -33,7 +33,7 @@ namespace DivertR
         /// <typeparam name="TTarget">The type to register.</typeparam>
         /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
         /// <exception cref="DiverterException">Thrown if the <typeparamref name="TTarget"/> type with matching <paramref name="name"/> has already been registered.</exception>
-        IDiverterBuilder Register<TTarget>(string? name, Action<INestedRegisterBuilder>? nestedRegisterAction = null) where TTarget : class?;
+        IDiverterBuilder Register<TTarget>(string? name, Action<INestedRegisterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?;
 
         /// <summary>
         /// Register a type to redirect.
