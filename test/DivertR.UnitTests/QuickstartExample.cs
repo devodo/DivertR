@@ -91,14 +91,12 @@ public class QuickstartExample
         services.AddSingleton<IBarFactory, BarFactory>();
         services.AddSingleton<IEtc, Etc>();
     
-        // Instantiate a Diverter instance
-        var diverter = new Diverter();
-    
-        // Register the services you want to be able to redirect
-        diverter    
+        // Create a Diverter instance with registered services you want to be able to redirect
+        var diverter = new DiverterBuilder()
             .Register<IFoo>()
-            .Register<IBarFactory>();
-    
+            .Register<IBarFactory>()
+            .Create();
+
         // Install DivertR into the ServiceCollection
         services.Divert(diverter);
     

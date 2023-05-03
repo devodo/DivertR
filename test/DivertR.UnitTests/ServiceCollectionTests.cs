@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,18 +14,17 @@ namespace DivertR.UnitTests
     public class ServiceCollectionTests
     {
         private readonly IServiceCollection _services = new ServiceCollection();
-        private readonly IDiverter _diverter = new Diverter();
 
         [Fact]
         public void ShouldReplaceTypeRegistration()
         {
             _services.AddSingleton<IFoo, Foo>();
-            _diverter.Register<IFoo>();
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder().Register<IFoo>().Create();
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
-            _diverter.Redirect<IFoo>().To(x => x.Name).Via("Diverted");
+            diverter.Redirect<IFoo>().To(x => x.Name).Via("Diverted");
             
             foo.Name.ShouldBe("Diverted");
         }
@@ -33,12 +33,12 @@ namespace DivertR.UnitTests
         public void ShouldReplaceInstanceRegistration()
         {
             _services.AddSingleton<IFoo>(new Foo());
-            _diverter.Register<IFoo>();
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder().Register<IFoo>().Create();
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
-            _diverter.Redirect<IFoo>().To(x => x.Name).Via("Diverted");
+            diverter.Redirect<IFoo>().To(x => x.Name).Via("Diverted");
             
             foo.Name.ShouldBe("Diverted");
         }
@@ -47,12 +47,12 @@ namespace DivertR.UnitTests
         public void ShouldReplaceFactoryRegistration()
         {
             _services.AddSingleton<IFoo>(_ => new Foo());
-            _diverter.Register<IFoo>();
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder().Register<IFoo>().Create();
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
-            _diverter.Redirect<IFoo>().To(x => x.Name).Via("Diverted");
+            diverter.Redirect<IFoo>().To(x => x.Name).Via("Diverted");
             
             foo.Name.ShouldBe("Diverted");
         }
@@ -61,8 +61,8 @@ namespace DivertR.UnitTests
         public void ShouldReplaceTypeDecorator()
         {
             _services.AddSingleton<IFoo, Foo>();
-            _diverter.Decorate<IFoo>(foo => new Foo(foo.Name + " decorated"));
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder().Decorate<IFoo>(foo => new Foo(foo.Name + " decorated")).Create();
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
@@ -73,8 +73,8 @@ namespace DivertR.UnitTests
         public void ShouldReplaceInstanceDecorator()
         {
             _services.AddSingleton<IFoo>(new Foo());
-            _diverter.Decorate<IFoo>(foo => new Foo(foo.Name + " decorated"));
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder().Decorate<IFoo>(foo => new Foo(foo.Name + " decorated")).Create();
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
@@ -85,8 +85,8 @@ namespace DivertR.UnitTests
         public void ShouldReplaceFactoryDecorator()
         {
             _services.AddSingleton<IFoo>(_ => new Foo());
-            _diverter.Decorate<IFoo>(foo => new Foo(foo.Name + " decorated"));
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder().Decorate<IFoo>(foo => new Foo(foo.Name + " decorated")).Create();
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
@@ -97,10 +97,13 @@ namespace DivertR.UnitTests
         public void ShouldReplaceMultipleDecorators()
         {
             _services.AddSingleton<IFoo, Foo>();
-            _diverter.Decorate<IFoo>(foo => new Foo(foo.Name + " 1"));
-            _diverter.Decorate<IFoo>(foo => new Foo(foo.Name + " 2"));
-            _diverter.Decorate<IFoo>(foo => new Foo(foo.Name + " 3"));
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder()
+                .Decorate<IFoo>(foo => new Foo(foo.Name + " 1"))
+                .Decorate<IFoo>(foo => new Foo(foo.Name + " 2"))
+                .Decorate<IFoo>(foo => new Foo(foo.Name + " 3"))
+                .Create();
+            
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
@@ -111,17 +114,20 @@ namespace DivertR.UnitTests
         public void ShouldReplaceMultipleDecoratorsIncludingRedirect()
         {
             _services.AddSingleton<IFoo, Foo>();
-            _diverter.Decorate<IFoo>(foo => new Foo(foo.Name + " 1"));
-            _diverter.Decorate<IFoo>(foo => new Foo(foo.Name + " 2"));
-            _diverter.Register<IFoo>();
-            _diverter.Decorate<IFoo>(Spy.On);
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder()
+                .Decorate<IFoo>(foo => new Foo(foo.Name + " 1"))
+                .Decorate<IFoo>(foo => new Foo(foo.Name + " 2"))
+                .Register<IFoo>()
+                .Decorate<IFoo>(Spy.On)
+                .Create();
+            
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
 
             Spy.Of(foo).To(x => x.Name).Via(call => call.CallNext() + " 3");
 
-            _diverter
+            diverter
                 .Redirect<IFoo>()
                 .To(x => x.Name)
                 .Via(call => call.CallNext() + " redirected");
@@ -133,10 +139,13 @@ namespace DivertR.UnitTests
         public void ShouldReplaceNamedDecorators()
         {
             _services.AddSingleton<IFoo, Foo>();
-            _diverter.Decorate<IFoo>("test", foo => new Foo(foo.Name + " 1"));
-            _diverter.Decorate<IFoo>(foo => new Foo(foo.Name + " 2"));
-            _diverter.Decorate<IFoo>("test", foo => new Foo(foo.Name + " 3"));
-            _services.Divert(_diverter, "test");
+            var diverter = new DiverterBuilder()
+                .Decorate<IFoo>("test", foo => new Foo(foo.Name + " 1"))
+                .Decorate<IFoo>(foo => new Foo(foo.Name + " 2"))
+                .Decorate<IFoo>("test", foo => new Foo(foo.Name + " 3"))
+                .Create();
+            
+            _services.Divert(diverter, "test");
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             
@@ -148,8 +157,8 @@ namespace DivertR.UnitTests
         {
             var fooRoot = new Foo();
             _services.AddTransient<IFoo>(_ => fooRoot);
-            _diverter.Decorate<IFoo>(foo => new Foo(foo.Name + " 1"));
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder().Decorate<IFoo>(foo => new Foo(foo.Name + " 1")).Create();
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var foo1 = provider.GetRequiredService<IFoo>();
             var foo2 = provider.GetRequiredService<IFoo>();
@@ -163,18 +172,21 @@ namespace DivertR.UnitTests
         {
             var fooRoot = new Foo();
             _services.AddTransient<IFoo>(_ => fooRoot);
-            _diverter.Decorate<IFoo>(foo => new Foo(foo.Name + " 1"));
-            _diverter.Decorate<IFoo>(foo => new Foo(foo.Name + " 2"));
-            _diverter.Register<IFoo>();
-            _diverter.Decorate<IFoo>(Spy.On);
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder()
+                .Decorate<IFoo>(foo => new Foo(foo.Name + " 1"))
+                .Decorate<IFoo>(foo => new Foo(foo.Name + " 2"))
+                .Register<IFoo>()
+                .Decorate<IFoo>(Spy.On)
+                .Create();
+            
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
             var foo2 = provider.GetRequiredService<IFoo>();
 
             Spy.Of(foo).To(x => x.Name).Via(call => call.CallNext() + " 3");
 
-            _diverter
+            diverter
                 .Redirect<IFoo>()
                 .To(x => x.Name)
                 .Via(call => call.CallNext() + " redirected");
@@ -187,8 +199,8 @@ namespace DivertR.UnitTests
         public void GivenTypedDecoratorShouldDecorateStructTypes()
         {
             _services.AddTransient(typeof(int), _ => 10);
-            _diverter.Decorate<int>(x => x + 1);
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder().Decorate<int>(x => x + 1).Create();
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var i = provider.GetRequiredService<int>();
             
@@ -199,8 +211,8 @@ namespace DivertR.UnitTests
         public void GivenGenericDecoratorShouldDecorateStructTypes()
         {
             _services.AddTransient(typeof(int), _ => 10);
-            _diverter.Decorate(typeof(int), x => (int) x + 1);
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder().Decorate(typeof(int), x => (int) x + 1).Create();
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var i = provider.GetRequiredService<int>();
             
@@ -210,9 +222,29 @@ namespace DivertR.UnitTests
         [Fact]
         public void GivenServiceTypeMissingShouldThrowException()
         {
-            _diverter.Register<IFoo>();
-            Action test = () => _services.Divert(_diverter);
+            var diverter = new DiverterBuilder().Register<IFoo>().Create();
+            Action test = () => _services.Divert(diverter);
             test.ShouldThrow<DiverterException>().Message.ShouldContain($"{typeof(IFoo).FullName}");
+        }
+        
+        [Fact]
+        public void GivenListDecoratorCanRedirectProxyItems()
+        {
+            _services.AddTransient<List<IFoo>>(_ => new List<IFoo> { new Foo("1"), new Foo("2") });
+            var diverterBuilder = new DiverterBuilder();
+            var diverter = diverterBuilder
+                .Decorate<List<IFoo>>(foos => foos
+                    .Select(x => diverterBuilder.RedirectSet.GetOrCreate<IFoo>().Proxy(x))
+                    .ToList()).Create();
+            
+            _services.Divert(diverter);
+            var provider = _services.BuildServiceProvider();
+            var foos = provider.GetRequiredService<List<IFoo>>();
+
+            diverter.Redirect<IFoo>().To(x => x.Name).Via(call => call.CallNext() + " diverted");
+            
+            foos[0].Name.ShouldBe("1 diverted");
+            foos[1].Name.ShouldBe("2 diverted");
         }
         
         [Fact]
@@ -221,13 +253,13 @@ namespace DivertR.UnitTests
             var fooRegistrations = Enumerable.Range(0, 10)
                 .Select((_, i) => new Foo($"Foo{i}")).ToList();
             fooRegistrations.ForEach(foo => _services.AddSingleton<IFoo>(foo));
-            _diverter.Register<IFoo>();
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder().Register<IFoo>().Create();
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
 
-            _diverter.Redirect<IFoo>()
+            diverter.Redirect<IFoo>()
                 .To(x => x.Name)
-                .Via(() => "Diverted: " + _diverter.Redirect<IFoo>().Relay.Next.Name);
+                .Via(() => "Diverted: " + diverter.Redirect<IFoo>().Relay.Next.Name);
             
             var fooInstances = provider.GetServices<IFoo>().ToList();
             
@@ -237,11 +269,11 @@ namespace DivertR.UnitTests
         [Fact]
         public void GivenResolvedInstancesBeforeAndAfterRegisteringVia_ShouldRedirect()
         {
-            _diverter.Register<IFoo>();
-            var redirect = _diverter.Redirect<IFoo>();
+            var diverter = new DiverterBuilder().Register<IFoo>().Create();
+            var redirect = diverter.Redirect<IFoo>();
             
             _services.AddTransient<IFoo, Foo>();
-            _services.Divert(_diverter);
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             
             var fooBefore = provider.GetRequiredService<IFoo>();
@@ -251,7 +283,7 @@ namespace DivertR.UnitTests
             fooBefore.Name.ShouldBe("Diverted");
             fooAfter.Name.ShouldBe("Diverted");
             
-            _diverter.ResetAll();
+            diverter.ResetAll();
             
             fooBefore.Name.ShouldBe("original");
             fooAfter.Name.ShouldBe("original");
@@ -261,8 +293,8 @@ namespace DivertR.UnitTests
         public void ShouldNotProxyNullDependencies()
         {
             _services.AddSingleton<IFoo>(_ => null!);
-            _diverter.Register<IFoo>();
-            _services.Divert(_diverter);
+            var diverter = new DiverterBuilder().Register<IFoo>().Create();
+            _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetService<IFoo>();
             
@@ -283,7 +315,7 @@ namespace DivertR.UnitTests
                 _services.AddScoped<ITestNonDisposable>(provider => new TestDisposable(provider.GetRequiredService<DisposeContext>()));
             }
             
-            var diverter = new Diverter().Register<ITestNonDisposable>();
+            var diverter = new DiverterBuilder().Register<ITestNonDisposable>().Create();
             _services.Divert(diverter);
             
             var provider = _services.BuildServiceProvider();
@@ -310,7 +342,7 @@ namespace DivertR.UnitTests
                 _services.AddScoped<ITestDisposable>(provider => new TestDisposable(provider.GetRequiredService<DisposeContext>()));
             }
             
-            var diverter = new Diverter().Register<ITestDisposable>();
+            var diverter = new DiverterBuilder().Register<ITestDisposable>().Create();
             _services.Divert(diverter);
 
             var disposeCalls = diverter
@@ -344,7 +376,7 @@ namespace DivertR.UnitTests
                 _services.AddScoped<ITestAsyncDisposable>(provider => new TestDisposable(provider.GetRequiredService<DisposeContext>()));
             }
             
-            var diverter = new Diverter().Register<ITestAsyncDisposable>();
+            var diverter = new DiverterBuilder().Register<ITestAsyncDisposable>().Create();
             _services.Divert(diverter);
 
             var disposeCalls = diverter

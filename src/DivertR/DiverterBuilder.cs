@@ -7,39 +7,41 @@ using DivertR.Internal;
 namespace DivertR
 {
     /// <inheritdoc />
-    public class Diverter : IDiverter
+    public class DiverterBuilder : IDiverterBuilder
     {
         private readonly ConcurrentDictionary<string, ConcurrentQueue<IDiverterDecorator>> _decorators = new();
         private readonly ConcurrentDictionary<RedirectId, IRedirect> _registeredRedirects = new();
         private readonly ConcurrentDictionary<RedirectId, ConcurrentDictionary<RedirectId, IRedirect>> _registeredNested = new();
-        public IRedirectSet RedirectSet { get; }
 
         /// <summary>
-        /// Create a <see cref="Diverter"/> instance.
+        /// Create a <see cref="DiverterBuilder"/> instance.
         /// </summary>
         /// <param name="settings">Optionally override default DivertR settings.</param>
-        public Diverter(DiverterSettings? settings = null)
+        public DiverterBuilder(DiverterSettings? settings = null)
         {
             RedirectSet = new RedirectSet(settings);
         }
         
         /// <summary>
-        /// Create a <see cref="Diverter"/> instance using an external <see cref="IRedirectSet"/>.
+        /// Create a <see cref="DiverterBuilder"/> instance using an external <see cref="IRedirectSet"/>.
         /// </summary>
         /// <param name="redirectSet">The <see cref="IRedirectSet"/> instance.</param>
-        public Diverter(IRedirectSet redirectSet)
+        public DiverterBuilder(IRedirectSet redirectSet)
         {
             RedirectSet = redirectSet;
         }
         
         /// <inheritdoc />
-        public IDiverter Register<TTarget>(Action<INestedRegisterBuilder>? nestedRegisterAction = null) where TTarget : class?
+        public IRedirectSet RedirectSet { get; }
+
+        /// <inheritdoc />
+        public IDiverterBuilder Register<TTarget>(Action<INestedRegisterBuilder>? nestedRegisterAction = null) where TTarget : class?
         {
             return Register<TTarget>(null, nestedRegisterAction);
         }
-        
+
         /// <inheritdoc />
-        public IDiverter Register<TTarget>(string? name, Action<INestedRegisterBuilder>? nestedRegisterAction = null) where TTarget : class?
+        public IDiverterBuilder Register<TTarget>(string? name, Action<INestedRegisterBuilder>? nestedRegisterAction = null) where TTarget : class?
         {
             var redirect = RedirectSet.GetOrCreate<TTarget>(name);
 
@@ -50,13 +52,13 @@ namespace DivertR
             
             AddDecorator(name, new RedirectDecorator(redirect));
 
-            nestedRegisterAction?.Invoke(new NestedRegisterBuilder<TTarget>(RedirectSet.Get<TTarget>(name)!, _registeredNested));
+            nestedRegisterAction?.Invoke(new NestedRegisterBuilder<TTarget>(redirect, _registeredNested));
 
             return this;
         }
 
         /// <inheritdoc />
-        public IDiverter Register(Type targetType, string? name = null)
+        public IDiverterBuilder Register(Type targetType, string? name = null)
         {
             var redirect = RedirectSet.GetOrCreate(targetType, name);
             
@@ -71,7 +73,7 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public IDiverter Register(IEnumerable<Type> types, string? name = null)
+        public IDiverterBuilder Register(IEnumerable<Type> types, string? name = null)
         {
             foreach (var type in types)
             {
@@ -82,25 +84,25 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public IDiverter Register(params Type[] types)
+        public IDiverterBuilder Register(params Type[] types)
         {
             return Register(types, null);
         }
         
         /// <inheritdoc />
-        public IDiverter Register(string? name, params Type[] types)
+        public IDiverterBuilder Register(string? name, params Type[] types)
         {
             return Register(types, name);
         }
         
         /// <inheritdoc />
-        public IDiverter Decorate<TService>(Func<TService, TService> decorator)
+        public IDiverterBuilder Decorate<TService>(Func<TService, TService> decorator)
         {
             return Decorate(null, decorator);
         }
 
         /// <inheritdoc />
-        public IDiverter Decorate<TService>(string? name, Func<TService, TService> decorator)
+        public IDiverterBuilder Decorate<TService>(string? name, Func<TService, TService> decorator)
         {
             AddDecorator(name, ServiceDecorator.Create(decorator));
 
@@ -108,84 +110,48 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public IDiverter Decorate(Type serviceType, Func<object, object> decorator)
+        public IDiverterBuilder Decorate(Type serviceType, Func<object, object> decorator)
         {
             return Decorate(null, serviceType, decorator);
         }
         
         /// <inheritdoc />
-        public IDiverter Decorate(string? name, Type serviceType, Func<object, object> decorator)
+        public IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, object> decorator)
         {
             AddDecorator(null, new ServiceDecorator(serviceType, decorator));
             
             return this;
         }
-
+        
         /// <inheritdoc />
-        public IEnumerable<IDiverterDecorator> GetDecorators(string? name = null)
+        public IDiverterBuilder AddRedirect<TTarget>(string? name = null) where TTarget : class?
         {
-            return _decorators.TryGetValue(name ?? string.Empty, out var decorators)
-                ? decorators
-                : Enumerable.Empty<IDiverterDecorator>();
-        }
+            RedirectSet.GetOrCreate<TTarget>(name);
 
-        /// <inheritdoc />
-        public IRedirect<TTarget> Redirect<TTarget>(string? name = null) where TTarget : class?
-        {
-            return (IRedirect<TTarget>) Redirect(RedirectId.From<TTarget>(name));
+            return this;
         }
         
         /// <inheritdoc />
-        public IRedirect Redirect(Type type, string? name = null)
+        public IDiverterBuilder AddRedirect(Type type, string? name = null)
         {
-            return Redirect(RedirectId.From(type, name));
+            RedirectSet.GetOrCreate(type, name);
+
+            return this;
         }
-        
+
         /// <inheritdoc />
-        public IRedirect Redirect(RedirectId redirectId)
+        public IDiverter Create()
         {
-            var redirect = RedirectSet.Get(redirectId);
-            
-            if (redirect == null)
+            IEnumerable<IDiverterDecorator> GetDecorators(string? name = null)
             {
-                throw new DiverterException($"Redirect not registered for {redirectId}");
+                return _decorators.TryGetValue(name ?? string.Empty, out var decorators)
+                    ? decorators
+                    : Enumerable.Empty<IDiverterDecorator>();
             }
             
-            return redirect;
+            return new Diverter(RedirectSet, GetDecorators);
         }
 
-        /// <inheritdoc />
-        public IDiverter StrictAll()
-        {
-            RedirectSet.StrictAll();
-            
-            return this;
-        }
-
-        /// <inheritdoc />
-        public IDiverter Strict(string? name = null)
-        {
-            RedirectSet.Strict(name);
-
-            return this;
-        }
-        
-        /// <inheritdoc />
-        public IDiverter ResetAll()
-        {
-            RedirectSet.ResetAll();
-            
-            return this;
-        }
-        
-        /// <inheritdoc />
-        public IDiverter Reset(string? name = null)
-        {
-            RedirectSet.Reset(name);
-
-            return this;
-        }
-        
         private void AddDecorator(string? name, IDiverterDecorator decorator)
         {
             var decorators = _decorators.GetOrAdd(name ?? string.Empty, _ => new ConcurrentQueue<IDiverterDecorator>());
