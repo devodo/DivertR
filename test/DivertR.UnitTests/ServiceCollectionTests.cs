@@ -94,6 +94,104 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void ShouldDecorateWithDiverterParam()
+        {
+            _services.AddSingleton<IFoo, Foo>();
+
+            var diverter = new DiverterBuilder()
+                .AddRedirect<IBar>()
+                .Decorate<IFoo>((foo, diverter) =>
+                {
+                    var bar = diverter.Redirect<IBar>().Proxy(new Bar("test"));
+                    return new Foo($"{foo.Name} {bar.Name} decorated");
+                })
+                .Create();
+            
+            _services.Divert(diverter);
+            var provider = _services.BuildServiceProvider();
+            var foo = provider.GetRequiredService<IFoo>();
+            
+            foo.Name.ShouldBe("original test decorated");
+        }
+        
+        [Fact]
+        public void ShouldDecorateWithProviderParam()
+        {
+            _services.AddSingleton<IFoo, Foo>();
+            _services.AddSingleton<IBar>(_ => new Bar("test"));
+
+            var diverter = new DiverterBuilder()
+                .AddRedirect<IBar>()
+                .Decorate<IFoo>((foo, diverter, provider) =>
+                {
+                    var bar = diverter.Redirect<IBar>().Proxy(provider.GetRequiredService<IBar>());
+                    return new Foo($"{foo.Name} {bar.Name} decorated");
+                })
+                .Create();
+            
+            _services.Divert(diverter);
+            var provider = _services.BuildServiceProvider();
+            var foo = provider.GetRequiredService<IFoo>();
+            
+            foo.Name.ShouldBe("original test decorated");
+        }
+        
+        [Fact]
+        public void ShouldDecorateWithObjectDelegate()
+        {
+            _services.AddSingleton<IFoo, Foo>();
+            var diverter = new DiverterBuilder().Decorate(typeof(IFoo), foo => new Foo(((IFoo) foo).Name + " decorated")).Create();
+            _services.Divert(diverter);
+            var provider = _services.BuildServiceProvider();
+            var foo = provider.GetRequiredService<IFoo>();
+            
+            foo.Name.ShouldBe("original decorated");
+        }
+        
+        [Fact]
+        public void ShouldDecorateWithObjectDelegateAndDiverterParam()
+        {
+            _services.AddSingleton<IFoo, Foo>();
+
+            var diverter = new DiverterBuilder()
+                .AddRedirect<IBar>()
+                .Decorate(typeof(IFoo), (foo, diverter) =>
+                {
+                    var bar = diverter.Redirect<IBar>().Proxy(new Bar("test"));
+                    return new Foo($"{((IFoo) foo).Name} {bar.Name} decorated");
+                })
+                .Create();
+            
+            _services.Divert(diverter);
+            var provider = _services.BuildServiceProvider();
+            var foo = provider.GetRequiredService<IFoo>();
+            
+            foo.Name.ShouldBe("original test decorated");
+        }
+        
+        [Fact]
+        public void ShouldDecorateWithObjectDelegateAndProviderParam()
+        {
+            _services.AddSingleton<IFoo, Foo>();
+            _services.AddSingleton<IBar>(_ => new Bar("test"));
+
+            var diverter = new DiverterBuilder()
+                .AddRedirect<IBar>()
+                .Decorate(typeof(IFoo), (foo, diverter, provider) =>
+                {
+                    var bar = diverter.Redirect<IBar>().Proxy(provider.GetRequiredService<IBar>());
+                    return new Foo($"{((IFoo) foo).Name} {bar.Name} decorated");
+                })
+                .Create();
+            
+            _services.Divert(diverter);
+            var provider = _services.BuildServiceProvider();
+            var foo = provider.GetRequiredService<IFoo>();
+            
+            foo.Name.ShouldBe("original test decorated");
+        }
+        
+        [Fact]
         public void ShouldReplaceMultipleDecorators()
         {
             _services.AddSingleton<IFoo, Foo>();

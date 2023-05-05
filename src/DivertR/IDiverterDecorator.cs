@@ -8,6 +8,6 @@ namespace DivertR
         Type ServiceType { get; }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        object Decorate(object input);
+        object Decorate(object input, IDiverter diverter, IServiceProvider provider);
     }
 }
