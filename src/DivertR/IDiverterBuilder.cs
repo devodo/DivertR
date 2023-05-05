@@ -90,6 +90,40 @@ namespace DivertR
         /// <summary>
         /// Register a service decorator. The decorator is added to the default group.
         /// </summary>
+        /// <param name="decorator">The decorator function.</param>
+        /// <typeparam name="TService">The service type to decorate.</typeparam>
+        /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
+        IDiverterBuilder Decorate<TService>(Func<TService, IDiverter, TService> decorator);
+        
+        /// <summary>
+        /// Register a service decorator.
+        /// </summary>
+        /// <param name="name">The decorator group.</param>
+        /// <param name="decorator">The decorator function.</param>
+        /// <typeparam name="TService">The service type to decorate.</typeparam>
+        /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
+        IDiverterBuilder Decorate<TService>(string? name, Func<TService, IDiverter, TService> decorator);
+        
+        /// <summary>
+        /// Register a service decorator. The decorator is added to the default group.
+        /// </summary>
+        /// <param name="decorator">The decorator function.</param>
+        /// <typeparam name="TService">The service type to decorate.</typeparam>
+        /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
+        IDiverterBuilder Decorate<TService>(Func<TService, IDiverter, IServiceProvider, TService> decorator);
+        
+        /// <summary>
+        /// Register a service decorator.
+        /// </summary>
+        /// <param name="name">The decorator group.</param>
+        /// <param name="decorator">The decorator function.</param>
+        /// <typeparam name="TService">The service type to decorate.</typeparam>
+        /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
+        IDiverterBuilder Decorate<TService>(string? name, Func<TService, IDiverter, IServiceProvider, TService> decorator);
+        
+        /// <summary>
+        /// Register a service decorator. The decorator is added to the default group.
+        /// </summary>
         /// <param name="serviceType">The service type to decorate.</param>
         /// <param name="decorator">The decorator function.</param>
         /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
@@ -103,6 +137,40 @@ namespace DivertR
         /// <param name="decorator">The decorator function.</param>
         /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
         IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, object> decorator);
+        
+        /// <summary>
+        /// Register a service decorator. The decorator is added to the default group.
+        /// </summary>
+        /// <param name="serviceType">The service type to decorate.</param>
+        /// <param name="decorator">The decorator function.</param>
+        /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
+        IDiverterBuilder Decorate(Type serviceType, Func<object, IDiverter, object> decorator);
+        
+        /// <summary>
+        /// Register a service decorator.
+        /// </summary>
+        /// <param name="name">The decorator group.</param>
+        /// <param name="serviceType">The service type to decorate.</param>
+        /// <param name="decorator">The decorator function.</param>
+        /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
+        IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, IDiverter, object> decorator);
+        
+        /// <summary>
+        /// Register a service decorator. The decorator is added to the default group.
+        /// </summary>
+        /// <param name="serviceType">The service type to decorate.</param>
+        /// <param name="decorator">The decorator function.</param>
+        /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
+        IDiverterBuilder Decorate(Type serviceType, Func<object, IDiverter, IServiceProvider, object> decorator);
+        
+        /// <summary>
+        /// Register a service decorator.
+        /// </summary>
+        /// <param name="name">The decorator group.</param>
+        /// <param name="serviceType">The service type to decorate.</param>
+        /// <param name="decorator">The decorator function.</param>
+        /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
+        IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, IDiverter, IServiceProvider, object> decorator);
 
         /// <summary>
         /// Add an <see cref="IRedirect{TTarget}"/> to the underlying <see cref="IRedirectSet"/> without registering a decorator.

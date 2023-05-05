@@ -50,14 +50,5 @@ namespace DivertR
         /// <typeparam name="TReturn">The return type of calls to redirect.</typeparam>
         /// <returns>This <see cref="INestedRegisterBuilder{TTarget}"/> instance.</returns>
         INestedRegisterBuilder<TTarget> ThenRedirect<TReturn>(string? name, Expression<Func<TTarget, TReturn>> constraintExpression, Action<INestedRegisterBuilder<TReturn>>? registerAction = null) where TReturn : class?;
-        
-        /// <summary>
-        /// Register a decorator on call returns of type <typeparamref name="TReturn"/> on the nested redirect.
-        /// The decorator is applied by inserting a <see cref="IVia"/> on the nested redirect that is persistent, i.e. remains after reset.
-        /// </summary>
-        /// <param name="decorator">The decorator function.</param>
-        /// <typeparam name="TReturn">The return type of calls to decorate.</typeparam>
-        /// <returns>This <see cref="INestedRegisterBuilder{TTarget}"/> instance.</returns>
-        INestedRegisterBuilder<TTarget> ThenDecorate<TReturn>(Func<TReturn, TReturn> decorator);
     }
 }

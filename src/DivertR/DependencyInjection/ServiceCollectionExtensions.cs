@@ -24,7 +24,7 @@ namespace DivertR.DependencyInjection
                 .GroupBy(x => x.ServiceType)
                 .ToDictionary(grp => grp.Key, grp => grp.Select(x => x));
 
-            var decorateActions = CreateDecorateActions(services, decoratorsMap);
+            var decorateActions = CreateDecorateActions(services, diverter, decoratorsMap);
 
             var missingTypes = decoratorsMap.Keys
                 .Where(x => !decorateActions.ContainsKey(x))
@@ -45,7 +45,7 @@ namespace DivertR.DependencyInjection
             return services;
         }
 
-        private static Dictionary<Type, IEnumerable<Action>> CreateDecorateActions(IServiceCollection services, Dictionary<Type, IEnumerable<IDiverterDecorator>> decoratorsMap)
+        private static Dictionary<Type, IEnumerable<Action>> CreateDecorateActions(IServiceCollection services, IDiverter diverter, Dictionary<Type, IEnumerable<IDiverterDecorator>> decoratorsMap)
         {
             return services
                 .Select((descriptor, index) =>
@@ -62,7 +62,7 @@ namespace DivertR.DependencyInjection
                     
                     void DecorateAction()
                     {
-                        var serviceFactory = CreateServiceFactory(services, descriptor, decorators);
+                        var serviceFactory = CreateServiceFactory(services, diverter, descriptor, decorators);
                         services[index] = new ServiceDescriptor(descriptor.ServiceType, serviceFactory, descriptor.Lifetime);
                     }
 
@@ -78,7 +78,7 @@ namespace DivertR.DependencyInjection
                     grp => grp.Select(x => x!.Action));
         }
         
-        private static Func<IServiceProvider, object?> CreateServiceFactory(IServiceCollection services, ServiceDescriptor descriptor, IEnumerable<IDiverterDecorator> decorators)
+        private static Func<IServiceProvider, object?> CreateServiceFactory(IServiceCollection services, IDiverter diverter, ServiceDescriptor descriptor, IEnumerable<IDiverterDecorator> decorators)
         {
             var rootFactory = CreateRootFactory(services, descriptor);
             
@@ -88,7 +88,7 @@ namespace DivertR.DependencyInjection
 
                 foreach (var decorator in decorators)
                 {
-                    result = decorator.Decorate(result);
+                    result = decorator.Decorate(result, diverter, provider);
                 }
                 
                 return result;

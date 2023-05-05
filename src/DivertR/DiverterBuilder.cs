@@ -11,7 +11,7 @@ namespace DivertR
     {
         private readonly ConcurrentDictionary<string, ConcurrentQueue<IDiverterDecorator>> _decorators = new();
         private readonly ConcurrentDictionary<RedirectId, IRedirect> _registeredRedirects = new();
-        private readonly ConcurrentDictionary<RedirectId, ConcurrentDictionary<RedirectId, IRedirect>> _registeredNested = new();
+        private readonly ConcurrentDictionary<RedirectId, ConcurrentDictionary<RedirectId, RedirectId>> _registeredNested = new();
 
         /// <summary>
         /// Create a <see cref="DiverterBuilder"/> instance.
@@ -49,10 +49,10 @@ namespace DivertR
             {
                 throw new DiverterException($"Redirect already registered for {redirect.RedirectId}");
             }
-            
+
             AddDecorator(name, new RedirectDecorator(redirect));
 
-            nestedRegisterAction?.Invoke(new NestedRegisterBuilder<TTarget>(redirect, _registeredNested));
+            nestedRegisterAction?.Invoke(new NestedRegisterBuilder<TTarget>(redirect, this));
 
             return this;
         }
@@ -110,6 +110,34 @@ namespace DivertR
         }
         
         /// <inheritdoc />
+        public IDiverterBuilder Decorate<TService>(Func<TService, IDiverter, TService> decorator)
+        {
+            return Decorate(null, decorator);
+        }
+        
+        /// <inheritdoc />
+        public IDiverterBuilder Decorate<TService>(string? name, Func<TService, IDiverter, TService> decorator)
+        {
+            AddDecorator(name, ServiceDecorator.Create(decorator));
+
+            return this;
+        }
+        
+        /// <inheritdoc />
+        public IDiverterBuilder Decorate<TService>(Func<TService, IDiverter, IServiceProvider, TService> decorator)
+        {
+            return Decorate(null, decorator);
+        }
+        
+        /// <inheritdoc />
+        public IDiverterBuilder Decorate<TService>(string? name, Func<TService, IDiverter, IServiceProvider, TService> decorator)
+        {
+            AddDecorator(name, ServiceDecorator.Create(decorator));
+
+            return this;
+        }
+
+        /// <inheritdoc />
         public IDiverterBuilder Decorate(Type serviceType, Func<object, object> decorator)
         {
             return Decorate(null, serviceType, decorator);
@@ -118,11 +146,35 @@ namespace DivertR
         /// <inheritdoc />
         public IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, object> decorator)
         {
-            AddDecorator(null, new ServiceDecorator(serviceType, decorator));
+            AddDecorator(name, ServiceDecorator.Create(serviceType, decorator));
             
             return this;
         }
-        
+
+        public IDiverterBuilder Decorate(Type serviceType, Func<object, IDiverter, object> decorator)
+        {
+            return Decorate(null, serviceType, decorator);
+        }
+
+        public IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, IDiverter, object> decorator)
+        {
+            AddDecorator(name, ServiceDecorator.Create(serviceType, decorator));
+            
+            return this;
+        }
+
+        public IDiverterBuilder Decorate(Type serviceType, Func<object, IDiverter, IServiceProvider, object> decorator)
+        {
+            return Decorate(null, serviceType, decorator);
+        }
+
+        public IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, IDiverter, IServiceProvider, object> decorator)
+        {
+            AddDecorator(name, ServiceDecorator.Create(serviceType, decorator));
+            
+            return this;
+        }
+
         /// <inheritdoc />
         public IDiverterBuilder AddRedirect<TTarget>(string? name = null) where TTarget : class?
         {
@@ -156,6 +208,14 @@ namespace DivertR
         {
             var decorators = _decorators.GetOrAdd(name ?? string.Empty, _ => new ConcurrentQueue<IDiverterDecorator>());
             decorators.Enqueue(decorator);
+        }
+        
+        internal bool TryAddNestedRedirect(RedirectId parentRedirectId, RedirectId nestedRedirectId)
+        {
+            var registered = _registeredNested.GetOrAdd(parentRedirectId,
+                _ => new ConcurrentDictionary<RedirectId, RedirectId>());
+
+            return registered.TryAdd(nestedRedirectId, nestedRedirectId);
         }
     }
 }

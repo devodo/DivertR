@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Linq.Expressions;
 
 namespace DivertR.Internal
@@ -7,12 +6,12 @@ namespace DivertR.Internal
     internal class NestedRegisterBuilder<TTarget> : INestedRegisterBuilder<TTarget> where TTarget : class?
     {
         private readonly IRedirect<TTarget> _redirect;
-        private readonly ConcurrentDictionary<RedirectId, ConcurrentDictionary<RedirectId, IRedirect>> _registeredRedirects;
+        private readonly DiverterBuilder _diverterBuilder;
 
-        public NestedRegisterBuilder(IRedirect<TTarget> redirect, ConcurrentDictionary<RedirectId, ConcurrentDictionary<RedirectId, IRedirect>> registeredRedirects)
+        public NestedRegisterBuilder(IRedirect<TTarget> redirect, DiverterBuilder diverterBuilder)
         {
             _redirect = redirect;
-            _registeredRedirects = registeredRedirects;
+            _diverterBuilder = diverterBuilder;
         }
 
         public INestedRegisterBuilder<TTarget> ThenRedirect<TReturn>(Action<INestedRegisterBuilder<TReturn>>? registerAction = null) where TReturn : class?
@@ -24,7 +23,7 @@ namespace DivertR.Internal
         {
             var nestedRedirect = _redirect.RedirectSet.GetOrCreate<TReturn>(name);
             
-            if (!TryAddNestedRedirect(nestedRedirect))
+            if (!_diverterBuilder.TryAddNestedRedirect(_redirect.RedirectId, nestedRedirect.RedirectId))
             {
                 throw new DiverterException($"Nested redirect already registered {nestedRedirect.RedirectId}");
             }
@@ -35,7 +34,7 @@ namespace DivertR.Internal
                 opt.Persist();
             });
 
-            registerAction?.Invoke(new NestedRegisterBuilder<TReturn>(nestedRedirect, _registeredRedirects));
+            registerAction?.Invoke(new NestedRegisterBuilder<TReturn>(nestedRedirect, _diverterBuilder));
 
             return this;
         }
@@ -55,28 +54,9 @@ namespace DivertR.Internal
                     opt.Persist();
                 });
             
-            registerAction?.Invoke(new NestedRegisterBuilder<TReturn>(nestedRedirect, _registeredRedirects));
+            registerAction?.Invoke(new NestedRegisterBuilder<TReturn>(nestedRedirect, _diverterBuilder));
 
             return this;
-        }
-
-        public INestedRegisterBuilder<TTarget> ThenDecorate<TReturn>(Func<TReturn, TReturn> decorator)
-        {
-            _redirect.ViaDecorator(decorator, opt =>
-            {
-                opt.DisableSatisfyStrict();
-                opt.Persist();
-            });
-
-            return this;
-        }
-
-        private bool TryAddNestedRedirect(IRedirect nestedRedirect)
-        {
-            var registered = _registeredRedirects.GetOrAdd(_redirect.RedirectId,
-                _ => new ConcurrentDictionary<RedirectId, IRedirect>());
-
-            return registered.TryAdd(nestedRedirect.RedirectId, nestedRedirect);
         }
     }
 }
