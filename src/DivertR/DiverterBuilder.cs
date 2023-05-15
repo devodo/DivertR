@@ -35,13 +35,13 @@ namespace DivertR
         public IRedirectSet RedirectSet { get; }
 
         /// <inheritdoc />
-        public IDiverterBuilder Register<TTarget>(Action<INestedRegisterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?
+        public IDiverterBuilder Register<TTarget>(Action<INestedDiverterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?
         {
             return Register(null, nestedRegisterAction);
         }
 
         /// <inheritdoc />
-        public IDiverterBuilder Register<TTarget>(string? name, Action<INestedRegisterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?
+        public IDiverterBuilder Register<TTarget>(string? name, Action<INestedDiverterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?
         {
             var redirect = RedirectSet.GetOrCreate<TTarget>(name);
 
@@ -52,7 +52,7 @@ namespace DivertR
 
             AddDecorator(name, new RedirectDecorator(redirect));
 
-            nestedRegisterAction?.Invoke(new NestedRegisterBuilder<TTarget>(redirect, this));
+            nestedRegisterAction?.Invoke(new NestedDiverterBuilder<TTarget>(redirect, this));
 
             return this;
         }
@@ -150,35 +150,46 @@ namespace DivertR
             
             return this;
         }
-
+        
+        /// <inheritdoc />
         public IDiverterBuilder Decorate(Type serviceType, Func<object, IDiverter, object> decorator)
         {
             return Decorate(null, serviceType, decorator);
         }
-
+        
+        /// <inheritdoc />
         public IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, IDiverter, object> decorator)
         {
             AddDecorator(name, ServiceDecorator.Create(serviceType, decorator));
             
             return this;
         }
-
+        
+        /// <inheritdoc />
         public IDiverterBuilder Decorate(Type serviceType, Func<object, IDiverter, IServiceProvider, object> decorator)
         {
             return Decorate(null, serviceType, decorator);
         }
-
+        
+        /// <inheritdoc />
         public IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, IDiverter, IServiceProvider, object> decorator)
         {
             AddDecorator(name, ServiceDecorator.Create(serviceType, decorator));
             
             return this;
         }
-
+        
         /// <inheritdoc />
-        public IDiverterBuilder AddRedirect<TTarget>(string? name = null) where TTarget : class?
+        public IDiverterBuilder AddRedirect<TTarget>(Action<INestedDiverterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?
         {
-            RedirectSet.GetOrCreate<TTarget>(name);
+            return AddRedirect(null, nestedRegisterAction);
+        }
+        
+        /// <inheritdoc />
+        public IDiverterBuilder AddRedirect<TTarget>(string? name, Action<INestedDiverterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?
+        {
+            var redirect = RedirectSet.GetOrCreate<TTarget>(name);
+            nestedRegisterAction?.Invoke(new NestedDiverterBuilder<TTarget>(redirect, this));
 
             return this;
         }
