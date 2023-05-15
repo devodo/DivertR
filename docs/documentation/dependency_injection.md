@@ -79,7 +79,7 @@ IRedirect<IFoo> fooRedirect = diverter.Redirect<IFoo>();
 
 fooRedirect
     .To(x => x.Name)
-    .Via(call => $"{call.Root.Name} diverted");
+    .Via(call => $"{call.CallNext()} diverted");
 
 var foo = provider.GetService<IFoo>();
 Console.WriteLine(foo.Name); // "Foo diverted"
@@ -106,21 +106,21 @@ Console.WriteLine(foo2.Name);  // "Foo2"
 
 After reset all resolved redirect proxies will be returned to their initial state of forwarding calls to their roots.
 
-# Nested Registrations
+# Nested Redirects
 
-*Nested registrations* are used to redirect calls on types that are not directly resolved by the DI container such as instances created by factory services.
+*Nested redirects* are added to proxy calls on types that are not directly resolved by the DI container such as instances created by factory services.
 
 E.g. if we have an `IBarFactory` factory service, resolved by the DI, that has factory methods that create `IBar` instances.
-A nested `IBar` redirect registration from the parent `IBarFactory` registration can be declared as follows:
+A nested `IBar` redirect from the parent `IBarFactory` registration can be declared as follows:
 
 ```csharp
 var diverter = new DiverterBuilder()
     .Register<IBarFactory>(x => x
-        .ThenRedirect<IBar>()) // Proxy redirect any IBar instances returned by IBarFactory
+        .AddRedirect<IBar>()) // Proxy redirect any IBar instances returned by IBarFactory
     .Create();
 ```
 
-> Nested registrations of nested registrations can be chained to any depth.
+> Nested redirects can be added to nested redirects can be chained to any depth.
 {: .note }
 
 This is installed into the existing `IServiceCollection` as usual:
@@ -156,6 +156,18 @@ diverter.ResetAll();
 Console.WriteLine(bar.Name); // "MrBar"
 ```
 
+## Redirect Chains
+
+Redirect proxy chains can be created by adding nested redirects to nested redirects to any depth e.g.:
+
+```csharp
+var diverter = new DiverterBuilder()
+    .Register<IService>(service => service
+        .AddRedirect<INested>(nested => nested)
+            .AddRedirect<IEtc>())
+    .Create();
+```
+
 # Proxy Lifetime
 
 To maintain the original system behaviour when DivertR replaces existing DI registrations with Redirect decorators the lifetime is preserved.
@@ -173,4 +185,4 @@ If a root instance implements the `IDisposable` interface then the DI container 
 If the `Redirect` target type inherits `IDisposable` then **only** the proxy instances are disposed by the DI container and not the root.
 In this case the responsibility is left to the proxy for forwarding the dispose call to its root (and it does this by default).
 
-The above dispose pattern also applies to `IAsyncDisposable` types.
+DivertR also supports and applies the same dispose behaviour to `IAsyncDisposable` types.
