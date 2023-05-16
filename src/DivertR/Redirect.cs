@@ -215,13 +215,13 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        IRedirect IRedirect.ViaDecorator<TReturn>(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction) where TReturn : default
+        IRedirect IRedirect.Decorate<TReturn>(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction)
         {
-            return ViaDecorator(decorator, optionsAction);
+            return Decorate(decorator, optionsAction);
         }
 
         /// <inheritdoc />
-        public IRedirect<TTarget> ViaDecorator<TReturn>(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null)
+        public IRedirect<TTarget> Decorate<TReturn>(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null)
         {
             var callConstraint = new ReturnCallConstraint(typeof(TReturn));
             var callHandler = new ViaDecoratorCallHandler<TReturn>(decorator);

@@ -34,7 +34,7 @@ namespace DivertR
         IFuncCallStream<TTarget, TReturn, TArgs> Record<TArgs>(Action<IViaOptionsBuilder>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
         
-        IFuncRedirectUpdater<TTarget, TReturn> ViaDecorator(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
+        IFuncRedirectUpdater<TTarget, TReturn> Decorate(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
     }
 
     public interface IFuncRedirectUpdater<TTarget, TReturn, TArgs> : IFuncRedirectUpdater<TTarget, TReturn>
@@ -50,6 +50,6 @@ namespace DivertR
        
         new IFuncCallStream<TTarget, TReturn, TArgs> Record(Action<IViaOptionsBuilder>? optionsAction = null);
         
-        new IFuncRedirectUpdater<TTarget, TReturn, TArgs> ViaDecorator(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
+        new IFuncRedirectUpdater<TTarget, TReturn, TArgs> Decorate(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
     }
 }

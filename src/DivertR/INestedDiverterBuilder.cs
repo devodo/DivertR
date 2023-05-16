@@ -9,8 +9,8 @@ namespace DivertR
     public interface INestedDiverterBuilder<TTarget> where TTarget : class?
     {
         /// <summary>
-        /// Redirect parent calls with return type <typeparamref name="TReturn"/> via an <see cref="IRedirect{TReturn}"/>.
-        /// The returned instances are proxied by inserting a persistent <see cref="IVia"/> on the <see cref="IRedirect{TReturn}"/>.
+        /// Redirect calls with return type <typeparamref name="TReturn"/> via an <see cref="IRedirect{TReturn}"/>.
+        /// The returned instances are proxied by inserting a persistent <see cref="IVia"/> on the parent <see cref="IRedirect{TTarget}"/>.
         /// </summary>
         /// <param name="registerAction">Optional nested register action.</param>
         /// <typeparam name="TReturn">The return type of calls to redirect.</typeparam>
@@ -19,8 +19,8 @@ namespace DivertR
         INestedDiverterBuilder<TTarget> AddRedirect<TReturn>(Action<INestedDiverterBuilder<TReturn>>? registerAction = null) where TReturn : class?;
 
         /// <summary>
-        /// Redirect parent calls with return type <typeparamref name="TReturn"/> via an <see cref="IRedirect{TReturn}"/>.
-        /// The returned instances are proxied by inserting a persistent <see cref="IVia"/> on the <see cref="IRedirect{TReturn}"/>.
+        /// Redirect calls with return type <typeparamref name="TReturn"/> via an <see cref="IRedirect{TReturn}"/>.
+        /// The returned instances are proxied by inserting a persistent <see cref="IVia"/> on the parent <see cref="IRedirect{TTarget}"/>.
         /// </summary>
         /// <param name="name">Specify the <see cref="DivertR.RedirectId.Name" /> of the returned <see cref="IRedirect{TReturn}"/>.</param>
         /// <param name="registerAction">Optional nested register action.</param>
@@ -30,8 +30,8 @@ namespace DivertR
         INestedDiverterBuilder<TTarget> AddRedirect<TReturn>(string? name, Action<INestedDiverterBuilder<TReturn>>? registerAction = null) where TReturn : class?;
 
         /// <summary>
-        /// Redirect parent calls matching a constraint via an <see cref="IRedirect{TReturn}"/>.
-        /// The returned instances are proxied by inserting a persistent <see cref="IVia"/> on the <see cref="IRedirect{TReturn}"/>.
+        /// Redirect calls with return type <typeparamref name="TReturn"/> and matching a call constraint via an <see cref="IRedirect{TReturn}"/>.
+        /// The returned instances are proxied by inserting a persistent <see cref="IVia"/> on the parent <see cref="IRedirect{TTarget}"/>.
         /// </summary>
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <param name="registerAction">Optional nested register action.</param>
@@ -40,8 +40,8 @@ namespace DivertR
         INestedDiverterBuilder<TTarget> AddRedirect<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression, Action<INestedDiverterBuilder<TReturn>>? registerAction = null) where TReturn : class?;
 
         /// <summary>
-        /// Redirect parent calls matching a constraint via an <see cref="IRedirect{TReturn}"/>.
-        /// The returned instances are proxied by inserting a persistent <see cref="IVia"/> on the <see cref="IRedirect{TReturn}"/>.
+        /// Redirect calls with return type <typeparamref name="TReturn"/> and matching a call constraint via an <see cref="IRedirect{TReturn}"/>.
+        /// The returned instances are proxied by inserting a persistent <see cref="IVia"/> on the parent <see cref="IRedirect{TTarget}"/>.
         /// </summary>
         /// <param name="name">Specify the <see cref="DivertR.RedirectId.Name" /> of the returned <see cref="IRedirect{TReturn}"/>.</param>
         /// <param name="constraintExpression">The call constraint expression.</param>
