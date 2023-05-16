@@ -101,7 +101,7 @@ namespace DivertR.Internal
             return Args<TArgs>().Record(optionsAction);
         }
 
-        public IFuncRedirectUpdater<TTarget, TReturn> ViaDecorator(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null)
+        public IFuncRedirectUpdater<TTarget, TReturn> Decorate(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null)
         {
             var callHandler = new ViaDecoratorCallHandler<TReturn>(decorator);
 
@@ -155,9 +155,9 @@ namespace DivertR.Internal
             return base.Record(optionsAction).Args<TArgs>();
         }
 
-        public new IFuncRedirectUpdater<TTarget, TReturn, TArgs> ViaDecorator(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null)
+        public new IFuncRedirectUpdater<TTarget, TReturn, TArgs> Decorate(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            base.ViaDecorator(decorator, optionsAction);
+            base.Decorate(decorator, optionsAction);
 
             return this;
         }

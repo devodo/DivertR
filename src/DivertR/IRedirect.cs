@@ -106,7 +106,7 @@ namespace DivertR
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
         /// <typeparam name="TReturn">The return type.</typeparam>
         /// <returns>This Redirect instance.</returns>
-        IRedirect ViaDecorator<TReturn>(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
+        IRedirect Decorate<TReturn>(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
     }
     
     /// <summary>
@@ -198,7 +198,7 @@ namespace DivertR
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
         /// <typeparam name="TReturn">The return type.</typeparam>
         /// <returns>This Redirect instance.</returns>
-        new IRedirect<TTarget> ViaDecorator<TReturn>(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
+        new IRedirect<TTarget> Decorate<TReturn>(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
         
         /// <summary>
         /// Creates an <see cref="IRedirectUpdater{TTarget}"/> instance for updating this Redirect. />

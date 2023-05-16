@@ -378,7 +378,7 @@ namespace DivertR.UnitTests
                 .To(x => x.Name)
                 .Via(call => call.CallNext() + " redirected");
             
-            _redirect.ViaDecorator<IBar>(bar => barRedirect.Proxy(bar));
+            _redirect.Decorate<IBar>(bar => barRedirect.Proxy(bar));
             
             // ACT
             var bar = proxy.EchoGeneric<IBar>(new Bar("test"));
@@ -394,7 +394,7 @@ namespace DivertR.UnitTests
             var proxy = _redirect.Proxy(new Foo());
             var original = new Bar("test");
 
-            _redirect.ViaDecorator<IBar>(_ => new Bar("decorated"));
+            _redirect.Decorate<IBar>(_ => new Bar("decorated"));
             var first = proxy.EchoGeneric<IBar>(original);
             
             // ACT
@@ -410,7 +410,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _redirect.Proxy(new Foo());
 
-            _redirect.ViaDecorator<IBar>(bar => new Bar(bar.Name));
+            _redirect.Decorate<IBar>(bar => new Bar(bar.Name));
             var first = proxy.EchoGeneric<IBar>(new Bar("first"));
             
             // ACT
@@ -427,7 +427,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var proxy = _redirect.Proxy(new Foo());
 
-            _redirect.ViaDecorator<int>(x => x + 1);
+            _redirect.Decorate<int>(x => x + 1);
 
             // ACT
             var result = proxy.EchoGeneric(10);
