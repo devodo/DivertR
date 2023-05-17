@@ -14,18 +14,33 @@ namespace DivertR
         private readonly Relay<TTarget> _relay;
         private readonly RedirectProxyCall<TTarget> _redirectProxyCall;
         private readonly ConditionalWeakTable<TTarget, TTarget> _proxyCache = new();
-
+        
+        /// <summary>
+        /// Constructor - instantiates a <see cref="Redirect{TTarget}"/> instance.
+        /// </summary>
+        /// <param name="name">The <see cref="RedirectId.Name" /> of the <see cref="IRedirect"/>.</param>
+        /// <param name="diverterSettings">Optionally provide custom <see cref="DiverterSettings"/> otherwise the default <see cref="DiverterSettings.Global"/> is used.</param>
+        /// <param name="redirectRepository">Optionally provide a custom <see cref="IRedirectRepository"/>.</param>
         public Redirect(string? name = null, DiverterSettings? diverterSettings = null, IRedirectRepository? redirectRepository = null)
             : this(RedirectId.From<TTarget>(name), new RedirectSet(diverterSettings), redirectRepository)
         {
             ((RedirectSet) RedirectSet).AddRedirect(this);
         }
         
+        /// <summary>
+        /// Constructor - instantiates a <see cref="Redirect{TTarget}"/> instance.
+        /// </summary>
+        /// <param name="diverterSettings">Optionally provide custom <see cref="DiverterSettings"/> otherwise the default <see cref="DiverterSettings.Global"/> is used.</param>
+        /// <param name="redirectRepository">Optionally provide a custom <see cref="IRedirectRepository"/>.</param>
         public Redirect(DiverterSettings? diverterSettings, IRedirectRepository? redirectRepository = null)
             : this(name: null, diverterSettings: diverterSettings, redirectRepository: redirectRepository)
         {
         }
         
+        /// <summary>
+        /// Constructor - instantiates a <see cref="Redirect{TTarget}"/> instance.
+        /// </summary>
+        /// <param name="redirectRepository">Optionally provide a custom <see cref="IRedirectRepository"/>.</param>
         public Redirect(IRedirectRepository? redirectRepository)
             : this(name: null, diverterSettings: null, redirectRepository: redirectRepository)
         {

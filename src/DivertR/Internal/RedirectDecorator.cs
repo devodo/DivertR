@@ -2,7 +2,7 @@
 
 namespace DivertR.Internal
 {
-    internal class RedirectDecorator : IDiverterDecorator
+    internal class RedirectDecorator : IServiceDecorator
     {
         private readonly IRedirect _redirect;
 

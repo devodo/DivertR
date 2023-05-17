@@ -331,8 +331,9 @@ namespace DivertR.UnitTests
             _services.AddTransient<List<IFoo>>(_ => new List<IFoo> { new Foo("1"), new Foo("2") });
             var diverterBuilder = new DiverterBuilder();
             var diverter = diverterBuilder
-                .Decorate<List<IFoo>>(foos => foos
-                    .Select(x => diverterBuilder.RedirectSet.GetOrCreate<IFoo>().Proxy(x))
+                .AddRedirect<IFoo>()
+                .Decorate<List<IFoo>>((foos, diverter) => foos
+                    .Select(x => diverter.Redirect<IFoo>().Proxy(x))
                     .ToList()).Create();
             
             _services.Divert(diverter);

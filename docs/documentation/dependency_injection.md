@@ -106,22 +106,19 @@ Console.WriteLine(foo2.Name);  // "Foo2"
 
 After reset all resolved redirect proxies will be returned to their initial state of forwarding calls to their roots.
 
-# Nested Redirects
+# Extending Redirects
 
-*Nested redirects* are added to proxy calls on types that are not directly resolved by the DI container such as instances created by factory services.
+The builder can be used to extend registered redirects onto proxies of types that are not directly resolved by the DI container such as instances created by factory services.
 
-E.g. if we have an `IBarFactory` factory service, resolved by the DI, that has factory methods that create `IBar` instances.
-A nested `IBar` redirect from the parent `IBarFactory` registration can be declared as follows:
+For example, if we have an `IBarFactory` factory service, resolved by the DI, that has factory methods that create `IBar` instances.
+The redirect can be extended to `IBar` instances as follows:
 
 ```csharp
 var diverter = new DiverterBuilder()
-    .Register<IBarFactory>(x => x
-        .AddRedirect<IBar>()) // Proxy redirect any IBar instances returned by IBarFactory
+    .Register<IBarFactory>() // Register the redirect on the IBarFactory service
+    .ExtendRedirect<IBarFactory>().ViaRedirect<IBar>()) // Extend to redirect any IBar instances returned by IBarFactory
     .Create();
 ```
-
-> Nested redirects can be added to nested redirects can be chained to any depth.
-{: .note }
 
 This is installed into the existing `IServiceCollection` as usual:
 ```csharp
@@ -129,18 +126,18 @@ This is installed into the existing `IServiceCollection` as usual:
 IServiceCollection services = new ServiceCollection();
 services.AddSingleton<IBarFactory, BarFactory>();
 
-// Install diverter instance with redirect registrations and nested registrations
+// Install diverter with redirect registrations and nested registrations
 services.Divert(diverter);
 
 // Create the service provider
 IServiceProvider provider = services.BuildServiceProvider();
 ```
 
-Registered types and nested registered types are now resolved as `Redirect` proxies:
+Both the registered redirect types and extended redirect types are now resolved as `Redirect` proxies:
 
 ```csharp
-var barFactory = provider.GetService<IBarFactory>();
-IBar bar = barFactory.Create("MrBar"); // The Create call now returns IBar proxies
+var barFactory = provider.GetService<IBarFactory>(); // barFactory is an IRedirect<IBarFactory> proxy
+IBar bar = barFactory.Create("MrBar"); // and the Create call returns IRedirect<IBar> proxies
 Console.WriteLine(bar.Name); // "MrBar"
 
 // Add a Via to alter behaviour
@@ -154,18 +151,6 @@ Console.WriteLine(bar.Name); // "MrBar diverted"
 // ResetAll also resets nested registrations
 diverter.ResetAll();
 Console.WriteLine(bar.Name); // "MrBar"
-```
-
-## Redirect Chains
-
-Redirect proxy chains can be created by adding nested redirects to nested redirects to any depth e.g.:
-
-```csharp
-var diverter = new DiverterBuilder()
-    .Register<IService>(service => service
-        .AddRedirect<INested>(nested => nested)
-            .AddRedirect<IEtc>())
-    .Create();
 ```
 
 # Proxy Lifetime

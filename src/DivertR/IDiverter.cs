@@ -6,7 +6,7 @@ namespace DivertR
     /// <summary>
     /// An interface for retrieving and managing a set of <see cref="IRedirect"/> instances.
     ///
-    /// This interface also exposes the associated <see cref="IDiverterDecorator"/> decorators via the <see cref="IDiverter.GetDecorators"/> method that are intended to be embedded into a dependency injection container.
+    /// This interface also exposes the associated <see cref="IServiceDecorator"/> decorators via the <see cref="IDiverter.GetDecorators"/> method that are intended to be embedded into a dependency injection container.
     /// The responsibility of installing the decorators is left to the container specific implementation.
     /// For example <see cref="DependencyInjection.ServiceCollectionExtensions.Divert"/> is an extension method that does this for the <see href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection">IServiceCollection</see> container.
     /// </summary>
@@ -74,7 +74,7 @@ namespace DivertR
         /// This method is intended to be used by the process responsible for installing decorators into a dependency injection container.
         /// </summary>
         /// <param name="name">Optional decorator group name.</param>
-        /// <returns>The <see cref="IDiverterDecorator"/> collection.</returns>
-        IEnumerable<IDiverterDecorator> GetDecorators(string? name = null);
+        /// <returns>The <see cref="IServiceDecorator"/> collection.</returns>
+        IEnumerable<IServiceDecorator> GetDecorators(string? name = null);
     }
 }
