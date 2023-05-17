@@ -6,7 +6,7 @@ namespace DivertR
     /// <summary>
     /// A <see cref="IDiverter"/> service decorator interface intended to be used to decorate a dependency injection service.
     /// </summary>
-    public interface IDiverterDecorator
+    public interface IServiceDecorator
     {
         /// <summary>
         /// The service type.

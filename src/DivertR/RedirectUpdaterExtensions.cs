@@ -54,7 +54,7 @@ namespace DivertR
         {
             if (redirectUpdater is not RedirectUpdater<TTarget> concreteUpdater)
             {
-                throw new ArgumentException("This extension only support an internal concrete implementation of this interface");
+                throw new ArgumentException("This extension only supports an internal concrete implementation of this interface");
             }
             
             var redirect = concreteUpdater.Redirect.RedirectSet.GetOrCreate<TReturn>(name);

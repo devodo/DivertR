@@ -12,28 +12,13 @@ namespace DivertR
     public interface IDiverterBuilder
     {
         /// <summary>
-        /// The underlying <see cref="IRedirectSet"/> containing the set of registered <see cref="IRedirect"/> instances.
-        /// </summary>
-        IRedirectSet RedirectSet { get; }
-        
-        /// <summary>
-        /// Register a service to redirect. The redirect is added with default <see cref="RedirectId.Name" />.
-        /// </summary>
-        /// <param name="nestedRegisterAction">Optional nested builder action.</param>
-        /// <typeparam name="TTarget">The type to register.</typeparam>
-        /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
-        /// <exception cref="DiverterException">Thrown if the <typeparamref name="TTarget"/> type with with default <see cref="RedirectId.Name" /> has already been registered.</exception>
-        IDiverterBuilder Register<TTarget>(Action<INestedDiverterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?;
-
-        /// <summary>
         /// Register a service to redirect.
         /// </summary>
         /// <param name="name">The decorator group and the <see cref="RedirectId.Name" /> of the added <see cref="IRedirect"/>.</param>
-        /// <param name="nestedRegisterAction">Optional nested builder action.</param>
         /// <typeparam name="TTarget">The type to register.</typeparam>
         /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
         /// <exception cref="DiverterException">Thrown if the <typeparamref name="TTarget"/> type with matching <paramref name="name"/> has already been registered.</exception>
-        IDiverterBuilder Register<TTarget>(string? name, Action<INestedDiverterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?;
+        IDiverterBuilder Register<TTarget>(string? name = null) where TTarget : class?;
 
         /// <summary>
         /// Register a service to redirect.
@@ -171,31 +156,31 @@ namespace DivertR
         /// <param name="decorator">The decorator function.</param>
         /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
         IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, IDiverter, IServiceProvider, object> decorator);
-        
-        /// <summary>
-        /// Add a standalone <see cref="IRedirect{TTarget}"/> without registering a service decorator. The redirect is added with default <see cref="RedirectId.Name" />.
-        /// </summary>
-        /// <param name="nestedRegisterAction">Optional nested builder action.</param>
-        /// <typeparam name="TTarget">The <see cref="IRedirect{TTarget}"/> target type.</typeparam>
-        /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
-        IDiverterBuilder AddRedirect<TTarget>(Action<INestedDiverterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?;
 
         /// <summary>
-        /// Add a standalone <see cref="IRedirect{TTarget}"/> without registering a service decorator.
+        /// Add a standalone <see cref="IRedirect{TTarget}"/> without registering a dependency injection service decorator.
         /// </summary>
         /// <param name="name">The <see cref="RedirectId.Name" /> of the added <see cref="IRedirect"/>.</param>
-        /// <param name="nestedRegisterAction">Optional nested builder action.</param>
         /// <typeparam name="TTarget">The <see cref="IRedirect{TTarget}"/> target type.</typeparam>
         /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
-        IDiverterBuilder AddRedirect<TTarget>(string? name, Action<INestedDiverterBuilder<TTarget>>? nestedRegisterAction = null) where TTarget : class?;
+        IDiverterBuilder AddRedirect<TTarget>(string? name = null) where TTarget : class?;
         
         /// <summary>
-        /// Add a standalone <see cref="IRedirect{TTarget}"/> without registering a service decorator.
+        /// Add a standalone <see cref="IRedirect{TTarget}"/> without registering a dependency injection service decorator.
         /// </summary>
         /// <param name="type">The <see cref="IRedirect{TTarget}"/> target type.</param>
         /// <param name="name">The <see cref="RedirectId.Name" /> of the added <see cref="IRedirect"/>.</param>
         /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
         IDiverterBuilder AddRedirect(Type type, string? name = null);
+        
+        /// <summary>
+        /// Create and return a child builder for extending and configuring an existing <see cref="IRedirect{TTarget}"/> instance.
+        /// </summary>
+        /// <param name="name">The <see cref="RedirectId.Name" /> of the existing <see cref="IRedirect{TTarget}"/>.</param>
+        /// <typeparam name="TTarget">The <see cref="IRedirect{TTarget}"/> target type.</typeparam>
+        /// <returns>The created child builder.</returns>
+        /// <exception cref="DiverterException">Thrown if an existing <see cref="IRedirect{TTarget}"/> has not been registered.</exception>
+        IDiverterRedirectBuilder<TTarget> ExtendRedirect<TTarget>(string? name = null) where TTarget : class?;
         
         /// <summary>
         /// Create an <see cref="IDiverter"/> instance from the current registrations.

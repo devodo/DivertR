@@ -3,9 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace DivertR.Internal
 {
-    internal class ServiceDecorator : IDiverterDecorator
+    internal class ServiceDecorator : IServiceDecorator
     {
-        private readonly IDiverterDecorator _decorator;
+        private readonly IServiceDecorator _decorator;
 
         private ServiceDecorator(Type serviceType, Func<object, IDiverter, IServiceProvider, object> decorator)
         {
@@ -24,38 +24,38 @@ namespace DivertR.Internal
             return _decorator.Decorate(input, diverter, provider);
         }
 
-        public static IDiverterDecorator Create<TService>(Func<TService, TService> decorator)
+        public static IServiceDecorator Create<TService>(Func<TService, TService> decorator)
         {
             return new ServiceDecorator(typeof(TService), (input, _, _) => decorator.Invoke((TService) input)!);
         }
         
-        public static IDiverterDecorator Create<TService>(Func<TService, IDiverter, TService> decorator)
+        public static IServiceDecorator Create<TService>(Func<TService, IDiverter, TService> decorator)
         {
             return new ServiceDecorator(typeof(TService), (input, diverter, _) => decorator.Invoke((TService) input, diverter)!);
         }
         
-        public static IDiverterDecorator Create<TService>(Func<TService, IDiverter, IServiceProvider, TService> decorator)
+        public static IServiceDecorator Create<TService>(Func<TService, IDiverter, IServiceProvider, TService> decorator)
         {
             return new ServiceDecorator(typeof(TService), (input, diverter, provider) => decorator.Invoke((TService) input, diverter, provider)!);
         }
         
-        public static IDiverterDecorator Create(Type serviceType, Func<object, object> decorator)
+        public static IServiceDecorator Create(Type serviceType, Func<object, object> decorator)
         {
             return new ServiceDecorator(serviceType, (input, _, _) => decorator.Invoke(input));
         }
         
-        public static IDiverterDecorator Create(Type serviceType, Func<object, IDiverter, object> decorator)
+        public static IServiceDecorator Create(Type serviceType, Func<object, IDiverter, object> decorator)
         {
             return new ServiceDecorator(serviceType, (input, diverter, _) => decorator.Invoke(input, diverter));
         }
         
-        public static IDiverterDecorator Create(Type serviceType, Func<object, IDiverter, IServiceProvider, object> decorator)
+        public static IServiceDecorator Create(Type serviceType, Func<object, IDiverter, IServiceProvider, object> decorator)
         {
             return new ServiceDecorator(serviceType, decorator);
         }
     }
 
-    internal class ServiceClassDecorator : IDiverterDecorator
+    internal class ServiceClassDecorator : IServiceDecorator
     {
         private readonly ConditionalWeakTable<object, object> _decoratedCache = new();
         private readonly Func<object, IDiverter, IServiceProvider, object> _decorator;
@@ -75,7 +75,7 @@ namespace DivertR.Internal
         }
     }
 
-    internal class ServiceStructDecorator : IDiverterDecorator
+    internal class ServiceStructDecorator : IServiceDecorator
     {
         private readonly Func<object, IDiverter, IServiceProvider, object> _decorator;
         

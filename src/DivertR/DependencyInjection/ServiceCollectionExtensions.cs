@@ -45,7 +45,7 @@ namespace DivertR.DependencyInjection
             return services;
         }
 
-        private static Dictionary<Type, IEnumerable<Action>> CreateDecorateActions(IServiceCollection services, IDiverter diverter, Dictionary<Type, IEnumerable<IDiverterDecorator>> decoratorsMap)
+        private static Dictionary<Type, IEnumerable<Action>> CreateDecorateActions(IServiceCollection services, IDiverter diverter, Dictionary<Type, IEnumerable<IServiceDecorator>> decoratorsMap)
         {
             return services
                 .Select((descriptor, index) =>
@@ -78,7 +78,7 @@ namespace DivertR.DependencyInjection
                     grp => grp.Select(x => x!.Action));
         }
         
-        private static Func<IServiceProvider, object?> CreateServiceFactory(IServiceCollection services, IDiverter diverter, ServiceDescriptor descriptor, IEnumerable<IDiverterDecorator> decorators)
+        private static Func<IServiceProvider, object?> CreateServiceFactory(IServiceCollection services, IDiverter diverter, ServiceDescriptor descriptor, IEnumerable<IServiceDecorator> decorators)
         {
             var rootFactory = CreateRootFactory(services, descriptor);
             
