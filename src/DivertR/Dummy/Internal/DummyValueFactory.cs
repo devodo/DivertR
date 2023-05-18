@@ -14,6 +14,7 @@ namespace DivertR.Dummy.Internal
 
             _valueFactories = new Dictionary<Type, Func<Type, DummyValueFactory, object?>>
             {
+                [typeof(void)] = (_, _) => null,
                 [typeof(Task)] = (_, _) => Task.CompletedTask,
                 [typeof(Task<>)] = (type, factory) => defaultTaskFactory.CreateTaskOf(type, factory),
                 [typeof(ValueTask<>)] = (type, factory) => defaultTaskFactory.CreateValueTaskOf(type, factory),
