@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 
 namespace DivertR
 {
     /// <summary>
-    /// A constrained Diverter Redirect builder interface for configuring redirect behaviour.
+    /// A Diverter Redirect builder interface for configuring <see cref="IRedirect{TTarget}"/> behaviour on methods with return type <typeparamref name="TReturn"/>.
+    /// By default all <see cref="IVia"/> instances added by this builder are configured to be persistent and to not satisfy strict checks.
     /// </summary>
     /// <typeparam name="TTarget">The <see cref="IRedirect{TTarget}"/> target type.</typeparam>
     /// <typeparam name="TReturn">The constrained return type.</typeparam>
@@ -17,29 +19,116 @@ namespace DivertR
         IDiverterRedirectToBuilder<TTarget, TReturn> Filter(ICallConstraint callConstraint);
         
         /// <summary>
-        /// Register a redirect to proxy all calls matching matching this builders filter constraint via an <see cref="IRedirect{TReturn}"/>.
-        /// The returned instances are proxied by inserting a persistent <see cref="IVia"/> on the parent <see cref="IRedirect{TTarget}"/>.
+        /// Redirect calls via the given <paramref name="callHandler"/>.
         /// </summary>
+        /// <param name="callHandler">The call handler.</param>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
+        /// <returns>The parent builder.</returns>
+        IDiverterBuilder Via(ICallHandler callHandler, Action<IViaOptionsBuilder>? optionsAction = null);
+        
+        /// <summary>
+        /// Redirect calls to return the given instance.
+        /// </summary>
+        /// <param name="instance">The instance to return.</param>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
+        /// <returns>The parent builder.</returns>
+        IDiverterBuilder Via(TReturn instance, Action<IViaOptionsBuilder>? optionsAction = null);
+        
+        /// <summary>
+        /// Redirect calls via the given delegate handler.
+        /// </summary>
+        /// <param name="viaDelegate">The handler delegate.</param>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
+        /// <returns>The parent builder.</returns>
+        IDiverterBuilder Via(Func<TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
+        
+        /// <summary>
+        /// Redirect calls via the given call delegate handler.
+        /// </summary>
+        /// <param name="viaDelegate">The call handler delegate.</param>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
+        /// <returns>The parent builder.</returns>
+        IDiverterBuilder Via(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null);
+        
+        
+        /// <summary>
+        /// Redirect calls with ValueTuple arguments via the given delegate handler.
+        /// </summary>
+        /// <param name="viaDelegate">The call handler delegate.</param>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
+        /// <typeparam name="TArgs">The ValueTuple type to map call arguments to.</typeparam>
+        /// <returns>The parent builder.</returns>
+        IDiverterBuilder Via<TArgs>(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
+            where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;
+        
+        /// <summary>
+        /// Retarget calls to a given <paramref name="target"/> instance.
+        /// </summary>
+        /// <param name="target">The target to retarget calls too.</param>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
+        /// <returns>The parent builder.</returns>
+        IDiverterBuilder Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null);
+        
+        /// <summary>
+        /// Add a <see cref="IRedirect{TReturn}"/> and proxy all calls matching this builders filter constraint.
+        /// The added <see cref="IRedirect{TReturn}"/> has default <see cref="RedirectId.Name" />.
+        /// </summary>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
         /// <typeparam name="TReturn">The return type of calls to redirect.</typeparam>
         /// <returns>The parent builder.</returns>
-        IDiverterBuilder ViaRedirect(string? name = null);
-        
+        IDiverterBuilder ViaRedirect(Action<IViaOptionsBuilder>? optionsAction = null);
+
+        /// <summary>
+        /// Add a <see cref="IRedirect{TReturn}"/> and proxy all calls matching this builders filter constraint.
+        /// </summary>
+        /// <param name="name">The <see cref="RedirectId.Name" /> of the added <see cref="IRedirect"/>.</param>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
+        /// <typeparam name="TReturn">The return type of calls to redirect.</typeparam>
+        /// <returns>The parent builder.</returns>
+        IDiverterBuilder ViaRedirect(string? name, Action<IViaOptionsBuilder>? optionsAction = null);
+
         /// <summary>
         /// Register a decorator that will be applied to all call returns matching this builders filter constraint.
-        /// The returned instances are proxied to the decorator by inserting a persistent <see cref="IVia"/> on the parent <see cref="IRedirect{TTarget}"/>.
         /// </summary>
         /// <param name="decorator">The decorator function.</param>
+        /// <param name="optionsAction"></param>
         /// <typeparam name="TReturn">The return type of calls to decorate.</typeparam>
         /// <returns>The parent builder.</returns>
-        IDiverterBuilder Decorate(Func<TReturn, TReturn> decorator);
-        
+        IDiverterBuilder Decorate(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
+
         /// <summary>
         /// Register a decorator that will be applied to all call returns matching this builders filter constraint.
-        /// The returned instances are proxied to the decorator by inserting a persistent <see cref="IVia"/> on the parent <see cref="IRedirect{TTarget}"/>.
         /// </summary>
         /// <param name="decorator">The decorator function.</param>
+        /// <param name="optionsAction"></param>
         /// <typeparam name="TReturn">The return type of calls to decorate.</typeparam>
         /// <returns>The parent builder.</returns>
-        IDiverterBuilder Decorate(Func<TReturn, IDiverter, TReturn> decorator);
+        IDiverterBuilder Decorate(Func<TReturn, IDiverter, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
+    }
+
+    public interface IDiverterRedirectToBuilder<in TTarget> where TTarget : class?
+    {
+        /// <summary>
+        /// Append an additional filter to the existing constraint.
+        /// </summary>
+        /// <param name="callConstraint">The call constraint filter.</param>
+        /// <returns>This instance.</returns>
+        IDiverterRedirectToBuilder<TTarget> Filter(ICallConstraint callConstraint);
+        
+        /// <summary>
+        /// Redirect calls via the given <paramref name="callHandler"/>.
+        /// </summary>
+        /// <param name="callHandler">The call handler.</param>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
+        /// <returns>The parent builder.</returns>
+        IDiverterBuilder Via(ICallHandler callHandler, Action<IViaOptionsBuilder>? optionsAction = null);
+        
+        /// <summary>
+        /// Retarget calls to a given <paramref name="target"/> instance.
+        /// </summary>
+        /// <param name="target">The target to retarget calls too.</param>
+        /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
+        /// <returns>The parent builder.</returns>
+        IDiverterBuilder Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null);
     }
 }

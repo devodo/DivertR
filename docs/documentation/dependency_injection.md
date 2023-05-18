@@ -106,21 +106,53 @@ Console.WriteLine(foo2.Name);  // "Foo2"
 
 After reset all resolved redirect proxies will be returned to their initial state of forwarding calls to their roots.
 
-# Extending Redirects
+# Persistent Builder Redirect Configurations
 
-The builder can be used to extend registered redirects onto proxies of types that are not directly resolved by the DI container such as instances created by factory services.
+Registered redirects can also be configured from the `DiverterBuilder` using interface that is similar to the `IDiverter` fluent interface:
 
+```csharp
+var diverter = new DiverterBuilder()
+    .Register<IFoo>()
+    // Add configure to the registered redirect
+    .Redirect<IFoo>().To(x => x.Name).Via(call => $"{call.CallNext()} diverted")
+    .Create();
+
+// Install diverter in the ServiceCollection and resolve an IFoo
+IFoo foo = new ServiceCollection()
+    .AddTransient<IFoo, Foo>()
+    .Divert(diverter)
+    .BuildServiceProvider()
+    .GetService<IFoo>();
+
+// Builder redirect configurations are 'persistent' and do not get reset
+diverter.ResetAll();
+  
+Console.WriteLine(foo.Name);  // "Foo diverted"
+```
+
+An important difference between `IDiverter` and `DiverterBuilder` configurations is that the latter are 'persistent' meaning they do not get removed on reset.
+This offers a convenient way to add permanent configurations that do not get reset between tests.
+
+# ViaRedirect to Redirect Inner Services
+
+Often there are inner services that are not directly resolved by the dependency injection container such as those created by factory services.
+
+It is possible to redirect proxy these inner services by chaining them to DI registered redirects using the `ViaRedirect` configuration.
 For example, if we have an `IBarFactory` factory service, resolved by the DI, that has factory methods that create `IBar` instances.
 The redirect can be extended to `IBar` instances as follows:
 
 ```csharp
 var diverter = new DiverterBuilder()
     .Register<IBarFactory>() // Register the redirect on the IBarFactory service
-    .ExtendRedirect<IBarFactory>().ViaRedirect<IBar>()) // Extend to redirect any IBar instances returned by IBarFactory
+    .Redirect<IBarFactory>().ViaRedirect<IBar>()) // Extend to redirect any IBar instances returned by IBarFactory
     .Create();
 ```
 
-This is installed into the existing `IServiceCollection` as usual:
+> Configuring the `ViaRedirect` on the DiverterBuilder makes it persistent. 
+{: .note }
+
+Diverter is installed into the existing `IServiceCollection` as usual:
+
 ```csharp
 // Existing service collection with its registrations
 IServiceCollection services = new ServiceCollection();

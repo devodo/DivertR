@@ -7,7 +7,7 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class DiverterTests
+    public class DiverterBuilderTests
     {
         private readonly IDiverterBuilder _diverterBuilder = new DiverterBuilder();
 
@@ -283,7 +283,7 @@ namespace DivertR.UnitTests
         public void AddRedirect_ShouldAdd()
         {
             // ARRANGE
-            var diverter = _diverterBuilder.AddRedirect<IFoo>().Create();
+            var diverter = _diverterBuilder.IncludeRedirect<IFoo>().Create();
 
             // ACT
             var foo = diverter.Redirect<IFoo>().Proxy();
@@ -296,7 +296,7 @@ namespace DivertR.UnitTests
         public void AddNamedRedirect_ShouldAdd()
         {
             // ARRANGE
-            var diverter = _diverterBuilder.AddRedirect<IFoo>("test").Create();
+            var diverter = _diverterBuilder.IncludeRedirect<IFoo>("test").Create();
 
             // ACT
             var foo = diverter.Redirect<IFoo>("test").Proxy();
@@ -309,7 +309,7 @@ namespace DivertR.UnitTests
         public void AddRedirectByType_ShouldAdd()
         {
             // ARRANGE
-            var diverter = _diverterBuilder.AddRedirect(typeof(IFoo)).Create();
+            var diverter = _diverterBuilder.IncludeRedirect(typeof(IFoo)).Create();
 
             // ACT
             var foo = diverter.Redirect<IFoo>().Proxy();
@@ -322,7 +322,7 @@ namespace DivertR.UnitTests
         public void AddNamedRedirectByType_ShouldAdd()
         {
             // ARRANGE
-            var diverter = _diverterBuilder.AddRedirect(typeof(IFoo), "test").Create();
+            var diverter = _diverterBuilder.IncludeRedirect(typeof(IFoo), "test").Create();
 
             // ACT
             var foo = diverter.Redirect<IFoo>("test").Proxy();
@@ -337,7 +337,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().ViaRedirect<IBar>()
+                .Redirect<IFoo>().ViaRedirect<IBar>()
                 .Create();
 
             diverter
@@ -359,7 +359,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().ViaRedirect<IBar>()
+                .Redirect<IFoo>().ViaRedirect<IBar>()
                 .Create();
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
 
@@ -381,7 +381,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().ViaRedirect<IBar>("group")
+                .Redirect<IFoo>().ViaRedirect<IBar>("group")
                 .Create();
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
 
@@ -403,7 +403,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().ViaRedirect<IBar>()
+                .Redirect<IFoo>().ViaRedirect<IBar>()
                 .Create();
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
 
@@ -425,7 +425,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().ViaRedirect<IBar>()
+                .Redirect<IFoo>().ViaRedirect<IBar>()
                 .Create();
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
 
@@ -447,8 +447,8 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().ViaRedirect<IFoo>()
-                .ExtendRedirect<IFoo>().ViaRedirect<IBar>()
+                .Redirect<IFoo>().ViaRedirect<IFoo>()
+                .Redirect<IFoo>().ViaRedirect<IBar>()
                 .Create();
             
             var foo = new Foo("inner");
@@ -473,7 +473,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().ViaRedirect<IFoo>()
+                .Redirect<IFoo>().ViaRedirect<IFoo>()
                 .Create();
 
             var foo = new Foo("inner");
@@ -492,7 +492,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().ViaRedirect<IBar>()
+                .Redirect<IFoo>().ViaRedirect<IBar>()
                 .Create();
 
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
@@ -520,9 +520,9 @@ namespace DivertR.UnitTests
             {
                 _diverterBuilder
                     .Register<IFoo>()
-                    .ExtendRedirect<IFoo>().ViaRedirect<IBar>()
-                    .ExtendRedirect<IFoo>().ViaRedirect<IFoo>()
-                    .ExtendRedirect<IFoo>().ViaRedirect<IBar>();
+                    .Redirect<IFoo>().ViaRedirect<IBar>()
+                    .Redirect<IFoo>().ViaRedirect<IFoo>()
+                    .Redirect<IFoo>().ViaRedirect<IBar>();
             };
 
             // ASSERT
@@ -535,7 +535,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().ViaRedirect<IBar>()
+                .Redirect<IFoo>().ViaRedirect<IBar>()
                 .Create();
 
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
@@ -554,7 +554,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().To(x => x.EchoGeneric(Is<IBar>.Any)).ViaRedirect()
+                .Redirect<IFoo>().To(x => x.EchoGeneric(Is<IBar>.Any)).ViaRedirect()
                 .Create();
             
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
@@ -577,7 +577,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().To(x => x.EchoGeneric(Is<IBar>.Any)).ViaRedirect("group")
+                .Redirect<IFoo>().To(x => x.EchoGeneric(Is<IBar>.Any)).ViaRedirect("group")
                 .Create();
             
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
@@ -600,7 +600,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().To(foo => foo.EchoGeneric(Is<IBar>.Any)).ViaRedirect()
+                .Redirect<IFoo>().To(foo => foo.EchoGeneric(Is<IBar>.Any)).ViaRedirect()
                 .Create();
 
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
@@ -624,7 +624,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().To(foo => foo.EchoGeneric(Is<IBar>.Any)).ViaRedirect()
+                .Redirect<IFoo>().To(foo => foo.EchoGeneric(Is<IBar>.Any)).ViaRedirect()
                 .Create();
 
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
@@ -643,7 +643,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().Decorate<IBar>(bar => new Bar(bar.Name + " decorated"))
+                .Redirect<IFoo>().Decorate<IBar>(bar => new Bar(bar.Name + " decorated"))
                 .Create();
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
             
@@ -660,8 +660,8 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .AddRedirect<IBar>()
-                .ExtendRedirect<IFoo>().Decorate<IBar>((bar, d) => d.Redirect<IBar>().Proxy(new Bar(bar.Name + " decorated")))
+                .IncludeRedirect<IBar>()
+                .Redirect<IFoo>().Decorate<IBar>((bar, d) => d.Redirect<IBar>().Proxy(new Bar(bar.Name + " decorated")))
                 .Create();
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
             
@@ -679,7 +679,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>()
+                .Redirect<IFoo>()
                     .To(x => x.EchoGeneric(Is<IBar>.Any))
                     .Decorate(bar => new Bar(bar.Name + " decorated"))
                 .Create();
@@ -699,8 +699,8 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .AddRedirect<IBar>()
-                .ExtendRedirect<IFoo>()
+                .IncludeRedirect<IBar>()
+                .Redirect<IFoo>()
                     .To(x => x.EchoGeneric(Is<IBar>.Any))
                     .Decorate((bar, d) => d.Redirect<IBar>().Proxy(new Bar(bar.Name + " decorated")))
                 .Create();
@@ -719,7 +719,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().Decorate<int>(n => n + 1)
+                .Redirect<IFoo>().Decorate<int>(n => n + 1)
                 .Create();
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
             
@@ -736,7 +736,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().Decorate<IBar>(bar => new Bar(bar.Name + " decorated"))
+                .Redirect<IFoo>().Decorate<IBar>(bar => new Bar(bar.Name + " decorated"))
                 .Create();
 
             var bar = new Bar("bar");
@@ -756,7 +756,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().Decorate<IBar>(bar => new Bar(bar.Name + " decorated"))
+                .Redirect<IFoo>().Decorate<IBar>(bar => new Bar(bar.Name + " decorated"))
                 .Create();
 
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());
@@ -775,7 +775,7 @@ namespace DivertR.UnitTests
             // ARRANGE
             var diverter = _diverterBuilder
                 .Register<IFoo>()
-                .ExtendRedirect<IFoo>().Decorate<IBar>(bar => new Bar(bar.Name + " decorated"))
+                .Redirect<IFoo>().Decorate<IBar>(bar => new Bar(bar.Name + " decorated"))
                 .Create();
 
             var fooProxy = diverter.Redirect<IFoo>().Proxy(new Foo());

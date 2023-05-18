@@ -7,7 +7,7 @@ namespace DivertR
     public class CallArguments : IReadOnlyList<object>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CallArguments(object[] args)
+        public CallArguments(params object[] args)
         {
             InternalArgs = args;
         }

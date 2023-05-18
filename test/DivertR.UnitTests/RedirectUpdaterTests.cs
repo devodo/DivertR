@@ -811,7 +811,7 @@ namespace DivertR.UnitTests
                 .Via<(string input, __)>(call => $"{call.Args.input}-test");
             _redirect
                 .To(x => x.Echo("here"))
-                .Via(call => (string?) call.CallNext(call.CallInfo.Method, new CallArguments(new object[] { "alter" }))!);
+                .Via(call => (string?) call.CallNext(call.CallInfo.Method, new CallArguments("alter"))!);
 
             // ACT
             var result = proxy.Echo("here");
