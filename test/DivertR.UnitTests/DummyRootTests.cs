@@ -48,6 +48,19 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenDummyRootProxy_WhenCallHasVoidTypeReturn_ShouldReturnVoid()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy();
+
+            // ACT
+            var testAction = () => proxy.SetName("test");
+
+            // ASSERT
+            testAction.ShouldNotThrow();
+        }
+        
+        [Fact]
         public void GivenDummyRootProxy_WhenCallHasTaskReturn_ShouldReturnCompletedTask()
         {
             // ARRANGE
