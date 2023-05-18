@@ -163,7 +163,7 @@ namespace DivertR
         /// <param name="name">The <see cref="RedirectId.Name" /> of the added <see cref="IRedirect"/>.</param>
         /// <typeparam name="TTarget">The <see cref="IRedirect{TTarget}"/> target type.</typeparam>
         /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
-        IDiverterBuilder AddRedirect<TTarget>(string? name = null) where TTarget : class?;
+        IDiverterBuilder IncludeRedirect<TTarget>(string? name = null) where TTarget : class?;
         
         /// <summary>
         /// Add a standalone <see cref="IRedirect{TTarget}"/> without registering a dependency injection service decorator.
@@ -171,7 +171,7 @@ namespace DivertR
         /// <param name="type">The <see cref="IRedirect{TTarget}"/> target type.</param>
         /// <param name="name">The <see cref="RedirectId.Name" /> of the added <see cref="IRedirect"/>.</param>
         /// <returns>This <see cref="IDiverterBuilder"/> instance.</returns>
-        IDiverterBuilder AddRedirect(Type type, string? name = null);
+        IDiverterBuilder IncludeRedirect(Type type, string? name = null);
         
         /// <summary>
         /// Create and return a child builder for extending and configuring an existing <see cref="IRedirect{TTarget}"/> instance.
@@ -180,7 +180,7 @@ namespace DivertR
         /// <typeparam name="TTarget">The <see cref="IRedirect{TTarget}"/> target type.</typeparam>
         /// <returns>The created child builder.</returns>
         /// <exception cref="DiverterException">Thrown if an existing <see cref="IRedirect{TTarget}"/> has not been registered.</exception>
-        IDiverterRedirectBuilder<TTarget> ExtendRedirect<TTarget>(string? name = null) where TTarget : class?;
+        IDiverterRedirectBuilder<TTarget> Redirect<TTarget>(string? name = null) where TTarget : class?;
         
         /// <summary>
         /// Create an <see cref="IDiverter"/> instance from the current registrations.

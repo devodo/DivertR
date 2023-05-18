@@ -161,7 +161,7 @@ namespace DivertR
         }
 
         /// <inheritdoc />
-        public IDiverterBuilder AddRedirect<TTarget>(string? name = null) where TTarget : class?
+        public IDiverterBuilder IncludeRedirect<TTarget>(string? name = null) where TTarget : class?
         {
             _diverter.RedirectSet.GetOrCreate<TTarget>(name);
 
@@ -169,7 +169,7 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public IDiverterBuilder AddRedirect(Type type, string? name = null)
+        public IDiverterBuilder IncludeRedirect(Type type, string? name = null)
         {
             _diverter.RedirectSet.GetOrCreate(type, name);
 
@@ -177,7 +177,7 @@ namespace DivertR
         }
         
         /// <inheritdoc />
-        public IDiverterRedirectBuilder<TTarget> ExtendRedirect<TTarget>(string? name = null) where TTarget : class?
+        public IDiverterRedirectBuilder<TTarget> Redirect<TTarget>(string? name = null) where TTarget : class?
         {
             var redirect = _diverter.Redirect<TTarget>();
             
@@ -203,12 +203,14 @@ namespace DivertR
             return new RedirectDecoratorCallHandler<TReturn>(_diverter, decorator);
         }
         
-        internal static Action<IViaOptionsBuilder> GetOptions()
+        internal static Action<IViaOptionsBuilder> GetOptions(Action<IViaOptionsBuilder>? optionsAction)
         {
-            return opt =>
+            return options =>
             {
-                opt.DisableSatisfyStrict();
-                opt.Persist();
+                options.DisableSatisfyStrict();
+                options.Persist();
+                
+                optionsAction?.Invoke(options);
             };
         }
         

@@ -99,7 +99,7 @@ namespace DivertR.UnitTests
             _services.AddSingleton<IFoo, Foo>();
 
             var diverter = new DiverterBuilder()
-                .AddRedirect<IBar>()
+                .IncludeRedirect<IBar>()
                 .Decorate<IFoo>((foo, diverter) =>
                 {
                     var bar = diverter.Redirect<IBar>().Proxy(new Bar("test"));
@@ -121,7 +121,7 @@ namespace DivertR.UnitTests
             _services.AddSingleton<IBar>(_ => new Bar("test"));
 
             var diverter = new DiverterBuilder()
-                .AddRedirect<IBar>()
+                .IncludeRedirect<IBar>()
                 .Decorate<IFoo>((foo, diverter, provider) =>
                 {
                     var bar = diverter.Redirect<IBar>().Proxy(provider.GetRequiredService<IBar>());
@@ -154,7 +154,7 @@ namespace DivertR.UnitTests
             _services.AddSingleton<IFoo, Foo>();
 
             var diverter = new DiverterBuilder()
-                .AddRedirect<IBar>()
+                .IncludeRedirect<IBar>()
                 .Decorate(typeof(IFoo), (foo, diverter) =>
                 {
                     var bar = diverter.Redirect<IBar>().Proxy(new Bar("test"));
@@ -176,7 +176,7 @@ namespace DivertR.UnitTests
             _services.AddSingleton<IBar>(_ => new Bar("test"));
 
             var diverter = new DiverterBuilder()
-                .AddRedirect<IBar>()
+                .IncludeRedirect<IBar>()
                 .Decorate(typeof(IFoo), (foo, diverter, provider) =>
                 {
                     var bar = diverter.Redirect<IBar>().Proxy(provider.GetRequiredService<IBar>());
@@ -331,7 +331,7 @@ namespace DivertR.UnitTests
             _services.AddTransient<List<IFoo>>(_ => new List<IFoo> { new Foo("1"), new Foo("2") });
             var diverterBuilder = new DiverterBuilder();
             var diverter = diverterBuilder
-                .AddRedirect<IFoo>()
+                .IncludeRedirect<IFoo>()
                 .Decorate<List<IFoo>>((foos, diverter) => foos
                     .Select(x => diverter.Redirect<IFoo>().Proxy(x))
                     .ToList()).Create();
