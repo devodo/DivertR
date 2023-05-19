@@ -40,6 +40,74 @@ namespace DivertR.UnitTests
             // ASSERT
             name.ShouldBe(foo.Name);
         }
+        
+        [Fact]
+        public void GivenFuncBuilder_WhenRetarget_ShouldRedirect()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo("hello foo"));
+            var foo = new Foo("hi DivertR");
+            _redirect.To(x => x.Echo("test")).Retarget(foo);
+            
+            // ACT
+            var matchResult = proxy.Echo("test");
+            var notMatchResult = proxy.Echo("test2");
+
+            // ASSERT
+            matchResult.ShouldBe("hi DivertR: test");
+            notMatchResult.ShouldBe("hello foo: test2");
+        }
+        
+        [Fact]
+        public void GivenFuncArgsBuilder_WhenRetarget_ShouldRedirect()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo("hello foo"));
+            var foo = new Foo("hi DivertR");
+            _redirect.To(x => x.Echo("test")).Args<(__, __)>().Retarget(foo);
+            
+            // ACT
+            var matchResult = proxy.Echo("test");
+            var notMatchResult = proxy.Echo("test2");
+
+            // ASSERT
+            matchResult.ShouldBe("hi DivertR: test");
+            notMatchResult.ShouldBe("hello foo: test2");
+        }
+        
+        [Fact]
+        public void GivenActionBuilder_WhenRetarget_ShouldRedirect()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo("hello foo"));
+            var foo = new Foo("hi DivertR");
+            _redirect.To(x => x.SetName("test")).Retarget(foo);
+            
+            // ACT
+            proxy.SetName("test");
+            proxy.SetName("test2");
+
+            // ASSERT
+            foo.Name.ShouldBe("test");
+            proxy.Name.ShouldBe("test2");
+        }
+        
+        [Fact]
+        public void GivenActionArgsBuilder_WhenRetarget_ShouldRedirect()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo("hello foo"));
+            var foo = new Foo("hi DivertR");
+            _redirect.To(x => x.SetName("test")).Args<(__, __)>().Retarget(foo);
+            
+            // ACT
+            proxy.SetName("test");
+            proxy.SetName("test2");
+
+            // ASSERT
+            foo.Name.ShouldBe("test");
+            proxy.Name.ShouldBe("test2");
+        }
 
         [Fact]
         public void GivenRetarget_WhenReset_ShouldDefaultToRoot()

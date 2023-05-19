@@ -34,12 +34,14 @@ namespace DivertR.Internal
         
         public IVia Build(Func<TReturn> viaDelegate)
         {
-            return Build(_ => viaDelegate.Invoke());
+            var callHandler = new FuncCallHandler<TReturn>(viaDelegate);
+            
+            return base.Build(callHandler);
         }
 
         public IVia Build(Func<IFuncRedirectCall<TTarget, TReturn>, TReturn> viaDelegate)
         {
-            var callHandler = new FuncCallHandler<TTarget, TReturn>(viaDelegate);
+            var callHandler = new FuncRedirectCallHandler<TTarget, TReturn>(viaDelegate);
             
             return base.Build(callHandler);
         }
@@ -72,7 +74,7 @@ namespace DivertR.Internal
 
         public IVia Build(Func<IFuncRedirectCall<TTarget, TReturn, TArgs>, TReturn> viaDelegate)
         {
-            var callHandler = new FuncCallHandler<TTarget, TReturn, TArgs>(_valueTupleMapper, viaDelegate);
+            var callHandler = new FuncRedirectCallHandler<TTarget, TReturn, TArgs>(_valueTupleMapper, viaDelegate);
             
             return base.Build(callHandler);
         }
@@ -103,7 +105,7 @@ namespace DivertR.Internal
 
         public IVia Build(Func<IFuncRedirectCall<TReturn>, TReturn> viaDelegate)
         {
-            var callHandler = new FuncCallHandler<TReturn>(viaDelegate);
+            var callHandler = new FuncRedirectCallHandler<TReturn>(viaDelegate);
             
             return base.Build(callHandler);
         }

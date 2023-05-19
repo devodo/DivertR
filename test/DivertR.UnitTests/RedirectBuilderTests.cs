@@ -8,12 +8,12 @@ using Xunit;
 
 namespace DivertR.UnitTests
 {
-    public class RedirectUpdaterTests
+    public class RedirectBuilderTests
     {
         private readonly IRedirect<IFoo> _redirect = new Redirect<IFoo>();
         
         [Fact]
-        public void GivenValueVia_ShouldRedirect()
+        public void GivenInstanceVia_ShouldRedirect()
         {
             // ARRANGE
             var proxy = _redirect.Proxy(new Foo("hello foo"));
@@ -25,6 +25,42 @@ namespace DivertR.UnitTests
 
             // ASSERT
             name.ShouldBe(viaMessage);
+        }
+        
+        [Fact]
+        public void GivenFuncDelegateVia_ShouldRedirect()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo("hello foo"));
+            var viaMessage = "hi DivertR";
+            _redirect.To(x => x.Name).Via(() => viaMessage);
+            
+            // ACT
+            var name = proxy.Name;
+
+            // ASSERT
+            name.ShouldBe(viaMessage);
+        }
+        
+        [Fact]
+        public void GivenActionDelegateVia_ShouldRedirect()
+        {
+            // ARRANGE
+            var foo = new Foo();
+            var proxy = _redirect.Proxy(foo);
+            _redirect
+                .To(x => x.SetName(Is<string>.Any))
+                .Via(() =>
+                {
+                    var call = _redirect.Relay.GetCurrentCall();
+                    call.CallNext(new[] { call.Args[0] + " redirected" });
+                });
+            
+            // ACT
+            proxy.SetName("test");
+
+            // ASSERT
+            foo.Name.ShouldBe("test redirected");
         }
 
         [Fact]
@@ -144,6 +180,177 @@ namespace DivertR.UnitTests
             // ASSERT
             name.ShouldBe("hello foo");
             originalReference.ShouldBeSameAs(original);
+        }
+
+        [Fact]
+        public void GivenArgsFuncBuilder_WhenCallHandlerVia_ShouldRedirect()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+            _redirect
+                .To(x => x.EchoGeneric(Is<string>.Any))
+                .Args<(string echo, __)>()
+                .Via(new DelegateCallHandler(call => $"{call.CallNext()} redirected"));
+
+            // ACT
+            var result = proxy.EchoGeneric("test");
+
+            // ASSERT
+            result.ShouldBe("test redirected");
+        }
+        
+        [Fact]
+        public void GivenArgsFuncBuilder_WhenInstanceVia_ShouldRedirect()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+            _redirect
+                .To(x => x.EchoGeneric("test"))
+                .Args<(string echo, __)>()
+                .Via("redirected");
+
+            // ACT
+            var result = proxy.EchoGeneric("test");
+
+            // ASSERT
+            result.ShouldBe("redirected");
+        }
+        
+        [Fact]
+        public void GivenArgsFuncBuilder_WhenDelegateVia_ShouldRedirect()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+            _redirect
+                .To(x => x.EchoGeneric("test"))
+                .Args<(string echo, __)>()
+                .Via(() => "redirected");
+
+            // ACT
+            var result = proxy.EchoGeneric("test");
+
+            // ASSERT
+            result.ShouldBe("redirected");
+        }
+        
+        [Fact]
+        public void GivenArgsActionBuilder_WhenCallHandlerVia_ShouldRedirect()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+            _redirect
+                .To(x => x.SetName(Is<string>.Any))
+                .Args<(string name, __)>()
+                .Via(new DelegateCallHandler(call => call.CallRoot(new[] { $"{call.Args[0]} redirected" })));
+
+            // ACT
+            proxy.SetName("test");
+
+            // ASSERT
+            proxy.Name.ShouldBe("test redirected");
+        }
+        
+        [Fact]
+        public void GivenArgsActionBuilder_WhenDelegateVia_ShouldRedirect()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+            _redirect
+                .To(x => x.SetName(Is<string>.Any))
+                .Args<(string name, __)>()
+                .Via(() =>
+                {
+                    var call = _redirect.Relay.GetCurrentCall();
+                    call.CallRoot(new[] { $"{call.Args[0]} redirected" });
+                });
+
+            // ACT
+            proxy.SetName("test");
+
+            // ASSERT
+            proxy.Name.ShouldBe("test redirected");
+        }
+        
+        [Fact]
+        public void GivenFuncBuilder_WhenFilter_ShouldFilter()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+            _redirect
+                .To(x => x.EchoGeneric(Is<string>.Any))
+                .Filter(new DelegateCallConstraint(call => (string) call.Arguments[0] == "test"))
+                .Via(call => call.CallNext() + " redirected");
+
+            // ACT
+            var matchedResult = proxy.EchoGeneric("test");
+            var notMatchedResult = proxy.EchoGeneric("test2");
+
+            // ASSERT
+            matchedResult.ShouldBe("test redirected");
+            notMatchedResult.ShouldBe("test2");
+        }
+        
+        [Fact]
+        public void GivenFuncArgsBuilder_WhenFilter_ShouldFilter()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+            _redirect
+                .To(x => x.EchoGeneric(Is<string>.Any))
+                .Args<(__, __)>()
+                .Filter(new DelegateCallConstraint(call => (string) call.Arguments[0] == "test"))
+                .Via(call => call.CallNext() + " redirected");
+
+            // ACT
+            var matchedResult = proxy.EchoGeneric("test");
+            var notMatchedResult = proxy.EchoGeneric("test2");
+
+            // ASSERT
+            matchedResult.ShouldBe("test redirected");
+            notMatchedResult.ShouldBe("test2");
+        }
+        
+        [Fact]
+        public void GivenActionBuilder_WhenFilter_ShouldFilter()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+            _redirect
+                .To(x => x.SetName(Is<string>.Any))
+                .Filter(new DelegateCallConstraint(call => (string) call.Arguments[0] == "test"))
+                .Via(call => call.CallNext(new[] { $"{call.Args[0]} redirected" }));
+
+            // ACT
+            proxy.SetName("test");
+            var matchedResult = proxy.Name;
+            proxy.SetName("test2");
+            var notMatchedResult = proxy.Name;
+
+            // ASSERT
+            matchedResult.ShouldBe("test redirected");
+            notMatchedResult.ShouldBe("test2");
+        }
+        
+        [Fact]
+        public void GivenActionArgsBuilder_WhenFilter_ShouldFilter()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+            _redirect
+                .To(x => x.SetName(Is<string>.Any))
+                .Args<(string name, __)>()
+                .Filter(new DelegateCallConstraint(call => (string) call.Arguments[0] == "test"))
+                .Via(call => call.CallNext(new[] { $"{call.Args.name} redirected" }));
+
+            // ACT
+            proxy.SetName("test");
+            var matchedResult = proxy.Name;
+            proxy.SetName("test2");
+            var notMatchedResult = proxy.Name;
+
+            // ASSERT
+            matchedResult.ShouldBe("test redirected");
+            notMatchedResult.ShouldBe("test2");
         }
         
         [Fact]
@@ -1174,6 +1381,24 @@ namespace DivertR.UnitTests
             // ARRANGE
             _redirect
                 .To(x => x.EchoGeneric(Is<IBar>.Any))
+                .Decorate(bar => new Bar(bar.Name + " decorated"));
+            
+            var proxy = _redirect.Proxy(new Foo());
+            
+            // ACT
+            var result = proxy.EchoGeneric<IBar>(new Bar("bar"));
+            
+            // ASSERT
+            result.Name.ShouldBe("bar decorated");
+        }
+        
+        [Fact]
+        public void GivenViaArgsDecorator_WhenCallMatchesConstraint_ShouldDecorate()
+        {
+            // ARRANGE
+            _redirect
+                .To(x => x.EchoGeneric(Is<IBar>.Any))
+                .Args<(__, __)>()
                 .Decorate(bar => new Bar(bar.Name + " decorated"));
             
             var proxy = _redirect.Proxy(new Foo());
