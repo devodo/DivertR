@@ -13,11 +13,6 @@ namespace DivertR
     public interface IDiverter
     {
         /// <summary>
-        /// The underlying <see cref="IRedirectSet"/> containing the <see cref="IRedirect"/> collection of this <see cref="IDiverter"/> instance.
-        /// </summary>
-        IRedirectSet RedirectSet { get; }
-        
-        /// <summary>
         /// Get the <see cref="IRedirect{TTarget}"/> by <see cref="RedirectId"/> key generated from <typeparamref name="TTarget"/> and optional <paramref name="name"/>.
         /// </summary>
         /// <param name="name">The <see cref="RedirectId.Name" /> of the <see cref="IRedirect"/>.</param>
