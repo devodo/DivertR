@@ -21,6 +21,6 @@ namespace DivertR
         /// <param name="provider">The service provider over the dependency injection container where this decorator is embedded.</param>
         /// <returns>The decorated instance.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        object Decorate(object input, IDiverter diverter, IServiceProvider provider);
+        object? Decorate(object? input, IDiverter diverter, IServiceProvider provider);
     }
 }

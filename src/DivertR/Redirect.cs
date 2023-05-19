@@ -97,12 +97,6 @@ namespace DivertR
         }
 
         /// <inheritdoc />
-        object IRedirect.Proxy()
-        {
-            return Proxy();
-        }
-        
-        /// <inheritdoc />
         [return: NotNull]
         public TTarget Proxy(object? root)
         {
@@ -118,43 +112,25 @@ namespace DivertR
         [return: NotNull]
         public TTarget Proxy(TTarget? root)
         {
-            TTarget proxy;
-            
             if (root is null || !RedirectSet.Settings.CacheRedirectProxies)
             {
-                proxy = _proxyFactory.CreateProxy(_redirectProxyCall, root);
-                RedirectSet.Settings.RedirectProxyDecorator.Decorate(this, proxy);
+                return _proxyFactory.CreateProxy(_redirectProxyCall, root);
             }
-            else
-            {
-                proxy = _proxyCache.GetValue(root, x =>
-                {
-                    var createdProxy = _proxyFactory.CreateProxy(_redirectProxyCall, x);
-                    RedirectSet.Settings.RedirectProxyDecorator.Decorate(this, createdProxy);
 
-                    return createdProxy;
-                });
-            }
+            var proxy = _proxyCache.GetValue(root, x => _proxyFactory.CreateProxy(_redirectProxyCall, x));
 
             return proxy!;
         }
         
         /// <inheritdoc />
         [return: NotNull]
-        public TTarget Proxy(bool withDummyRoot)
+        public TTarget Proxy(bool withDummyRoot = true)
         {
             var defaultRoot = withDummyRoot ? RedirectSet.Settings.DummyFactory.Create<TTarget>(RedirectSet.Settings) : null;
             
             return Proxy(defaultRoot);
         }
-        
-        /// <inheritdoc />
-        [return: NotNull]
-        public TTarget Proxy()
-        {
-            return Proxy(RedirectSet.Settings.DefaultWithDummyRoot);
-        }
-        
+
         /// <inheritdoc />
         public IRedirect<TTarget> Via(IVia via, Action<IViaOptionsBuilder>? optionsAction = null)
         {

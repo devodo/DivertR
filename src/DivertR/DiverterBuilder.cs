@@ -125,37 +125,37 @@ namespace DivertR
         }
 
         /// <inheritdoc />
-        public IDiverterBuilder Decorate(Type serviceType, Func<object, object> decorator)
+        public IDiverterBuilder Decorate(Type serviceType, Func<object?, object?> decorator)
         {
             return Decorate(null, serviceType, decorator);
         }
         
         /// <inheritdoc />
-        public IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, object> decorator)
+        public IDiverterBuilder Decorate(string? name, Type serviceType, Func<object?, object?> decorator)
         {
             return Decorate(name, ServiceDecorator.Create(serviceType, decorator));
         }
         
         /// <inheritdoc />
-        public IDiverterBuilder Decorate(Type serviceType, Func<object, IDiverter, object> decorator)
+        public IDiverterBuilder Decorate(Type serviceType, Func<object?, IDiverter, object?> decorator)
         {
             return Decorate(null, serviceType, decorator);
         }
         
         /// <inheritdoc />
-        public IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, IDiverter, object> decorator)
+        public IDiverterBuilder Decorate(string? name, Type serviceType, Func<object?, IDiverter, object?> decorator)
         {
             return Decorate(name, ServiceDecorator.Create(serviceType, decorator));
         }
         
         /// <inheritdoc />
-        public IDiverterBuilder Decorate(Type serviceType, Func<object, IDiverter, IServiceProvider, object> decorator)
+        public IDiverterBuilder Decorate(Type serviceType, Func<object?, IDiverter, IServiceProvider, object?> decorator)
         {
             return Decorate(null, serviceType, decorator);
         }
         
         /// <inheritdoc />
-        public IDiverterBuilder Decorate(string? name, Type serviceType, Func<object, IDiverter, IServiceProvider, object> decorator)
+        public IDiverterBuilder Decorate(string? name, Type serviceType, Func<object?, IDiverter, IServiceProvider, object?> decorator)
         {
             return Decorate(name, ServiceDecorator.Create(serviceType, decorator));
         }
