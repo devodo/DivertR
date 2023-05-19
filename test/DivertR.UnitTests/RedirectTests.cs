@@ -39,6 +39,32 @@ namespace DivertR.UnitTests
         }
         
         [Fact]
+        public void GivenDummyRootProxyObject_WhenProxyCalled_ShouldReturnDummyValue()
+        {
+            // ARRANGE
+            var proxy = ((IRedirect) _redirect).Proxy();
+            
+            // ACT
+            var name = ((IFoo) proxy).Name;
+
+            // ASSERT
+            name.ShouldBeNull();
+        }
+        
+        [Fact]
+        public void GivenNoRootProxyObject_WhenProxyCalled_ShouldThrowException()
+        {
+            // ARRANGE
+            var proxy = ((IRedirect) _redirect).Proxy(false);
+            
+            // ACT
+            var testAction = () => ((IFoo) proxy).Name;
+
+            // ASSERT
+            testAction.ShouldThrow<DiverterNullRootException>();
+        }
+        
+        [Fact]
         public void GivenProxyWithNullRoot_WhenProxyMemberCalled_ShouldThrowException()
         {
             // ARRANGE
@@ -46,6 +72,19 @@ namespace DivertR.UnitTests
 
             // ACT
             Func<object> testAction = () => proxy.Name;
+
+            // ASSERT
+            testAction.ShouldThrow<DiverterNullRootException>();
+        }
+        
+        [Fact]
+        public void GivenProxyObjectWithNullRoot_WhenProxyMemberCalled_ShouldThrowException()
+        {
+            // ARRANGE
+            var proxy = ((IRedirect) _redirect).Proxy(null);
+
+            // ACT
+            var testAction = () => ((IFoo) proxy).Name;
 
             // ASSERT
             testAction.ShouldThrow<DiverterNullRootException>();
@@ -101,7 +140,7 @@ namespace DivertR.UnitTests
             var proxy = _redirect.Proxy(new Foo("hello foo"));
 
             // ACT
-            Func<string> testAction = () => proxy.Name;
+            var testAction = () => proxy.Name;
 
             // ASSERT
             testAction.ShouldThrow<StrictNotSatisfiedException>();
@@ -379,6 +418,26 @@ namespace DivertR.UnitTests
                 .Via(call => call.CallNext() + " redirected");
             
             _redirect.Decorate<IBar>(bar => barRedirect.Proxy(bar));
+            
+            // ACT
+            var bar = proxy.EchoGeneric<IBar>(new Bar("test"));
+
+            // ASSERT
+            bar.Name.ShouldBe("test redirected");
+        }
+        
+        [Fact]
+        public void GivenProxyObjectTypeViaDecorator_WhenTypeReturned_ShouldDecorate()
+        {
+            // ARRANGE
+            var proxy = _redirect.Proxy(new Foo());
+
+            var barRedirect = _redirect.RedirectSet.GetOrCreate<IBar>();
+            barRedirect
+                .To(x => x.Name)
+                .Via(call => call.CallNext() + " redirected");
+            
+            ((IRedirect) _redirect).Decorate<IBar>(bar => barRedirect.Proxy(bar));
             
             // ACT
             var bar = proxy.EchoGeneric<IBar>(new Bar("test"));

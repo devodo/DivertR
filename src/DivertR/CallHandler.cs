@@ -8,6 +8,7 @@ namespace DivertR
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected abstract object? Handle(IRedirectCall<TTarget> call);
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? Handle(IRedirectCall call)
         {
             if (call is not IRedirectCall<TTarget> callOfTTarget)
