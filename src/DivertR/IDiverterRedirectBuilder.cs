@@ -24,7 +24,7 @@ namespace DivertR
         IDiverterBuilder Via(IVia via, Action<IViaOptionsBuilder>? optionsAction = null);
         
         /// <summary>
-        /// Add a <see cref="IRedirect{TReturn}"/> and proxy all calls with return type <typeparamref name="TReturn"/> via the added redirect.
+        /// Add an <see cref="IRedirect{TReturn}"/> and proxy all calls with return type <typeparamref name="TReturn"/> via the added redirect.
         /// The added <see cref="IRedirect{TReturn}"/> has default <see cref="RedirectId.Name" />.
         /// </summary>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
@@ -34,7 +34,7 @@ namespace DivertR
         IDiverterBuilder ViaRedirect<TReturn>(Action<IViaOptionsBuilder>? optionsAction = null) where TReturn : class?;
 
         /// <summary>
-        /// Add a <see cref="IRedirect{TReturn}"/> and proxy all calls with return type <typeparamref name="TReturn"/> via the added redirect.
+        /// Add an <see cref="IRedirect{TReturn}"/> and proxy all calls with return type <typeparamref name="TReturn"/> via the added redirect.
         /// </summary>
         /// <param name="name">The <see cref="RedirectId.Name" /> of the added <see cref="IRedirect"/>.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
@@ -70,44 +70,44 @@ namespace DivertR
         IDiverterBuilder Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null);
         
         /// <summary>
-        /// Creates and returns a Diverter Redirect builder with a filter on calls matching the given constraint expression.
+        /// Creates and returns a Diverter Redirect builder with a filter allowing calls matching the given <paramref name="callConstraint"/>.
         /// </summary>
         /// <param name="callConstraint">Optional call constraint <see cref="ICallConstraint"/>.</param>
         /// <returns>The updater instance.</returns>
         IDiverterRedirectToBuilder<TTarget> To(ICallConstraint? callConstraint = null);
         
         /// <summary>
-        /// Creates and returns a Diverter Redirect builder with a filter on calls matching the given constraint expression for class types.
+        /// Creates and returns a Diverter Redirect builder with a filter allowing calls matching the given <paramref name="constraintExpression"/> for class types.
         /// </summary>
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <param name="_">Ignore, this is a discard parameter to coerce C# into allowing method overloads on the generic constraints.</param>
         /// <typeparam name="TReturn">The constraint expression return type.</typeparam>
         /// <returns>The created child builder.</returns>
-        IDiverterRedirectToBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression, TReturn? _ = null) where TReturn : class?;
+        IDiverterRedirectToFuncBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression, TReturn? _ = null) where TReturn : class?;
         
         /// <summary>
-        /// Creates and returns a Diverter Redirect builder with a filter on calls matching the given constraint expression for struct types.
+        /// Creates and returns a Diverter Redirect builder with a filter allowing calls matching the given <paramref name="constraintExpression"/> for struct types.
         /// </summary>
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <param name="_">Ignore, this is a discard parameter to coerce C# into allowing method overloads on the generic constraints.</param>
         /// <typeparam name="TReturn">The constraint expression return type.</typeparam>
         /// <returns>The created child builder.</returns>
-        IDiverterRedirectToBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression, TReturn? _ = null) where TReturn : struct;
+        IDiverterRedirectToFuncBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression, TReturn? _ = null) where TReturn : struct;
         
         /// <summary>
-        /// Creates and returns a Diverter Redirect builder with a filter on void returning calls matching the given constraint expression.
+        /// Creates and returns a Diverter Redirect builder with a filter allowing void returning calls matching the given <paramref name="constraintExpression"/>.
         /// </summary>
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <returns>The created child builder.</returns>
-        IDiverterRedirectToVoidBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression);
+        IDiverterRedirectToActionBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression);
         
         /// <summary>
-        /// Creates and returns a Diverter Redirect builder with a filter on void returning property setter calls matching the given constraint expression.
+        /// Creates and returns a Diverter Redirect builder with a filter allowing property setter calls matching the given <paramref name="memberExpression"/> and <paramref name="constraintExpression"/>.
         /// </summary>
         /// <param name="memberExpression">The expression for matching the property setter member.</param>
         /// <param name="constraintExpression">Optional constraint expression on the setter input argument. If null, the constraint defaults to match any value</param>
         /// <typeparam name="TProperty">The member type of the property setter.</typeparam>
         /// <returns>The created child builder.</returns>
-        IDiverterRedirectToVoidBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null);
+        IDiverterRedirectToActionBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null);
     }
 }

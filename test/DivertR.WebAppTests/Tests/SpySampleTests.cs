@@ -225,8 +225,8 @@ namespace DivertR.WebAppTests.Tests
             var recordedCalls = _diverter
                 .Redirect<IFooRepository>()
                 .To(x => x.InsertFooAsync(Is<Foo>.Any))
-                .Via<(Foo foo, __)>(() => throw testException)
-                .Record();
+                .Via(() => throw testException)
+                .Record<(Foo foo, __)>();
 
             // ACT
             var response = await _fooClient.CreateFooAsync(createFooRequest);

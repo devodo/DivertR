@@ -3,55 +3,55 @@ using System.Collections;
 
 namespace DivertR.Internal
 {
-    internal class DiverterRedirectToVoidBuilder<TTarget> : IDiverterRedirectToVoidBuilder<TTarget> where TTarget : class?
+    internal class DiverterRedirectToActionBuilder<TTarget> : IDiverterRedirectToActionBuilder<TTarget> where TTarget : class?
     {
         private readonly DiverterBuilder _diverterBuilder;
-        private readonly IActionRedirectUpdater<TTarget> _redirectUpdater;
+        private readonly IRedirectToActionBuilder<TTarget> _redirectBuilder;
 
-        public DiverterRedirectToVoidBuilder(DiverterBuilder diverterBuilder, IActionRedirectUpdater<TTarget> redirectUpdater)
+        public DiverterRedirectToActionBuilder(DiverterBuilder diverterBuilder, IRedirectToActionBuilder<TTarget> redirectBuilder)
         {
             _diverterBuilder = diverterBuilder;
-            _redirectUpdater = redirectUpdater;
+            _redirectBuilder = redirectBuilder;
         }
 
-        public IDiverterRedirectToVoidBuilder<TTarget> Filter(ICallConstraint callConstraint)
+        public IDiverterRedirectToActionBuilder<TTarget> Filter(ICallConstraint callConstraint)
         {
-            _redirectUpdater.Filter(callConstraint);
+            _redirectBuilder.Filter(callConstraint);
 
             return this;
         }
 
         public IDiverterBuilder Via(ICallHandler callHandler, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            _redirectUpdater.Via(callHandler, DiverterBuilder.GetOptions(optionsAction));
+            _redirectBuilder.Via(callHandler, DiverterBuilder.GetOptions(optionsAction));
 
             return _diverterBuilder;
         }
 
         public IDiverterBuilder Via(Action viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            _redirectUpdater.Via(viaDelegate, DiverterBuilder.GetOptions(optionsAction));
+            _redirectBuilder.Via(viaDelegate, DiverterBuilder.GetOptions(optionsAction));
 
             return _diverterBuilder;
         }
 
         public IDiverterBuilder Via(Action<IActionRedirectCall<TTarget>> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            _redirectUpdater.Via(viaDelegate, DiverterBuilder.GetOptions(optionsAction));
+            _redirectBuilder.Via(viaDelegate, DiverterBuilder.GetOptions(optionsAction));
 
             return _diverterBuilder;
         }
 
         public IDiverterBuilder Via<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null) where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable
         {
-            _redirectUpdater.Via(viaDelegate, DiverterBuilder.GetOptions(optionsAction));
+            _redirectBuilder.Via(viaDelegate, DiverterBuilder.GetOptions(optionsAction));
 
             return _diverterBuilder;
         }
 
         public IDiverterBuilder Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            _redirectUpdater.Retarget(target, DiverterBuilder.GetOptions(optionsAction));
+            _redirectBuilder.Retarget(target, DiverterBuilder.GetOptions(optionsAction));
 
             return _diverterBuilder;
         }

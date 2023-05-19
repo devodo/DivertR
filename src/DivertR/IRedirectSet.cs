@@ -3,7 +3,7 @@
 namespace DivertR
 {
     /// <summary>
-    /// Manages a set collection of <see cref="IRedirect"/> instances that are unique by <see cref="RedirectId"/> key.
+    /// Contains and manages a set of <see cref="IRedirect"/> instances that are unique by <see cref="RedirectId"/> key.
     /// </summary>
     public interface IRedirectSet
     {

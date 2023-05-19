@@ -4,52 +4,53 @@ using DivertR.Record.Internal;
 
 namespace DivertR.Internal
 {
-    internal class RedirectUpdater<TTarget> : IRedirectUpdater<TTarget> where TTarget : class?
+    internal class RedirectToBuilder<TTarget> : IRedirectToBuilder<TTarget> where TTarget : class?
     {
-        public ViaBuilder ViaBuilder { get; }
-        public Redirect<TTarget> Redirect { get; }
-        
-        public RedirectUpdater(Redirect<TTarget> redirect, ViaBuilder viaBuilder)
+        private readonly ViaBuilder _viaBuilder;
+
+        public RedirectToBuilder(Redirect<TTarget> redirect, ViaBuilder viaBuilder)
         {
             Redirect = redirect;
-            ViaBuilder = viaBuilder;
+            _viaBuilder = viaBuilder;
         }
         
-        public IRedirectUpdater<TTarget> Filter(ICallConstraint callConstraint)
+        public Redirect<TTarget> Redirect { get; }
+        
+        public IRedirectToBuilder<TTarget> Filter(ICallConstraint callConstraint)
         {
-            ViaBuilder.Filter(callConstraint);
+            _viaBuilder.Filter(callConstraint);
 
             return this;
         }
         
-        public IRedirectUpdater<TTarget> Via(ICallHandler callHandler, Action<IViaOptionsBuilder>? optionsAction = null)
+        public IRedirectToBuilder<TTarget> Via(ICallHandler callHandler, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var via = ViaBuilder.Build(callHandler);
+            var via = _viaBuilder.Build(callHandler);
             InsertVia(via, optionsAction);
 
             return this;
         }
 
-        public IRedirectUpdater<TTarget> Via(Func<object?> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
+        public IRedirectToBuilder<TTarget> Via(Func<object?> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var via = ViaBuilder.Build(viaDelegate);
+            var via = _viaBuilder.Build(viaDelegate);
             InsertVia(via, optionsAction);
 
             return this;
         }
 
-        public IRedirectUpdater<TTarget> Via(Func<IRedirectCall<TTarget>, object?> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
+        public IRedirectToBuilder<TTarget> Via(Func<IRedirectCall<TTarget>, object?> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
         {
-            var via = ViaBuilder.Build(viaDelegate);
+            var via = _viaBuilder.Build(viaDelegate);
             InsertVia(via, optionsAction);
 
             return this;
         }
         
-        public IRedirectUpdater<TTarget> Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null)
+        public IRedirectToBuilder<TTarget> Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null)
         {
             var callHandler = new TargetCallHandler<TTarget>(target, Redirect.RedirectSet.Settings.CallInvoker);
-            var via = ViaBuilder.Build(callHandler);
+            var via = _viaBuilder.Build(callHandler);
             InsertVia(via, optionsAction);
 
             return this;
@@ -58,7 +59,7 @@ namespace DivertR.Internal
         public IRecordStream<TTarget> Record(Action<IViaOptionsBuilder>? optionsAction = null)
         {
             var recordHandler = new RecordCallHandler<TTarget>();
-            var recordVia = ViaBuilder.Build(recordHandler);
+            var recordVia = _viaBuilder.Build(recordHandler);
             
             InsertVia(recordVia, optionsAction, disableSatisfyStrict: true);
 

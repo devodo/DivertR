@@ -113,7 +113,7 @@ Registered redirects can also be configured from the `DiverterBuilder` using int
 ```csharp
 var diverter = new DiverterBuilder()
     .Register<IFoo>()
-    // Add configure to the registered redirect
+    // Persistently configure the registered redirect
     .Redirect<IFoo>().To(x => x.Name).Via(call => $"{call.CallNext()} diverted")
     .Create();
 
@@ -135,7 +135,7 @@ This offers a convenient way to add permanent configurations that do not get res
 
 # ViaRedirect to Redirect Inner Services
 
-Often there are inner services that are not directly resolved by the dependency injection container such as those created by factory services.
+In some scenarios there are inner services that are not directly resolved by the dependency injection container such as those created by factories.
 
 It is possible to redirect proxy these inner services by chaining them to DI registered redirects using the `ViaRedirect` configuration.
 For example, if we have an `IBarFactory` factory service, resolved by the DI, that has factory methods that create `IBar` instances.
