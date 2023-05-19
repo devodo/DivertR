@@ -12,6 +12,7 @@ namespace DivertR
         private readonly ConcurrentDictionary<string, ConcurrentQueue<IServiceDecorator>> _decorators = new();
         private readonly ConcurrentDictionary<RedirectId, IRedirect> _registeredRedirects = new();
         private readonly ConcurrentDictionary<RedirectId, ConcurrentDictionary<RedirectId, RedirectId>> _registeredNested = new();
+        private readonly IRedirectSet _redirectSet;
         private readonly IDiverter _diverter;
 
         /// <summary>
@@ -29,6 +30,9 @@ namespace DivertR
         /// <param name="redirectSet">The <see cref="IRedirectSet"/> instance.</param>
         public DiverterBuilder(IRedirectSet redirectSet)
         {
+            _redirectSet = redirectSet;
+            _redirectSet = redirectSet;
+
             IEnumerable<IServiceDecorator> GetDecorators(string? name = null)
             {
                 return _decorators.TryGetValue(name ?? string.Empty, out var decorators)
@@ -42,7 +46,7 @@ namespace DivertR
         /// <inheritdoc />
         public IDiverterBuilder Register<TTarget>(string? name = null) where TTarget : class?
         {
-            var redirect = _diverter.RedirectSet.GetOrCreate<TTarget>(name);
+            var redirect = _redirectSet.GetOrCreate<TTarget>(name);
 
             if (!_registeredRedirects.TryAdd(redirect.RedirectId, redirect))
             {
@@ -55,7 +59,7 @@ namespace DivertR
         /// <inheritdoc />
         public IDiverterBuilder Register(Type targetType, string? name = null)
         {
-            var redirect = _diverter.RedirectSet.GetOrCreate(targetType, name);
+            var redirect = _redirectSet.GetOrCreate(targetType, name);
             
             if (!_registeredRedirects.TryAdd(redirect.RedirectId, redirect))
             {
@@ -163,7 +167,7 @@ namespace DivertR
         /// <inheritdoc />
         public IDiverterBuilder IncludeRedirect<TTarget>(string? name = null) where TTarget : class?
         {
-            _diverter.RedirectSet.GetOrCreate<TTarget>(name);
+            _redirectSet.GetOrCreate<TTarget>(name);
 
             return this;
         }
@@ -171,7 +175,7 @@ namespace DivertR
         /// <inheritdoc />
         public IDiverterBuilder IncludeRedirect(Type type, string? name = null)
         {
-            _diverter.RedirectSet.GetOrCreate(type, name);
+            _redirectSet.GetOrCreate(type, name);
 
             return this;
         }

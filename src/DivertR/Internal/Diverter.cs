@@ -6,14 +6,13 @@ namespace DivertR.Internal
     internal class Diverter : IDiverter
     {
         private readonly Func<string?, IEnumerable<IServiceDecorator>> _getDecorators;
+        private readonly IRedirectSet _redirectSet;
         
         public Diverter(IRedirectSet redirectSet, Func<string?, IEnumerable<IServiceDecorator>> getDecorators)
         {
-            RedirectSet = redirectSet;
+            _redirectSet = redirectSet;
             _getDecorators = getDecorators;
         }
-
-        public IRedirectSet RedirectSet { get; }
 
         public IRedirect<TTarget> Redirect<TTarget>(string? name = null) where TTarget : class?
         {
@@ -27,7 +26,7 @@ namespace DivertR.Internal
         
         public IRedirect Redirect(RedirectId redirectId)
         {
-            var redirect = RedirectSet.Get(redirectId);
+            var redirect = _redirectSet.Get(redirectId);
             
             if (redirect == null)
             {
@@ -39,28 +38,28 @@ namespace DivertR.Internal
         
         public IDiverter StrictAll()
         {
-            RedirectSet.StrictAll();
+            _redirectSet.StrictAll();
             
             return this;
         }
         
         public IDiverter Strict(string? name = null)
         {
-            RedirectSet.Strict(name);
+            _redirectSet.Strict(name);
 
             return this;
         }
         
         public IDiverter ResetAll()
         {
-            RedirectSet.ResetAll();
+            _redirectSet.ResetAll();
             
             return this;
         }
         
         public IDiverter Reset(string? name = null)
         {
-            RedirectSet.Reset(name);
+            _redirectSet.Reset(name);
 
             return this;
         }
