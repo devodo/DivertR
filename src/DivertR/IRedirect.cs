@@ -6,15 +6,15 @@ using DivertR.Record;
 namespace DivertR
 {
     /// <summary>
-    /// The Redirect class is used to create proxies of its target type and configure their behaviour.
-    ///
-    /// Proxy behaviour is configured by adding one or more <see cref="IVia"/>s to the Redirect.
-    /// The inserted Vias are applied to all proxies created by the Redirect.
-    /// Vias can be added or removed from the Redirect at any time allowing the proxy behaviour to be changed dynamically at runtime.
+    /// The Redirect interface is used to create proxies of its target type. It also includes a fluent interface for configuring proxy behaviour and call handling.
     /// 
-    /// When a proxy is created it can be given a reference to a root instance of its type and by default it forwards all its call to this root, i.e. when no Vias are configured on the Redirect.
+    /// When creating a proxy a root instance is provided and by default all calls are forwarded to this.
     /// If a root instance is not provided the proxy will be created with a dummy root that provides default return values on its members.
-    /// Optionally a proxy can also be created with a null root but in this case the proxy behaviour must be defined to handle any call received else a <see cref="DiverterNullRootException"/> will be thrown.
+    /// A proxy can be created with a null root but in this case if no handlers are configured for a call a <see cref="DiverterNullRootException"/> will be thrown.
+    ///
+    /// Proxy behaviour is configured by the fluent interface by adding <see cref="IVia"/> call handlers to the Redirect.
+    /// An inserted <see cref="IVia"/> is applied to all proxies created by the Redirect.
+    /// Vias can be added or removed from the Redirect at any time allowing the proxy behaviour to be changed dynamically at runtime.
     /// </summary>
     public interface IRedirect
     {
@@ -43,23 +43,19 @@ namespace DivertR
         /// </summary>
         /// <param name="root">Optional root instance the proxy will relay calls to.</param>
         /// <exception cref="System.ArgumentException">Thrown if <paramref name="root"/> is not the Redirect target type.</exception>
-        /// <returns>The proxy instance.</returns>
+        /// <returns>The created proxy.</returns>
         object Proxy(object? root);
         
         /// <summary>
-        /// Creates a Redirect proxy object of the Redirect's target type with no provided root instance.
+        /// Creates an <see cref="IRedirect"/> proxy object of the Redirect's target type with no root instance provided.
         /// </summary>
-        /// <param name="withDummyRoot">Specifies if the proxy should be created with a dummy root or not.</param>
-        /// <returns>The proxy instance.</returns>
-        object Proxy(bool withDummyRoot);
-        
-        /// <summary>
-        /// Creates a Redirect proxy object of the Redirect's target type with no provided root instance.
-        /// The proxy is created with a dummy root or not as configured by the Redirect's <see cref="DiverterSettings.DefaultWithDummyRoot" />.
-        /// </summary>
-        /// <returns>The proxy instance.</returns>
-        object Proxy();
-        
+        /// <param name="withDummyRoot">
+        /// Specifies if the proxy should be created with a dummy root or not.
+        /// Dummy roots are created using the <see cref="Dummy.IDummyFactory"/> configured at <see cref="DiverterSettings.DummyFactory"/>.
+        /// </param>
+        /// <returns>The created proxy.</returns>
+        object Proxy(bool withDummyRoot = true);
+
         /// <summary>
         /// Inserts an <see cref="IVia"/> into this Redirect.
         /// </summary>
@@ -121,38 +117,33 @@ namespace DivertR
         new IRelay<TTarget> Relay { get; }
 
         /// <summary>
-        /// Creates a Redirect proxy instance of the Redirect's target type.
+        /// Creates an <see cref="IRedirect{TTarget}"/> proxy.
         /// </summary>
-        /// <param name="root">Optional root instance the proxy will relay calls to.</param>
-        /// <returns>The proxy instance.</returns>
+        /// <param name="root">The root instance the proxy will relay calls to.</param>
+        /// <returns>The created proxy.</returns>
         [return: NotNull]
         TTarget Proxy(TTarget? root);
         
         /// <summary>
-        /// Creates a Redirect proxy instance of the Redirect's target type.
+        /// Creates an <see cref="IRedirect{TTarget}"/> proxy.
         /// </summary>
-        /// <param name="root">Optional root instance the proxy will relay calls to.</param>
+        /// <param name="root">The root instance the proxy will relay calls to.</param>
         /// <exception cref="System.ArgumentException">Thrown if <paramref name="root"/> is not the Redirect target type.</exception>
-        /// <returns>The proxy instance.</returns>
+        /// <returns>The created proxy.</returns>
         [return: NotNull]
         new TTarget Proxy(object? root);
         
         /// <summary>
-        /// Creates a Redirect proxy instance of the Redirect's target type with no provided root instance.
+        /// Creates an <see cref="IRedirect{TTarget}"/> proxy with no root instance provided.
         /// </summary>
-        /// <param name="withDummyRoot">Specifies if the proxy should be created with a dummy root or not.</param>
-        /// <returns>The proxy instance.</returns>
+        /// <param name="withDummyRoot">
+        /// Specifies if the proxy should be created with a dummy root or not.
+        /// Dummy roots are created using the <see cref="Dummy.IDummyFactory"/> configured at <see cref="DiverterSettings.DummyFactory"/>.
+        /// </param>
+        /// <returns>The created proxy.</returns>
         [return: NotNull]
-        new TTarget Proxy(bool withDummyRoot);
+        new TTarget Proxy(bool withDummyRoot = true);
 
-        /// <summary>
-        /// Creates a Redirect proxy instance of the Redirect's target type with no provided root instance.
-        /// The proxy is created with a dummy root or not as configured by the Redirect's <see cref="DiverterSettings.DefaultWithDummyRoot" />.
-        /// </summary>
-        /// <returns>The proxy instance.</returns>
-        [return: NotNull]
-        new TTarget Proxy();
-        
         /// <summary>
         /// Insert a <see cref="IVia"/> into this Redirect.
         /// </summary>

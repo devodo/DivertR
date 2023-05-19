@@ -140,7 +140,7 @@ namespace DivertR.UnitTests
         public void ShouldDecorateWithObjectDelegate()
         {
             _services.AddSingleton<IFoo, Foo>();
-            var diverter = new DiverterBuilder().Decorate(typeof(IFoo), foo => new Foo(((IFoo) foo).Name + " decorated")).Create();
+            var diverter = new DiverterBuilder().Decorate(typeof(IFoo), foo => new Foo(((IFoo) foo!).Name + " decorated")).Create();
             _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var foo = provider.GetRequiredService<IFoo>();
@@ -158,7 +158,7 @@ namespace DivertR.UnitTests
                 .Decorate(typeof(IFoo), (foo, diverter) =>
                 {
                     var bar = diverter.Redirect<IBar>().Proxy(new Bar("test"));
-                    return new Foo($"{((IFoo) foo).Name} {bar.Name} decorated");
+                    return new Foo($"{((IFoo) foo!).Name} {bar.Name} decorated");
                 })
                 .Create();
             
@@ -180,7 +180,7 @@ namespace DivertR.UnitTests
                 .Decorate(typeof(IFoo), (foo, diverter, provider) =>
                 {
                     var bar = diverter.Redirect<IBar>().Proxy(provider.GetRequiredService<IBar>());
-                    return new Foo($"{((IFoo) foo).Name} {bar.Name} decorated");
+                    return new Foo($"{((IFoo) foo!).Name} {bar.Name} decorated");
                 })
                 .Create();
             
@@ -309,7 +309,7 @@ namespace DivertR.UnitTests
         public void GivenGenericDecoratorShouldDecorateStructTypes()
         {
             _services.AddTransient(typeof(int), _ => 10);
-            var diverter = new DiverterBuilder().Decorate(typeof(int), x => (int) x + 1).Create();
+            var diverter = new DiverterBuilder().Decorate(typeof(int), x => (int) x! + 1).Create();
             _services.Divert(diverter);
             var provider = _services.BuildServiceProvider();
             var i = provider.GetRequiredService<int>();
