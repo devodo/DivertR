@@ -222,27 +222,27 @@ namespace DivertR
         }
 
         /// <inheritdoc />
-        public IRedirectUpdater<TTarget> To(ICallConstraint? callConstraint = null)
+        public IRedirectToBuilder<TTarget> To(ICallConstraint? callConstraint = null)
         {
-            return new RedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.ToInternal(callConstraint));
+            return new RedirectToBuilder<TTarget>(this, ViaBuilder<TTarget>.ToInternal(callConstraint));
         }
         
         /// <inheritdoc />
-        public IFuncRedirectUpdater<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
+        public IRedirectToFuncBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression)
         {
-            return new FuncRedirectUpdater<TTarget, TReturn>(this, ViaBuilder<TTarget>.ToInternal(constraintExpression));
+            return new RedirectToFuncBuilder<TTarget, TReturn>(this, ViaBuilder<TTarget>.ToInternal(constraintExpression));
         }
         
         /// <inheritdoc />
-        public IActionRedirectUpdater<TTarget> To(Expression<Action<TTarget>> constraintExpression)
+        public IRedirectToActionBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
         {
-            return new ActionRedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.ToInternal(constraintExpression));
+            return new RedirectToActionBuilder<TTarget>(this, ViaBuilder<TTarget>.ToInternal(constraintExpression));
         }
         
         /// <inheritdoc />
-        public IActionRedirectUpdater<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
+        public IRedirectToActionBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
         {
-            return new ActionRedirectUpdater<TTarget>(this, ViaBuilder<TTarget>.ToSetInternal(memberExpression, constraintExpression));
+            return new RedirectToActionBuilder<TTarget>(this, ViaBuilder<TTarget>.ToSetInternal(memberExpression, constraintExpression));
         }
         
         protected virtual void ResetInternal()

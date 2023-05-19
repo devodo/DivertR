@@ -3,7 +3,7 @@
 namespace DivertR
 {
     /// <summary>
-    /// A simple immutable struct intended to be used as an <see cref="IRedirect"/> composite key.
+    /// An immutable  <see cref="IRedirect"/> identifier that is a composite struct of the target type and an optional <see langword="string"/> group name.
     /// </summary>
     public readonly struct RedirectId : IEquatable<RedirectId>
     {

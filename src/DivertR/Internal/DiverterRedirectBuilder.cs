@@ -74,32 +74,32 @@ namespace DivertR.Internal
             return new DiverterRedirectToBuilder<TTarget>(_diverterBuilder, redirectUpdater);
         }
 
-        public IDiverterRedirectToBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression, TReturn? _ = null) where TReturn : class?
+        public IDiverterRedirectToFuncBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression, TReturn? _ = null) where TReturn : class?
         {
             var redirectUpdater = Redirect.To(constraintExpression);
             
-            return new DiverterRedirectToClassBuilder<TTarget, TReturn>(_diverterBuilder, redirectUpdater);
+            return new DiverterRedirectToFuncClassBuilder<TTarget, TReturn>(_diverterBuilder, redirectUpdater);
         }
 
-        public IDiverterRedirectToBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression, TReturn? _ = null) where TReturn : struct
+        public IDiverterRedirectToFuncBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression, TReturn? _ = null) where TReturn : struct
         {
             var redirectUpdater = Redirect.To(constraintExpression);
             
-            return new DiverterRedirectToBuilder<TTarget, TReturn>(_diverterBuilder, redirectUpdater);
+            return new DiverterRedirectToFuncBuilder<TTarget, TReturn>(_diverterBuilder, redirectUpdater);
         }
 
-        public IDiverterRedirectToVoidBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
+        public IDiverterRedirectToActionBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression)
         {
             var redirectUpdater = Redirect.To(constraintExpression);
             
-            return new DiverterRedirectToVoidBuilder<TTarget>(_diverterBuilder, redirectUpdater);
+            return new DiverterRedirectToActionBuilder<TTarget>(_diverterBuilder, redirectUpdater);
         }
 
-        public IDiverterRedirectToVoidBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
+        public IDiverterRedirectToActionBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null)
         {
             var redirectUpdater = Redirect.ToSet(memberExpression, constraintExpression);
             
-            return new DiverterRedirectToVoidBuilder<TTarget>(_diverterBuilder, redirectUpdater);
+            return new DiverterRedirectToActionBuilder<TTarget>(_diverterBuilder, redirectUpdater);
         }
     }
 }

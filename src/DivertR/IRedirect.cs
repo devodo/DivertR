@@ -19,27 +19,27 @@ namespace DivertR
     public interface IRedirect
     {
         /// <summary>
-        /// The Redirect identifier that is a composite of the target type and an optional <see langword="string"/> group name.
+        /// The Redirect identifier.
         /// </summary>
         RedirectId RedirectId { get; }
         
         /// <summary>
-        /// The <see cref="IRedirectSet"/> of this Redirect. The RedirectSet contains a collection of Redirects each with a unique <see cref="RedirectId"/>.
+        /// The <see cref="IRedirectSet"/> this Redirect belongs to.
         /// </summary>
         IRedirectSet RedirectSet { get; }
         
         /// <summary>
-        /// The the call <see cref="IRelay" />.
+        /// The call <see cref="IRelay" />.
         /// </summary>
         IRelay Relay { get; }
         
         /// <summary>
-        /// The Redirect's <see cref="IRedirectRepository" /> for storing and managing the configuration that determines proxy behaviour.
+        /// The repository for storing and managing configurations that determine proxy behaviour.
         /// </summary>
         IRedirectRepository RedirectRepository { get; }
 
         /// <summary>
-        /// Creates a Redirect proxy object of the Redirect's target type.
+        /// Creates an <see cref="IRedirect"/> proxy object of the Redirect's target type.
         /// </summary>
         /// <param name="root">Optional root instance the proxy will relay calls to.</param>
         /// <exception cref="System.ArgumentException">Thrown if <paramref name="root"/> is not the Redirect target type.</exception>
@@ -61,52 +61,54 @@ namespace DivertR
         /// </summary>
         /// <param name="via">The Via instance.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
-        /// <returns>This Redirect instance.</returns>
+        /// <returns>This instance.</returns>
         IRedirect Via(IVia via, Action<IViaOptionsBuilder>? optionsAction = null);
 
         /// <summary>
-        /// Reset the Redirect's <see cref="IRedirectRepository" /> to its initial state.
+        /// Resets proxy configuration.
+        /// All non-persistent <see cref="IVia"/>s are removed from the Redirect.
         /// </summary>
-        /// <returns>This Redirect instance.</returns>
+        /// <returns>This instance.</returns>
         IRedirect Reset();
 
         /// <summary>
-        /// Set strict mode on the Redirect.
+        /// Sets strict mode on the Redirect.
         /// If strict is enabled and a call to its proxies does not match a configured <see cref="IVia"/> then a <see cref="StrictNotSatisfiedException"/> is thrown.
         /// </summary>
         /// <param name="isStrict">Optional bool to specify enable/disable of strict mode.</param>
-        /// <returns>This Redirect instance.</returns>
+        /// <returns>This instance.</returns>
         IRedirect Strict(bool? isStrict = true);
         
         /// <summary>
-        /// Reroute any calls with return type <typeparamref name="TReturn"/> via an <see cref="IRedirect{TReturn}"/> proxy.
+        /// Adds an <see cref="IRedirect{TReturn}"/> and proxies all calls with return type <typeparamref name="TReturn"/> via the added redirect.
+        /// The added <see cref="IRedirect{TReturn}"/> has default <see cref="RedirectId.Name" />.
         /// </summary>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
         /// <typeparam name="TReturn">The return type.</typeparam>
-        /// <returns>The <see cref="IRedirect{TReturn}"/> that generates the returned proxies.</returns>
+        /// <returns>The added <see cref="IRedirect{TReturn}"/>.</returns>
         IRedirect<TReturn> ViaRedirect<TReturn>(Action<IViaOptionsBuilder>? optionsAction = null) where TReturn : class?;
         
         /// <summary>
-        /// Reroute any calls with return type <typeparamref name="TReturn"/> via an <see cref="IRedirect{TReturn}"/> proxy.
+        /// Adds an <see cref="IRedirect{TReturn}"/> and proxies all calls with return type <typeparamref name="TReturn"/> via the added redirect.
         /// </summary>
         /// <param name="name">Specify the <see cref="DivertR.RedirectId.Name" /> of the returned <see cref="IRedirect{TReturn}"/>.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
         /// <typeparam name="TReturn">The return type.</typeparam>
-        /// <returns>The <see cref="IRedirect{TReturn}"/> that generates the returned proxies.</returns>
+        /// <returns>The added <see cref="IRedirect{TReturn}"/>.</returns>
         IRedirect<TReturn> ViaRedirect<TReturn>(string? name, Action<IViaOptionsBuilder>? optionsAction = null) where TReturn : class?;
         
         /// <summary>
-        /// Reroute any calls with return type <typeparamref name="TReturn"/> via a decorator function.
+        /// Add a decorator that will be applied to all call returns of type <typeparamref name="TReturn"/>.
         /// </summary>
         /// <param name="decorator">The decorator function.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
         /// <typeparam name="TReturn">The return type.</typeparam>
-        /// <returns>This Redirect instance.</returns>
+        /// <returns>This instance.</returns>
         IRedirect Decorate<TReturn>(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
     }
     
     /// <summary>
-    /// Strongly typed generic extension of the <see cref="IRedirect"/> interface with target type defined.
+    /// A strongly typed extension of the <see cref="IRedirect"/> interface with a generic type defining its proxy target type.
     /// </summary>
     /// <typeparam name="TTarget">The proxy target type.</typeparam>
     public interface IRedirect<TTarget> : IRedirect where TTarget : class?
@@ -149,13 +151,14 @@ namespace DivertR
         /// </summary>
         /// <param name="via">The Via instance to insert.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
-        /// <returns>This Redirect instance.</returns>
+        /// <returns>This instance.</returns>
         new IRedirect<TTarget> Via(IVia via, Action<IViaOptionsBuilder>? optionsAction = null);
 
         /// <summary>
-        /// Reset the Redirect's <see cref="IRedirectRepository" /> to its initial state.
+        /// Resets proxy configuration.
+        /// All non-persistent <see cref="IVia"/>s are removed from the Redirect.
         /// </summary>
-        /// <returns>This Redirect instance.</returns>
+        /// <returns>This instance.</returns>
         new IRedirect<TTarget> Reset();
         
         /// <summary>
@@ -163,64 +166,65 @@ namespace DivertR
         /// If strict is enabled and a call to its proxies does not hit a configured <see cref="IVia"/> then a <see cref="StrictNotSatisfiedException"/> is thrown.
         /// </summary>
         /// <param name="isStrict">Optional bool to specify enable/disable of strict mode.</param>
-        /// <returns>This Redirect instance.</returns>
+        /// <returns>This instance.</returns>
         new IRedirect<TTarget> Strict(bool? isStrict = true);
 
         /// <summary>
-        /// Inserts a retarget <see cref="IVia"/> with no call constraints (therefore all calls will be matched and retargeted).
+        /// Retarget all <see cref="IRedirect{TTarget}"/> calls to the given <paramref name="target"/> instance.
         /// </summary>
         /// <param name="target">The target instance to retarget calls to.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
-        /// <returns>This Redirect instance.</returns>
+        /// <returns>This instance.</returns>
         IRedirect<TTarget> Retarget(TTarget target, Action<IViaOptionsBuilder>? optionsAction = null);
         
         /// <summary>
-        /// Inserts a record Via that captures incoming calls from all proxies.
-        /// By default record Redirects are configured to not satisfy strict calls if strict mode is enabled.
+        /// Records all proxy calls to the returned stream.
+        /// An <see cref="IVia"/> is inserted that captures incoming calls from all proxies.
+        /// This is configured to not satisfy strict calls.
         /// </summary>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
-        /// <returns>An <see cref="IRecordStream{TTarget}"/> instance for retrieving and iterating the recorded calls.</returns>
+        /// <returns>An enumerable collection containing the recorded calls.</returns>
         IRecordStream<TTarget> Record(Action<IViaOptionsBuilder>? optionsAction = null);
         
         /// <summary>
-        /// Reroute any calls with return type <typeparamref name="TReturn"/> via a decorator function.
+        /// Add a decorator that will be applied to all call returns of type <typeparamref name="TReturn"/>.
         /// </summary>
         /// <param name="decorator">The decorator function.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
         /// <typeparam name="TReturn">The return type.</typeparam>
-        /// <returns>This Redirect instance.</returns>
+        /// <returns>This instance.</returns>
         new IRedirect<TTarget> Decorate<TReturn>(Func<TReturn, TReturn> decorator, Action<IViaOptionsBuilder>? optionsAction = null);
         
         /// <summary>
-        /// Creates an <see cref="IRedirectUpdater{TTarget}"/> instance for updating this Redirect. />
+        /// Creates and returns a builder for configuring proxy behaviour with a filter allowing calls matching the given <paramref name="callConstraint"/>.
+        /// If <paramref name="callConstraint"/> is null then all calls are matched.
         /// </summary>
         /// <param name="callConstraint">Optional call constraint <see cref="ICallConstraint"/>.</param>
-        /// <returns>The updater instance.</returns>
-        IRedirectUpdater<TTarget> To(ICallConstraint? callConstraint = null);
+        /// <returns>The created builder.</returns>
+        IRedirectToBuilder<TTarget> To(ICallConstraint? callConstraint = null);
 
         /// <summary>
-        /// Creates an <see cref="IFuncRedirectUpdater{TTarget,TReturn}"/> instance for updating this Redirect for calls matching the <paramref name="constraintExpression"/> expression.
+        /// Creates and returns a builder for configuring proxy behaviour with a filter allowing calls matching the given <paramref name="constraintExpression"/>.
         /// </summary>
         /// <param name="constraintExpression">The call constraint expression.</param>
         /// <typeparam name="TReturn">The Expression return type</typeparam>
-        /// <returns>The updater instance.</returns>
-        IFuncRedirectUpdater<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression);
+        /// <returns>The created builder.</returns>
+        IRedirectToFuncBuilder<TTarget, TReturn> To<TReturn>(Expression<Func<TTarget, TReturn>> constraintExpression);
         
         /// <summary>
-        /// Creates an <see cref="IActionRedirectUpdater{TTarget}"/> instance for updating this Redirect for void calls matching the <paramref name="constraintExpression"/> expression.
+        /// Creates and returns a builder for configuring proxy behaviour with a filter allowing void returning calls matching the given <paramref name="constraintExpression"/>.
         /// </summary>
         /// <param name="constraintExpression">The call constraint expression.</param>
-        /// <returns>The updater instance.</returns>
-        IActionRedirectUpdater<TTarget> To(Expression<Action<TTarget>> constraintExpression);
+        /// <returns>The created builder.</returns>
+        IRedirectToActionBuilder<TTarget> To(Expression<Action<TTarget>> constraintExpression);
         
         /// <summary>
-        /// Creates an <see cref="IActionRedirectUpdater{TTarget}"/> instance for updating this Redirect for setter calls to matching the property <paramref name="memberExpression"/> expression
-        /// and setter value <paramref name="constraintExpression"/> expression.
+        /// Creates and returns a builder for configuring proxy behaviour with a filter allowing property setter calls matching the given <paramref name="memberExpression"/> and <paramref name="constraintExpression"/>.
         /// </summary>
         /// <param name="memberExpression">The expression for matching the property setter member.</param>
         /// <param name="constraintExpression">Optional constraint expression on the setter input argument. If null, the constraint defaults to match any value</param>
         /// <typeparam name="TProperty">The member type of the property setter.</typeparam>
-        /// <returns>The updater instance.</returns>
-        IActionRedirectUpdater<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null);
+        /// <returns>The created builder.</returns>
+        IRedirectToActionBuilder<TTarget> ToSet<TProperty>(Expression<Func<TTarget, TProperty>> memberExpression, Expression<Func<TProperty>>? constraintExpression = null);
     }
 }

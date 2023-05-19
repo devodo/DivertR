@@ -8,14 +8,14 @@ namespace DivertR
     /// By default all <see cref="IVia"/> instances added by this builder are configured to be persistent and to not satisfy strict checks.
     /// </summary>
     /// <typeparam name="TTarget">The <see cref="IRedirect{TTarget}"/> target type.</typeparam>
-    public interface IDiverterRedirectToVoidBuilder<TTarget> where TTarget : class?
+    public interface IDiverterRedirectToActionBuilder<TTarget> where TTarget : class?
     {
         /// <summary>
         /// Append an additional filter to the existing constraint.
         /// </summary>
         /// <param name="callConstraint">The call constraint filter.</param>
         /// <returns>This instance.</returns>
-        IDiverterRedirectToVoidBuilder<TTarget> Filter(ICallConstraint callConstraint);
+        IDiverterRedirectToActionBuilder<TTarget> Filter(ICallConstraint callConstraint);
         
         /// <summary>
         /// Redirect calls via the given <paramref name="callHandler"/>.
@@ -46,7 +46,7 @@ namespace DivertR
         /// </summary>
         /// <param name="viaDelegate">The call handler delegate.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>
-        /// <typeparam name="TArgs">The ValueTuple type to map call arguments to.</typeparam>
+        /// <typeparam name="TArgs">The ValueTuple type that call arguments are mapped to.</typeparam>
         /// <returns>The parent builder.</returns>
         IDiverterBuilder Via<TArgs>(Action<IActionRedirectCall<TTarget, TArgs>> viaDelegate, Action<IViaOptionsBuilder>? optionsAction = null)
             where TArgs : struct, IStructuralComparable, IStructuralEquatable, IComparable;

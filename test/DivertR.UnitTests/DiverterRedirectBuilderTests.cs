@@ -27,7 +27,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToViaRegistered_ShouldRedirect()
+    public void GivenToFuncViaRegistered_ShouldRedirect()
     {
         // ARRANGE
         _builder.To(x => x.Name).Via(call => call.CallNext() + " redirected");
@@ -41,7 +41,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToViaRegisteredWithOptions_ShouldApplyOptions()
+    public void GivenToFuncViaRegisteredWithOptions_ShouldApplyOptions()
     {
         // ARRANGE
         _builder
@@ -58,7 +58,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToViaArgsRegistered_ShouldRedirect()
+    public void GivenToFuncViaArgsRegistered_ShouldRedirect()
     {
         // ARRANGE
         _builder
@@ -75,7 +75,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToViaInstanceRegistered_ShouldRedirect()
+    public void GivenToFuncViaInstanceRegistered_ShouldRedirect()
     {
         // ARRANGE
         _builder.To(x => x.Name).Via("redirected");
@@ -89,7 +89,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToViaDelegateRegistered_ShouldRedirect()
+    public void GivenToFuncViaDelegateRegistered_ShouldRedirect()
     {
         // ARRANGE
         _builder.To(x => x.Name).Via(() => "redirected");
@@ -103,7 +103,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToViaCallHandlerRegistered_ShouldRedirect()
+    public void GivenToFuncViaCallHandlerRegistered_ShouldRedirect()
     {
         // ARRANGE
         _builder.To(x => x.Name)
@@ -119,7 +119,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToViaRetargetRegistered_ShouldRedirect()
+    public void GivenToFuncViaRetargetRegistered_ShouldRedirect()
     {
         // ARRANGE
         var altFoo = new Foo("alt");
@@ -140,7 +140,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToViaWithFilterRegistered_ShouldFilter()
+    public void GivenToFuncViaWithFilterRegistered_ShouldFilter()
     {
         // ARRANGE
         _builder
@@ -160,7 +160,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToVoidViaRegistered_ShouldRedirect()
+    public void GivenToActionViaRegistered_ShouldRedirect()
     {
         // ARRANGE
         _builder
@@ -177,7 +177,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToVoidViaWithFilterRegistered_ShouldFilter()
+    public void GivenToActionViaWithFilterRegistered_ShouldFilter()
     {
         // ARRANGE
         _builder
@@ -199,7 +199,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToVoidViaArgsRegistered_ShouldRedirect()
+    public void GivenToActionViaArgsRegistered_ShouldRedirect()
     {
         // ARRANGE
         _builder
@@ -216,7 +216,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToVoidViaActionRegistered_ShouldRedirect()
+    public void GivenToActionViaActionRegistered_ShouldRedirect()
     {
         // ARRANGE
         _builder
@@ -237,7 +237,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToVoidViaCallHandlerRegistered_ShouldRedirect()
+    public void GivenToActionViaCallHandlerRegistered_ShouldRedirect()
     {
         // ARRANGE
         _builder.To(x => x.SetName(Is<string>.Any))
@@ -253,7 +253,7 @@ public class DiverterRedirectBuilderTests
     }
 
     [Fact]
-    public void GivenToVoidViaRetargetRegistered_ShouldRedirect()
+    public void GivenToActionViaRetargetRegistered_ShouldRedirect()
     {
         // ARRANGE
         var spyFoo = Spy.On<IFoo>();
@@ -304,7 +304,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToWithConstraint_ShouldFilterRedirect()
+    public void GivenToViaWithConstraint_ShouldFilterRedirect()
     {
         // ARRANGE
         _builder
@@ -323,7 +323,7 @@ public class DiverterRedirectBuilderTests
     }
     
     [Fact]
-    public void GivenToWithFilter_ShouldFilterRedirect()
+    public void GivenToViaWithFilter_ShouldFilterRedirect()
     {
         // ARRANGE
         _builder
