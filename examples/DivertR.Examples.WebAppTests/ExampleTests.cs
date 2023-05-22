@@ -25,7 +25,7 @@ public class ExampleTests : IClassFixture<ExampleFixture>
         // Configure IBookService to return a mocked result
         _diverter
             .Redirect<IBookService>() // Redirect IFooService calls 
-            .To(x => x.GetBookAsync(Is<Guid>.Any)) // matching this method and argument value
+            .To(x => x.GetBookAsync(Is<Guid>.Any)) // matching this method and any argument value
             .Via(() => Task.FromResult(mockedBook)); // via this delegate
         
         // ACT
