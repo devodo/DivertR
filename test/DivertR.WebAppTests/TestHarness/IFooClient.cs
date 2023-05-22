@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DivertR.SampleWebApp.Rest;
+using DivertR.WebApp.Rest;
 using Refit;
 
 namespace DivertR.WebAppTests.TestHarness

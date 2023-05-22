@@ -122,13 +122,13 @@ public void ServiceCollectionDemoTest()
     services.AddSingleton<IBarFactory, BarFactory>();
     services.AddSingleton<IEtc, Etc>();
 
-    // Create a Diverter instance with registered services you want to be able to redirect
+    // Build a Diverter instance by registering services you want to be able to redirect
     var diverter = new DiverterBuilder()
         .Register<IFoo>()
         .Register<IBarFactory>()
         .Create();
 
-    // Install DivertR into the ServiceCollection
+    // Install Diverter into the ServiceCollection
     services.Divert(diverter);
 
     // Build an IServiceProvider as usual

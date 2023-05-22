@@ -1,8 +1,8 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using DivertR.SampleWebApp.Model;
-using DivertR.SampleWebApp.Services;
+using DivertR.WebApp.Model;
+using DivertR.WebApp.Services;
 using DivertR.WebAppTests.TestHarness;
 using Shouldly;
 using Xunit;
