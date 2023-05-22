@@ -3,8 +3,8 @@
 [![nuget](https://img.shields.io/nuget/v/DivertR.svg)](https://www.nuget.org/packages/DivertR)
 [![build](https://github.com/devodo/DivertR/actions/workflows/build.yml/badge.svg)](https://github.com/devodo/DivertR/actions/workflows/build.yml)
 
-DivertR is a .NET library for creating proxy test doubles such as mocks, fakes and spies.
-It is similar to mocking frameworks like the well known [Moq](https://github.com/moq/moq4) but provides, in addition, features for ***integration*** and ***component*** testing of wired-up systems.
+DivertR is a .NET proxy framework that can be used to create test doubles.
+It is similar to existing mocking frameworks like [Moq](https://github.com/moq/moq4) but provides additional features for integration testing of wired-up systems.
 
 # Installing
 
@@ -22,54 +22,66 @@ dotnet add package DivertR
 
 # Example Usage
 
-DivertR can facilitate a style of testing where you start with a dependency injection wired-up system and mock out specific parts per test.
-For example, it can be used to write tests on a WebApp like this:
+DivertR works by decorating dependency injection services with proxies that behave the same as the originals but that can be manipulated and reset dynamically.
+This facilitate a style of testing where you start with the integrated, wired-up system and only mock out specific parts required per test.
+
+For example, it can significantly speed up integration tests running against a [WebApplicationFactory (TestServer)](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) instance by altering
+and mocking dependencies between tests without requiring reinitialisation like this:
 
 ```csharp
 [Fact]
-public async Task GivenFooExistsInRepo_WhenGetFoo_ThenReturnsFoo_WithOk200()
+public async Task GivenBookExists_WhenGetBookById_ThenReturnsBook()
 {
     // ARRANGE
-    var foo = new Foo
-    {
-        Id = Guid.NewGuid(),
-        Name = "Foo123"
-    };
-
+    var mockedBook = new Book { Id = Guid.NewGuid(), Name = "Test Book" };
+    
+    // Configure IBookService to return a mocked result
     _diverter
-        .Redirect<IFooRepository>() // Redirect IFooRepository calls 
-        .To(x => x.GetFooAsync(foo.Id)) // matching this method and argument
-        .Via(() => Task.FromResult(foo)); // via this delegate
-
+        .Redirect<IBookService>() // Redirect IFooService calls 
+        .To(x => x.GetBookAsync(mockedBook.Id)) // matching this method and argument value
+        .Via(() => Task.FromResult(mockedBook)); // via this delegate
+    
     // ACT
-    var response = await _fooClient.GetFooAsync(foo.Id);
+    var bookResult = await _httpClient.GetFromJsonAsync<Book>($"/books/{mockedBook.Id}");
     
     // ASSERT
-    response.StatusCode.ShouldBe(HttpStatusCode.OK);
-    response.Content.Id.ShouldBe(foo.Id);
-    response.Content.Name.ShouldBe(foo.Name);
+    Assert.NotNull(bookResult);
+    Assert.Equal(mockedBook.Id, bookResult.Id);
+    Assert.Equal(mockedBook.Name, bookResult.Name);
 }
 
 [Fact]
-public async Task GivenFooRepoException_WhenGetFoo_ThenReturns500InternalServerError()
+public async Task GivenBookServiceError_WhenGetBookById_ThenReturns500InternalServerError()
 {
     // ARRANGE
+    var bookId = Guid.NewGuid();
+    
+    // Configure IBookService to throw an exception
     _diverter
-        .Redirect<IFooRepository>()
-        .To(x => x.GetFooAsync(Is<Guid>.Any))
-        .Via(() => throw new Exception());
-
+        .Redirect<IBookService>()
+        .To(x => x.GetBookAsync(bookId)) // match on bookId value only
+        .Via(() => throw new Exception("Test"));
+    
     // ACT
-    var response = await _fooClient.GetFooAsync(Guid.NewGuid());
-
+    var controlResponse = await _httpClient.GetAsync($"/books/{Guid.NewGuid()}");
+    var testResponse = await _httpClient.GetAsync($"/books/{bookId}");
+    
+    
     // ASSERT
-    response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+    Assert.Equal(HttpStatusCode.NotFound, controlResponse.StatusCode);
+    Assert.Equal(HttpStatusCode.InternalServerError, testResponse.StatusCode);
 }
 ```
 
+> **Note**  
+> The source code for the example above is available [here](./examples/DivertR.Examples.WebAppTests).
+> 
+> Follow the [Resources](#resources) section below for more examples, quickstart, documentation, etc. 
+
 # Resources
 
-* [Documentation and quickstart guide](https://devodo.github.io/DivertR/)
+* [Quickstart guide](https://devodo.github.io/DivertR/quickstart/)
+* [Documentation](https://devodo.github.io/DivertR/)
 * [Discussion](https://github.com/devodo/DivertR/discussions/43) - Feedback and comments are welcome
 * [DivertR NuGet package](https://www.nuget.org/packages/DivertR)
 

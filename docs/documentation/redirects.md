@@ -18,7 +18,7 @@ parent: Documentation
 {:toc}
 </details>
 
-The `Redirect` is the main DivertR entity used to create and configure proxies.
+The `Redirect` is the main DivertR interface used to create and configure proxies.
 `Redirect` instances are instantiated from the generic `Redirect<TTarget>` class:
 
 ```csharp

@@ -2,11 +2,11 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using DivertR.DependencyInjection;
-using DivertR.SampleWebApp.Services;
+using DivertR.WebApp.Services;
+using Logging.Xunit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Logging;
 using Refit;
 using Xunit.Abstractions;
 
@@ -39,7 +39,7 @@ namespace DivertR.WebAppTests.TestHarness
                     // Create an xUnit ITestOutputHelper proxy mock
                     var outputHelperMock = _diverter.Redirect<ITestOutputHelper>().Proxy();
                     // Add an xUnit logging provider that writes to the mock ITestOutputHelper
-                    logging.AddXunit(outputHelperMock);
+                    logging.AddXunit(outputHelperMock, options => options.IncludeScopes = true);
                 });
                 
                 builder.ConfigureTestServices(services =>
