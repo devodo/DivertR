@@ -22,8 +22,8 @@ dotnet add package DivertR
 
 # Example Usage
 
-DivertR works by decorating dependency injection services with proxies that behave the same as the originals but that can be manipulated and reset dynamically.
-This facilitate a style of testing where you start with the integrated, wired-up system and only mock out specific parts required per test.
+DivertR works by updating the existing dependency injection container by replacing services with testable proxies that transparently forward to the originals but that can be configured and reset dynamically.
+This facilitate a style of testing where each test starts with the integrated, wired-up system and mocks out only the specific parts required.
 
 For example, it can significantly speed up integration tests running against a [WebApplicationFactory (TestServer)](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) instance by altering
 and mocking dependencies between tests without requiring reinitialisation like this:
