@@ -4,7 +4,7 @@
 [![build](https://github.com/devodo/DivertR/actions/workflows/build.yml/badge.svg)](https://github.com/devodo/DivertR/actions/workflows/build.yml)
 
 DivertR is a .NET proxy framework that can be used to create test doubles.
-It is similar to existing mocking frameworks like [Moq](https://github.com/moq/moq4) but provides additional features for integration testing of wired-up systems.
+It is similar to existing mocking frameworks like [Moq](https://github.com/moq/moq4) but is designed to work seamlessly with the dependency injection container by converting existing services into test friendly, configurable proxies. This facilitates an integrated style of testing where you start with the wired-up system and then mock out specific parts required per test.
 
 # Installing
 
@@ -22,11 +22,7 @@ dotnet add package DivertR
 
 # Example Usage
 
-DivertR works by decorating dependency injection services with proxies that behave the same as the originals but that can be manipulated and reset dynamically.
-This facilitate a style of testing where you start with the integrated, wired-up system and only mock out specific parts required per test.
-
-For example, it can significantly speed up integration tests running against a [WebApplicationFactory (TestServer)](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) instance by altering
-and mocking dependencies between tests without requiring reinitialisation like this:
+DivertR is a general purpose proxy framework that can, for example, be used to significantly speed up integration tests running against a [WebApplicationFactory (TestServer)](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) instance by altering and mocking dependencies between tests without requiring reinitialisation like this:
 
 ```csharp
 [Fact]
