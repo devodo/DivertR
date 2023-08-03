@@ -70,7 +70,7 @@ public async Task GivenBookServiceError_WhenGetBookById_ThenReturns500InternalSe
 ```
 
 > **Note**  
-> The source code for the example above is available [here](./examples/DivertR.Examples.WebAppTests).
+> The source code for the example above is available [here](https://github.com/devodo/DivertR/tree/main/examples/DivertR.Examples.WebAppTests).
 > 
 > Follow the [Resources](#resources) section below for more examples, quickstart, documentation, etc. 
 
