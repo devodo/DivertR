@@ -3,7 +3,7 @@
 [![nuget](https://img.shields.io/nuget/v/DivertR.svg)](https://www.nuget.org/packages/DivertR)
 [![build](https://github.com/devodo/DivertR/actions/workflows/build.yml/badge.svg)](https://github.com/devodo/DivertR/actions/workflows/build.yml)
 
-DivertR is a .NET proxy framework that can be used to create test doubles.
+DivertR is a general purpose .NET proxy framework that can be used to create test doubles.
 It is similar to existing mocking frameworks like [Moq](https://github.com/moq/moq4) but is designed to work seamlessly with the dependency injection container by converting existing services into test friendly, configurable proxies. This facilitates an integrated style of testing where you start with the wired-up system and then mock out specific parts required per test.
 
 # Installing
@@ -20,9 +20,15 @@ Or via the .NET command line interface:
 dotnet add package DivertR
 ```
 
-# Example Usage
+# Why?
 
-DivertR is a general purpose proxy framework that can, for example, be used to significantly speed up integration tests running against a [WebApplicationFactory (TestServer)](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) instance by altering and mocking dependencies between tests without requiring reinitialisation like this:
+The original motivation for creating DivertR was to be able to significantly speed up integration tests running against a [WebApplicationFactory (TestServer)](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests) instance by easily altering and mocking dependencies on a per test basis without requiring reinitialisation.
+
+WebApplicationFactory does let you customise dependency injection services but this can only be done upfront before starting the test server instance.
+To have different customisations between tests requires reinitialising a new test server instance each time.
+This can be very slow when running many tests or larger applications with heavier startup.
+
+DivertR turns dependency injection services into configurable proxies that can be reconfigured between tests running against the same test server instance like this:
 
 ```csharp
 [Fact]
@@ -71,8 +77,9 @@ public async Task GivenBookServiceError_WhenGetBookById_ThenReturns500InternalSe
 
 > **Note**  
 > The source code for the example above is available [here](https://github.com/devodo/DivertR/tree/main/examples/DivertR.Examples.WebAppTests).
-> 
-> Follow the [Resources](#resources) section below for more examples, quickstart, documentation, etc. 
+
+DivertR is a general purpose framework that can be used in many different scenarios including for standard unit test mocking purposes.
+Please follow the [Resources](#resources) section below for more examples, quickstart, documentation, etc.
 
 # Resources
 
