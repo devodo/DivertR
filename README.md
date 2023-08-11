@@ -28,6 +28,8 @@ WebApplicationFactory does let you customise dependency injection services but t
 To have different customisations between tests requires reinitialising a new test server instance each time.
 This can be very slow when running many tests or larger applications with heavier startup.
 
+# WebApplicationFactory Example
+
 DivertR turns dependency injection services into configurable proxies that can be reconfigured between tests running against the same test server instance like this:
 
 ```csharp
@@ -78,10 +80,23 @@ public async Task GivenBookServiceError_WhenGetBookById_ThenReturns500InternalSe
 > **Note**  
 > The source code for the example above is available [here](https://github.com/devodo/DivertR/tree/main/examples/DivertR.Examples.WebAppTests).
 
-DivertR is a general purpose framework that can be used in many different scenarios including for standard unit test mocking purposes.
-Please follow the [Resources](#resources) section below for more examples, quickstart, documentation, etc.
+# Mocking Example
 
-# Resources
+DivertR is a general purpose framework that can be used in many different scenarios including for standard unit test mocking purposes.
+
+```csharp
+IFoo fooMock = Spy.On<IFoo>();
+
+Spy.Of(fooMock)
+    .To(x => x.Name)
+    .Via(() => "redirected");
+
+Assert.Equal("redirected", fooMock.Name);
+```
+
+# Documentation and Resources
+
+Please follow the links below for more examples, quickstart, documentation, etc.
 
 * [Quickstart guide](https://devodo.github.io/DivertR/quickstart/)
 * [Documentation](https://devodo.github.io/DivertR/)
