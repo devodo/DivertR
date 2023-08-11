@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Redirects
+title: Redirect
 nav_order: 1
 parent: Documentation
 ---
 
-# Redirects
+# Redirect
 
 {: .no_toc }
 

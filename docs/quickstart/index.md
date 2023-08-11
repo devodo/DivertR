@@ -37,70 +37,70 @@ public class QuickstartExample
         // Create a Foo instance named "MrFoo"
         IFoo foo = new Foo("MrFoo");
         Assert.Equal("MrFoo", foo.Name);
-        
+
         // Create an IFoo Redirect
         var fooRedirect = new Redirect<IFoo>();
-        
+
         // Use the Redirect to create an IFoo proxy that wraps the Foo instance above as its root target
         IFoo fooProxy = fooRedirect.Proxy(foo);
-        
+
         // By default proxies transparently forward calls to their root targets
         Assert.Equal("MrFoo", fooProxy.Name);
-        
+
         // Intercept proxy calls and change behaviour by adding one or more 'Via' delegates to the Redirect
         fooRedirect
             .To(x => x.Name)
             .Via(() => "redirected");
-        
+
         // The Redirect diverts proxy calls to its Via delegates
         Assert.Equal("redirected", fooProxy.Name);
-        
+
         // Reset the Redirect and revert the proxy to its default transparent behaviour
         fooRedirect.Reset();
         Assert.Equal("MrFoo", fooProxy.Name);
-        
+
         // Via delegates can access call context and e.g. relay the call to the root target
         fooRedirect
             .To(x => x.Name)
             .Via(call => call.CallRoot() + " redirected");
-        
+
         Assert.Equal("MrFoo redirected", fooProxy.Name);
-        
+
         // A Redirect can create any number of proxies
         var fooTwo = new Foo("FooTwo");
         IFoo fooTwoProxy = fooRedirect.Proxy(fooTwo);
-        
+
         // Vias added to the Redirect are applied to all its proxies
         Assert.Equal("FooTwo redirected", fooTwoProxy.Name);
-        
+
         // Reset is applied to all proxies.
         fooRedirect.Reset();
         Assert.Equal("MrFoo", fooProxy.Name);
         Assert.Equal("FooTwo", fooTwoProxy.Name);
-        
+
         // A proxy with no root target returns default values
         var fooMock = fooRedirect.Proxy();
         Assert.Null(fooMock.Name);
-        
-        // Record and verify proxy calls
-        var fooCalls = fooRedirect.Record();
 
+        // Proxy calls and be recorded for verifying
+        var fooCalls = fooRedirect.Record();
+        
         Assert.Equal("MrFoo", fooProxy.Name);
         Assert.Equal("FooTwo", fooTwoProxy.Name);
-        Assert.Null(fooMock.Name);
+        Assert.Null(fooMock.Echo("test"));
         
+        // The recording is a collection containing details of the calls
+        Assert.Equal(3, fooCalls.Count);
+        
+        // This can be filtered with expressions for verifying
+        Assert.Equal(1, fooCalls.To(x => x.Echo(Is<string>.Any)).Count);
+
         // Take an immutable snapshot of the currently recorded calls to verify against
         var snapshotCalls = fooCalls.To(x => x.Name).Verify();
-        Assert.Equal(3, snapshotCalls.Count);
-        
+        Assert.Equal(2, snapshotCalls.Count);
+
         Assert.Equal("MrFoo", snapshotCalls[0].Return);
         Assert.Equal("FooTwo", snapshotCalls[1].Return);
-        Assert.Null(snapshotCalls[2].Return);
-        
-        // Calls are recorded across all of the Redirect's proxies
-        Assert.Same(fooProxy, snapshotCalls[0].CallInfo.Proxy);
-        Assert.Same(fooTwoProxy, snapshotCalls[1].CallInfo.Proxy);
-        Assert.Same(fooMock, snapshotCalls[2].CallInfo.Proxy);
     }
 }
 ```
@@ -209,5 +209,44 @@ public async Task GivenFooRepoException_WhenGetFoo_ThenReturns500InternalServerE
 ```
 
 For more examples and a demonstration of setting up a test harness for a WebApp like this see a [WebApp Testing Sample here](https://github.com/devodo/DivertR/tree/main/test/DivertR.WebAppTests).
+
+## Standard Mocking
+
+The `Spy` class is provided and extends `Redirect` to add familiar, standard mocking capability:
+
+```csharp
+[Fact]
+public async Task SpyTestSample()
+{
+    // Create an IFoo mock
+    var fooMock = Spy.On<IFoo>();
+    // By default mocks return dummy values (C# defaults)
+    Assert.Null(fooMock.Name);
+    // For async methods a Task is returned wrapping a dummy result
+    Assert.Null(await fooMock.EchoAsync("test"));
+    
+    // Mock behaviour can be configured by adding Vias using the usual redirect fluent syntax
+    Spy.Of(fooMock)
+        .To(x => x.Name)
+        .Via(() => "redirected");
+
+    // Mock calls are redirected to the Via delegates
+    Assert.Equal("redirected", fooMock.Name);
+    
+    // The spy records all mock calls
+    Assert.Equal(3, Spy.Of(fooMock).Calls.Count);
+    // These can be filtered with expressions for verifying
+    Assert.Equal(1, Spy.Of(fooMock).Calls.To(x => x.EchoAsync(Is<string>.Any)).Count);
+    
+    // Spies can be reset
+    Spy.Of(fooMock).Reset();
+    // This resets recorded calls
+    Assert.Equal(0, Spy.Of(fooMock).Calls.Count);
+    // And removes all Via configurations
+    Assert.Null(fooMock.Name);
+}
+```
+
+## Learn More
 
 Continue with [Documentation](../documentation/) for more details.
