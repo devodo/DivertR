@@ -11,7 +11,7 @@ namespace DivertR
     ///
     /// <see cref="ISpy"/> inherits from <see cref="IRedirect"/> and therefore its Mock behaviour can be configured using the same Redirect fluent interface e.g. to add one or more <see cref="IVia"/> instances or reset.
     /// The Spy is preconfigured with a Via that records the mock object calls readable from the <see cref="ISpy.Calls"/> property.
-    /// As with a normal Redirect, Spy reset removes all Vias, however it also adds a new Mock call record Via and the <see cref="ISpy.Calls"/> property is replaced.
+    /// Spy.Reset behaves the sames as the base Redirect class and removes all Vias except a new call record Via is then added back. Reset also sets a new <see cref="ISpy.Calls"/> property.
     /// </summary>
     public interface ISpy : IRedirect
     {
@@ -26,7 +26,7 @@ namespace DivertR
         IRecordStream Calls { get; }
         
         /// <summary>
-        /// Insert a <see cref="IVia"/> into this Spy.
+        /// Insert an <see cref="IVia"/> into this Spy.
         /// </summary>
         /// <param name="via">The Via instance to insert.</param>
         /// <param name="optionsAction">Optional <see cref="IViaOptionsBuilder"/> action.</param>

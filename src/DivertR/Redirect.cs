@@ -114,10 +114,19 @@ namespace DivertR
         {
             if (root is null || !RedirectSet.Settings.CacheRedirectProxies)
             {
-                return _proxyFactory.CreateProxy(_redirectProxyCall, root);
+                var createdProxy = _proxyFactory.CreateProxy(_redirectProxyCall, root);
+                Redirect.Track(this, createdProxy);
+
+                return createdProxy;
             }
 
-            var proxy = _proxyCache.GetValue(root, x => _proxyFactory.CreateProxy(_redirectProxyCall, x));
+            var proxy = _proxyCache.GetValue(root, x =>
+            {
+                var createdProxy = _proxyFactory.CreateProxy(_redirectProxyCall, x);
+                Redirect.Track(this, createdProxy);
+                
+                return createdProxy;
+            });
 
             return proxy!;
         }
@@ -248,6 +257,55 @@ namespace DivertR
         protected virtual void ResetInternal()
         {
             RedirectRepository.Reset();
+        }
+    }
+    
+    /// <summary>
+    /// Redirect helper class for creating proxy objects directly.
+    /// </summary>
+    public static class Redirect
+    {
+        private static readonly RedirectTracker RedirectTracker = new();
+        
+        /// <summary>
+        /// Creates and returns a <see cref="Redirect{TTarget}"/> proxy of the given target type.
+        /// </summary>
+        /// <typeparam name="TTarget">The proxy target type.</typeparam>
+        /// <returns>The created Redirect proxy object.</returns>
+        public static TTarget Proxy<TTarget>() where TTarget : class?
+        {
+            var redirect = new Redirect<TTarget>();
+
+            return redirect.Proxy();
+        }
+        
+        /// <summary>
+        /// Creates and returns a <see cref="Redirect{TTarget}"/> proxy of the given target type.
+        /// </summary>
+        /// /// <typeparam name="TTarget">The proxy target type.</typeparam>
+        /// <param name="root">The root instance the proxy will wrap and relay calls to.</param>
+        /// <returns>The created Redirect proxy object.</returns>
+        public static TTarget Proxy<TTarget>(TTarget? root) where TTarget : class?
+        {
+            var redirect = new Redirect<TTarget>();
+
+            return redirect.Proxy(root);
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IRedirect{TTarget}"/> of the proxy object.
+        /// </summary>
+        /// <param name="proxy">The Redirect proxy object.</param>
+        /// <returns>The Redirect instance.</returns>
+        /// <exception cref="DiverterException">Thrown if if the given <paramref name="proxy"/> object does not have an associated <see cref="IRedirect{TTarget}"/> </exception>
+        public static IRedirect<TTarget> Of<TTarget>([DisallowNull] TTarget proxy) where TTarget : class?
+        {
+            return RedirectTracker.GetRedirect<TTarget>(proxy);
+        }
+
+        internal static void Track<TTarget>(Redirect<TTarget> redirect, [DisallowNull] TTarget proxy) where TTarget : class?
+        {
+            RedirectTracker.AddRedirect(redirect, proxy);
         }
     }
 }

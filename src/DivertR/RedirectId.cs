@@ -34,7 +34,7 @@ namespace DivertR
             return _id.Equals(other._id);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is RedirectId other && Equals(other);
         }
