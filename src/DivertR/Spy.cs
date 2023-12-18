@@ -25,7 +25,6 @@ namespace DivertR
             : base(diverterSettings)
         {
             Mock = hasRoot ? Proxy() : Proxy(root);
-            Spy.AddSpy(this, Mock);
             ResetAndConfigureRecord();
         }
         
@@ -134,8 +133,6 @@ namespace DivertR
     /// </summary>
     public static class Spy
     {
-        private static readonly SpyTracker SpyTracker = new();
-        
         /// <summary>
         /// Creates a spy of the given target type and returns its mock object.
         /// </summary>
@@ -167,12 +164,14 @@ namespace DivertR
         /// <exception cref="DiverterException">Thrown if if the given <paramref name="mock"/> object does not have an associated <see cref="ISpy{TTarget}"/> </exception>
         public static ISpy<TTarget> Of<TTarget>([DisallowNull] TTarget mock) where TTarget : class?
         {
-            return SpyTracker.GetSpy<TTarget>(mock);
-        }
-
-        internal static void AddSpy<TTarget>(Spy<TTarget> spy, [DisallowNull] TTarget mock) where TTarget : class?
-        {
-            SpyTracker.AddSpy(spy, mock);
+            var redirect = Redirect.Of(mock);
+            
+            if (redirect is not Spy<TTarget> spyOf)
+            {
+                throw new DiverterException("Spy not found");
+            }
+            
+            return spyOf;
         }
     }
 }
