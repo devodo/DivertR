@@ -1,8 +1,19 @@
 # PIP — Plastic Is Pollution: Petition Website
 
 A simple static website for the PIP petition. No build step, no dependencies —
-just open `index.html` in a browser, or host the `website/` folder anywhere
-static files can be served (GitHub Pages, Netlify, etc.).
+just open `index.html` in a browser.
+
+## Hosting on GitHub Pages
+
+This folder lives inside `docs/`, which is the source of this repository's
+GitHub Pages site. Once these files are on the `main` branch and the `pages`
+workflow has run (GitHub → Actions → "pages" → "Run workflow"), the petition
+site is served at:
+
+**https://devodo.github.io/DivertR/pip/**
+
+The rest of the Pages site (the DivertR library docs) is unaffected — Jekyll
+copies these plain HTML/CSS/JS files through as-is.
 
 ## Pages
 
