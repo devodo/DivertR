@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign the Petition — PIP: Plastic Is Pollution</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html">
+        <span class="logo">PIP</span>
+        <span class="tagline">Plastic Is Pollution</span>
+      </a>
+      <nav class="site-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="sign.html" class="active">Sign the Petition</a>
+        <a href="what-we-are-doing.html">What We're Doing</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="page-title">Sign the Petition</h1>
+    <p class="page-intro">
+      <!-- EDIT ME: The petition statement people are signing up to -->
+      <strong>We, the undersigned, call on the government to officially recognise
+      plastic waste as pollution, set legally binding targets to reduce
+      single-use plastic, and hold producers accountable for the waste they
+      create.</strong>
+    </p>
+
+    <section>
+      <div class="form-card">
+        <form id="petition-form" novalidate>
+          <div class="form-field">
+            <label for="name">Full name *</label>
+            <input type="text" id="name" name="name" required autocomplete="name">
+          </div>
+
+          <div class="form-field">
+            <label for="email">Email address *</label>
+            <input type="email" id="email" name="email" required autocomplete="email">
+            <p class="hint">We'll only use this to verify signatures and send occasional campaign updates.</p>
+          </div>
+
+          <div class="form-field">
+            <label for="location">Town / City</label>
+            <input type="text" id="location" name="location" autocomplete="address-level2">
+          </div>
+
+          <div class="form-field">
+            <label for="comment">Why are you signing? (optional)</label>
+            <textarea id="comment" name="comment" rows="3" maxlength="500"></textarea>
+          </div>
+
+          <div class="form-field checkbox-field">
+            <input type="checkbox" id="consent" name="consent" required>
+            <label for="consent">
+              I agree to my name, location and comment being included in the
+              petition document presented to government. *
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Add my signature</button>
+          <div id="form-message" class="form-message" role="status"></div>
+        </form>
+      </div>
+    </section>
+
+    <section>
+      <h2>Petition document</h2>
+      <p class="no-print">
+        Signatures collected here are added to the document below. Use the
+        buttons to download it as a spreadsheet (CSV) or print it as a formal
+        petition document.
+      </p>
+
+      <div class="signature-tools">
+        <span class="signature-count" id="signature-count">0 signatures</span>
+        <button class="btn btn-outline" id="download-csv" type="button">Download as CSV</button>
+        <button class="btn btn-outline" id="print-document" type="button">Print petition document</button>
+      </div>
+
+      <div class="signature-table-wrap">
+        <table class="signatures" id="signature-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Location</th>
+              <th>Comment</th>
+              <th>Date signed</th>
+            </tr>
+          </thead>
+          <tbody id="signature-body">
+            <!-- Rows are inserted here by js/petition.js -->
+          </tbody>
+        </table>
+        <p class="empty-note" id="empty-note">No signatures yet — be the first to sign!</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <!-- EDIT ME: contact email and social links -->
+    <p>PIP — Plastic Is Pollution &nbsp;·&nbsp; contact@example.org &nbsp;·&nbsp; © 2026</p>
+  </footer>
+
+  <script src="js/petition.js"></script>
+</body>
+</html>

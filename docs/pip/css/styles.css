@@ -1,0 +1,408 @@
+/* ============================================================
+   PIP — Plastic Is Pollution
+   Shared stylesheet for all pages.
+   Colours, fonts and spacing are defined once here as variables,
+   so you can re-theme the whole site by editing this block.
+   ============================================================ */
+
+:root {
+  --ocean-deep: #0b3954;
+  --ocean: #156088;
+  --sea-green: #2a9d8f;
+  --sand: #f6f1e7;
+  --coral: #e76f51;
+  --ink: #1f2a30;
+  --ink-soft: #4a5a63;
+  --white: #ffffff;
+  --max-width: 960px;
+  --radius: 12px;
+  --shadow: 0 4px 16px rgba(11, 57, 84, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink);
+  background: var(--sand);
+  line-height: 1.6;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* ---------- Header & navigation ---------- */
+
+.site-header {
+  background: var(--ocean-deep);
+  color: var(--white);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: var(--shadow);
+}
+
+.site-header .inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: var(--white);
+}
+
+.brand .logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  background: var(--sea-green);
+  padding: 0.15rem 0.55rem;
+  border-radius: 8px;
+}
+
+.brand .tagline {
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+
+.site-nav a {
+  color: var(--white);
+  text-decoration: none;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.site-nav a:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.site-nav a.active {
+  background: var(--sea-green);
+}
+
+/* ---------- Hero banner ---------- */
+
+.hero {
+  background: linear-gradient(160deg, var(--ocean-deep), var(--ocean) 60%, var(--sea-green));
+  color: var(--white);
+  text-align: center;
+  padding: 4rem 1rem 4.5rem;
+}
+
+.hero h1 {
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  margin-bottom: 0.75rem;
+}
+
+.hero p {
+  max-width: 640px;
+  margin: 0 auto 1.5rem;
+  font-size: 1.1rem;
+  opacity: 0.92;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  transition: transform 0.1s ease, opacity 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+.btn-primary {
+  background: var(--coral);
+  color: var(--white);
+}
+
+.btn-secondary {
+  background: var(--white);
+  color: var(--ocean-deep);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--ocean-deep);
+  border: 2px solid var(--ocean-deep);
+}
+
+/* ---------- Page layout ---------- */
+
+main {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 2.5rem 1rem 4rem;
+}
+
+.page-title {
+  color: var(--ocean-deep);
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.page-intro {
+  color: var(--ink-soft);
+  max-width: 640px;
+  margin-bottom: 2rem;
+  font-size: 1.05rem;
+}
+
+section {
+  margin-bottom: 2.5rem;
+}
+
+section h2 {
+  color: var(--ocean);
+  margin-bottom: 0.75rem;
+}
+
+section p + p {
+  margin-top: 0.75rem;
+}
+
+/* ---------- Cards ---------- */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+}
+
+.card h3 {
+  color: var(--ocean-deep);
+  margin-bottom: 0.5rem;
+}
+
+.card .stat {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--sea-green);
+  margin-bottom: 0.25rem;
+}
+
+/* ---------- Status badges (What we're doing page) ---------- */
+
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  margin-bottom: 0.6rem;
+}
+
+.badge-now {
+  background: #d9f2ee;
+  color: #1a7268;
+}
+
+.badge-next {
+  background: #fdeee7;
+  color: #b5522f;
+}
+
+.badge-done {
+  background: #e2e8f0;
+  color: #44546a;
+}
+
+/* ---------- Petition form ---------- */
+
+.form-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  max-width: 560px;
+}
+
+.form-field {
+  margin-bottom: 1.1rem;
+}
+
+.form-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: var(--ocean-deep);
+}
+
+.form-field .hint {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin-top: 0.2rem;
+}
+
+.form-field input[type="text"],
+.form-field input[type="email"],
+.form-field textarea {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #c3ccd2;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: 2px solid var(--sea-green);
+  border-color: var(--sea-green);
+}
+
+.checkbox-field {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+.checkbox-field input {
+  margin-top: 0.3rem;
+}
+
+.form-message {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  display: none;
+}
+
+.form-message.success {
+  display: block;
+  background: #d9f2ee;
+  color: #1a7268;
+}
+
+.form-message.error {
+  display: block;
+  background: #fdeee7;
+  color: #b5522f;
+}
+
+/* ---------- Signature document ---------- */
+
+.signature-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.signature-count {
+  font-weight: 700;
+  color: var(--ocean-deep);
+}
+
+.signature-table-wrap {
+  overflow-x: auto;
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+table.signatures {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 520px;
+}
+
+table.signatures th,
+table.signatures td {
+  text-align: left;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid #e8e4da;
+  font-size: 0.95rem;
+}
+
+table.signatures th {
+  background: var(--ocean-deep);
+  color: var(--white);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+table.signatures tr:last-child td {
+  border-bottom: none;
+}
+
+.empty-note {
+  padding: 1.5rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+/* ---------- Footer ---------- */
+
+.site-footer {
+  background: var(--ocean-deep);
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+  padding: 1.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.site-footer a {
+  color: var(--white);
+}
+
+/* ---------- Print view: turn the sign page into a clean document ---------- */
+
+@media print {
+  .site-header,
+  .site-footer,
+  .hero,
+  .form-card,
+  .signature-tools,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: var(--white);
+  }
+
+  .signature-table-wrap {
+    box-shadow: none;
+  }
+}
